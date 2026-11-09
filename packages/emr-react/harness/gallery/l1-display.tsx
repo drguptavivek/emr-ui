@@ -47,17 +47,21 @@ export const gallery: GallerySection[] = [
     </View>
   ) },
   { id: 'card', title: 'EmrCard', render: () => (
-    <View style={stack}>
-      <EmrCard label="Padded card"><T>Body content</T></EmrCard>
-      <EmrCard label="Flush card" padded={false}><T>Edge-to-edge body</T></EmrCard>
-      <EmrCard><T>No title</T></EmrCard>
-    </View>
+    <EmrColumns count={3} gap={12}>
+      <EmrCard label="Padded card"><T>Standard padded card body.</T></EmrCard>
+      <EmrCard label="Flush card (table / list)" padded={false}>
+        <EmrFieldValueRow field="OD" value="6/6" remarks="Unaided" />
+        <EmrFieldValueRow field="OS" value="6/9" remarks="With pinhole 6/6" />
+      </EmrCard>
+      <EmrCard><T>Card without header bar</T></EmrCard>
+    </EmrColumns>
   ) },
-  { id: 'columns', title: 'EmrColumns', render: () => (
+  { id: 'columns', title: 'EmrColumns (1 to 6 columns)', render: () => (
     <View style={stack}>
-      <EmrColumns count={3}>{box('A')}{box('B')}{box('C')}</EmrColumns>
-      <EmrColumns widths={['2fr', '1fr']}>{box('Wide')}{box('Narrow')}</EmrColumns>
-      <EmrColumns collapseBelow={2000}>{box('Always stacked 1')}{box('Always stacked 2')}</EmrColumns>
+      <EmrColumns count={6} gap={8}>{box('Col 1')}{box('Col 2')}{box('Col 3')}{box('Col 4')}{box('Col 5')}{box('Col 6')}</EmrColumns>
+      <EmrColumns count={4} gap={8}>{box('1 of 4')}{box('2 of 4')}{box('3 of 4')}{box('4 of 4')}</EmrColumns>
+      <EmrColumns count={3} gap={8}>{box('A (1/3)')}{box('B (1/3)')}{box('C (1/3)')}</EmrColumns>
+      <EmrColumns widths={['2fr', '1fr']} gap={8}>{box('Wide (2fr)')}{box('Narrow (1fr)')}</EmrColumns>
     </View>
   ) },
   { id: 'field-value-row', title: 'EmrFieldValueRow', render: () => (

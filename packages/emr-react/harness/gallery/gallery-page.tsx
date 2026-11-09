@@ -243,7 +243,7 @@ function Surface({
         backgroundColor: active ? t.primarySoft : t.surface,
       }}
     >
-      <Text style={{ color: active ? t.primaryContrast : t.text, fontWeight: active ? '700' : '500', fontSize: t.textSm }}>
+      <Text style={{ color: active ? t.primaryContrast : t.text, fontWeight: '600', fontSize: t.textSm }}>
         {label}
       </Text>
     </Pressable>
@@ -391,7 +391,7 @@ function Surface({
                 backgroundColor: selectedGroupId === 'all' ? t.primarySoft : 'transparent',
               }}
             >
-              <Text style={{ color: selectedGroupId === 'all' ? t.primaryContrast : t.text, fontWeight: selectedGroupId === 'all' ? '700' : '500', fontSize: t.textSm }}>
+              <Text style={{ color: selectedGroupId === 'all' ? t.primaryContrast : t.text, fontWeight: '500', fontSize: t.textSm }}>
                 All Groups ({galleryGroups.length})
               </Text>
             </Pressable>
@@ -411,7 +411,7 @@ function Surface({
                     backgroundColor: active ? t.primarySoft : 'transparent',
                   }}
                 >
-                  <Text style={{ color: active ? t.primaryContrast : t.text, fontWeight: active ? '700' : '400', fontSize: t.textSm }}>
+                  <Text style={{ color: active ? t.primaryContrast : t.text, fontWeight: '500', fontSize: t.textSm }}>
                     {g.title} ({g.sections.length})
                   </Text>
                 </Pressable>

@@ -41,7 +41,7 @@ export function fontFamily(t: EmrTokens): string | undefined {
 
 /** Visible focus on web (RNW reports `focused` to Pressable/inputs). Native platforms draw their own focus. */
 export function focusRing(t: EmrTokens, focused: boolean | undefined): object | null {
-  return Platform.OS === 'web' && focused ? { outlineStyle: 'solid', outlineWidth: 3, outlineColor: t.focus, outlineOffset: 2 } : null;
+  return Platform.OS === 'web' && focused ? { outlineStyle: 'solid', outlineWidth: 2, outlineColor: t.focus, outlineOffset: -2 } : null;
 }
 
 export function toneColors(t: EmrTokens, tone: EmrTone): { color: string; backgroundColor: string } {

@@ -35,10 +35,10 @@ export function EmrAlert({ tone = 'info', title = '', children }: { tone?: EmrTo
   const c = toneColors(t, tone);
   const glyph = TONE_GLYPH[tone];
   return (
-    <View role="status" style={[styles.alert, { backgroundColor: c.backgroundColor, borderLeftColor: c.color }]}>
+    <View role="status" style={[styles.alert, !title && styles.alertSingleLine, { backgroundColor: c.backgroundColor, borderLeftColor: c.color }]}>
       {glyph ? <Text aria-hidden style={{ color: c.color, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold) }}>{glyph}</Text> : null}
       <View style={styles.flex}>
-        {title ? <Text style={{ color: c.color, fontSize: t.textMd, fontWeight: fontWeight(750), fontFamily: fontFamily(t) }}>{title}</Text> : null}
+        {title ? <Text style={{ color: c.color, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{title}</Text> : null}
         {children ? <View><TextOrNode color={t.textMuted} size={t.textMd} family={fontFamily(t)}>{children}</TextOrNode></View> : null}
       </View>
     </View>
@@ -118,11 +118,12 @@ function track(width: number | string): object {
 }
 
 /**
- * L1. Equal-height columns. `widths` overrides `count`. Stacks to one column when the container
- * (not the window) is narrower than `collapseBelow`; until measured it renders as columns.
+ * L1. Equal-width or custom-track columns (supports 1 to 6 columns). `widths` overrides `count`.
+ * Stacks to one column when the container is narrower than `collapseBelow`; until measured it renders as columns.
+ * If more children are passed than `count`, they wrap into equal-column rows.
  */
 export function EmrColumns({ count = 2, widths, gap = 16, collapseBelow = 480, children }: {
-  count?: number;
+  count?: 1 | 2 | 3 | 4 | 5 | 6 | number;
   widths?: readonly (number | string)[];
   gap?: number;
   collapseBelow?: number;
@@ -131,11 +132,35 @@ export function EmrColumns({ count = 2, widths, gap = 16, collapseBelow = 480, c
   const [width, setWidth] = useState<number | null>(null);
   const stacked = width !== null && width < collapseBelow;
   const items = Children.toArray(children);
-  const tracks = widths && widths.length > 0 ? widths : Array.from({ length: Math.max(1, count) }, () => '1fr');
+  const clampedCount = Math.min(6, Math.max(1, Math.round(count)));
+  const tracks = widths && widths.length > 0 ? widths : Array.from({ length: clampedCount }, () => '1fr');
+  const colsPerRow = tracks.length;
+
+  if (stacked || colsPerRow === 1) {
+    return (
+      <View onLayout={e => setWidth(e.nativeEvent.layout.width)} style={{ flexDirection: 'column', alignItems: 'stretch', gap }}>
+        {items.map((child, i) => <View key={i}>{child}</View>)}
+      </View>
+    );
+  }
+
+  const rows: ReactNode[][] = [];
+  for (let i = 0; i < items.length; i += colsPerRow) {
+    rows.push(items.slice(i, i + colsPerRow));
+  }
+
   return (
-    <View onLayout={e => setWidth(e.nativeEvent.layout.width)}
-      style={{ flexDirection: stacked ? 'column' : 'row', alignItems: stacked ? 'stretch' : 'stretch', gap }}>
-      {items.map((child, i) => <View key={i} style={stacked ? undefined : track(tracks[i % tracks.length]!)}>{child}</View>)}
+    <View onLayout={e => setWidth(e.nativeEvent.layout.width)} style={{ gap }}>
+      {rows.map((rowItems, rIdx) => (
+        <View key={rIdx} style={{ flexDirection: 'row', alignItems: 'flex-start', gap }}>
+          {rowItems.map((child, i) => <View key={i} style={track(tracks[i % tracks.length]!)}>{child}</View>)}
+          {rowItems.length < colsPerRow
+            ? Array.from({ length: colsPerRow - rowItems.length }, (_, k) => (
+                <View key={`pad-${k}`} style={track(tracks[(rowItems.length + k) % tracks.length]!)} />
+              ))
+            : null}
+        </View>
+      ))}
     </View>
   );
 }
@@ -156,7 +181,7 @@ export function EmrFieldValueRow({ field = '', value = '', remarks = '', notes =
     </View>
   );
   return (
-    <View role="row" style={[styles.fvr, { borderBottomColor: t.border, backgroundColor: heading ? t.surfaceAccent : undefined }]}>
+    <View role="row" style={[styles.fvr, { borderColor: t.border, borderTopWidth: heading ? 1 : 0, backgroundColor: heading ? t.surfaceAccent : undefined }]}>
       {cell(field, 'f', true)}
       {cell(heading ? value : value || placeholder, 'v')}
       {cell(remarks, 'r')}
@@ -219,6 +244,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   chip: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
   alert: { flexDirection: 'row', gap: 10, borderLeftWidth: 4, borderRadius: 8, padding: 12 },
+  alertSingleLine: { alignItems: 'center' },
   state: { alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 160, padding: 24 },
   labelled: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 16 },
   line: { flex: 1, height: 1 },
@@ -226,7 +252,7 @@ const styles = StyleSheet.create({
   cardTitle: { justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
   cardBody: { padding: 16 },
   // Four columns until a cell would drop under ~120dp (a phone card), then two per line: no mid-word breaks.
-  fvr: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingVertical: 8, paddingHorizontal: 8, borderBottomWidth: 1 },
+  fvr: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingVertical: 10, paddingHorizontal: 12, borderBottomWidth: 1 },
   fvrCell: { flexGrow: 1, flexBasis: 120, minWidth: 0 },
   status: { alignItems: 'flex-start', gap: 4, minWidth: 0 },
   statusBody: { gap: 2, minWidth: 0, maxWidth: '100%' },

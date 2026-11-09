@@ -315,23 +315,34 @@ export function EmrScheduleSlotPicker({
                   styles.presetBtn,
                   focusRing(t, focused),
                   {
-                    minHeight: t.controlHeight,
-                    borderColor: active ? t.primary : t.primaryBorder,
-                    borderWidth: active ? 2 : 1,
-                    backgroundColor: active ? t.primarySoft : pressed ? t.surfaceRaised : 'transparent',
+                    minHeight: 36,
+                    borderColor: active ? t.primary : t.border,
+                    borderWidth: 1,
+                    backgroundColor: active ? t.primarySoft : pressed ? t.surfaceRaised : t.surface,
                     opacity: disabled ? 0.6 : 1,
                   },
                 ]}
               >
+                <View
+                  aria-hidden
+                  style={[
+                    styles.presetDot,
+                    {
+                      borderColor: active ? t.primary : t.border,
+                      backgroundColor: active ? t.primary : t.surface,
+                    },
+                  ]}
+                >
+                  {active ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: t.surface }} /> : null}
+                </View>
                 <Text
                   style={{
-                    color: t.primaryContrast,
-                    fontSize: t.textSm,
-                    fontWeight: fontWeight(active ? t.weightBold : 650),
+                    color: active ? t.primaryContrast : t.text,
+                    fontSize: t.textXs,
+                    fontWeight: fontWeight(t.weightMedium),
                     fontFamily: fontFamily(t),
                   }}
                 >
-                  {active ? '✓ ' : ''}
                   {preset.label}
                 </Text>
               </Pressable>
@@ -340,8 +351,8 @@ export function EmrScheduleSlotPicker({
         </View>
       ) : null}
 
-      <View role="list" style={styles.slotsGrid}>
-        {rows.map(row => {
+      <View role="list" style={[styles.slotsGrid, { borderColor: t.border, backgroundColor: t.surface }]}>
+        {rows.map((row, idx) => {
           const ticked = !!row.slot;
           return (
             <View
@@ -350,27 +361,28 @@ export function EmrScheduleSlotPicker({
               style={[
                 styles.slotCard,
                 {
-                  borderColor: ticked ? t.primaryBorder : t.border,
+                  borderColor: t.border,
+                  borderLeftWidth: idx > 0 ? 1 : 0,
                   backgroundColor: ticked ? t.surfaceSoft : t.surface,
                 },
               ]}
             >
               {readOnly ? (
                 <View style={styles.readOnlySlot}>
-                  <View>
-                    <Text style={{ color: t.text, fontSize: t.textMd, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                  <View style={styles.slotHeaderInline}>
+                    <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
                       {row.definition.label}
                     </Text>
                     {row.definition.timeHint ? (
-                      <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>{row.definition.timeHint}</Text>
+                      <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontFamily: fontFamily(t) }}>{row.definition.timeHint}</Text>
                     ) : null}
                   </View>
-                  <Text style={{ color: row.slot ? t.text : t.textMuted, fontSize: t.textMd, fontFamily: fontFamily(t) }}>
-                    {row.slot ? formatSlotReadout(row.slot, unitLabel, l.selectedNoAmount) : l.notSelected}
+                  <Text style={{ color: row.slot ? t.primary : t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(row.slot ? t.weightBold : t.weightRegular), fontFamily: fontFamily(t) }}>
+                    {row.slot ? formatSlotReadout(row.slot, unitLabel, l.selectedNoAmount) : '0'}
                   </Text>
                 </View>
               ) : (
-                <>
+                <View style={styles.slotInlineRow}>
                   <Pressable
                     id={`${id}-${row.definition.id}`}
                     role="checkbox"
@@ -398,25 +410,27 @@ export function EmrScheduleSlotPicker({
                       ]}
                     >
                       {ticked ? (
-                        <Text style={{ color: t.surface, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>✓</Text>
+                        <Text style={{ color: t.surface, fontSize: 11, lineHeight: 13, fontWeight: fontWeight(t.weightBold) }}>✓</Text>
                       ) : null}
                     </View>
                     <View style={styles.slotNameWrap}>
-                      <Text style={{ color: t.text, fontSize: t.textMd, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                      <Text numberOfLines={1} style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
                         {row.definition.label}
                       </Text>
                       {row.definition.timeHint ? (
-                        <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>{row.definition.timeHint}</Text>
+                        <Text numberOfLines={1} style={{ color: t.textMuted, fontSize: t.text2xs, fontFamily: fontFamily(t) }}>{row.definition.timeHint}</Text>
                       ) : null}
                     </View>
                   </Pressable>
-                  {row.slot ? (
-                    <View style={styles.amountRow}>
-                      {amountMode === 'numeric' ? (
+                  <View style={styles.amountRow}>
+                    {row.slot ? (
+                      amountMode === 'numeric' ? (
                         <NumberInput
                           id={`${id}-${row.definition.id}-amount`}
                           aria-label={l.slotAmount(row.definition.label, unitLabel)}
                           integer={false}
+                          min={0}
+                          step={0.5}
                           value={row.slot.amount}
                           unit={unitLabel}
                           editable={!disabled}
@@ -428,14 +442,21 @@ export function EmrScheduleSlotPicker({
                           aria-label={l.slotAmount(row.definition.label)}
                           value={row.slot.amountLabel ?? ''}
                           editable={!disabled}
+                          style={{ minWidth: 110 }}
                           onChangeText={amountLabel =>
                             onValueChange(setSlotAmount(value, slots, row.definition.id, { amount: null, amountLabel }))
                           }
                         />
-                      )}
-                    </View>
-                  ) : null}
-                </>
+                      )
+                    ) : (
+                      <View style={[styles.untickedDosePill, { borderColor: t.border, backgroundColor: t.surfaceRaised }]}>
+                        <Text style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                          0 {unitLabel ?? ''}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
               )}
             </View>
           );
@@ -472,12 +493,16 @@ const styles = StyleSheet.create({
   messages: { gap: 3 },
   ssp: { gap: 10, minWidth: 0 },
   presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  presetBtn: { borderRadius: 8, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
-  slotsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  slotCard: { flexGrow: 1, flexBasis: 180, minWidth: 160, gap: 6, paddingTop: 4, paddingHorizontal: 10, paddingBottom: 8, borderWidth: 1, borderRadius: 8 },
-  readOnlySlot: { gap: 4, paddingVertical: 4 },
-  slotToggle: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  checkBox: { width: 20, height: 20, borderWidth: 2, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
-  slotNameWrap: { flex: 1, minWidth: 0 },
-  amountRow: { minWidth: 0 },
+  presetBtn: { flexDirection: 'row', gap: 6, borderRadius: 999, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  presetDot: { width: 14, height: 14, borderRadius: 7, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  slotsGrid: { flexDirection: 'row', flexWrap: 'wrap', borderWidth: 1, borderRadius: 8, overflow: 'hidden' },
+  slotCard: { flexGrow: 1, flexBasis: 210, minWidth: 190, paddingVertical: 6, paddingHorizontal: 10, justifyContent: 'center' },
+  slotInlineRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 44 },
+  slotHeaderInline: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+  readOnlySlot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingVertical: 6 },
+  slotToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 },
+  checkBox: { width: 18, height: 18, borderWidth: 1.5, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
+  slotNameWrap: { minWidth: 64 },
+  amountRow: { flex: 1, minWidth: 120, alignItems: 'flex-end' },
+  untickedDosePill: { minHeight: 38, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
 });

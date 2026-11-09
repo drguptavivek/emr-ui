@@ -95,4 +95,19 @@ describe('datetime', () => {
     expect(sameInstant(utc, utc.replace('Z', '.000Z'))).toBe(true);
     expect(joinDateTime('2026-03-05', null)).toBeNull();
   });
+
+  it('parses and formats month-only (YYYY-MM) and year-only (YYYY) precision', () => {
+    expect(parseDateText('03-2026', 'dd-mm-yyyy', 'month')).toEqual({ status: 'valid', value: '2026-03' });
+    expect(parseDateText('2026-03', 'yyyy-mm-dd', 'month')).toEqual({ status: 'valid', value: '2026-03' });
+    expect(formatDate('2026-03', 'dd-mm-yyyy', 'month')).toBe('03-2026');
+    expect(parseDateText('2026', 'dd-mm-yyyy', 'year')).toEqual({ status: 'valid', value: '2026' });
+    expect(formatDate('2026-03-05', 'dd-mm-yyyy', 'year')).toBe('2026');
+  });
+
+  it('parses and formats time with second precision (hh:mm:ss)', () => {
+    expect(parseTimeText('9:05:07', 'second')).toEqual({ status: 'valid', value: '09:05:07' });
+    expect(parseTimeText('09:05', 'second')).toEqual({ status: 'valid', value: '09:05:00' });
+    expect(formatTime('08:30:15', 'second')).toBe('08:30:15');
+    expect(formatTime('08:30', 'second')).toBe('08:30:00');
+  });
 });

@@ -22,6 +22,7 @@ import type {
   EmrClinicalAnnotationCanvasState,
 } from '@drguptavivek/emr-controller';
 import { ThemedInput } from './inputs-core';
+import { SvgIcon, type EmrIconName } from './icons';
 import { EmrAnnotationList, EmrAnnotationToolbar } from './l3-annotation';
 import { EmrButton, EmrSelect } from './primitives';
 import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';
@@ -451,11 +452,13 @@ export function EmrClinicalAnnotationCanvas({
     ariaLabel,
     pressed,
     glyph,
+    icon,
     onPress,
   }: {
     ariaLabel: string;
     pressed: boolean;
-    glyph: string;
+    glyph?: string;
+    icon?: EmrIconName;
     onPress: () => void;
   }) => (
     <Pressable
@@ -474,17 +477,21 @@ export function EmrClinicalAnnotationCanvas({
         focusRing(t, st.focused),
       ]}
     >
-      <Text
-        aria-hidden
-        style={{
-          color: pressed ? t.primaryContrast : t.text,
-          fontSize: t.textMd,
-          fontWeight: fontWeight(t.weightBold),
-          fontFamily: font,
-        }}
-      >
-        {glyph}
-      </Text>
+      {icon ? (
+        <SvgIcon name={icon} size={17} color={pressed ? t.primaryContrast : t.text} />
+      ) : (
+        <Text
+          aria-hidden
+          style={{
+            color: pressed ? t.primaryContrast : t.text,
+            fontSize: t.textMd,
+            fontWeight: fontWeight(t.weightBold),
+            fontFamily: font,
+          }}
+        >
+          {glyph}
+        </Text>
+      )}
     </Pressable>
   );
 
@@ -538,7 +545,7 @@ export function EmrClinicalAnnotationCanvas({
           {iconToggleBtn({
             ariaLabel: l.showMarksAria,
             pressed: marksShown,
-            glyph: marksShown ? '👁' : '⊘',
+            icon: marksShown ? 'eye' : 'eye-off',
             onPress: () => setMarksShown(v => !v),
           })}
           {!drawMode ? (
@@ -546,7 +553,7 @@ export function EmrClinicalAnnotationCanvas({
               <EmrButton
                 small
                 variant="outline"
-                label={`✎ ${l.drawButton}`}
+                label={l.drawButton}
                 accessibilityLabel={l.openDrawAria}
                 onPress={() => setLayout('draw')}
               />
@@ -556,13 +563,13 @@ export function EmrClinicalAnnotationCanvas({
               {iconToggleBtn({
                 ariaLabel: l.lockPanZoomAria,
                 pressed: locked,
-                glyph: locked ? '🔒' : '🔓',
+                icon: locked ? 'lock' : 'unlock',
                 onPress: () => setLocked(v => !v),
               })}
               <EmrButton
                 small
                 variant="outline"
-                label={`✓ ${l.doneButton}`}
+                label={l.doneButton}
                 accessibilityLabel={l.doneDrawingAria}
                 onPress={() => setLayout('compact')}
               />

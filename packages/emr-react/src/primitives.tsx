@@ -88,18 +88,45 @@ export function EmrOptionChip({ label, selected, multiple, readOnly, disabled, o
         styles.chip,
         focusRing(t, focused),
         {
-          // Square minimum too: "NC" or "6/6" would otherwise be a target narrower than it is tall.
           minHeight: t.controlHeight,
           minWidth: t.controlHeight,
           borderColor: selected ? t.primary : t.border,
-          borderWidth: selected ? 2 : 1,
+          borderWidth: 1,
           backgroundColor: selected ? t.primarySoft : t.surface,
           opacity: disabled ? 0.6 : 1,
         },
       ]}
     >
-      <Text style={{ color: t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(selected ? t.weightBold : t.weightRegular) }}>
-        {selected ? '✓ ' : ''}{label}
+      <View
+        aria-hidden
+        style={[
+          styles.chipIndicator,
+          {
+            borderRadius: multiple ? 4 : 8,
+            borderColor: selected ? t.primary : t.border,
+            backgroundColor: selected ? t.primary : t.surface,
+          },
+        ]}
+      >
+        {selected ? (
+          multiple ? (
+            <Text style={{ color: t.surface, fontSize: 10, lineHeight: 12, fontWeight: fontWeight(t.weightBold) }}>✓</Text>
+          ) : (
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: t.surface }} />
+          )
+        ) : null}
+      </View>
+      <Text
+        numberOfLines={1}
+        style={{
+          color: selected ? t.primaryContrast : t.text,
+          fontSize: t.textSm,
+          fontFamily: fontFamily(t),
+          fontWeight: fontWeight(t.weightMedium),
+          flexShrink: 1,
+        }}
+      >
+        {label}
       </Text>
     </Pressable>
   );
@@ -124,8 +151,11 @@ export function EmrSelect({ label, options, value, invalid, readOnly, disabled, 
     <Pressable key={key} role="radio" aria-checked={selected} aria-disabled={optionDisabled} disabled={optionDisabled} onPress={() => pick(next)}
       style={({ pressed, focused }: PressState) => [styles.option, focusRing(t, focused),
         { minHeight: t.controlHeight, backgroundColor: selected ? t.primarySoft : pressed ? t.surfaceRaised : t.surface, opacity: optionDisabled ? 0.6 : 1 }]}>
-      <Text style={{ color: next === null ? t.textMuted : t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(selected ? t.weightBold : t.weightRegular) }}>
-        {selected ? '✓ ' : ''}{text}
+      <View aria-hidden style={styles.optionTick}>
+        {selected ? <Text style={{ color: t.primary, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>✓</Text> : null}
+      </View>
+      <Text style={{ color: next === null ? t.textMuted : t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(t.weightMedium) }}>
+        {text}
       </Text>
     </Pressable>
   );
@@ -161,14 +191,16 @@ const CHIP_COLUMN_MIN = 140;
 const ROW_GAP = 8;
 
 /** `single`: one chip per line, for labels too long to share a row (a phone number must not break mid-digits). */
-export function EmrRow({ children, single }: { children: ReactNode; single?: boolean }) {
+export function EmrRow({ children, single, columns: fixedColumns }: { children: ReactNode; single?: boolean; columns?: number }) {
   const [width, setWidth] = useState(0);
-  const columns = single ? 1 : Math.max(1, Math.floor((width + ROW_GAP) / (CHIP_COLUMN_MIN + ROW_GAP)));
+  const items = Children.toArray(children);
+  const autoCols = Math.max(1, Math.min(items.length || 1, Math.floor((width + ROW_GAP) / (CHIP_COLUMN_MIN + ROW_GAP))));
+  const columns = single ? 1 : fixedColumns ? Math.max(1, fixedColumns) : autoCols;
   // Floor: cells that sum to the exact row width wrap on a sub-pixel rounding (seen on Android).
   const cell = width ? Math.floor((width - ROW_GAP * (columns - 1)) / columns) : undefined;
   return (
     <View style={styles.row} onLayout={e => setWidth(e.nativeEvent.layout.width)}>
-      {Children.map(children, child => <View style={{ width: cell }}>{child}</View>)}
+      {Children.map(children, child => <View style={cell ? { width: cell } : styles.cellFallback}>{child}</View>)}
     </View>
   );
 }
@@ -177,13 +209,16 @@ const styles = StyleSheet.create({
   badgeWrap: { flexDirection: 'row' },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   button: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
-  chip: { borderRadius: 8, paddingHorizontal: 12, justifyContent: 'center', alignItems: 'center' },
+  chip: { flexDirection: 'row', gap: 8, borderRadius: 8, paddingHorizontal: 12, justifyContent: 'flex-start', alignItems: 'center' },
+  chipIndicator: { width: 16, height: 16, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   // alignSelf stretch: the columns are computed from this row's own width, so it must not shrink to its chips.
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: ROW_GAP, alignSelf: 'stretch' },
+  cellFallback: { flexGrow: 1, flexBasis: CHIP_COLUMN_MIN, minWidth: 0 },
   flex: { flex: 1, minWidth: 0 },
   select: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 },
   backdrop: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: { alignSelf: 'center', width: '100%', maxWidth: 480, maxHeight: '80%', borderWidth: 1, borderRadius: 12, paddingVertical: 8, overflow: 'hidden' },
   sheetTitle: { paddingHorizontal: 16, paddingVertical: 8 },
-  option: { justifyContent: 'center', paddingHorizontal: 16 },
+  option: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16 },
+  optionTick: { width: 18, alignItems: 'center', justifyContent: 'center' },
 });

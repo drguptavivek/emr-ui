@@ -43,9 +43,13 @@ export function EmrTabs({ tabs, active, onTabChange, ariaLabel, labels }: {
               disabled={tab.disabled} onPress={() => onTabChange(tab.value)}
               {...webProps({ tabIndex: selected ? 0 : -1, onKeyDown: (e: WebKeyEvent) => onKey(e, i) })}
               style={({ focused }: PressState) => [styles.tab, focusRing(t, focused), {
-                minHeight: t.controlHeight, borderBottomWidth: 3, borderBottomColor: selected ? t.primary : 'transparent', opacity: tab.disabled ? 0.6 : 1,
+                minHeight: t.controlHeight,
+                borderBottomWidth: 3,
+                borderBottomColor: selected ? t.primary : 'transparent',
+                backgroundColor: selected ? t.surfaceAccent : 'transparent',
+                opacity: tab.disabled ? 0.5 : 1,
               }]}>
-              <Text style={{ color: selected ? t.primary : t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(selected ? t.weightBold : t.weightRegular) }}>{tab.label}</Text>
+              <Text style={{ color: selected ? t.primary : t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(t.weightMedium) }}>{tab.label}</Text>
             </Pressable>
           );
         })}

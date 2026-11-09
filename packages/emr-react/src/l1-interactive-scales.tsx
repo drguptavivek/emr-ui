@@ -86,10 +86,10 @@ export function EmrLikert({ label, hint, error, min = 0, max = 10, value, anchor
               onAccessibilityAction={e => { if (e.nativeEvent.actionName === 'increment') step(1); else if (e.nativeEvent.actionName === 'decrement') step(-1); }}
               style={({ focused }: PressState) => [styles.pip, focusRing(t, focused), {
                 minHeight: t.controlHeight, minWidth: t.controlHeight,
-                borderColor: selected ? colors?.color ?? t.primary : t.border, borderWidth: selected ? 3 : 1,
+                borderColor: selected ? colors?.color ?? t.primary : t.border, borderWidth: 1,
                 backgroundColor: selected ? colors?.backgroundColor ?? t.primarySoft : t.surface, opacity: disabled ? 0.6 : 1,
               }]}>
-              <Text aria-hidden style={{ color: colors?.color ?? t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(selected ? t.weightBold : t.weightRegular) }}>{point}</Text>
+              <Text aria-hidden style={{ color: colors?.color ?? t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(t.weightMedium) }}>{point}</Text>
             </Pressable>
           );
         })}
@@ -105,20 +105,20 @@ export function EmrLikert({ label, hint, error, min = 0, max = 10, value, anchor
   );
 }
 
-const TRACK_THICKNESS = 4;
-const THUMB = 28;
+const TRACK_THICKNESS = 6;
+const THUMB = 30;
 const VERTICAL_LENGTH = 240;
 
 /**
- * L1 visual analogue scale: a ruler marked by tap/drag (responder props, no dependencies) or,
- * on web, the keyboard. Native uses accessibility increment/decrement actions. It derives no
+ * L1 visual analogue scale: a continuous/decimal ruler marked by tap/drag (responder props, no dependencies) or,
+ * on web, mouse/touch/keyboard. Native uses accessibility increment/decrement actions. It derives no
  * severity: anchors, tone and `valueText` come from the controller.
  */
-export function EmrVas({ label, hint, error, min = 0, max = 100, value, step = 1, majorInterval = 10, minorInterval = 2, orientation = 'horizontal', anchors = [], readOnly, disabled, required, tone, valueText, onValueChange, labels }: Omit<ScaleFrameProps, 'labels'> & {
+export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: stepProp, majorInterval = 10, minorInterval, orientation = 'horizontal', anchors = [], readOnly, disabled, required, tone, valueText, onValueChange, labels }: Omit<ScaleFrameProps, 'labels'> & {
   min?: number;
   max?: number;
   value: number | null | undefined;
-  /** Snap granularity; 0 records the raw continuous position. */
+  /** Snap granularity; defaults to 0.1 for 0-10 / small ranges and 1 for 0-100. Pass 0 for raw continuous. */
   step?: number;
   majorInterval?: number;
   minorInterval?: number;
@@ -135,12 +135,35 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step = 1
   const l = { ...interactiveLabelDefaults, ...labels };
   const vertical = orientation === 'vertical';
   const interactive = !disabled && !readOnly;
+  const span = Math.abs(max - min);
+  const step = stepProp ?? (span <= 20 ? 0.1 : 1);
+  const effectiveMinor = minorInterval ?? (span <= 20 ? 0.5 : 2);
   const [length, setLength] = useState(0);
   const [focused, setFocused] = useState(false);
+  const trackRef = useRef<{ getBoundingClientRect?: () => { left: number; top: number; width: number; height: number } } | null>(null);
   const start = useRef(0);
   // PanResponder is built once; it reads the latest props through this ref.
   const live = useRef({ min, max, step, vertical, length, interactive, value, onValueChange });
   live.current = { min, max, step, vertical, length, interactive, value, onValueChange };
+
+  const resolveWebOffset = (nativeEvent: { clientX?: number; pageX?: number; clientY?: number; pageY?: number }, fallback: number): number => {
+    const node = trackRef.current;
+    if (node && typeof node.getBoundingClientRect === 'function') {
+      const rect = node.getBoundingClientRect();
+      const clientX = typeof nativeEvent.clientX === 'number' ? nativeEvent.clientX : typeof nativeEvent.pageX === 'number' ? nativeEvent.pageX : undefined;
+      const clientY = typeof nativeEvent.clientY === 'number' ? nativeEvent.clientY : typeof nativeEvent.pageY === 'number' ? nativeEvent.pageY : undefined;
+      if (!live.current.vertical && clientX !== undefined && rect.width > 0) {
+        live.current.length = rect.width;
+        return clientX - rect.left;
+      }
+      if (live.current.vertical && clientY !== undefined && rect.height > 0) {
+        live.current.length = rect.height;
+        return clientY - rect.top;
+      }
+    }
+    return fallback;
+  };
+
   const emit = (offset: number) => {
     const c = live.current;
     const next = vasValueFromOffset(offset, c.length, c.min, c.max, c.step, c.vertical);
@@ -152,12 +175,18 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step = 1
     // A scroll parent must not steal a drag that is already marking the scale.
     onPanResponderTerminationRequest: () => false,
     onPanResponderGrant: e => {
-      start.current = live.current.vertical ? e.nativeEvent.locationY : e.nativeEvent.locationX;
+      const ne = e.nativeEvent as unknown as { clientX?: number; pageX?: number; clientY?: number; pageY?: number };
+      const fallback = live.current.vertical ? e.nativeEvent.locationY : e.nativeEvent.locationX;
+      start.current = resolveWebOffset(ne, fallback);
       emit(start.current);
     },
-    onPanResponderMove: (_e, g) => emit(start.current + (live.current.vertical ? g.dy : g.dx)),
+    onPanResponderMove: (e, g) => {
+      const ne = e.nativeEvent as unknown as { clientX?: number; pageX?: number; clientY?: number; pageY?: number };
+      const fallback = start.current + (live.current.vertical ? g.dy : g.dx);
+      emit(resolveWebOffset(ne, fallback));
+    },
   })).current;
-  const ticks = useMemo(() => vasTicks(min, max, majorInterval, minorInterval), [min, max, majorInterval, minorInterval]);
+  const ticks = useMemo(() => vasTicks(min, max, majorInterval, effectiveMinor), [min, max, majorInterval, effectiveMinor]);
   const percent = value == null ? null : vasPercent(value, min, max);
   const accent = tone ? toneColors(t, tone).color : t.primary;
   const minAnchor = anchors.find(a => a.value === min);
@@ -169,11 +198,18 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step = 1
   };
   const pos = (p: number) => (vertical ? { bottom: `${p}%` as const } : { left: `${p}%` as const });
   const thickness = Math.max(t.controlHeight, THUMB);
+  const formattedValue = value == null ? 'Not set' : step < 1 ? Number(value).toFixed(1) : String(value);
   return (
     <View style={styles.frame}>
-      <Legend label={label} required={required} labels={l} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <Legend label={label} required={required} labels={l} />
+        <Text style={{ color: value == null ? t.textMuted : accent, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+          {formattedValue}
+        </Text>
+      </View>
       <View style={[styles.vasFrame, vertical && styles.vasFrameVertical]}>
         <View
+          ref={el => { trackRef.current = el as unknown as { getBoundingClientRect?: () => { left: number; top: number; width: number; height: number } } | null; }}
           role="slider"
           aria-label={label}
           aria-orientation={orientation}
@@ -203,14 +239,14 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step = 1
             <View style={[vertical ? styles.ruleV : styles.ruleH, { backgroundColor: t.border }]} />
             {ticks.map(tick => (
               <View key={tick.value} style={[styles.tickBox, pos(tick.percent), vertical ? styles.tickBoxV : styles.tickBoxH]}>
-                <View style={{ backgroundColor: t.textMuted, ...(vertical ? { height: 1, width: tick.major ? 16 : 8 } : { width: 1, height: tick.major ? 16 : 8 }) }} />
+                <View style={{ backgroundColor: t.textMuted, ...(vertical ? { height: 1, width: tick.major ? 14 : 6 } : { width: 1, height: tick.major ? 14 : 6 }) }} />
                 {tick.label !== null ? <Text style={[styles.tickLabel, { color: t.textMuted, fontSize: t.text2xs, fontFamily: fontFamily(t) }]}>{tick.label}</Text> : null}
               </View>
             ))}
             {percent !== null ? (
               // Mark = filled thumb with the numeric value inside: position and value are text, not colour alone.
               <View style={[styles.thumb, pos(percent), vertical ? styles.thumbV : styles.thumbH, { backgroundColor: accent, borderColor: t.surface }]}>
-                <Text style={{ color: t.surface, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{value}</Text>
+                <Text style={{ color: t.surface, fontSize: 10, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{formattedValue}</Text>
               </View>
             ) : null}
           </View>

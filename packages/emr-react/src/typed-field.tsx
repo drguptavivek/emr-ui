@@ -68,20 +68,20 @@ export function EmrFieldFrame({ label, labelHidden, labelNamesControl, controlId
   const messageColor = error ? t.danger : warning ? t.warning : t.textMuted;
   return (
     <View style={styles.frame}>
-      {labelHidden ? null : <Text nativeID={`${controlId}-label`} aria-label={required ? `${label}, ${labels.required}` : label}
+      {labelHidden ? null : <Text nativeID={`${controlId}-label`} numberOfLines={1} aria-label={required ? `${label}, ${labels.required}` : label}
         {...(labelNamesControl && Platform.OS !== 'web' ? { importantForAccessibility: 'no' as const, accessibilityElementsHidden: true } : null)}
-        style={{ color: t.text, fontSize: t.textMd, fontWeight: fontWeight(650), fontFamily: fontFamily(t) }}>
+        style={{ color: t.text, fontSize: t.textSm, lineHeight: 20, minHeight: 20, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
         {label}
         {required ? <Text style={{ color: t.danger }}> *</Text> : null}
       </Text>}
       {children}
-      <View aria-live="polite">
-        {message ? (
-          <Text nativeID={`${controlId}-message`} style={{ color: messageColor, fontSize: t.textXs, fontFamily: fontFamily(t), fontWeight: fontWeight(error || warning ? 600 : t.weightRegular) }}>
+      {message ? (
+        <View aria-live="polite">
+          <Text nativeID={`${controlId}-message`} style={{ color: messageColor, fontSize: t.textXs, lineHeight: 16, fontFamily: fontFamily(t), fontWeight: fontWeight(error || warning ? 600 : t.weightRegular) }}>
             {error ? '⚠ ' : warning ? '! ' : ''}{message}
           </Text>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
     </View>
   );
 }

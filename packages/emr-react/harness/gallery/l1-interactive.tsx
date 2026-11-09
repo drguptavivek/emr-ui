@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { View } from 'react-native';
 import type { EmrOption, TimeAxisViewModel } from '@drguptavivek/emr-controller';
 import { EmrLikert, EmrSearchSelect, EmrStageStepper, EmrTabs, EmrTimeAxis, EmrVas } from '../../src';
 import type { GallerySection } from './types';
@@ -47,15 +48,15 @@ function LikertDemo() {
 }
 
 function VasDemo() {
-  const [h, setH] = useState<number | null>(4);
-  const [v, setV] = useState<number | null>(null);
+  const [h, setH] = useState<number | null>(4.3);
+  const [v, setV] = useState<number | null>(65);
   return (
-    <>
-      <EmrVas label="Horizontal 0-10" min={0} max={10} majorInterval={1} minorInterval={1} value={h} onValueChange={setH}
-        valueText={h === null ? undefined : `${h} out of 10`} anchors={[{ value: 0, label: 'None' }, { value: 10, label: 'Worst' }]} />
-      <EmrVas label="Vertical 0-100" orientation="vertical" value={v} onValueChange={setV} valueText={v === null ? undefined : `${v} out of 100`}
+    <View style={{ gap: 20 }}>
+      <EmrVas label="Horizontal 0–10 (continuous 0.1 step)" min={0} max={10} step={0.1} majorInterval={1} minorInterval={0.5} value={h} onValueChange={setH}
+        valueText={h === null ? undefined : `${h} out of 10`} anchors={[{ value: 0, label: 'None (0.0)' }, { value: 10, label: 'Worst (10.0)' }]} />
+      <EmrVas label="Vertical 0–100" orientation="vertical" step={1} value={v} onValueChange={setV} valueText={v === null ? undefined : `${v} out of 100`}
         anchors={[{ value: 0, label: 'Worst' }, { value: 100, label: 'Best' }]} />
-    </>
+    </View>
   );
 }
 
