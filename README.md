@@ -2,6 +2,12 @@
 
 A multi-framework clinical component workspace for building controlled, accessible electronic medical record interfaces across **Angular**, **React Web**, and **Expo / React Native**. It strictly separates presentational UI components from framework-neutral controllers so applications retain full ownership of API calls, clinical rules, persistence, navigation, and workflow state.
 
+## Live Catalog & Registry (GitHub Pages)
+
+- **Interactive Showcase, Shadcn Registry Explorer & OPD Form Demo:** https://drguptavivek.github.io/emr-ui/
+- **Angular Storybook Catalog (`@drguptavivek/emr-ui`):** https://drguptavivek.github.io/emr-ui/storybook/
+- **Shadcn Registry Index JSON:** https://drguptavivek.github.io/emr-ui/registry/index.json
+
 ## Packages
 
 - `@drguptavivek/emr-controller` — framework-neutral immutable view models, typed intents, repository ports, headless controllers, and the form condition engine.
@@ -58,6 +64,9 @@ pnpm emr init --framework angular   # or: react | expo
 pnpm emr add emr-patient-banner --framework angular
 pnpm emr add emr-clinical-form --framework react
 pnpm emr add emr-data-table --framework expo
+
+# Or install directly from the hosted GitHub Pages registry via the official shadcn CLI:
+npx shadcn@latest add https://drguptavivek.github.io/emr-ui/registry/items/emr-patient-banner.json
 ```
 
 Regenerate the static JSON registry (`registry/index.json` and `registry/items/<slug>.json`) after modifying catalog entries:
