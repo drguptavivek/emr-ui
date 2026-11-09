@@ -32,6 +32,7 @@ export * from './l4-privacy';
 export * from './l4-cards';
 export * from './l4-drafts';
 export * from './l4-medications';
+export * from './l4-prescribing-table';
 export * from './l4-safety-pedigree';
 export * from './l4-ophthalmology';
 export * from './l4-orders-documents';

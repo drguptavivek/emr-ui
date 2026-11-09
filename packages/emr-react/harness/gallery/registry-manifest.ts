@@ -3,7 +3,7 @@ export const EMR_REGISTRY_MANIFEST = {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "@drguptavivek/emr",
   "homepage": "https://github.com/drguptavivek/emr-ui",
-  "totalItems": 117,
+  "totalItems": 118,
   "layers": {
     "0": "foundations",
     "1": "primitives",
@@ -51,13 +51,21 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 6
+      "lit": {
+        "files": [
+          "foundations.ts",
+          "icons.ts"
+        ],
+        "import": "import { EmrLitElement, applyEmrCustomTheme, EMR_PALETTE_PRESETS, EMR_FONT_STACKS } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-button",
       "id": "EmrButtonComponent",
       "reactName": "EmrButton",
+      "litName": "EmrButtonElement",
       "selector": "emr-button",
       "type": "registry:ui",
       "layer": 1,
@@ -81,7 +89,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-button",
         "angular": "pnpm emr add emr-button --framework angular",
         "react": "pnpm emr add emr-button --framework react",
-        "expo": "pnpm emr add emr-button --framework expo"
+        "expo": "pnpm emr add emr-button --framework expo",
+        "lit": "pnpm emr add emr-button --framework lit"
       },
       "angular": {
         "component": "EmrButtonComponent",
@@ -113,13 +122,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrButton } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 6
+      "lit": {
+        "component": "EmrButtonElement",
+        "selector": "emr-button",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrButtonElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 7
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-text-input",
       "id": "EmrTextInputComponent",
       "reactName": "EmrTextInput",
+      "litName": "EmrTextInputElement",
       "selector": "emr-text-input",
       "type": "registry:ui",
       "layer": 1,
@@ -143,7 +161,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-text-input",
         "angular": "pnpm emr add emr-text-input --framework angular",
         "react": "pnpm emr add emr-text-input --framework react",
-        "expo": "pnpm emr add emr-text-input --framework expo"
+        "expo": "pnpm emr add emr-text-input --framework expo",
+        "lit": "pnpm emr add emr-text-input --framework lit"
       },
       "angular": {
         "component": "EmrTextInputComponent",
@@ -156,6 +175,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTextInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -171,6 +191,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTextInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -183,13 +204,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTextInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrTextInputElement",
+        "selector": "emr-text-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrTextInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-number-input",
       "id": "EmrNumberInputComponent",
       "reactName": "EmrNumberInput",
+      "litName": "EmrNumberInputElement",
       "selector": "emr-number-input",
       "type": "registry:ui",
       "layer": 1,
@@ -213,7 +243,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-number-input",
         "angular": "pnpm emr add emr-number-input --framework angular",
         "react": "pnpm emr add emr-number-input --framework react",
-        "expo": "pnpm emr add emr-number-input --framework expo"
+        "expo": "pnpm emr add emr-number-input --framework expo",
+        "lit": "pnpm emr add emr-number-input --framework lit"
       },
       "angular": {
         "component": "EmrNumberInputComponent",
@@ -226,6 +257,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrNumberInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -241,6 +273,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrNumberInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -253,13 +286,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrNumberInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrNumberInputElement",
+        "selector": "emr-number-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrNumberInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-date-input",
       "id": "EmrDateInputComponent",
       "reactName": "EmrDateInput",
+      "litName": "EmrDateInputElement",
       "selector": "emr-date-input",
       "type": "registry:ui",
       "layer": 1,
@@ -283,7 +325,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-date-input",
         "angular": "pnpm emr add emr-date-input --framework angular",
         "react": "pnpm emr add emr-date-input --framework react",
-        "expo": "pnpm emr add emr-date-input --framework expo"
+        "expo": "pnpm emr add emr-date-input --framework expo",
+        "lit": "pnpm emr add emr-date-input --framework lit"
       },
       "angular": {
         "component": "EmrDateInputComponent",
@@ -296,6 +339,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrDateInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -311,6 +355,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrDateInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -323,13 +368,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDateInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrDateInputElement",
+        "selector": "emr-date-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrDateInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-select",
       "id": "EmrSelectComponent",
       "reactName": "EmrSelect",
+      "litName": "EmrSelectElement",
       "selector": "emr-select",
       "type": "registry:ui",
       "layer": 1,
@@ -354,7 +408,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-select",
         "angular": "pnpm emr add emr-select --framework angular",
         "react": "pnpm emr add emr-select --framework react",
-        "expo": "pnpm emr add emr-select --framework expo"
+        "expo": "pnpm emr add emr-select --framework expo",
+        "lit": "pnpm emr add emr-select --framework lit"
       },
       "angular": {
         "component": "EmrSelectComponent",
@@ -386,13 +441,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSelect } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 6
+      "lit": {
+        "component": "EmrSelectElement",
+        "selector": "emr-select",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrSelectElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 7
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-quantity-input",
       "id": "EmrQuantityInputComponent",
       "reactName": "EmrQuantityInput",
+      "litName": "EmrQuantityInputElement",
       "selector": "emr-quantity-input",
       "type": "registry:ui",
       "layer": 1,
@@ -417,7 +481,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-quantity-input",
         "angular": "pnpm emr add emr-quantity-input --framework angular",
         "react": "pnpm emr add emr-quantity-input --framework react",
-        "expo": "pnpm emr add emr-quantity-input --framework expo"
+        "expo": "pnpm emr add emr-quantity-input --framework expo",
+        "lit": "pnpm emr add emr-quantity-input --framework lit"
       },
       "angular": {
         "component": "EmrQuantityInputComponent",
@@ -430,6 +495,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrQuantityInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -445,6 +511,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrQuantityInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -457,13 +524,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrQuantityInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrQuantityInputElement",
+        "selector": "emr-quantity-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrQuantityInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-paired-input",
       "id": "EmrPairedInputComponent",
       "reactName": "EmrPairedInput",
+      "litName": "EmrPairedInputElement",
       "selector": "emr-paired-input",
       "type": "registry:ui",
       "layer": 1,
@@ -487,7 +563,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-paired-input",
         "angular": "pnpm emr add emr-paired-input --framework angular",
         "react": "pnpm emr add emr-paired-input --framework react",
-        "expo": "pnpm emr add emr-paired-input --framework expo"
+        "expo": "pnpm emr add emr-paired-input --framework expo",
+        "lit": "pnpm emr add emr-paired-input --framework lit"
       },
       "angular": {
         "component": "EmrPairedInputComponent",
@@ -500,6 +577,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPairedInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -515,6 +593,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPairedInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -527,13 +606,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPairedInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrPairedInputElement",
+        "selector": "emr-paired-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrPairedInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-checkbox",
       "id": "EmrCheckboxComponent",
       "reactName": "EmrCheckbox",
+      "litName": "EmrCheckboxElement",
       "selector": "emr-checkbox",
       "type": "registry:ui",
       "layer": 1,
@@ -557,7 +645,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-checkbox",
         "angular": "pnpm emr add emr-checkbox --framework angular",
         "react": "pnpm emr add emr-checkbox --framework react",
-        "expo": "pnpm emr add emr-checkbox --framework expo"
+        "expo": "pnpm emr add emr-checkbox --framework expo",
+        "lit": "pnpm emr add emr-checkbox --framework lit"
       },
       "angular": {
         "component": "EmrCheckboxComponent",
@@ -570,6 +659,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrCheckbox",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -585,6 +675,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrCheckbox",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -597,13 +688,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCheckbox } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrCheckboxElement",
+        "selector": "emr-checkbox",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrCheckboxElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-toggle",
       "id": "EmrToggleComponent",
       "reactName": "EmrToggle",
+      "litName": "EmrToggleElement",
       "selector": "emr-toggle",
       "type": "registry:ui",
       "layer": 1,
@@ -627,7 +727,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-toggle",
         "angular": "pnpm emr add emr-toggle --framework angular",
         "react": "pnpm emr add emr-toggle --framework react",
-        "expo": "pnpm emr add emr-toggle --framework expo"
+        "expo": "pnpm emr add emr-toggle --framework expo",
+        "lit": "pnpm emr add emr-toggle --framework lit"
       },
       "angular": {
         "component": "EmrToggleComponent",
@@ -640,6 +741,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrToggle",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -655,6 +757,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrToggle",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -667,13 +770,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrToggle } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrToggleElement",
+        "selector": "emr-toggle",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrToggleElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-radio-group",
       "id": "EmrRadioGroupComponent",
       "reactName": "EmrRadioGroup",
+      "litName": "EmrRadioGroupElement",
       "selector": "emr-radio-group",
       "type": "registry:ui",
       "layer": 1,
@@ -697,7 +809,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-radio-group",
         "angular": "pnpm emr add emr-radio-group --framework angular",
         "react": "pnpm emr add emr-radio-group --framework react",
-        "expo": "pnpm emr add emr-radio-group --framework expo"
+        "expo": "pnpm emr add emr-radio-group --framework expo",
+        "lit": "pnpm emr add emr-radio-group --framework lit"
       },
       "angular": {
         "component": "EmrRadioGroupComponent",
@@ -710,6 +823,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrRadioGroup",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -725,6 +839,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrRadioGroup",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -737,13 +852,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrRadioGroup } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrRadioGroupElement",
+        "selector": "emr-radio-group",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrRadioGroupElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-badge",
       "id": "EmrBadgeComponent",
       "reactName": "EmrBadge",
+      "litName": "EmrBadgeElement",
       "selector": "emr-badge",
       "type": "registry:ui",
       "layer": 1,
@@ -767,7 +891,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-badge",
         "angular": "pnpm emr add emr-badge --framework angular",
         "react": "pnpm emr add emr-badge --framework react",
-        "expo": "pnpm emr add emr-badge --framework expo"
+        "expo": "pnpm emr add emr-badge --framework expo",
+        "lit": "pnpm emr add emr-badge --framework lit"
       },
       "angular": {
         "component": "EmrBadgeComponent",
@@ -799,13 +924,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrBadge } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 6
+      "lit": {
+        "component": "EmrBadgeElement",
+        "selector": "emr-badge",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrBadgeElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 7
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-chip",
       "id": "EmrChipComponent",
       "reactName": "EmrChip",
+      "litName": "EmrChipElement",
       "selector": "emr-chip",
       "type": "registry:ui",
       "layer": 1,
@@ -829,7 +963,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-chip",
         "angular": "pnpm emr add emr-chip --framework angular",
         "react": "pnpm emr add emr-chip --framework react",
-        "expo": "pnpm emr add emr-chip --framework expo"
+        "expo": "pnpm emr add emr-chip --framework expo",
+        "lit": "pnpm emr add emr-chip --framework lit"
       },
       "angular": {
         "component": "EmrChipComponent",
@@ -863,13 +998,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrChip } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrChipElement",
+        "selector": "emr-chip",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrChipElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-alert",
       "id": "EmrAlertComponent",
       "reactName": "EmrAlert",
+      "litName": "EmrAlertElement",
       "selector": "emr-alert",
       "type": "registry:ui",
       "layer": 1,
@@ -893,7 +1037,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-alert",
         "angular": "pnpm emr add emr-alert --framework angular",
         "react": "pnpm emr add emr-alert --framework react",
-        "expo": "pnpm emr add emr-alert --framework expo"
+        "expo": "pnpm emr add emr-alert --framework expo",
+        "lit": "pnpm emr add emr-alert --framework lit"
       },
       "angular": {
         "component": "EmrAlertComponent",
@@ -927,13 +1072,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAlert } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrAlertElement",
+        "selector": "emr-alert",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrAlertElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-state-message",
       "id": "EmrStateMessageComponent",
       "reactName": "EmrStateMessage",
+      "litName": "EmrStateMessageElement",
       "selector": "emr-state-message",
       "type": "registry:ui",
       "layer": 1,
@@ -957,7 +1111,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-state-message",
         "angular": "pnpm emr add emr-state-message --framework angular",
         "react": "pnpm emr add emr-state-message --framework react",
-        "expo": "pnpm emr add emr-state-message --framework expo"
+        "expo": "pnpm emr add emr-state-message --framework expo",
+        "lit": "pnpm emr add emr-state-message --framework lit"
       },
       "angular": {
         "component": "EmrStateMessageComponent",
@@ -991,13 +1146,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrStateMessage } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrStateMessageElement",
+        "selector": "emr-state-message",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrStateMessageElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-search-select",
       "id": "EmrSearchSelectComponent",
       "reactName": "EmrSearchSelect",
+      "litName": "EmrSearchSelectElement",
       "selector": "emr-search-select",
       "type": "registry:ui",
       "layer": 1,
@@ -1022,7 +1186,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-search-select",
         "angular": "pnpm emr add emr-search-select --framework angular",
         "react": "pnpm emr add emr-search-select --framework react",
-        "expo": "pnpm emr add emr-search-select --framework expo"
+        "expo": "pnpm emr add emr-search-select --framework expo",
+        "lit": "pnpm emr add emr-search-select --framework lit"
       },
       "angular": {
         "component": "EmrSearchSelectComponent",
@@ -1035,6 +1200,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrSearchSelect",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1052,6 +1218,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrSearchSelect",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1066,13 +1233,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSearchSelect } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrSearchSelectElement",
+        "selector": "emr-search-select",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrSearchSelectElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-tabs",
       "id": "EmrTabsComponent",
       "reactName": "EmrTabs",
+      "litName": "EmrTabsElement",
       "selector": "emr-tabs",
       "type": "registry:ui",
       "layer": 1,
@@ -1096,7 +1272,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-tabs",
         "angular": "pnpm emr add emr-tabs --framework angular",
         "react": "pnpm emr add emr-tabs --framework react",
-        "expo": "pnpm emr add emr-tabs --framework expo"
+        "expo": "pnpm emr add emr-tabs --framework expo",
+        "lit": "pnpm emr add emr-tabs --framework lit"
       },
       "angular": {
         "component": "EmrTabsComponent",
@@ -1109,6 +1286,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTabs",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1126,6 +1304,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTabs",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1140,13 +1319,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTabs } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrTabsElement",
+        "selector": "emr-tabs",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrTabsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-separator",
       "id": "EmrSeparatorComponent",
       "reactName": "EmrSeparator",
+      "litName": "EmrSeparatorElement",
       "selector": "emr-separator",
       "type": "registry:ui",
       "layer": 1,
@@ -1170,7 +1358,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-separator",
         "angular": "pnpm emr add emr-separator --framework angular",
         "react": "pnpm emr add emr-separator --framework react",
-        "expo": "pnpm emr add emr-separator --framework expo"
+        "expo": "pnpm emr add emr-separator --framework expo",
+        "lit": "pnpm emr add emr-separator --framework lit"
       },
       "angular": {
         "component": "EmrSeparatorComponent",
@@ -1204,13 +1393,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSeparator } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrSeparatorElement",
+        "selector": "emr-separator",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrSeparatorElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-likert",
       "id": "EmrLikertComponent",
       "reactName": "EmrLikert",
+      "litName": "EmrLikertElement",
       "selector": "emr-likert",
       "type": "registry:ui",
       "layer": 1,
@@ -1240,7 +1438,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-likert",
         "angular": "pnpm emr add emr-likert --framework angular",
         "react": "pnpm emr add emr-likert --framework react",
-        "expo": "pnpm emr add emr-likert --framework expo"
+        "expo": "pnpm emr add emr-likert --framework expo",
+        "lit": "pnpm emr add emr-likert --framework lit"
       },
       "angular": {
         "component": "EmrLikertComponent",
@@ -1253,6 +1452,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrLikert",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1270,6 +1470,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrLikert",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1284,13 +1485,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrLikert } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrLikertElement",
+        "selector": "emr-likert",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrLikertElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-vas",
       "id": "EmrVasComponent",
       "reactName": "EmrVas",
+      "litName": "EmrVasElement",
       "selector": "emr-vas",
       "type": "registry:ui",
       "layer": 1,
@@ -1320,7 +1530,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-vas",
         "angular": "pnpm emr add emr-vas --framework angular",
         "react": "pnpm emr add emr-vas --framework react",
-        "expo": "pnpm emr add emr-vas --framework expo"
+        "expo": "pnpm emr add emr-vas --framework expo",
+        "lit": "pnpm emr add emr-vas --framework lit"
       },
       "angular": {
         "component": "EmrVasComponent",
@@ -1333,6 +1544,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrVas",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1350,6 +1562,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrVas",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1364,13 +1577,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrVas } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrVasElement",
+        "selector": "emr-vas",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrVasElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-card",
       "id": "EmrCardComponent",
       "reactName": "EmrCard",
+      "litName": "EmrCardElement",
       "selector": "emr-card",
       "type": "registry:ui",
       "layer": 1,
@@ -1396,7 +1618,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-card",
         "angular": "pnpm emr add emr-card --framework angular",
         "react": "pnpm emr add emr-card --framework react",
-        "expo": "pnpm emr add emr-card --framework expo"
+        "expo": "pnpm emr add emr-card --framework expo",
+        "lit": "pnpm emr add emr-card --framework lit"
       },
       "angular": {
         "component": "EmrCardComponent",
@@ -1430,13 +1653,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCard } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrCardElement",
+        "selector": "emr-card",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrCardElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-columns",
       "id": "EmrColumnsComponent",
       "reactName": "EmrColumns",
+      "litName": "EmrColumnsElement",
       "selector": "emr-columns",
       "type": "registry:ui",
       "layer": 1,
@@ -1461,7 +1693,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-columns",
         "angular": "pnpm emr add emr-columns --framework angular",
         "react": "pnpm emr add emr-columns --framework react",
-        "expo": "pnpm emr add emr-columns --framework expo"
+        "expo": "pnpm emr add emr-columns --framework expo",
+        "lit": "pnpm emr add emr-columns --framework lit"
       },
       "angular": {
         "component": "EmrColumnsComponent",
@@ -1495,13 +1728,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrColumns } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrColumnsElement",
+        "selector": "emr-columns",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrColumnsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-field-value-row",
       "id": "EmrFieldValueRowComponent",
       "reactName": "EmrFieldValueRow",
+      "litName": "EmrFieldValueRowElement",
       "selector": "emr-field-value-row",
       "type": "registry:ui",
       "layer": 1,
@@ -1525,7 +1767,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-field-value-row",
         "angular": "pnpm emr add emr-field-value-row --framework angular",
         "react": "pnpm emr add emr-field-value-row --framework react",
-        "expo": "pnpm emr add emr-field-value-row --framework expo"
+        "expo": "pnpm emr add emr-field-value-row --framework expo",
+        "lit": "pnpm emr add emr-field-value-row --framework lit"
       },
       "angular": {
         "component": "EmrFieldValueRowComponent",
@@ -1559,13 +1802,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFieldValueRow } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrFieldValueRowElement",
+        "selector": "emr-field-value-row",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrFieldValueRowElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-field-frame",
       "id": "EmrFieldFrameComponent",
       "reactName": "EmrFieldFrame",
+      "litName": "EmrFieldFrameElement",
       "selector": "emr-field-frame",
       "type": "registry:ui",
       "layer": 2,
@@ -1589,7 +1841,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-field-frame",
         "angular": "pnpm emr add emr-field-frame --framework angular",
         "react": "pnpm emr add emr-field-frame --framework react",
-        "expo": "pnpm emr add emr-field-frame --framework expo"
+        "expo": "pnpm emr add emr-field-frame --framework expo",
+        "lit": "pnpm emr add emr-field-frame --framework lit"
       },
       "angular": {
         "component": "EmrFieldFrameComponent",
@@ -1602,6 +1855,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrFieldFrame",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "labels.tsx",
@@ -1616,6 +1870,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrFieldFrame",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "labels.tsx",
@@ -1627,13 +1882,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFieldFrame } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrFieldFrameElement",
+        "selector": "emr-field-frame",
+        "files": [
+          "l2-fields.ts"
+        ],
+        "import": "import { EmrFieldFrameElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-typed-field",
       "id": "EmrTypedFieldComponent",
       "reactName": "EmrTypedField",
+      "litName": "EmrTypedFieldElement",
       "selector": "emr-typed-field",
       "type": "registry:ui",
       "layer": 2,
@@ -1660,7 +1924,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-typed-field",
         "angular": "pnpm emr add emr-typed-field --framework angular",
         "react": "pnpm emr add emr-typed-field --framework react",
-        "expo": "pnpm emr add emr-typed-field --framework expo"
+        "expo": "pnpm emr add emr-typed-field --framework expo",
+        "lit": "pnpm emr add emr-typed-field --framework lit"
       },
       "angular": {
         "component": "EmrTypedFieldComponent",
@@ -1673,6 +1938,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTypedField",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "labels.tsx",
@@ -1687,6 +1953,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTypedField",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "labels.tsx",
@@ -1698,13 +1965,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTypedField } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrTypedFieldElement",
+        "selector": "emr-typed-field",
+        "files": [
+          "l2-fields.ts"
+        ],
+        "import": "import { EmrTypedFieldElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-section-card",
       "id": "EmrSectionCardComponent",
       "reactName": "EmrSectionCard",
+      "litName": "EmrSectionCardElement",
       "selector": "emr-section-card",
       "type": "registry:ui",
       "layer": 3,
@@ -1730,7 +2006,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-section-card",
         "angular": "pnpm emr add emr-section-card --framework angular",
         "react": "pnpm emr add emr-section-card --framework react",
-        "expo": "pnpm emr add emr-section-card --framework expo"
+        "expo": "pnpm emr add emr-section-card --framework expo",
+        "lit": "pnpm emr add emr-section-card --framework lit"
       },
       "angular": {
         "component": "EmrSectionCardComponent",
@@ -1744,6 +2021,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSectionCard",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -1763,6 +2041,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSectionCard",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -1778,13 +2057,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSectionCard } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrSectionCardElement",
+        "selector": "emr-section-card",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrSectionCardElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-repeatable-group",
       "id": "EmrRepeatableGroupComponent",
       "reactName": "EmrRepeatableGroup",
+      "litName": "EmrRepeatableGroupElement",
       "selector": "emr-repeatable-group",
       "type": "registry:ui",
       "layer": 3,
@@ -1812,7 +2100,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-repeatable-group",
         "angular": "pnpm emr add emr-repeatable-group --framework angular",
         "react": "pnpm emr add emr-repeatable-group --framework react",
-        "expo": "pnpm emr add emr-repeatable-group --framework expo"
+        "expo": "pnpm emr add emr-repeatable-group --framework expo",
+        "lit": "pnpm emr add emr-repeatable-group --framework lit"
       },
       "angular": {
         "component": "EmrRepeatableGroupComponent",
@@ -1825,6 +2114,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrRepeatableGroup",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -1843,6 +2133,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrRepeatableGroup",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -1858,13 +2149,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrRepeatableGroup } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrRepeatableGroupElement",
+        "selector": "emr-repeatable-group",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrRepeatableGroupElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-form",
       "id": "EmrClinicalFormComponent",
       "reactName": "EmrClinicalForm",
+      "litName": "EmrClinicalFormElement",
       "selector": "emr-clinical-form",
       "type": "registry:ui",
       "layer": 3,
@@ -1906,7 +2206,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-clinical-form",
         "angular": "pnpm emr add emr-clinical-form --framework angular",
         "react": "pnpm emr add emr-clinical-form --framework react",
-        "expo": "pnpm emr add emr-clinical-form --framework expo"
+        "expo": "pnpm emr add emr-clinical-form --framework expo",
+        "lit": "pnpm emr add emr-clinical-form --framework lit"
       },
       "angular": {
         "component": "EmrClinicalFormComponent",
@@ -1920,6 +2221,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrClinicalForm",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -1939,6 +2241,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrClinicalForm",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -1954,13 +2257,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrClinicalForm } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrClinicalFormElement",
+        "selector": "emr-clinical-form",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrClinicalFormElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-list",
       "id": "EmrClinicalListComponent",
       "reactName": "EmrClinicalList",
+      "litName": "EmrClinicalListElement",
       "selector": "emr-clinical-list",
       "type": "registry:ui",
       "layer": 3,
@@ -1984,7 +2296,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-clinical-list",
         "angular": "pnpm emr add emr-clinical-list --framework angular",
         "react": "pnpm emr add emr-clinical-list --framework react",
-        "expo": "pnpm emr add emr-clinical-list --framework expo"
+        "expo": "pnpm emr add emr-clinical-list --framework expo",
+        "lit": "pnpm emr add emr-clinical-list --framework lit"
       },
       "angular": {
         "component": "EmrClinicalListComponent",
@@ -1997,6 +2310,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrClinicalList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2012,6 +2326,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrClinicalList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2024,13 +2339,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrClinicalList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrClinicalListElement",
+        "selector": "emr-clinical-list",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrClinicalListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-matrix",
       "id": "EmrClinicalMatrixComponent",
       "reactName": "EmrClinicalMatrix",
+      "litName": "EmrClinicalMatrixElement",
       "selector": "emr-clinical-matrix",
       "type": "registry:ui",
       "layer": 3,
@@ -2063,7 +2387,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-clinical-matrix",
         "angular": "pnpm emr add emr-clinical-matrix --framework angular",
         "react": "pnpm emr add emr-clinical-matrix --framework react",
-        "expo": "pnpm emr add emr-clinical-matrix --framework expo"
+        "expo": "pnpm emr add emr-clinical-matrix --framework expo",
+        "lit": "pnpm emr add emr-clinical-matrix --framework lit"
       },
       "angular": {
         "component": "EmrClinicalMatrixComponent",
@@ -2076,6 +2401,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrClinicalMatrix",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2091,6 +2417,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrClinicalMatrix",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2103,13 +2430,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrClinicalMatrix } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrClinicalMatrixElement",
+        "selector": "emr-clinical-matrix",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrClinicalMatrixElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-cell-renderer",
       "id": "EmrClinicalCellRendererDirective",
       "reactName": "EmrCustomRenderers",
+      "litName": "EmrClinicalCellRendererElement",
       "selector": "",
       "type": "registry:ui",
       "layer": 3,
@@ -2131,7 +2467,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-clinical-cell-renderer",
         "angular": "pnpm emr add emr-clinical-cell-renderer --framework angular",
         "react": "pnpm emr add emr-clinical-cell-renderer --framework react",
-        "expo": "pnpm emr add emr-clinical-cell-renderer --framework expo"
+        "expo": "pnpm emr add emr-clinical-cell-renderer --framework expo",
+        "lit": "pnpm emr add emr-clinical-cell-renderer --framework lit"
       },
       "angular": {
         "component": "EmrClinicalCellRendererDirective",
@@ -2144,6 +2481,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrCustomRenderers",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "labels.tsx",
@@ -2158,6 +2496,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrCustomRenderers",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "labels.tsx",
@@ -2169,13 +2508,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCustomRenderers } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrClinicalCellRendererElement",
+        "selector": "emr-clinical-cell-renderer",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrClinicalCellRendererElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-medication-list",
       "id": "EmrMedicationListComponent",
       "reactName": "EmrMedicationList",
+      "litName": "EmrMedicationListElement",
       "selector": "emr-medication-list",
       "type": "registry:ui",
       "layer": 4,
@@ -2201,7 +2549,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-medication-list",
         "angular": "pnpm emr add emr-medication-list --framework angular",
         "react": "pnpm emr add emr-medication-list --framework react",
-        "expo": "pnpm emr add emr-medication-list --framework expo"
+        "expo": "pnpm emr add emr-medication-list --framework expo",
+        "lit": "pnpm emr add emr-medication-list --framework lit"
       },
       "angular": {
         "component": "EmrMedicationListComponent",
@@ -2214,6 +2563,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrMedicationList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2229,6 +2579,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrMedicationList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2241,13 +2592,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrMedicationList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrMedicationListElement",
+        "selector": "emr-medication-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrMedicationListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-allergy-list",
       "id": "EmrAllergyListComponent",
       "reactName": "EmrAllergyList",
+      "litName": "EmrAllergyListElement",
       "selector": "emr-allergy-list",
       "type": "registry:ui",
       "layer": 4,
@@ -2273,7 +2633,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-allergy-list",
         "angular": "pnpm emr add emr-allergy-list --framework angular",
         "react": "pnpm emr add emr-allergy-list --framework react",
-        "expo": "pnpm emr add emr-allergy-list --framework expo"
+        "expo": "pnpm emr add emr-allergy-list --framework expo",
+        "lit": "pnpm emr add emr-allergy-list --framework lit"
       },
       "angular": {
         "component": "EmrAllergyListComponent",
@@ -2286,6 +2647,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrAllergyList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2301,6 +2663,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrAllergyList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2313,13 +2676,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAllergyList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrAllergyListElement",
+        "selector": "emr-allergy-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrAllergyListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-chronic-disease-list",
       "id": "EmrChronicDiseaseListComponent",
       "reactName": "EmrChronicDiseaseList",
+      "litName": "EmrChronicDiseaseListElement",
       "selector": "emr-chronic-disease-list",
       "type": "registry:ui",
       "layer": 4,
@@ -2345,7 +2717,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-chronic-disease-list",
         "angular": "pnpm emr add emr-chronic-disease-list --framework angular",
         "react": "pnpm emr add emr-chronic-disease-list --framework react",
-        "expo": "pnpm emr add emr-chronic-disease-list --framework expo"
+        "expo": "pnpm emr add emr-chronic-disease-list --framework expo",
+        "lit": "pnpm emr add emr-chronic-disease-list --framework lit"
       },
       "angular": {
         "component": "EmrChronicDiseaseListComponent",
@@ -2358,6 +2731,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrChronicDiseaseList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2373,6 +2747,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrChronicDiseaseList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2385,13 +2760,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrChronicDiseaseList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrChronicDiseaseListElement",
+        "selector": "emr-chronic-disease-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrChronicDiseaseListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-personal-history-list",
       "id": "EmrPersonalHistoryListComponent",
       "reactName": "EmrPersonalHistoryList",
+      "litName": "EmrPersonalHistoryListElement",
       "selector": "emr-personal-history-list",
       "type": "registry:ui",
       "layer": 4,
@@ -2417,7 +2801,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-personal-history-list",
         "angular": "pnpm emr add emr-personal-history-list --framework angular",
         "react": "pnpm emr add emr-personal-history-list --framework react",
-        "expo": "pnpm emr add emr-personal-history-list --framework expo"
+        "expo": "pnpm emr add emr-personal-history-list --framework expo",
+        "lit": "pnpm emr add emr-personal-history-list --framework lit"
       },
       "angular": {
         "component": "EmrPersonalHistoryListComponent",
@@ -2430,6 +2815,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPersonalHistoryList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2445,6 +2831,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPersonalHistoryList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l3-structures.logic.ts",
@@ -2457,13 +2844,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPersonalHistoryList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrPersonalHistoryListElement",
+        "selector": "emr-personal-history-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPersonalHistoryListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-patient-banner",
       "id": "EmrPatientBannerComponent",
       "reactName": "EmrPatientBanner",
+      "litName": "EmrPatientBannerElement",
       "selector": "emr-patient-banner",
       "type": "registry:ui",
       "layer": 4,
@@ -2491,7 +2887,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-patient-banner",
         "angular": "pnpm emr add emr-patient-banner --framework angular",
         "react": "pnpm emr add emr-patient-banner --framework react",
-        "expo": "pnpm emr add emr-patient-banner --framework expo"
+        "expo": "pnpm emr add emr-patient-banner --framework expo",
+        "lit": "pnpm emr add emr-patient-banner --framework lit"
       },
       "angular": {
         "component": "EmrPatientBannerComponent",
@@ -2529,13 +2926,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPatientBanner } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrPatientBannerElement",
+        "selector": "emr-patient-banner",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPatientBannerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 10
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-patient-list",
       "id": "EmrPatientListComponent",
       "reactName": "EmrPatientList",
+      "litName": "EmrPatientListElement",
       "selector": "emr-patient-list",
       "type": "registry:ui",
       "layer": 4,
@@ -2562,7 +2968,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-patient-list",
         "angular": "pnpm emr add emr-patient-list --framework angular",
         "react": "pnpm emr add emr-patient-list --framework react",
-        "expo": "pnpm emr add emr-patient-list --framework expo"
+        "expo": "pnpm emr add emr-patient-list --framework expo",
+        "lit": "pnpm emr add emr-patient-list --framework lit"
       },
       "angular": {
         "component": "EmrPatientListComponent",
@@ -2575,6 +2982,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPatientList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -2598,6 +3006,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPatientList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -2618,13 +3027,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPatientList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 18
+      "lit": {
+        "component": "EmrPatientListElement",
+        "selector": "emr-patient-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPatientListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-timeline",
       "id": "EmrTimelineComponent",
       "reactName": "EmrTimeline",
+      "litName": "EmrTimelineElement",
       "selector": "emr-timeline",
       "type": "registry:ui",
       "layer": 4,
@@ -2650,7 +3068,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-timeline",
         "angular": "pnpm emr add emr-timeline --framework angular",
         "react": "pnpm emr add emr-timeline --framework react",
-        "expo": "pnpm emr add emr-timeline --framework expo"
+        "expo": "pnpm emr add emr-timeline --framework expo",
+        "lit": "pnpm emr add emr-timeline --framework lit"
       },
       "angular": {
         "component": "EmrTimelineComponent",
@@ -2663,6 +3082,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTimeline",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -2686,6 +3106,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTimeline",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -2706,13 +3127,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTimeline } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 18
+      "lit": {
+        "component": "EmrTimelineElement",
+        "selector": "emr-timeline",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrTimelineElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-app-shell",
       "id": "EmrAppShellComponent",
       "reactName": "EmrAppShell",
+      "litName": "EmrAppShellElement",
       "selector": "emr-app-shell",
       "type": "registry:ui",
       "layer": 4,
@@ -2737,7 +3167,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-app-shell",
         "angular": "pnpm emr add emr-app-shell --framework angular",
         "react": "pnpm emr add emr-app-shell --framework react",
-        "expo": "pnpm emr add emr-app-shell --framework expo"
+        "expo": "pnpm emr add emr-app-shell --framework expo",
+        "lit": "pnpm emr add emr-app-shell --framework lit"
       },
       "angular": {
         "component": "EmrAppShellComponent",
@@ -2750,6 +3181,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrAppShell",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -2771,6 +3203,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrAppShell",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -2789,13 +3222,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAppShell } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 16
+      "lit": {
+        "component": "EmrAppShellElement",
+        "selector": "emr-app-shell",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrAppShellElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-left-nav",
       "id": "EmrLeftNavComponent",
       "reactName": "EmrLeftNav",
+      "litName": "EmrLeftNavElement",
       "selector": "emr-left-nav",
       "type": "registry:ui",
       "layer": 4,
@@ -2822,7 +3264,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-left-nav",
         "angular": "pnpm emr add emr-left-nav --framework angular",
         "react": "pnpm emr add emr-left-nav --framework react",
-        "expo": "pnpm emr add emr-left-nav --framework expo"
+        "expo": "pnpm emr add emr-left-nav --framework expo",
+        "lit": "pnpm emr add emr-left-nav --framework lit"
       },
       "angular": {
         "component": "EmrLeftNavComponent",
@@ -2860,13 +3303,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrLeftNav } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrLeftNavElement",
+        "selector": "emr-left-nav",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrLeftNavElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 10
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-right-flyout",
       "id": "EmrRightFlyoutComponent",
       "reactName": "EmrRightFlyout",
+      "litName": "EmrRightFlyoutElement",
       "selector": "emr-right-flyout",
       "type": "registry:ui",
       "layer": 4,
@@ -2891,7 +3343,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-right-flyout",
         "angular": "pnpm emr add emr-right-flyout --framework angular",
         "react": "pnpm emr add emr-right-flyout --framework react",
-        "expo": "pnpm emr add emr-right-flyout --framework expo"
+        "expo": "pnpm emr add emr-right-flyout --framework expo",
+        "lit": "pnpm emr add emr-right-flyout --framework lit"
       },
       "angular": {
         "component": "EmrRightFlyoutComponent",
@@ -2904,6 +3357,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrRightFlyout",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -2928,6 +3382,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrRightFlyout",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -2949,13 +3404,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrRightFlyout } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrRightFlyoutElement",
+        "selector": "emr-right-flyout",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrRightFlyoutElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-staged-checklist",
       "id": "EmrStagedChecklistComponent",
       "reactName": "EmrStagedChecklist",
+      "litName": "EmrStagedChecklistElement",
       "selector": "emr-staged-checklist",
       "type": "registry:ui",
       "layer": 4,
@@ -2985,7 +3449,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-staged-checklist",
         "angular": "pnpm emr add emr-staged-checklist --framework angular",
         "react": "pnpm emr add emr-staged-checklist --framework react",
-        "expo": "pnpm emr add emr-staged-checklist --framework expo"
+        "expo": "pnpm emr add emr-staged-checklist --framework expo",
+        "lit": "pnpm emr add emr-staged-checklist --framework lit"
       },
       "angular": {
         "component": "EmrStagedChecklistComponent",
@@ -2999,6 +3464,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStagedChecklist",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -3022,6 +3488,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStagedChecklist",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -3041,13 +3508,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrStagedChecklist } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 18
+      "lit": {
+        "component": "EmrStagedChecklistElement",
+        "selector": "emr-staged-checklist",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrStagedChecklistElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-pac-checklist",
       "id": "EmrPacChecklistComponent",
       "reactName": "EmrPacChecklist",
+      "litName": "EmrPacChecklistElement",
       "selector": "emr-pac-checklist",
       "type": "registry:ui",
       "layer": 4,
@@ -3081,7 +3557,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-pac-checklist",
         "angular": "pnpm emr add emr-pac-checklist --framework angular",
         "react": "pnpm emr add emr-pac-checklist --framework react",
-        "expo": "pnpm emr add emr-pac-checklist --framework expo"
+        "expo": "pnpm emr add emr-pac-checklist --framework expo",
+        "lit": "pnpm emr add emr-pac-checklist --framework lit"
       },
       "angular": {
         "component": "EmrPacChecklistComponent",
@@ -3095,6 +3572,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrPacChecklist",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -3118,6 +3596,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrPacChecklist",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -3137,13 +3616,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPacChecklist } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 18
+      "lit": {
+        "component": "EmrPacChecklistElement",
+        "selector": "emr-pac-checklist",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPacChecklistElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-family-pedigree",
       "id": "EmrFamilyPedigreeComponent",
       "reactName": "EmrFamilyPedigree",
+      "litName": "EmrFamilyPedigreeElement",
       "selector": "emr-family-pedigree",
       "type": "registry:ui",
       "layer": 4,
@@ -3170,7 +3658,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-family-pedigree",
         "angular": "pnpm emr add emr-family-pedigree --framework angular",
         "react": "pnpm emr add emr-family-pedigree --framework react",
-        "expo": "pnpm emr add emr-family-pedigree --framework expo"
+        "expo": "pnpm emr add emr-family-pedigree --framework expo",
+        "lit": "pnpm emr add emr-family-pedigree --framework lit"
       },
       "angular": {
         "component": "EmrFamilyPedigreeComponent",
@@ -3184,6 +3673,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFamilyPedigree",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -3207,6 +3697,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFamilyPedigree",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -3226,13 +3717,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFamilyPedigree } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 18
+      "lit": {
+        "component": "EmrFamilyPedigreeElement",
+        "selector": "emr-family-pedigree",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrFamilyPedigreeElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-document-upload-queue",
       "id": "EmrDocumentUploadQueueComponent",
       "reactName": "EmrDocumentUploadQueue",
+      "litName": "EmrDocumentUploadQueueElement",
       "selector": "emr-document-upload-queue",
       "type": "registry:ui",
       "layer": 4,
@@ -3256,7 +3756,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-document-upload-queue",
         "angular": "pnpm emr add emr-document-upload-queue --framework angular",
         "react": "pnpm emr add emr-document-upload-queue --framework react",
-        "expo": "pnpm emr add emr-document-upload-queue --framework expo"
+        "expo": "pnpm emr add emr-document-upload-queue --framework expo",
+        "lit": "pnpm emr add emr-document-upload-queue --framework lit"
       },
       "angular": {
         "component": "EmrDocumentUploadQueueComponent",
@@ -3269,6 +3770,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrDocumentUploadQueue",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3293,6 +3795,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrDocumentUploadQueue",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3314,13 +3817,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDocumentUploadQueue } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrDocumentUploadQueueElement",
+        "selector": "emr-document-upload-queue",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrDocumentUploadQueueElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-patient-documents",
       "id": "EmrPatientDocumentsComponent",
       "reactName": "EmrPatientDocuments",
+      "litName": "EmrPatientDocumentsElement",
       "selector": "emr-patient-documents",
       "type": "registry:ui",
       "layer": 4,
@@ -3348,7 +3860,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-patient-documents",
         "angular": "pnpm emr add emr-patient-documents --framework angular",
         "react": "pnpm emr add emr-patient-documents --framework react",
-        "expo": "pnpm emr add emr-patient-documents --framework expo"
+        "expo": "pnpm emr add emr-patient-documents --framework expo",
+        "lit": "pnpm emr add emr-patient-documents --framework lit"
       },
       "angular": {
         "component": "EmrPatientDocumentsComponent",
@@ -3361,6 +3874,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPatientDocuments",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3385,6 +3899,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPatientDocuments",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3406,13 +3921,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPatientDocuments } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrPatientDocumentsElement",
+        "selector": "emr-patient-documents",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPatientDocumentsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-document-viewer",
       "id": "EmrDocumentViewerComponent",
       "reactName": "EmrDocumentViewer",
+      "litName": "EmrDocumentViewerElement",
       "selector": "emr-document-viewer",
       "type": "registry:ui",
       "layer": 4,
@@ -3440,7 +3964,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-document-viewer",
         "angular": "pnpm emr add emr-document-viewer --framework angular",
         "react": "pnpm emr add emr-document-viewer --framework react",
-        "expo": "pnpm emr add emr-document-viewer --framework expo"
+        "expo": "pnpm emr add emr-document-viewer --framework expo",
+        "lit": "pnpm emr add emr-document-viewer --framework lit"
       },
       "angular": {
         "component": "EmrDocumentViewerComponent",
@@ -3453,6 +3978,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrDocumentViewer",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3477,6 +4003,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrDocumentViewer",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3498,13 +4025,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDocumentViewer } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrDocumentViewerElement",
+        "selector": "emr-document-viewer",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrDocumentViewerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-hierarchy-order-picker",
       "id": "EmrHierarchyOrderPickerComponent",
       "reactName": "EmrHierarchyOrderPicker",
+      "litName": "EmrHierarchyOrderPickerElement",
       "selector": "emr-hierarchy-order-picker",
       "type": "registry:ui",
       "layer": 4,
@@ -3536,7 +4072,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-hierarchy-order-picker",
         "angular": "pnpm emr add emr-hierarchy-order-picker --framework angular",
         "react": "pnpm emr add emr-hierarchy-order-picker --framework react",
-        "expo": "pnpm emr add emr-hierarchy-order-picker --framework expo"
+        "expo": "pnpm emr add emr-hierarchy-order-picker --framework expo",
+        "lit": "pnpm emr add emr-hierarchy-order-picker --framework lit"
       },
       "angular": {
         "component": "EmrHierarchyOrderPickerComponent",
@@ -3549,6 +4086,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrHierarchyOrderPicker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3573,6 +4111,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrHierarchyOrderPicker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3594,13 +4133,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrHierarchyOrderPicker } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrHierarchyOrderPickerElement",
+        "selector": "emr-hierarchy-order-picker",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrHierarchyOrderPickerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-order-details",
       "id": "EmrOrderDetailsComponent",
       "reactName": "EmrOrderDetails",
+      "litName": "EmrOrderDetailsElement",
       "selector": "emr-order-details",
       "type": "registry:ui",
       "layer": 4,
@@ -3630,7 +4178,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-order-details",
         "angular": "pnpm emr add emr-order-details --framework angular",
         "react": "pnpm emr add emr-order-details --framework react",
-        "expo": "pnpm emr add emr-order-details --framework expo"
+        "expo": "pnpm emr add emr-order-details --framework expo",
+        "lit": "pnpm emr add emr-order-details --framework lit"
       },
       "angular": {
         "component": "EmrOrderDetailsComponent",
@@ -3643,6 +4192,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrOrderDetails",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3667,6 +4217,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrOrderDetails",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3688,13 +4239,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrOrderDetails } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrOrderDetailsElement",
+        "selector": "emr-order-details",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrOrderDetailsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-favourites-panel",
       "id": "EmrFavouritesPanelComponent",
       "reactName": "EmrFavouritesPanel",
+      "litName": "EmrFavouritesPanelElement",
       "selector": "emr-favourites-panel",
       "type": "registry:ui",
       "layer": 4,
@@ -3727,7 +4287,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-favourites-panel",
         "angular": "pnpm emr add emr-favourites-panel --framework angular",
         "react": "pnpm emr add emr-favourites-panel --framework react",
-        "expo": "pnpm emr add emr-favourites-panel --framework expo"
+        "expo": "pnpm emr add emr-favourites-panel --framework expo",
+        "lit": "pnpm emr add emr-favourites-panel --framework lit"
       },
       "angular": {
         "component": "EmrFavouritesPanelComponent",
@@ -3740,6 +4301,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrFavouritesPanel",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3764,6 +4326,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrFavouritesPanel",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -3785,13 +4348,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFavouritesPanel } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 19
+      "lit": {
+        "component": "EmrFavouritesPanelElement",
+        "selector": "emr-favourites-panel",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrFavouritesPanelElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-annotation-canvas",
       "id": "EmrClinicalAnnotationCanvasComponent",
       "reactName": "EmrClinicalAnnotationCanvas",
+      "litName": "EmrClinicalAnnotationCanvasElement",
       "selector": "emr-clinical-annotation-canvas",
       "type": "registry:ui",
       "layer": 4,
@@ -3822,7 +4394,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-clinical-annotation-canvas",
         "angular": "pnpm emr add emr-clinical-annotation-canvas --framework angular",
         "react": "pnpm emr add emr-clinical-annotation-canvas --framework react",
-        "expo": "pnpm emr add emr-clinical-annotation-canvas --framework expo"
+        "expo": "pnpm emr add emr-clinical-annotation-canvas --framework expo",
+        "lit": "pnpm emr add emr-clinical-annotation-canvas --framework lit"
       },
       "angular": {
         "component": "EmrClinicalAnnotationCanvasComponent",
@@ -3835,6 +4408,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrClinicalAnnotationCanvas",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3855,6 +4429,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrClinicalAnnotationCanvas",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3872,13 +4447,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrClinicalAnnotationCanvas } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 15
+      "lit": {
+        "component": "EmrClinicalAnnotationCanvasElement",
+        "selector": "emr-clinical-annotation-canvas",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrClinicalAnnotationCanvasElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-diagnostic-result-summary",
       "id": "EmrDiagnosticResultSummaryComponent",
       "reactName": "EmrDiagnosticResultSummary",
+      "litName": "EmrDiagnosticResultSummaryElement",
       "selector": "emr-diagnostic-result-summary",
       "type": "registry:ui",
       "layer": 4,
@@ -3904,7 +4488,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-diagnostic-result-summary",
         "angular": "pnpm emr add emr-diagnostic-result-summary --framework angular",
         "react": "pnpm emr add emr-diagnostic-result-summary --framework react",
-        "expo": "pnpm emr add emr-diagnostic-result-summary --framework expo"
+        "expo": "pnpm emr add emr-diagnostic-result-summary --framework expo",
+        "lit": "pnpm emr add emr-diagnostic-result-summary --framework lit"
       },
       "angular": {
         "component": "EmrDiagnosticResultSummaryComponent",
@@ -3917,6 +4502,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrDiagnosticResultSummary",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -3932,6 +4518,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrDiagnosticResultSummary",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -3944,13 +4531,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDiagnosticResultSummary } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrDiagnosticResultSummaryElement",
+        "selector": "emr-diagnostic-result-summary",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrDiagnosticResultSummaryElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-spectacle-prescription",
       "id": "EmrSpectaclePrescriptionComponent",
       "reactName": "EmrSpectaclePrescription",
+      "litName": "EmrSpectaclePrescriptionElement",
       "selector": "emr-spectacle-prescription",
       "type": "registry:ui",
       "layer": 4,
@@ -3976,7 +4572,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-spectacle-prescription",
         "angular": "pnpm emr add emr-spectacle-prescription --framework angular",
         "react": "pnpm emr add emr-spectacle-prescription --framework react",
-        "expo": "pnpm emr add emr-spectacle-prescription --framework expo"
+        "expo": "pnpm emr add emr-spectacle-prescription --framework expo",
+        "lit": "pnpm emr add emr-spectacle-prescription --framework lit"
       },
       "angular": {
         "component": "EmrSpectaclePrescriptionComponent",
@@ -3989,6 +4586,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrSpectaclePrescription",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -4004,6 +4602,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrSpectaclePrescription",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -4016,13 +4615,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSpectaclePrescription } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrSpectaclePrescriptionElement",
+        "selector": "emr-spectacle-prescription",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrSpectaclePrescriptionElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-dose-schedule",
       "id": "EmrDoseScheduleComponent",
       "reactName": "EmrDoseSchedule",
+      "litName": "EmrDoseScheduleElement",
       "selector": "emr-dose-schedule",
       "type": "registry:ui",
       "layer": 4,
@@ -4075,7 +4683,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-dose-schedule",
         "angular": "pnpm emr add emr-dose-schedule --framework angular",
         "react": "pnpm emr add emr-dose-schedule --framework react",
-        "expo": "pnpm emr add emr-dose-schedule --framework expo"
+        "expo": "pnpm emr add emr-dose-schedule --framework expo",
+        "lit": "pnpm emr add emr-dose-schedule --framework lit"
       },
       "angular": {
         "component": "EmrDoseScheduleComponent",
@@ -4088,6 +4697,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrDoseSchedule",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4105,6 +4715,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrDoseSchedule",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4119,13 +4730,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDoseSchedule } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrDoseScheduleElement",
+        "selector": "emr-dose-schedule",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrDoseScheduleElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-field-generator",
       "id": "EmrFieldGeneratorComponent",
       "reactName": "EmrFieldGenerator",
+      "litName": "EmrFieldGeneratorElement",
       "selector": "emr-field-generator",
       "type": "registry:ui",
       "layer": 6,
@@ -4166,7 +4786,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-field-generator",
         "angular": "pnpm emr add emr-field-generator --framework angular",
         "react": "pnpm emr add emr-field-generator --framework react",
-        "expo": "pnpm emr add emr-field-generator --framework expo"
+        "expo": "pnpm emr add emr-field-generator --framework expo",
+        "lit": "pnpm emr add emr-field-generator --framework lit"
       },
       "angular": {
         "component": "EmrFieldGeneratorComponent",
@@ -4180,6 +4801,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldGenerator",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4202,6 +4824,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldGenerator",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4220,13 +4843,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFieldGenerator } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrFieldGeneratorElement",
+        "selector": "emr-field-generator",
+        "files": [
+          "l6-authoring.ts"
+        ],
+        "import": "import { EmrFieldGeneratorElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-terminology-search",
       "id": "EmrTerminologySearchComponent",
       "reactName": "EmrTerminologySearch",
+      "litName": "EmrTerminologySearchElement",
       "selector": "emr-terminology-search",
       "type": "registry:ui",
       "layer": 6,
@@ -4250,7 +4882,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-terminology-search",
         "angular": "pnpm emr add emr-terminology-search --framework angular",
         "react": "pnpm emr add emr-terminology-search --framework react",
-        "expo": "pnpm emr add emr-terminology-search --framework expo"
+        "expo": "pnpm emr add emr-terminology-search --framework expo",
+        "lit": "pnpm emr add emr-terminology-search --framework lit"
       },
       "angular": {
         "component": "EmrTerminologySearchComponent",
@@ -4264,6 +4897,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTerminologySearch",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4286,6 +4920,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTerminologySearch",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4304,13 +4939,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTerminologySearch } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrTerminologySearchElement",
+        "selector": "emr-terminology-search",
+        "files": [
+          "l6-authoring.ts"
+        ],
+        "import": "import { EmrTerminologySearchElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-validation-rule-editor",
       "id": "EmrValidationRuleEditorComponent",
       "reactName": "EmrValidationRuleEditor",
+      "litName": "EmrValidationRuleEditorElement",
       "selector": "emr-validation-rule-editor",
       "type": "registry:ui",
       "layer": 6,
@@ -4334,7 +4978,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-validation-rule-editor",
         "angular": "pnpm emr add emr-validation-rule-editor --framework angular",
         "react": "pnpm emr add emr-validation-rule-editor --framework react",
-        "expo": "pnpm emr add emr-validation-rule-editor --framework expo"
+        "expo": "pnpm emr add emr-validation-rule-editor --framework expo",
+        "lit": "pnpm emr add emr-validation-rule-editor --framework lit"
       },
       "angular": {
         "component": "EmrValidationRuleEditorComponent",
@@ -4348,6 +4993,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrValidationRuleEditor",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4370,6 +5016,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrValidationRuleEditor",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4388,13 +5035,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrValidationRuleEditor } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrValidationRuleEditorElement",
+        "selector": "emr-validation-rule-editor",
+        "files": [
+          "l6-authoring.ts"
+        ],
+        "import": "import { EmrValidationRuleEditorElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-field-library-picker",
       "id": "EmrFieldLibraryPickerComponent",
       "reactName": "EmrFieldLibraryPicker",
+      "litName": "EmrFieldLibraryPickerElement",
       "selector": "emr-field-library-picker",
       "type": "registry:ui",
       "layer": 6,
@@ -4418,7 +5074,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-field-library-picker",
         "angular": "pnpm emr add emr-field-library-picker --framework angular",
         "react": "pnpm emr add emr-field-library-picker --framework react",
-        "expo": "pnpm emr add emr-field-library-picker --framework expo"
+        "expo": "pnpm emr add emr-field-library-picker --framework expo",
+        "lit": "pnpm emr add emr-field-library-picker --framework lit"
       },
       "angular": {
         "component": "EmrFieldLibraryPickerComponent",
@@ -4432,6 +5089,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldLibraryPicker",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4454,6 +5112,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldLibraryPicker",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4472,13 +5131,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFieldLibraryPicker } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrFieldLibraryPickerElement",
+        "selector": "emr-field-library-picker",
+        "files": [
+          "l6-authoring.ts"
+        ],
+        "import": "import { EmrFieldLibraryPickerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-template-composer",
       "id": "EmrTemplateComposerComponent",
       "reactName": "EmrTemplateComposer",
+      "litName": "EmrTemplateComposerElement",
       "selector": "emr-template-composer",
       "type": "registry:ui",
       "layer": 6,
@@ -4516,7 +5184,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-template-composer",
         "angular": "pnpm emr add emr-template-composer --framework angular",
         "react": "pnpm emr add emr-template-composer --framework react",
-        "expo": "pnpm emr add emr-template-composer --framework expo"
+        "expo": "pnpm emr add emr-template-composer --framework expo",
+        "lit": "pnpm emr add emr-template-composer --framework lit"
       },
       "angular": {
         "component": "EmrTemplateComposerComponent",
@@ -4530,6 +5199,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplateComposer",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4552,6 +5222,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplateComposer",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4570,13 +5241,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTemplateComposer } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrTemplateComposerElement",
+        "selector": "emr-template-composer",
+        "files": [
+          "l6-authoring.ts"
+        ],
+        "import": "import { EmrTemplateComposerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-template-preview",
       "id": "EmrTemplatePreviewComponent",
       "reactName": "EmrTemplatePreview",
+      "litName": "EmrTemplatePreviewElement",
       "selector": "emr-template-preview",
       "type": "registry:ui",
       "layer": 6,
@@ -4610,7 +5290,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-template-preview",
         "angular": "pnpm emr add emr-template-preview --framework angular",
         "react": "pnpm emr add emr-template-preview --framework react",
-        "expo": "pnpm emr add emr-template-preview --framework expo"
+        "expo": "pnpm emr add emr-template-preview --framework expo",
+        "lit": "pnpm emr add emr-template-preview --framework lit"
       },
       "angular": {
         "component": "EmrTemplatePreviewComponent",
@@ -4624,6 +5305,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplatePreview",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4646,6 +5328,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplatePreview",
         "files": [
           "clinical-form.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -4664,13 +5347,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTemplatePreview } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrTemplatePreviewElement",
+        "selector": "emr-template-preview",
+        "files": [
+          "l6-authoring.ts"
+        ],
+        "import": "import { EmrTemplatePreviewElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-oct-finding-record",
       "id": "EmrOctFindingRecordComponent",
       "reactName": "EmrOctFindingRecord",
+      "litName": "EmrOctFindingRecordElement",
       "selector": "emr-oct-finding-record",
       "type": "registry:ui",
       "layer": 4,
@@ -4703,7 +5395,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-oct-finding-record",
         "angular": "pnpm emr add emr-oct-finding-record --framework angular",
         "react": "pnpm emr add emr-oct-finding-record --framework react",
-        "expo": "pnpm emr add emr-oct-finding-record --framework expo"
+        "expo": "pnpm emr add emr-oct-finding-record --framework expo",
+        "lit": "pnpm emr add emr-oct-finding-record --framework lit"
       },
       "angular": {
         "component": "EmrOctFindingRecordComponent",
@@ -4716,6 +5409,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrOctFindingRecord",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -4731,6 +5425,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrOctFindingRecord",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -4743,13 +5438,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrOctFindingRecord } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrOctFindingRecordElement",
+        "selector": "emr-oct-finding-record",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrOctFindingRecordElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-annotation-toolbar",
       "id": "EmrAnnotationToolbarComponent",
       "reactName": "EmrAnnotationToolbar",
+      "litName": "EmrAnnotationToolbarElement",
       "selector": "emr-annotation-toolbar",
       "type": "registry:ui",
       "layer": 3,
@@ -4779,7 +5483,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-annotation-toolbar",
         "angular": "pnpm emr add emr-annotation-toolbar --framework angular",
         "react": "pnpm emr add emr-annotation-toolbar --framework react",
-        "expo": "pnpm emr add emr-annotation-toolbar --framework expo"
+        "expo": "pnpm emr add emr-annotation-toolbar --framework expo",
+        "lit": "pnpm emr add emr-annotation-toolbar --framework lit"
       },
       "angular": {
         "component": "EmrAnnotationToolbarComponent",
@@ -4792,6 +5497,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrAnnotationToolbar",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4810,6 +5516,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrAnnotationToolbar",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4825,13 +5532,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAnnotationToolbar } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrAnnotationToolbarElement",
+        "selector": "emr-annotation-toolbar",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrAnnotationToolbarElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-annotation-list",
       "id": "EmrAnnotationListComponent",
       "reactName": "EmrAnnotationList",
+      "litName": "EmrAnnotationListElement",
       "selector": "emr-annotation-list",
       "type": "registry:ui",
       "layer": 3,
@@ -4861,7 +5577,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-annotation-list",
         "angular": "pnpm emr add emr-annotation-list --framework angular",
         "react": "pnpm emr add emr-annotation-list --framework react",
-        "expo": "pnpm emr add emr-annotation-list --framework expo"
+        "expo": "pnpm emr add emr-annotation-list --framework expo",
+        "lit": "pnpm emr add emr-annotation-list --framework lit"
       },
       "angular": {
         "component": "EmrAnnotationListComponent",
@@ -4874,6 +5591,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrAnnotationList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4892,6 +5610,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrAnnotationList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4907,13 +5626,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAnnotationList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrAnnotationListElement",
+        "selector": "emr-annotation-list",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrAnnotationListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-meridian-cross",
       "id": "EmrMeridianCrossComponent",
       "reactName": "EmrMeridianCross",
+      "litName": "EmrMeridianCrossElement",
       "selector": "emr-meridian-cross",
       "type": "registry:ui",
       "layer": 4,
@@ -4947,7 +5675,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-meridian-cross",
         "angular": "pnpm emr add emr-meridian-cross --framework angular",
         "react": "pnpm emr add emr-meridian-cross --framework react",
-        "expo": "pnpm emr add emr-meridian-cross --framework expo"
+        "expo": "pnpm emr add emr-meridian-cross --framework expo",
+        "lit": "pnpm emr add emr-meridian-cross --framework lit"
       },
       "angular": {
         "component": "EmrMeridianCrossComponent",
@@ -4960,6 +5689,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrMeridianCross",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -4975,6 +5705,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrMeridianCross",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -4987,13 +5718,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrMeridianCross } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrMeridianCrossElement",
+        "selector": "emr-meridian-cross",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrMeridianCrossElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-ocular-motility-chart",
       "id": "EmrOcularMotilityChartComponent",
       "reactName": "EmrOcularMotilityChart",
+      "litName": "EmrOcularMotilityChartElement",
       "selector": "emr-ocular-motility-chart",
       "type": "registry:ui",
       "layer": 4,
@@ -5023,7 +5763,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-ocular-motility-chart",
         "angular": "pnpm emr add emr-ocular-motility-chart --framework angular",
         "react": "pnpm emr add emr-ocular-motility-chart --framework react",
-        "expo": "pnpm emr add emr-ocular-motility-chart --framework expo"
+        "expo": "pnpm emr add emr-ocular-motility-chart --framework expo",
+        "lit": "pnpm emr add emr-ocular-motility-chart --framework lit"
       },
       "angular": {
         "component": "EmrOcularMotilityChartComponent",
@@ -5036,6 +5777,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrOcularMotilityChart",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -5051,6 +5793,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrOcularMotilityChart",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-ophthalmology.logic.ts",
@@ -5063,13 +5806,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrOcularMotilityChart } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrOcularMotilityChartElement",
+        "selector": "emr-ocular-motility-chart",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrOcularMotilityChartElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-observation-flowsheet",
       "id": "EmrObservationFlowsheetComponent",
       "reactName": "EmrObservationFlowsheet",
+      "litName": "EmrObservationFlowsheetElement",
       "selector": "emr-observation-flowsheet",
       "type": "registry:ui",
       "layer": 4,
@@ -5106,7 +5858,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-observation-flowsheet",
         "angular": "pnpm emr add emr-observation-flowsheet --framework angular",
         "react": "pnpm emr add emr-observation-flowsheet --framework react",
-        "expo": "pnpm emr add emr-observation-flowsheet --framework expo"
+        "expo": "pnpm emr add emr-observation-flowsheet --framework expo",
+        "lit": "pnpm emr add emr-observation-flowsheet --framework lit"
       },
       "angular": {
         "component": "EmrObservationFlowsheetComponent",
@@ -5119,6 +5872,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrObservationFlowsheet",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5136,6 +5890,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrObservationFlowsheet",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5150,13 +5905,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrObservationFlowsheet } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrObservationFlowsheetElement",
+        "selector": "emr-observation-flowsheet",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrObservationFlowsheetElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-observation-trend",
       "id": "EmrObservationTrendComponent",
       "reactName": "EmrObservationTrend",
+      "litName": "EmrObservationTrendElement",
       "selector": "emr-observation-trend",
       "type": "registry:ui",
       "layer": 4,
@@ -5196,7 +5960,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-observation-trend",
         "angular": "pnpm emr add emr-observation-trend --framework angular",
         "react": "pnpm emr add emr-observation-trend --framework react",
-        "expo": "pnpm emr add emr-observation-trend --framework expo"
+        "expo": "pnpm emr add emr-observation-trend --framework expo",
+        "lit": "pnpm emr add emr-observation-trend --framework lit"
       },
       "angular": {
         "component": "EmrObservationTrendComponent",
@@ -5210,6 +5975,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrObservationTrend",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5227,6 +5993,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrObservationTrend",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5241,13 +6008,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrObservationTrend } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrObservationTrendElement",
+        "selector": "emr-observation-trend",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrObservationTrendElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-transcript",
       "id": "EmrClinicalTranscriptComponent",
       "reactName": "EmrClinicalTranscript",
+      "litName": "EmrClinicalTranscriptElement",
       "selector": "emr-clinical-transcript",
       "type": "registry:ui",
       "layer": 4,
@@ -5281,7 +6057,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-clinical-transcript",
         "angular": "pnpm emr add emr-clinical-transcript --framework angular",
         "react": "pnpm emr add emr-clinical-transcript --framework react",
-        "expo": "pnpm emr add emr-clinical-transcript --framework expo"
+        "expo": "pnpm emr add emr-clinical-transcript --framework expo",
+        "lit": "pnpm emr add emr-clinical-transcript --framework lit"
       },
       "angular": {
         "component": "EmrClinicalTranscriptComponent",
@@ -5294,6 +6071,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrClinicalTranscript",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5311,6 +6089,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrClinicalTranscript",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5325,13 +6104,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrClinicalTranscript } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrClinicalTranscriptElement",
+        "selector": "emr-clinical-transcript",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrClinicalTranscriptElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-evidence-suggestion-list",
       "id": "EmrEvidenceSuggestionListComponent",
       "reactName": "EmrEvidenceSuggestionList",
+      "litName": "EmrEvidenceSuggestionListElement",
       "selector": "emr-evidence-suggestion-list",
       "type": "registry:ui",
       "layer": 4,
@@ -5365,7 +6153,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-evidence-suggestion-list",
         "angular": "pnpm emr add emr-evidence-suggestion-list --framework angular",
         "react": "pnpm emr add emr-evidence-suggestion-list --framework react",
-        "expo": "pnpm emr add emr-evidence-suggestion-list --framework expo"
+        "expo": "pnpm emr add emr-evidence-suggestion-list --framework expo",
+        "lit": "pnpm emr add emr-evidence-suggestion-list --framework lit"
       },
       "angular": {
         "component": "EmrEvidenceSuggestionListComponent",
@@ -5378,6 +6167,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrEvidenceSuggestionList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5395,6 +6185,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrEvidenceSuggestionList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5409,13 +6200,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrEvidenceSuggestionList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrEvidenceSuggestionListElement",
+        "selector": "emr-evidence-suggestion-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrEvidenceSuggestionListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-coded-input",
       "id": "EmrCodedInputComponent",
       "reactName": "EmrCodedInput",
+      "litName": "EmrCodedInputElement",
       "selector": "emr-coded-input",
       "type": "registry:ui",
       "layer": 2,
@@ -5454,7 +6254,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-coded-input",
         "angular": "pnpm emr add emr-coded-input --framework angular",
         "react": "pnpm emr add emr-coded-input --framework react",
-        "expo": "pnpm emr add emr-coded-input --framework expo"
+        "expo": "pnpm emr add emr-coded-input --framework expo",
+        "lit": "pnpm emr add emr-coded-input --framework lit"
       },
       "angular": {
         "component": "EmrCodedInputComponent",
@@ -5467,6 +6268,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrCodedInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -5487,6 +6289,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrCodedInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -5504,13 +6307,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCodedInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 15
+      "lit": {
+        "component": "EmrCodedInputElement",
+        "selector": "emr-coded-input",
+        "files": [
+          "l2-fields.ts"
+        ],
+        "import": "import { EmrCodedInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-capture-status-bar",
       "id": "EmrCaptureStatusBarComponent",
       "reactName": "EmrCaptureStatusBar",
+      "litName": "EmrCaptureStatusBarElement",
       "selector": "emr-capture-status-bar",
       "type": "registry:ui",
       "layer": 4,
@@ -5544,7 +6356,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-capture-status-bar",
         "angular": "pnpm emr add emr-capture-status-bar --framework angular",
         "react": "pnpm emr add emr-capture-status-bar --framework react",
-        "expo": "pnpm emr add emr-capture-status-bar --framework expo"
+        "expo": "pnpm emr add emr-capture-status-bar --framework expo",
+        "lit": "pnpm emr add emr-capture-status-bar --framework lit"
       },
       "angular": {
         "component": "EmrCaptureStatusBarComponent",
@@ -5582,13 +6395,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCaptureStatusBar } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrCaptureStatusBarElement",
+        "selector": "emr-capture-status-bar",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrCaptureStatusBarElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 10
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-score-result-card",
       "id": "EmrScoreResultCardComponent",
       "reactName": "EmrScoreResultCard",
+      "litName": "EmrScoreResultCardElement",
       "selector": "emr-score-result-card",
       "type": "registry:ui",
       "layer": 4,
@@ -5621,7 +6443,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-score-result-card",
         "angular": "pnpm emr add emr-score-result-card --framework angular",
         "react": "pnpm emr add emr-score-result-card --framework react",
-        "expo": "pnpm emr add emr-score-result-card --framework expo"
+        "expo": "pnpm emr add emr-score-result-card --framework expo",
+        "lit": "pnpm emr add emr-score-result-card --framework lit"
       },
       "angular": {
         "component": "EmrScoreResultCardComponent",
@@ -5634,6 +6457,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrScoreResultCard",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5651,6 +6475,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrScoreResultCard",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5665,13 +6490,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrScoreResultCard } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrScoreResultCardElement",
+        "selector": "emr-score-result-card",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrScoreResultCardElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-medication-reconciliation",
       "id": "EmrMedicationReconciliationComponent",
       "reactName": "EmrMedicationReconciliation",
+      "litName": "EmrMedicationReconciliationElement",
       "selector": "emr-medication-reconciliation",
       "type": "registry:ui",
       "layer": 4,
@@ -5710,7 +6544,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-medication-reconciliation",
         "angular": "pnpm emr add emr-medication-reconciliation --framework angular",
         "react": "pnpm emr add emr-medication-reconciliation --framework react",
-        "expo": "pnpm emr add emr-medication-reconciliation --framework expo"
+        "expo": "pnpm emr add emr-medication-reconciliation --framework expo",
+        "lit": "pnpm emr add emr-medication-reconciliation --framework lit"
       },
       "angular": {
         "component": "EmrMedicationReconciliationComponent",
@@ -5723,6 +6558,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrMedicationReconciliation",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5740,6 +6576,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrMedicationReconciliation",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5754,13 +6591,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrMedicationReconciliation } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrMedicationReconciliationElement",
+        "selector": "emr-medication-reconciliation",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrMedicationReconciliationElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-work-queue",
       "id": "EmrWorkQueueComponent",
       "reactName": "EmrWorkQueue",
+      "litName": "EmrWorkQueueElement",
       "selector": "emr-work-queue",
       "type": "registry:ui",
       "layer": 4,
@@ -5798,7 +6644,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-work-queue",
         "angular": "pnpm emr add emr-work-queue --framework angular",
         "react": "pnpm emr add emr-work-queue --framework react",
-        "expo": "pnpm emr add emr-work-queue --framework expo"
+        "expo": "pnpm emr add emr-work-queue --framework expo",
+        "lit": "pnpm emr add emr-work-queue --framework lit"
       },
       "angular": {
         "component": "EmrWorkQueueComponent",
@@ -5811,6 +6658,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrWorkQueue",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5834,6 +6682,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrWorkQueue",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -5854,13 +6703,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrWorkQueue } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 18
+      "lit": {
+        "component": "EmrWorkQueueElement",
+        "selector": "emr-work-queue",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrWorkQueueElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-image-template-picker",
       "id": "EmrImageTemplatePickerComponent",
       "reactName": "EmrImageTemplatePicker",
+      "litName": "EmrImageTemplatePickerElement",
       "selector": "emr-image-template-picker",
       "type": "registry:ui",
       "layer": 3,
@@ -5892,7 +6750,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-image-template-picker",
         "angular": "pnpm emr add emr-image-template-picker --framework angular",
         "react": "pnpm emr add emr-image-template-picker --framework react",
-        "expo": "pnpm emr add emr-image-template-picker --framework expo"
+        "expo": "pnpm emr add emr-image-template-picker --framework expo",
+        "lit": "pnpm emr add emr-image-template-picker --framework lit"
       },
       "angular": {
         "component": "EmrImageTemplatePickerComponent",
@@ -5905,6 +6764,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrImageTemplatePicker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -5923,6 +6783,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrImageTemplatePicker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -5938,13 +6799,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrImageTemplatePicker } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrImageTemplatePickerElement",
+        "selector": "emr-image-template-picker",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrImageTemplatePickerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-time-input",
       "id": "EmrTimeInputComponent",
       "reactName": "EmrTimeInput",
+      "litName": "EmrTimeInputElement",
       "selector": "emr-time-input",
       "type": "registry:ui",
       "layer": 1,
@@ -5973,7 +6843,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-time-input",
         "angular": "pnpm emr add emr-time-input --framework angular",
         "react": "pnpm emr add emr-time-input --framework react",
-        "expo": "pnpm emr add emr-time-input --framework expo"
+        "expo": "pnpm emr add emr-time-input --framework expo",
+        "lit": "pnpm emr add emr-time-input --framework lit"
       },
       "angular": {
         "component": "EmrTimeInputComponent",
@@ -5986,6 +6857,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTimeInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -6001,6 +6873,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTimeInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -6013,13 +6886,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTimeInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrTimeInputElement",
+        "selector": "emr-time-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrTimeInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-datetime-input",
       "id": "EmrDateTimeInputComponent",
       "reactName": "EmrDateTimeInput",
+      "litName": "EmrDateTimeInputElement",
       "selector": "emr-datetime-input",
       "type": "registry:ui",
       "layer": 1,
@@ -6047,7 +6929,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-datetime-input",
         "angular": "pnpm emr add emr-datetime-input --framework angular",
         "react": "pnpm emr add emr-datetime-input --framework react",
-        "expo": "pnpm emr add emr-datetime-input --framework expo"
+        "expo": "pnpm emr add emr-datetime-input --framework expo",
+        "lit": "pnpm emr add emr-datetime-input --framework lit"
       },
       "angular": {
         "component": "EmrDateTimeInputComponent",
@@ -6060,6 +6943,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrDateTimeInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -6075,6 +6959,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrDateTimeInput",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -6087,13 +6972,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDateTimeInput } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrDateTimeInputElement",
+        "selector": "emr-datetime-input",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrDateTimeInputElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-status-cell",
       "id": "EmrStatusCellComponent",
       "reactName": "EmrStatusCell",
+      "litName": "EmrStatusCellElement",
       "selector": "emr-status-cell",
       "type": "registry:ui",
       "layer": 1,
@@ -6127,7 +7021,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-status-cell",
         "angular": "pnpm emr add emr-status-cell --framework angular",
         "react": "pnpm emr add emr-status-cell --framework react",
-        "expo": "pnpm emr add emr-status-cell --framework expo"
+        "expo": "pnpm emr add emr-status-cell --framework expo",
+        "lit": "pnpm emr add emr-status-cell --framework lit"
       },
       "angular": {
         "component": "EmrStatusCellComponent",
@@ -6161,13 +7056,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrStatusCell } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrStatusCellElement",
+        "selector": "emr-status-cell",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrStatusCellElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-attestation",
       "id": "EmrAttestationComponent",
       "reactName": "EmrAttestation",
+      "litName": "EmrAttestationElement",
       "selector": "emr-attestation",
       "type": "registry:ui",
       "layer": 2,
@@ -6202,7 +7106,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-attestation",
         "angular": "pnpm emr add emr-attestation --framework angular",
         "react": "pnpm emr add emr-attestation --framework react",
-        "expo": "pnpm emr add emr-attestation --framework expo"
+        "expo": "pnpm emr add emr-attestation --framework expo",
+        "lit": "pnpm emr add emr-attestation --framework lit"
       },
       "angular": {
         "component": "EmrAttestationComponent",
@@ -6240,13 +7145,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAttestation } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrAttestationElement",
+        "selector": "emr-attestation",
+        "files": [
+          "l2-fields.ts"
+        ],
+        "import": "import { EmrAttestationElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 10
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-schedule-slot-picker",
       "id": "EmrScheduleSlotPickerComponent",
       "reactName": "EmrScheduleSlotPicker",
+      "litName": "EmrScheduleSlotPickerElement",
       "selector": "emr-schedule-slot-picker",
       "type": "registry:ui",
       "layer": 2,
@@ -6280,7 +7194,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-schedule-slot-picker",
         "angular": "pnpm emr add emr-schedule-slot-picker --framework angular",
         "react": "pnpm emr add emr-schedule-slot-picker --framework react",
-        "expo": "pnpm emr add emr-schedule-slot-picker --framework expo"
+        "expo": "pnpm emr add emr-schedule-slot-picker --framework expo",
+        "lit": "pnpm emr add emr-schedule-slot-picker --framework lit"
       },
       "angular": {
         "component": "EmrScheduleSlotPickerComponent",
@@ -6294,6 +7209,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrScheduleSlotPicker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -6314,6 +7230,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrScheduleSlotPicker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -6331,13 +7248,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrScheduleSlotPicker } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 16
+      "lit": {
+        "component": "EmrScheduleSlotPickerElement",
+        "selector": "emr-schedule-slot-picker",
+        "files": [
+          "l2-fields.ts"
+        ],
+        "import": "import { EmrScheduleSlotPickerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-identifier-entry",
       "id": "EmrIdentifierEntryComponent",
       "reactName": "EmrIdentifierEntry",
+      "litName": "EmrIdentifierEntryElement",
       "selector": "emr-identifier-entry",
       "type": "registry:ui",
       "layer": 2,
@@ -6368,7 +7294,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-identifier-entry",
         "angular": "pnpm emr add emr-identifier-entry --framework angular",
         "react": "pnpm emr add emr-identifier-entry --framework react",
-        "expo": "pnpm emr add emr-identifier-entry --framework expo"
+        "expo": "pnpm emr add emr-identifier-entry --framework expo",
+        "lit": "pnpm emr add emr-identifier-entry --framework lit"
       },
       "angular": {
         "component": "EmrIdentifierEntryComponent",
@@ -6381,6 +7308,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrIdentifierEntry",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6398,6 +7326,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrIdentifierEntry",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6412,13 +7341,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrIdentifierEntry } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrIdentifierEntryElement",
+        "selector": "emr-identifier-entry",
+        "files": [
+          "l2-fields.ts"
+        ],
+        "import": "import { EmrIdentifierEntryElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-time-axis",
       "id": "EmrTimeAxisComponent",
       "reactName": "EmrTimeAxis",
+      "litName": "EmrTimeAxisElement",
       "selector": "emr-time-axis",
       "type": "registry:ui",
       "layer": 3,
@@ -6448,7 +7386,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-time-axis",
         "angular": "pnpm emr add emr-time-axis --framework angular",
         "react": "pnpm emr add emr-time-axis --framework react",
-        "expo": "pnpm emr add emr-time-axis --framework expo"
+        "expo": "pnpm emr add emr-time-axis --framework expo",
+        "lit": "pnpm emr add emr-time-axis --framework lit"
       },
       "angular": {
         "component": "EmrTimeAxisComponent",
@@ -6461,6 +7400,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTimeAxis",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -6478,6 +7418,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTimeAxis",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -6492,13 +7433,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTimeAxis } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrTimeAxisElement",
+        "selector": "emr-time-axis",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrTimeAxisElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-data-table",
       "id": "EmrDataTableComponent",
       "reactName": "EmrDataTable",
+      "litName": "EmrDataTableElement",
       "selector": "emr-data-table",
       "type": "registry:ui",
       "layer": 3,
@@ -6527,7 +7477,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-data-table",
         "angular": "pnpm emr add emr-data-table --framework angular",
         "react": "pnpm emr add emr-data-table --framework react",
-        "expo": "pnpm emr add emr-data-table --framework expo"
+        "expo": "pnpm emr add emr-data-table --framework expo",
+        "lit": "pnpm emr add emr-data-table --framework lit"
       },
       "angular": {
         "component": "EmrDataTableComponent",
@@ -6544,6 +7495,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "data-table.tsx",
           "data-table.types.ts",
           "data-table.web.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6563,6 +7515,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "data-table.logic.ts",
           "data-table.tsx",
           "data-table.types.ts",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6576,13 +7529,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDataTable } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 15
+      "lit": {
+        "component": "EmrDataTableElement",
+        "selector": "emr-data-table",
+        "files": [
+          "l3-structures.ts"
+        ],
+        "import": "import { EmrDataTableElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-stage-stepper",
       "id": "EmrStageStepperComponent",
       "reactName": "EmrStageStepper",
+      "litName": "EmrStageStepperElement",
       "selector": "emr-stage-stepper",
       "type": "registry:ui",
       "layer": 1,
@@ -6612,7 +7574,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-stage-stepper",
         "angular": "pnpm emr add emr-stage-stepper --framework angular",
         "react": "pnpm emr add emr-stage-stepper --framework react",
-        "expo": "pnpm emr add emr-stage-stepper --framework expo"
+        "expo": "pnpm emr add emr-stage-stepper --framework expo",
+        "lit": "pnpm emr add emr-stage-stepper --framework lit"
       },
       "angular": {
         "component": "EmrStageStepperComponent",
@@ -6625,6 +7588,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrStageStepper",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -6642,6 +7606,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrStageStepper",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -6656,13 +7621,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrStageStepper } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrStageStepperElement",
+        "selector": "emr-stage-stepper",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrStageStepperElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-stat-tile",
       "id": "EmrStatTileComponent",
       "reactName": "EmrStatTile",
+      "litName": "EmrStatTileElement",
       "selector": "emr-stat-tile",
       "type": "registry:ui",
       "layer": 1,
@@ -6689,7 +7663,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-stat-tile",
         "angular": "pnpm emr add emr-stat-tile --framework angular",
         "react": "pnpm emr add emr-stat-tile --framework react",
-        "expo": "pnpm emr add emr-stat-tile --framework expo"
+        "expo": "pnpm emr add emr-stat-tile --framework expo",
+        "lit": "pnpm emr add emr-stat-tile --framework lit"
       },
       "angular": {
         "component": "EmrStatTileComponent",
@@ -6723,13 +7698,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrStatTile } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrStatTileElement",
+        "selector": "emr-stat-tile",
+        "files": [
+          "l1-primitives.ts"
+        ],
+        "import": "import { EmrStatTileElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-consent-capture",
       "id": "EmrConsentCaptureComponent",
       "reactName": "EmrConsentCapture",
+      "litName": "EmrConsentCaptureElement",
       "selector": "emr-consent-capture",
       "type": "registry:ui",
       "layer": 4,
@@ -6761,7 +7745,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-consent-capture",
         "angular": "pnpm emr add emr-consent-capture --framework angular",
         "react": "pnpm emr add emr-consent-capture --framework react",
-        "expo": "pnpm emr add emr-consent-capture --framework expo"
+        "expo": "pnpm emr add emr-consent-capture --framework expo",
+        "lit": "pnpm emr add emr-consent-capture --framework lit"
       },
       "angular": {
         "component": "EmrConsentCaptureComponent",
@@ -6774,6 +7759,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrConsentCapture",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6793,6 +7779,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrConsentCapture",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6809,13 +7796,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrConsentCapture } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrConsentCaptureElement",
+        "selector": "emr-consent-capture",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrConsentCaptureElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-consent-review",
       "id": "EmrConsentReviewComponent",
       "reactName": "EmrConsentReview",
+      "litName": "EmrConsentReviewElement",
       "selector": "emr-consent-review",
       "type": "registry:ui",
       "layer": 4,
@@ -6844,7 +7840,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-consent-review",
         "angular": "pnpm emr add emr-consent-review --framework angular",
         "react": "pnpm emr add emr-consent-review --framework react",
-        "expo": "pnpm emr add emr-consent-review --framework expo"
+        "expo": "pnpm emr add emr-consent-review --framework expo",
+        "lit": "pnpm emr add emr-consent-review --framework lit"
       },
       "angular": {
         "component": "EmrConsentReviewComponent",
@@ -6860,6 +7857,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "consent-receipt.tsx",
           "consent-receipt.types.ts",
           "consent-receipt.web.tsx",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6881,6 +7879,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "consent-receipt.tsx",
           "consent-receipt.types.ts",
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -6897,13 +7896,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrConsentReview } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 17
+      "lit": {
+        "component": "EmrConsentReviewElement",
+        "selector": "emr-consent-review",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrConsentReviewElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-consent-receipt",
       "id": "EmrConsentReceiptComponent",
       "reactName": "EmrConsentReceipt",
+      "litName": "EmrConsentReceiptElement",
       "selector": "emr-consent-receipt",
       "type": "registry:ui",
       "layer": 4,
@@ -6928,7 +7936,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-consent-receipt",
         "angular": "pnpm emr add emr-consent-receipt --framework angular",
         "react": "pnpm emr add emr-consent-receipt --framework react",
-        "expo": "pnpm emr add emr-consent-receipt --framework expo"
+        "expo": "pnpm emr add emr-consent-receipt --framework expo",
+        "lit": "pnpm emr add emr-consent-receipt --framework lit"
       },
       "angular": {
         "component": "EmrConsentReceiptComponent",
@@ -6965,13 +7974,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrConsentReceipt } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 9
+      "lit": {
+        "component": "EmrConsentReceiptElement",
+        "selector": "emr-consent-receipt",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrConsentReceiptElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 10
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-consent-status-badge",
       "id": "EmrConsentStatusBadgeComponent",
       "reactName": "EmrConsentStatusBadge",
+      "litName": "EmrConsentStatusBadgeElement",
       "selector": "emr-consent-status-badge",
       "type": "registry:ui",
       "layer": 4,
@@ -6995,7 +8013,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-consent-status-badge",
         "angular": "pnpm emr add emr-consent-status-badge --framework angular",
         "react": "pnpm emr add emr-consent-status-badge --framework react",
-        "expo": "pnpm emr add emr-consent-status-badge --framework expo"
+        "expo": "pnpm emr add emr-consent-status-badge --framework expo",
+        "lit": "pnpm emr add emr-consent-status-badge --framework lit"
       },
       "angular": {
         "component": "EmrConsentStatusBadgeComponent",
@@ -7008,6 +8027,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrConsentStatusBadge",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7027,6 +8047,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrConsentStatusBadge",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7043,13 +8064,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrConsentStatusBadge } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrConsentStatusBadgeElement",
+        "selector": "emr-consent-status-badge",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrConsentStatusBadgeElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-sharing-grants",
       "id": "EmrSharingGrantsComponent",
       "reactName": "EmrSharingGrants",
+      "litName": "EmrSharingGrantsElement",
       "selector": "emr-sharing-grants",
       "type": "registry:ui",
       "layer": 4,
@@ -7080,7 +8110,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-sharing-grants",
         "angular": "pnpm emr add emr-sharing-grants --framework angular",
         "react": "pnpm emr add emr-sharing-grants --framework react",
-        "expo": "pnpm emr add emr-sharing-grants --framework expo"
+        "expo": "pnpm emr add emr-sharing-grants --framework expo",
+        "lit": "pnpm emr add emr-sharing-grants --framework lit"
       },
       "angular": {
         "component": "EmrSharingGrantsComponent",
@@ -7120,13 +8151,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSharingGrants } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrSharingGrantsElement",
+        "selector": "emr-sharing-grants",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrSharingGrantsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-access-log",
       "id": "EmrAccessLogComponent",
       "reactName": "EmrAccessLog",
+      "litName": "EmrAccessLogElement",
       "selector": "emr-access-log",
       "type": "registry:ui",
       "layer": 4,
@@ -7154,7 +8194,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-access-log",
         "angular": "pnpm emr add emr-access-log --framework angular",
         "react": "pnpm emr add emr-access-log --framework react",
-        "expo": "pnpm emr add emr-access-log --framework expo"
+        "expo": "pnpm emr add emr-access-log --framework expo",
+        "lit": "pnpm emr add emr-access-log --framework lit"
       },
       "angular": {
         "component": "EmrAccessLogComponent",
@@ -7194,13 +8235,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAccessLog } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrAccessLogElement",
+        "selector": "emr-access-log",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrAccessLogElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-rights-requests",
       "id": "EmrRightsRequestsComponent",
       "reactName": "EmrRightsRequests",
+      "litName": "EmrRightsRequestsElement",
       "selector": "emr-rights-requests",
       "type": "registry:ui",
       "layer": 4,
@@ -7234,7 +8284,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-rights-requests",
         "angular": "pnpm emr add emr-rights-requests --framework angular",
         "react": "pnpm emr add emr-rights-requests --framework react",
-        "expo": "pnpm emr add emr-rights-requests --framework expo"
+        "expo": "pnpm emr add emr-rights-requests --framework expo",
+        "lit": "pnpm emr add emr-rights-requests --framework lit"
       },
       "angular": {
         "component": "EmrRightsRequestsComponent",
@@ -7247,6 +8298,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrRightsRequests",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7265,6 +8317,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrRightsRequests",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7280,13 +8333,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrRightsRequests } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrRightsRequestsElement",
+        "selector": "emr-rights-requests",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrRightsRequestsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-privacy-centre",
       "id": "EmrPrivacyCentreComponent",
       "reactName": "EmrPrivacyCentre",
+      "litName": "EmrPrivacyCentreElement",
       "selector": "emr-privacy-centre",
       "type": "registry:ui",
       "layer": 4,
@@ -7313,7 +8375,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-privacy-centre",
         "angular": "pnpm emr add emr-privacy-centre --framework angular",
         "react": "pnpm emr add emr-privacy-centre --framework react",
-        "expo": "pnpm emr add emr-privacy-centre --framework expo"
+        "expo": "pnpm emr add emr-privacy-centre --framework expo",
+        "lit": "pnpm emr add emr-privacy-centre --framework lit"
       },
       "angular": {
         "component": "EmrPrivacyCentreComponent",
@@ -7326,6 +8389,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPrivacyCentre",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7352,6 +8416,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPrivacyCentre",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7375,13 +8440,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPrivacyCentre } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 21
+      "lit": {
+        "component": "EmrPrivacyCentreElement",
+        "selector": "emr-privacy-centre",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPrivacyCentreElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-patient-identity-card",
       "id": "EmrPatientIdentityCardComponent",
       "reactName": "EmrPatientIdentityCard",
+      "litName": "EmrPatientIdentityCardElement",
       "selector": "emr-patient-identity-card",
       "type": "registry:ui",
       "layer": 4,
@@ -7408,7 +8482,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-patient-identity-card",
         "angular": "pnpm emr add emr-patient-identity-card --framework angular",
         "react": "pnpm emr add emr-patient-identity-card --framework react",
-        "expo": "pnpm emr add emr-patient-identity-card --framework expo"
+        "expo": "pnpm emr add emr-patient-identity-card --framework expo",
+        "lit": "pnpm emr add emr-patient-identity-card --framework lit"
       },
       "angular": {
         "component": "EmrPatientIdentityCardComponent",
@@ -7421,6 +8496,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPatientIdentityCard",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7438,6 +8514,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPatientIdentityCard",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7452,13 +8529,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPatientIdentityCard } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrPatientIdentityCardElement",
+        "selector": "emr-patient-identity-card",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPatientIdentityCardElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-identifier-check-prompt",
       "id": "EmrIdentifierCheckPromptComponent",
       "reactName": "EmrIdentifierCheckPrompt",
+      "litName": "EmrIdentifierCheckPromptElement",
       "selector": "emr-identifier-check-prompt",
       "type": "registry:ui",
       "layer": 4,
@@ -7489,7 +8575,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-identifier-check-prompt",
         "angular": "pnpm emr add emr-identifier-check-prompt --framework angular",
         "react": "pnpm emr add emr-identifier-check-prompt --framework react",
-        "expo": "pnpm emr add emr-identifier-check-prompt --framework expo"
+        "expo": "pnpm emr add emr-identifier-check-prompt --framework expo",
+        "lit": "pnpm emr add emr-identifier-check-prompt --framework lit"
       },
       "angular": {
         "component": "EmrIdentifierCheckPromptComponent",
@@ -7502,6 +8589,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrIdentifierCheckPrompt",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7519,6 +8607,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrIdentifierCheckPrompt",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7533,13 +8622,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrIdentifierCheckPrompt } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrIdentifierCheckPromptElement",
+        "selector": "emr-identifier-check-prompt",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrIdentifierCheckPromptElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-link-cards",
       "id": "EmrLinkCardsComponent",
       "reactName": "EmrLinkCards",
+      "litName": "EmrLinkCardsElement",
       "selector": "emr-link-cards",
       "type": "registry:ui",
       "layer": 4,
@@ -7569,7 +8667,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-link-cards",
         "angular": "pnpm emr add emr-link-cards --framework angular",
         "react": "pnpm emr add emr-link-cards --framework react",
-        "expo": "pnpm emr add emr-link-cards --framework expo"
+        "expo": "pnpm emr add emr-link-cards --framework expo",
+        "lit": "pnpm emr add emr-link-cards --framework lit"
       },
       "angular": {
         "component": "EmrLinkCardsComponent",
@@ -7582,6 +8681,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrLinkCards",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7600,6 +8700,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrLinkCards",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7615,13 +8716,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrLinkCards } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrLinkCardsElement",
+        "selector": "emr-link-cards",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrLinkCardsElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-contact-attempt-form",
       "id": "EmrContactAttemptFormComponent",
       "reactName": "EmrContactAttemptForm",
+      "litName": "EmrContactAttemptFormElement",
       "selector": "emr-contact-attempt-form",
       "type": "registry:ui",
       "layer": 4,
@@ -7654,7 +8764,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-contact-attempt-form",
         "angular": "pnpm emr add emr-contact-attempt-form --framework angular",
         "react": "pnpm emr add emr-contact-attempt-form --framework react",
-        "expo": "pnpm emr add emr-contact-attempt-form --framework expo"
+        "expo": "pnpm emr add emr-contact-attempt-form --framework expo",
+        "lit": "pnpm emr add emr-contact-attempt-form --framework lit"
       },
       "angular": {
         "component": "EmrContactAttemptFormComponent",
@@ -7667,6 +8778,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrContactAttemptForm",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7684,6 +8796,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrContactAttemptForm",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7698,13 +8811,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrContactAttemptForm } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrContactAttemptFormElement",
+        "selector": "emr-contact-attempt-form",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrContactAttemptFormElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-contact-attempt-summary",
       "id": "EmrContactAttemptSummaryComponent",
       "reactName": "EmrContactAttemptSummary",
+      "litName": "EmrContactAttemptSummaryElement",
       "selector": "emr-contact-attempt-summary",
       "type": "registry:ui",
       "layer": 4,
@@ -7729,7 +8851,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-contact-attempt-summary",
         "angular": "pnpm emr add emr-contact-attempt-summary --framework angular",
         "react": "pnpm emr add emr-contact-attempt-summary --framework react",
-        "expo": "pnpm emr add emr-contact-attempt-summary --framework expo"
+        "expo": "pnpm emr add emr-contact-attempt-summary --framework expo",
+        "lit": "pnpm emr add emr-contact-attempt-summary --framework lit"
       },
       "angular": {
         "component": "EmrContactAttemptSummaryComponent",
@@ -7742,6 +8865,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrContactAttemptSummary",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7759,6 +8883,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrContactAttemptSummary",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7773,13 +8898,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrContactAttemptSummary } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 12
+      "lit": {
+        "component": "EmrContactAttemptSummaryElement",
+        "selector": "emr-contact-attempt-summary",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrContactAttemptSummaryElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-merge-compare",
       "id": "EmrMergeCompareComponent",
       "reactName": "EmrMergeCompare",
+      "litName": "EmrMergeCompareElement",
       "selector": "emr-merge-compare",
       "type": "registry:ui",
       "layer": 4,
@@ -7805,7 +8939,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-merge-compare",
         "angular": "pnpm emr add emr-merge-compare --framework angular",
         "react": "pnpm emr add emr-merge-compare --framework react",
-        "expo": "pnpm emr add emr-merge-compare --framework expo"
+        "expo": "pnpm emr add emr-merge-compare --framework expo",
+        "lit": "pnpm emr add emr-merge-compare --framework lit"
       },
       "angular": {
         "component": "EmrMergeCompareComponent",
@@ -7818,6 +8953,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrMergeCompare",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7837,6 +8973,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrMergeCompare",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7853,13 +8990,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrMergeCompare } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrMergeCompareElement",
+        "selector": "emr-merge-compare",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrMergeCompareElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-draft-record-list",
       "id": "EmrDraftRecordListComponent",
       "reactName": "EmrDraftRecordList",
+      "litName": "EmrDraftRecordListElement",
       "selector": "emr-draft-record-list",
       "type": "registry:ui",
       "layer": 4,
@@ -7889,7 +9035,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-draft-record-list",
         "angular": "pnpm emr add emr-draft-record-list --framework angular",
         "react": "pnpm emr add emr-draft-record-list --framework react",
-        "expo": "pnpm emr add emr-draft-record-list --framework expo"
+        "expo": "pnpm emr add emr-draft-record-list --framework expo",
+        "lit": "pnpm emr add emr-draft-record-list --framework lit"
       },
       "angular": {
         "component": "EmrDraftRecordListComponent",
@@ -7929,13 +9076,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrDraftRecordList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrDraftRecordListElement",
+        "selector": "emr-draft-record-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrDraftRecordListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-arrival-linker",
       "id": "EmrArrivalLinkerComponent",
       "reactName": "EmrArrivalLinker",
+      "litName": "EmrArrivalLinkerElement",
       "selector": "emr-arrival-linker",
       "type": "registry:ui",
       "layer": 4,
@@ -7966,7 +9122,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-arrival-linker",
         "angular": "pnpm emr add emr-arrival-linker --framework angular",
         "react": "pnpm emr add emr-arrival-linker --framework react",
-        "expo": "pnpm emr add emr-arrival-linker --framework expo"
+        "expo": "pnpm emr add emr-arrival-linker --framework expo",
+        "lit": "pnpm emr add emr-arrival-linker --framework lit"
       },
       "angular": {
         "component": "EmrArrivalLinkerComponent",
@@ -7979,6 +9136,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrArrivalLinker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -7998,6 +9156,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrArrivalLinker",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8014,13 +9173,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrArrivalLinker } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrArrivalLinkerElement",
+        "selector": "emr-arrival-linker",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrArrivalLinkerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-spectacle-delivery",
       "id": "EmrSpectacleDeliveryComponent",
       "reactName": "EmrSpectacleDelivery",
+      "litName": "EmrSpectacleDeliveryElement",
       "selector": "emr-spectacle-delivery",
       "type": "registry:ui",
       "layer": 4,
@@ -8048,7 +9216,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-spectacle-delivery",
         "angular": "pnpm emr add emr-spectacle-delivery --framework angular",
         "react": "pnpm emr add emr-spectacle-delivery --framework react",
-        "expo": "pnpm emr add emr-spectacle-delivery --framework expo"
+        "expo": "pnpm emr add emr-spectacle-delivery --framework expo",
+        "lit": "pnpm emr add emr-spectacle-delivery --framework lit"
       },
       "angular": {
         "component": "EmrSpectacleDeliveryComponent",
@@ -8061,6 +9230,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrSpectacleDelivery",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8080,6 +9250,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrSpectacleDelivery",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8096,13 +9267,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSpectacleDelivery } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrSpectacleDeliveryElement",
+        "selector": "emr-spectacle-delivery",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrSpectacleDeliveryElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-booked-not-delivered-list",
       "id": "EmrBookedNotDeliveredListComponent",
       "reactName": "EmrBookedNotDeliveredList",
+      "litName": "EmrBookedNotDeliveredListElement",
       "selector": "emr-booked-not-delivered-list",
       "type": "registry:ui",
       "layer": 4,
@@ -8130,7 +9310,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-booked-not-delivered-list",
         "angular": "pnpm emr add emr-booked-not-delivered-list --framework angular",
         "react": "pnpm emr add emr-booked-not-delivered-list --framework react",
-        "expo": "pnpm emr add emr-booked-not-delivered-list --framework expo"
+        "expo": "pnpm emr add emr-booked-not-delivered-list --framework expo",
+        "lit": "pnpm emr add emr-booked-not-delivered-list --framework lit"
       },
       "angular": {
         "component": "EmrBookedNotDeliveredListComponent",
@@ -8143,6 +9324,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrBookedNotDeliveredList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8162,6 +9344,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrBookedNotDeliveredList",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8178,13 +9361,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrBookedNotDeliveredList } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrBookedNotDeliveredListElement",
+        "selector": "emr-booked-not-delivered-list",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrBookedNotDeliveredListElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-cataract-episode-card",
       "id": "EmrCataractEpisodeCardComponent",
       "reactName": "EmrCataractEpisodeCard",
+      "litName": "EmrCataractEpisodeCardElement",
       "selector": "emr-cataract-episode-card",
       "type": "registry:ui",
       "layer": 4,
@@ -8210,7 +9402,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-cataract-episode-card",
         "angular": "pnpm emr add emr-cataract-episode-card --framework angular",
         "react": "pnpm emr add emr-cataract-episode-card --framework react",
-        "expo": "pnpm emr add emr-cataract-episode-card --framework expo"
+        "expo": "pnpm emr add emr-cataract-episode-card --framework expo",
+        "lit": "pnpm emr add emr-cataract-episode-card --framework lit"
       },
       "angular": {
         "component": "EmrCataractEpisodeCardComponent",
@@ -8223,6 +9416,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrCataractEpisodeCard",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8242,6 +9436,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrCataractEpisodeCard",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8258,13 +9453,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCataractEpisodeCard } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 14
+      "lit": {
+        "component": "EmrCataractEpisodeCardElement",
+        "selector": "emr-cataract-episode-card",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrCataractEpisodeCardElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-patient-history-timeline",
       "id": "EmrPatientHistoryTimelineComponent",
       "reactName": "EmrPatientHistoryTimeline",
+      "litName": "EmrPatientHistoryTimelineElement",
       "selector": "emr-patient-history-timeline",
       "type": "registry:ui",
       "layer": 4,
@@ -8294,7 +9498,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-patient-history-timeline",
         "angular": "pnpm emr add emr-patient-history-timeline --framework angular",
         "react": "pnpm emr add emr-patient-history-timeline --framework react",
-        "expo": "pnpm emr add emr-patient-history-timeline --framework expo"
+        "expo": "pnpm emr add emr-patient-history-timeline --framework expo",
+        "lit": "pnpm emr add emr-patient-history-timeline --framework lit"
       },
       "angular": {
         "component": "EmrPatientHistoryTimelineComponent",
@@ -8307,6 +9512,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPatientHistoryTimeline",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8332,6 +9538,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPatientHistoryTimeline",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
@@ -8354,13 +9561,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPatientHistoryTimeline } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 20
+      "lit": {
+        "component": "EmrPatientHistoryTimelineElement",
+        "selector": "emr-patient-history-timeline",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPatientHistoryTimelineElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-record-diff",
       "id": "EmrRecordDiffComponent",
       "reactName": "EmrRecordDiff",
+      "litName": "EmrRecordDiffElement",
       "selector": "emr-record-diff",
       "type": "registry:ui",
       "layer": 4,
@@ -8384,7 +9600,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-record-diff",
         "angular": "pnpm emr add emr-record-diff --framework angular",
         "react": "pnpm emr add emr-record-diff --framework react",
-        "expo": "pnpm emr add emr-record-diff --framework expo"
+        "expo": "pnpm emr add emr-record-diff --framework expo",
+        "lit": "pnpm emr add emr-record-diff --framework lit"
       },
       "angular": {
         "component": "EmrRecordDiffComponent",
@@ -8429,13 +9646,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrRecordDiff } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 13
+      "lit": {
+        "component": "EmrRecordDiffElement",
+        "selector": "emr-record-diff",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrRecordDiffElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-upload-queue",
       "id": "EmrUploadQueueComponent",
       "reactName": "EmrUploadQueue",
+      "litName": "EmrUploadQueueElement",
       "selector": "emr-upload-queue",
       "type": "registry:ui",
       "layer": 4,
@@ -8459,7 +9685,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-upload-queue",
         "angular": "pnpm emr add emr-upload-queue --framework angular",
         "react": "pnpm emr add emr-upload-queue --framework react",
-        "expo": "pnpm emr add emr-upload-queue --framework expo"
+        "expo": "pnpm emr add emr-upload-queue --framework expo",
+        "lit": "pnpm emr add emr-upload-queue --framework lit"
       },
       "angular": {
         "component": "EmrUploadQueueComponent",
@@ -8498,13 +9725,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrUploadQueue } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrUploadQueueElement",
+        "selector": "emr-upload-queue",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrUploadQueueElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-bar-chart",
       "id": "EmrBarChartComponent",
       "reactName": "EmrBarChart",
+      "litName": "EmrBarChartElement",
       "selector": "emr-bar-chart",
       "type": "registry:ui",
       "layer": 4,
@@ -8528,7 +9764,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-bar-chart",
         "angular": "pnpm emr add emr-bar-chart --framework angular",
         "react": "pnpm emr add emr-bar-chart --framework react",
-        "expo": "pnpm emr add emr-bar-chart --framework expo"
+        "expo": "pnpm emr add emr-bar-chart --framework expo",
+        "lit": "pnpm emr add emr-bar-chart --framework lit"
       },
       "angular": {
         "component": "EmrBarChartComponent",
@@ -8569,13 +9806,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrBarChart } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 11
+      "lit": {
+        "component": "EmrBarChartElement",
+        "selector": "emr-bar-chart",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrBarChartElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-funnel-chart",
       "id": "EmrFunnelChartComponent",
       "reactName": "EmrFunnelChart",
+      "litName": "EmrFunnelChartElement",
       "selector": "emr-funnel-chart",
       "type": "registry:ui",
       "layer": 4,
@@ -8599,7 +9845,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-funnel-chart",
         "angular": "pnpm emr add emr-funnel-chart --framework angular",
         "react": "pnpm emr add emr-funnel-chart --framework react",
-        "expo": "pnpm emr add emr-funnel-chart --framework expo"
+        "expo": "pnpm emr add emr-funnel-chart --framework expo",
+        "lit": "pnpm emr add emr-funnel-chart --framework lit"
       },
       "angular": {
         "component": "EmrFunnelChartComponent",
@@ -8640,13 +9887,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrFunnelChart } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 11
+      "lit": {
+        "component": "EmrFunnelChartElement",
+        "selector": "emr-funnel-chart",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrFunnelChartElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-pin-pad",
       "id": "EmrPinPadComponent",
       "reactName": "EmrPinPad",
+      "litName": "EmrPinPadElement",
       "selector": "emr-pin-pad",
       "type": "registry:ui",
       "layer": 4,
@@ -8670,7 +9926,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-pin-pad",
         "angular": "pnpm emr add emr-pin-pad --framework angular",
         "react": "pnpm emr add emr-pin-pad --framework react",
-        "expo": "pnpm emr add emr-pin-pad --framework expo"
+        "expo": "pnpm emr add emr-pin-pad --framework expo",
+        "lit": "pnpm emr add emr-pin-pad --framework lit"
       },
       "angular": {
         "component": "EmrPinPadComponent",
@@ -8683,6 +9940,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPinPad",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8698,6 +9956,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPinPad",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8710,13 +9969,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPinPad } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrPinPadElement",
+        "selector": "emr-pin-pad",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPinPadElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-login-form",
       "id": "EmrLoginFormComponent",
       "reactName": "EmrLoginForm",
+      "litName": "EmrLoginFormElement",
       "selector": "emr-login-form",
       "type": "registry:ui",
       "layer": 4,
@@ -8742,7 +10010,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-login-form",
         "angular": "pnpm emr add emr-login-form --framework angular",
         "react": "pnpm emr add emr-login-form --framework react",
-        "expo": "pnpm emr add emr-login-form --framework expo"
+        "expo": "pnpm emr add emr-login-form --framework expo",
+        "lit": "pnpm emr add emr-login-form --framework lit"
       },
       "angular": {
         "component": "EmrLoginFormComponent",
@@ -8755,6 +10024,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrLoginForm",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8770,6 +10040,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrLoginForm",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8782,13 +10053,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrLoginForm } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrLoginFormElement",
+        "selector": "emr-login-form",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrLoginFormElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-bottom-tab-bar",
       "id": "EmrBottomTabBarComponent",
       "reactName": "EmrBottomTabBar",
+      "litName": "EmrBottomTabBarElement",
       "selector": "emr-bottom-tab-bar",
       "type": "registry:ui",
       "layer": 4,
@@ -8812,7 +10092,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-bottom-tab-bar",
         "angular": "pnpm emr add emr-bottom-tab-bar --framework angular",
         "react": "pnpm emr add emr-bottom-tab-bar --framework react",
-        "expo": "pnpm emr add emr-bottom-tab-bar --framework expo"
+        "expo": "pnpm emr add emr-bottom-tab-bar --framework expo",
+        "lit": "pnpm emr add emr-bottom-tab-bar --framework lit"
       },
       "angular": {
         "component": "EmrBottomTabBarComponent",
@@ -8825,6 +10106,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrBottomTabBar",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8840,6 +10122,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrBottomTabBar",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8852,13 +10135,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrBottomTabBar } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrBottomTabBarElement",
+        "selector": "emr-bottom-tab-bar",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrBottomTabBarElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-sync-pill",
       "id": "EmrSyncPillComponent",
       "reactName": "EmrSyncPill",
+      "litName": "EmrSyncPillElement",
       "selector": "emr-sync-pill",
       "type": "registry:ui",
       "layer": 4,
@@ -8882,7 +10174,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-sync-pill",
         "angular": "pnpm emr add emr-sync-pill --framework angular",
         "react": "pnpm emr add emr-sync-pill --framework react",
-        "expo": "pnpm emr add emr-sync-pill --framework expo"
+        "expo": "pnpm emr add emr-sync-pill --framework expo",
+        "lit": "pnpm emr add emr-sync-pill --framework lit"
       },
       "angular": {
         "component": "EmrSyncPillComponent",
@@ -8895,6 +10188,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrSyncPill",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8910,6 +10204,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrSyncPill",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8922,13 +10217,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSyncPill } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrSyncPillElement",
+        "selector": "emr-sync-pill",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrSyncPillElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-toast",
       "id": "EmrToastComponent",
       "reactName": "EmrToast",
+      "litName": "EmrToastElement",
       "selector": "emr-toast",
       "type": "registry:ui",
       "layer": 4,
@@ -8952,7 +10256,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-toast",
         "angular": "pnpm emr add emr-toast --framework angular",
         "react": "pnpm emr add emr-toast --framework react",
-        "expo": "pnpm emr add emr-toast --framework expo"
+        "expo": "pnpm emr add emr-toast --framework expo",
+        "lit": "pnpm emr add emr-toast --framework lit"
       },
       "angular": {
         "component": "EmrToastComponent",
@@ -8965,6 +10270,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrToast",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8980,6 +10286,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrToast",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l4-mobile-shell.tsx",
@@ -8992,13 +10299,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrToast } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 10
+      "lit": {
+        "component": "EmrToastElement",
+        "selector": "emr-toast",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrToastElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 12
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-sheet",
       "id": "EmrSheetComponent",
       "reactName": "EmrSheet",
+      "litName": "EmrSheetElement",
       "selector": "emr-sheet",
       "type": "registry:ui",
       "layer": 4,
@@ -9022,7 +10338,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-sheet",
         "angular": "pnpm emr add emr-sheet --framework angular",
         "react": "pnpm emr add emr-sheet --framework react",
-        "expo": "pnpm emr add emr-sheet --framework expo"
+        "expo": "pnpm emr add emr-sheet --framework expo",
+        "lit": "pnpm emr add emr-sheet --framework lit"
       },
       "angular": {
         "component": "EmrSheetComponent",
@@ -9056,13 +10373,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrSheet } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 7
+      "lit": {
+        "component": "EmrSheetElement",
+        "selector": "emr-sheet",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrSheetElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 8
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-top-bar-search",
       "id": "EmrTopBarSearchComponent",
       "reactName": "EmrTopBarSearch",
+      "litName": "EmrTopBarSearchElement",
       "selector": "emr-top-bar-search",
       "type": "registry:ui",
       "layer": 4,
@@ -9086,7 +10412,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-top-bar-search",
         "angular": "pnpm emr add emr-top-bar-search --framework angular",
         "react": "pnpm emr add emr-top-bar-search --framework react",
-        "expo": "pnpm emr add emr-top-bar-search --framework expo"
+        "expo": "pnpm emr add emr-top-bar-search --framework expo",
+        "lit": "pnpm emr add emr-top-bar-search --framework lit"
       },
       "angular": {
         "component": "EmrTopBarSearchComponent",
@@ -9099,6 +10426,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTopBarSearch",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -9120,6 +10448,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTopBarSearch",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -9138,13 +10467,22 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTopBarSearch } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 16
+      "lit": {
+        "component": "EmrTopBarSearchElement",
+        "selector": "emr-top-bar-search",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrTopBarSearchElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-top-bar",
       "id": "EmrTopBarComponent",
       "reactName": "EmrTopBar",
+      "litName": "EmrTopBarElement",
       "selector": "emr-top-bar",
       "type": "registry:ui",
       "layer": 4,
@@ -9170,7 +10508,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "cli": "pnpm emr add emr-top-bar",
         "angular": "pnpm emr add emr-top-bar --framework angular",
         "react": "pnpm emr add emr-top-bar --framework react",
-        "expo": "pnpm emr add emr-top-bar --framework expo"
+        "expo": "pnpm emr add emr-top-bar --framework expo",
+        "lit": "pnpm emr add emr-top-bar --framework lit"
       },
       "angular": {
         "component": "EmrTopBarComponent",
@@ -9183,6 +10522,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTopBar",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -9204,6 +10544,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTopBar",
         "files": [
+          "icons.tsx",
           "inputs-core.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -9222,7 +10563,99 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrTopBar } from '@drguptavivek/emr-react';"
       },
-      "fileCount": 16
+      "lit": {
+        "component": "EmrTopBarElement",
+        "selector": "emr-top-bar",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrTopBarElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 18
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-prescribing-table",
+      "id": "EmrPrescribingTableComponent",
+      "reactName": "EmrPrescribingTable",
+      "litName": "EmrPrescribingTableElement",
+      "selector": "emr-prescribing-table",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "kind": "component",
+      "status": "stable",
+      "description": "Multi-row clinical prescribing table with per-row move up/down, insert below, remove, inline Morning/Afternoon/Evening/Night dose steppers, duration stepper, and expandable taper schedule.",
+      "stories": [
+        "emr-medications-order-composer--tablet-bd"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller"
+      ],
+      "registryDependencies": [
+        "foundations",
+        "emr-badge",
+        "emr-button"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations",
+        "emr-badge",
+        "emr-button"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-prescribing-table",
+        "angular": "pnpm emr add emr-prescribing-table --framework angular",
+        "react": "pnpm emr add emr-prescribing-table --framework react",
+        "expo": "pnpm emr add emr-prescribing-table --framework expo",
+        "lit": "pnpm emr add emr-prescribing-table --framework lit"
+      },
+      "angular": {
+        "component": "EmrPrescribingTableComponent",
+        "selector": "emr-prescribing-table",
+        "files": [
+          "domain/emr-prescribing-table.component.ts"
+        ],
+        "import": "import { EmrPrescribingTableComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrPrescribingTable",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-prescribing-table.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrPrescribingTable } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrPrescribingTable",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-prescribing-table.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrPrescribingTable } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrPrescribingTableElement",
+        "selector": "emr-prescribing-table",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPrescribingTableElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
     }
   ]
 } as const;

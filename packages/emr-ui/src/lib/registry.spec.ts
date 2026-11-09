@@ -24,7 +24,7 @@ describe('EMR shadcn-compatible component registry & CLI', () => {
     }
   });
 
-  it('provides Angular, React Web, and Expo files for every item in registry/items/*.json', () => {
+  it('provides Angular, React Web, Expo, and Lit Web Component files for every item in registry/items/*.json', () => {
     for (const entry of EMR_CATALOG) {
       const slug = slugForEntry(entry);
       const itemPath = join(registryRoot, 'items', `${slug}.json`);
@@ -33,6 +33,7 @@ describe('EMR shadcn-compatible component registry & CLI', () => {
       expect(item.angular.files.length, `${slug}: angular.files should not be empty`).toBeGreaterThan(0);
       expect(item.react.files.length, `${slug}: react.files should not be empty`).toBeGreaterThan(0);
       expect(item.expo.files.length, `${slug}: expo.files should not be empty`).toBeGreaterThan(0);
+      expect(item.lit.files.length, `${slug}: lit.files should not be empty`).toBeGreaterThan(0);
       expect(item.files.length, `${slug}: bundled files should not be empty`).toBeGreaterThan(0);
     }
   });
@@ -75,6 +76,11 @@ describe('EMR shadcn-compatible component registry & CLI', () => {
       expect(existsSync(join(expoDir, 'components/emr/tokens.ts'))).toBe(true);
       expect(existsSync(join(expoDir, 'components/emr/data-table.tsx'))).toBe(true);
       expect(existsSync(join(expoDir, 'components/emr/data-table.web.tsx'))).toBe(false);
+
+      const litDir = join(tmp, 'lit-app');
+      runCli(['add', 'emr-prescribing-table', '--framework', 'lit', '--cwd', litDir]);
+      expect(existsSync(join(litDir, 'components/emr/foundations.ts'))).toBe(true);
+      expect(existsSync(join(litDir, 'components/emr/l4-domain.ts'))).toBe(true);
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }

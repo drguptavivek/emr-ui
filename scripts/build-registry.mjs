@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const uiLibDir = join(rootDir, 'packages/emr-ui/src/lib');
 const reactSrcDir = join(rootDir, 'packages/emr-react/src');
+const litSrcDir = join(rootDir, 'packages/emr-elements/src');
 const registryDir = join(rootDir, 'registry');
 const itemsDir = join(registryDir, 'items');
 
@@ -25,6 +26,20 @@ export function slugForEntry(entry) {
 export function reactNameForEntry(entry) {
   if (entry.id === 'EmrClinicalCellRendererDirective') return 'EmrCustomRenderers';
   return entry.id.replace(/(?:Component|Directive)$/, '');
+}
+
+export function litNameForEntry(entry) {
+  if (entry.id === 'EmrClinicalCellRendererDirective') return 'EmrClinicalCellRendererElement';
+  return `${entry.id.replace(/(?:Component|Directive)$/, '')}Element`;
+}
+
+function litFilesForLayer(layer) {
+  if (layer === 1) return ['l1-primitives.ts'];
+  if (layer === 2) return ['l2-fields.ts'];
+  if (layer === 3) return ['l3-structures.ts'];
+  if (layer === 4) return ['l4-domain.ts'];
+  if (layer === 6) return ['l6-authoring.ts'];
+  return ['foundations.ts'];
 }
 
 function collectReactFileMap() {
@@ -140,6 +155,10 @@ export async function generateRegistry({ writeFiles = true } = {}) {
       files: ['tokens.ts', 'theme.tsx', 'labels.tsx', 'use-controller.ts'],
       import: "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';",
     },
+    lit: {
+      files: ['foundations.ts', 'icons.ts'],
+      import: "import { EmrLitElement, applyEmrCustomTheme, EMR_PALETTE_PRESETS, EMR_FONT_STACKS } from '@drguptavivek/emr-elements';",
+    },
     files: [
       {
         path: 'packages/emr-ui/src/lib/foundations/emr.css',
@@ -177,6 +196,18 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         target: 'components/emr/use-controller.ts',
         content: readFileSync(join(reactSrcDir, 'use-controller.ts'), 'utf8'),
       },
+      {
+        path: 'packages/emr-elements/src/foundations.ts',
+        framework: 'lit',
+        target: 'components/emr/foundations.ts',
+        content: readFileSync(join(litSrcDir, 'foundations.ts'), 'utf8'),
+      },
+      {
+        path: 'packages/emr-elements/src/icons.ts',
+        framework: 'lit',
+        target: 'components/emr/icons.ts',
+        content: readFileSync(join(litSrcDir, 'icons.ts'), 'utf8'),
+      },
     ],
   };
 
@@ -185,9 +216,11 @@ export async function generateRegistry({ writeFiles = true } = {}) {
   for (const entry of EMR_CATALOG) {
     const slug = slugForEntry(entry);
     const reactName = reactNameForEntry(entry);
+    const litName = litNameForEntry(entry);
     const primaryReact = reactFileMap.get(reactName) ?? reactFileMap.get('EmrBadgeView') ?? [];
     const rFiles = relatedReactFiles(primaryReact);
     const ngFiles = relatedAngularFiles(entry.file);
+    const lFiles = litFilesForLayer(entry.layer);
     const directDeps = ['foundations', ...entry.dependsOn.map((id) => slugForEntry(byId.get(id))).filter(Boolean)];
     const transitiveDeps = resolveTransitiveSlugs(entry);
 
@@ -204,6 +237,12 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         target: `components/emr/${f}`,
         content: readFileSync(join(reactSrcDir, f), 'utf8'),
       })),
+      ...lFiles.map((f) => ({
+        path: `packages/emr-elements/src/${f}`,
+        framework: 'lit',
+        target: `components/emr/${f}`,
+        content: readFileSync(join(litSrcDir, f), 'utf8'),
+      })),
     ];
 
     items.push({
@@ -211,6 +250,7 @@ export async function generateRegistry({ writeFiles = true } = {}) {
       name: slug,
       id: entry.id,
       reactName,
+      litName,
       selector: entry.selector,
       type: 'registry:ui',
       layer: entry.layer,
@@ -227,6 +267,7 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         angular: `pnpm emr add ${slug} --framework angular`,
         react: `pnpm emr add ${slug} --framework react`,
         expo: `pnpm emr add ${slug} --framework expo`,
+        lit: `pnpm emr add ${slug} --framework lit`,
       },
       angular: {
         component: entry.id,
@@ -243,6 +284,12 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         component: reactName,
         files: rFiles.filter((f) => !f.endsWith('.web.tsx')),
         import: `import { ${reactName} } from '@drguptavivek/emr-react';`,
+      },
+      lit: {
+        component: litName,
+        selector: slug,
+        files: lFiles,
+        import: `import { ${litName} } from '@drguptavivek/emr-elements';`,
       },
       files: itemFiles,
     });

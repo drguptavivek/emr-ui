@@ -77,6 +77,7 @@ export function resolveInstallPlan(slugs, framework = 'react') {
   for (const item of ordered) {
     for (const file of item.files) {
       if (framework === 'angular' && file.framework !== 'angular') continue;
+      if (framework === 'lit' && file.framework !== 'lit') continue;
       if ((framework === 'react' || framework === 'expo') && file.framework !== 'react') continue;
       if (framework === 'expo' && file.target.endsWith('.web.tsx')) continue;
       files.set(file.target, file.content);

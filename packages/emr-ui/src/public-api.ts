@@ -52,6 +52,7 @@ export * from './lib/domain/emr-clinical-annotation-canvas.component';
 export * from './lib/domain/emr-diagnostic-result-summary.component';
 export * from './lib/domain/emr-spectacle-prescription.component';
 export * from './lib/domain/emr-dose-schedule.component';
+export * from './lib/domain/emr-prescribing-table.component';
 export * from './lib/domain/emr-staged-checklist.component';
 export * from './lib/domain/emr-pac-checklist.component';
 export * from './lib/domain/emr-family-pedigree.component';

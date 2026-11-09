@@ -8,9 +8,10 @@
     "emr": "./bin/emr.mjs"
   },
   "scripts": {
-    "build": "pnpm build:controller && pnpm build:ui && pnpm build:react && pnpm registry:build && pnpm build:storybook",
+    "build": "pnpm build:controller && pnpm build:ui && pnpm build:react && pnpm build:elements && pnpm registry:build && pnpm build:storybook",
     "build:controller": "tsc -p packages/emr-controller/tsconfig.json",
     "build:react": "pnpm --filter @drguptavivek/emr-react build",
+    "build:elements": "pnpm --filter @drguptavivek/emr-elements build",
     "registry:build": "node scripts/build-registry.mjs",
     "emr": "node bin/emr.mjs",
     "check:node-controller": "node -e \"import('./packages/emr-controller/dist/index.js').then(module => { if (!module.StateController) process.exit(1) })\"",
@@ -25,7 +26,7 @@
     "test:watch": "vitest",
     "test:visual": "playwright test",
     "check:architecture": "vitest run packages/emr-ui/src/lib/architecture.spec.ts",
-    "check": "pnpm test && pnpm build:controller && pnpm check:node-controller && pnpm build:ui && pnpm check:ssr && pnpm check:react && pnpm build:react && pnpm registry:build && pnpm check:stories",
+    "check": "pnpm test && pnpm build:controller && pnpm check:node-controller && pnpm build:ui && pnpm check:ssr && pnpm check:react && pnpm build:react && pnpm build:elements && pnpm registry:build && pnpm check:stories",
     "check:react": "pnpm --filter @drguptavivek/emr-react typecheck && pnpm --filter @drguptavivek/emr-react typecheck:native",
     "check:stories": "tsc -p packages/emr-ui/tsconfig.storybook.json --noEmit --sourceMap",
     "release:dry-run": "pnpm check && pnpm --dir packages/emr-controller publish --dry-run --no-git-checks && pnpm --dir dist/emr-ui publish --dry-run --no-git-checks && pnpm --dir packages/emr-react publish --dry-run --no-git-checks",

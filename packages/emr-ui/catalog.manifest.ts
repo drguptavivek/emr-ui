@@ -1823,4 +1823,15 @@ export const EMR_CATALOG: readonly EmrCatalogEntry[] = [
     stories: ['emr-shell-and-auth--top-bar-default'],
     dependsOn: ['EmrTopBarSearchComponent'],
   },
+  {
+    id: 'EmrPrescribingTableComponent',
+    selector: 'emr-prescribing-table',
+    layer: 4,
+    file: 'domain/emr-prescribing-table.component.ts',
+    kind: 'component',
+    status: 'stable',
+    summary: 'Multi-row clinical prescribing table with per-row move up/down, insert below, remove, inline Morning/Afternoon/Evening/Night dose steppers, duration stepper, and expandable taper schedule.',
+    stories: ['emr-medications-order-composer--tablet-bd'],
+    dependsOn: ['EmrBadgeComponent', 'EmrButtonComponent'],
+  },
 ];

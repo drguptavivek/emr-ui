@@ -17,6 +17,7 @@ export type EmrIconName =
   | 'minus'
   | 'check'
   | 'close'
+  | 'chevron-up'
   | 'chevron-down'
   | 'chevron-left'
   | 'chevron-right'
@@ -32,7 +33,8 @@ export type EmrIconName =
   | 'zoom-out'
   | 'maximize'
   | 'download'
-  | 'pen';
+  | 'pen'
+  | 'sliders';
 
 /**
  * Standard 24x24 Lucide / Heroicons 1.75px monochrome stroke SVG paths (`stroke="currentColor"`).
@@ -83,6 +85,7 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
   minus: ['M5 12h14'],
   check: ['M20 6 9 17l-5-5'],
   close: ['M18 6 6 18', 'M6 6l12 12'],
+  'chevron-up': ['m18 15-6-6-6 6'],
   'chevron-down': ['m6 9 6 6 6-6'],
   'chevron-left': ['m15 18-6-6 6-6'],
   'chevron-right': ['m9 18 6-6-6-6'],
@@ -117,6 +120,7 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
   maximize: ['M15 3h6v6', 'M9 21H3v-6', 'M21 3l-7 7', 'M3 21l7-7'],
   download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'],
   pen: ['M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'],
+  sliders: ['M4 21v-7', 'M4 10V3', 'M12 21v-9', 'M12 8V3', 'M20 21v-5', 'M20 12V3', 'M2 14h4', 'M10 8h4', 'M18 16h4'],
 };
 
 const NATIVE_FALLBACK: Record<EmrIconName, string> = {
@@ -133,6 +137,7 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   minus: '−',
   check: '✓',
   close: '×',
+  'chevron-up': '▴',
   'chevron-down': '▾',
   'chevron-left': '‹',
   'chevron-right': '›',
@@ -149,6 +154,7 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   maximize: '⤢',
   download: '↓',
   pen: '✎',
+  sliders: '≡',
 };
 
 /**

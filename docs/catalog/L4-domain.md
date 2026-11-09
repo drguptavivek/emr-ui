@@ -2446,3 +2446,15 @@ export class EmrPrivacyCentreComponent {
 
 **Depends on** — `EmrTopBarSearchComponent`.
 **Used by** — none yet.
+
+---
+
+### EmrPrescribingTable
+**Layer** L4 · **Selector** `emr-prescribing-table` · **Status** stable · **Story** `emr-medications-order-composer--tablet-bd`
+
+**Need** — High-volume OPD and inpatient prescribing needs a single multi-row table where clinicians can add, remove, and reorder (`↑` / `↓` / `+` / `−`) medicines, step Morning/Afternoon/Evening/Night doses (`−` / `+`), step duration (`−` / `+`), apply frequency presets (`OD`, `BD`, `TDS`, `QID`), and edit multi-week reducing taper schedules in place.
+
+**Purpose** — Renders `PrescribingTableViewModel` and emits `PrescribingTableIntent`.
+
+**Depends on** — `EmrBadgeComponent`, `EmrButtonComponent`.
+**Used by** — none yet.

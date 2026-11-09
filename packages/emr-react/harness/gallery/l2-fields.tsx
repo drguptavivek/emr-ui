@@ -14,6 +14,7 @@ import type {
   TerminologyBinding,
 } from '@drguptavivek/emr-controller';
 import { EmrCodedInput, EmrScheduleSlotPicker } from '../../src/l2-fields';
+import { PrescribingTableDemo } from './l4-medications';
 import type { GallerySection } from './types';
 
 const SNOMED = 'http://snomed.info/sct';
@@ -240,5 +241,6 @@ function ScheduleSlotPickerDemo() {
 
 export const gallery: GallerySection[] = [
   { id: 'coded-input', title: 'EmrCodedInput', render: CodedInputDemo },
-  { id: 'schedule-slot-picker', title: 'EmrScheduleSlotPicker', render: ScheduleSlotPickerDemo },
+  { id: 'schedule-slot-picker', title: 'EmrScheduleSlotPicker (Single-Row Prescription Line)', render: ScheduleSlotPickerDemo },
+  { id: 'prescribing-table-l2', title: 'EmrPrescribingTable (Multi-Row Rx Table with + / − / ↑ / ↓ & Taper)', render: PrescribingTableDemo },
 ];
