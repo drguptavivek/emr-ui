@@ -36,7 +36,7 @@ run('pnpm --filter @drguptavivek/emr-react harness:build', {
 });
 
 if (withStorybook) {
-  run('ng run emr-ui:build-storybook');
+  run('pnpm exec ng run emr-ui:build-storybook');
 }
 
 rmSync(outDir, { recursive: true, force: true });
