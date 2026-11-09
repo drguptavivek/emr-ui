@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, Directive, EventEmitter, Input, Output, ViewEncapsulation, computed, input, output } from '@angular/core';
 import { EmrOption } from '@drguptavivek/emr-controller';
 
+let nextFieldBaseId = 0;
+
 @Directive()
 abstract class EmrFieldBase {
-  @Input() controlId = 'emr-field';
+  @Input() controlId = `emr-field-${++nextFieldBaseId}`;
   @Input() label = '';
   @Input() hint = '';
   @Input() error = '';

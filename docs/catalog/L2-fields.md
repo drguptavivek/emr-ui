@@ -316,3 +316,42 @@ export class EmrScheduleSlotPickerComponent {
 
 **Depends on** — none (no component imports). Value building: `toggleSlot`, `setSlotAmount`, `applySlotPreset` from `@drguptavivek/emr-controller`.
 **Used by** — none yet (intended for the drug order composer, paired with `EmrDoseSchedule` as its preview).
+
+
+---
+
+### EmrIdentifierEntry
+**Layer** L2 · **Selector** `emr-identifier-entry` · **Status** proposed · **Story** `emr-identity--entry-type-picker`
+
+**Need** — Patient IDs and cards are scanned or typed, and the field must show what the app understood without owning any format rule.
+
+**Purpose** — Renders an `IdentifierEntryView` in `emr-field-frame` (message priority error, warning, hint): a text input (`autocapitalize="characters"`, `autocomplete="off"`, `spellcheck="false"`, `aria-invalid` on error), a Scan button (hidden when `readOnly`), the app's `normalisedValue` as "✓" confirmation text beneath, and radio chips for `typeOptions` only when present. It never normalises or validates. Deliberate shape: typing is folded into the single `intent` output as `{ type: 'valueChanged'; raw }` alongside `scanRequested` and `typeSelected`, so there is no separate `valueChange` output.
+
+**API**
+```ts
+export type EmrIdentifierEntryEvent = IdentifierEntryIntent | { type: 'valueChanged'; raw: string };
+export class EmrIdentifierEntryComponent {
+  readonly model = input.required<IdentifierEntryView>();
+  readonly controlId = input<string>(/* generated */);
+  readonly labels = input<Partial<EmrIdentifierEntryLabels>>({});
+  readonly intent = output<EmrIdentifierEntryEvent>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `IdentifierEntryView` (required) | — | label, value, normalisedValue, error, warning, hint, readOnly, typeOptions, selectedType |
+| `controlId` | `string` | generated | id of the input |
+| `labels` | `Partial<EmrIdentifierEntryLabels>` | English | Scan, Recognised as |
+| `intent` (output) | `EmrIdentifierEntryEvent` | — | valueChanged, scanRequested, typeSelected |
+
+**Example**
+```html
+<emr-identifier-entry [model]="entry" (intent)="onEntry($event)" />
+```
+
+**Depends on** — `EmrFieldFrameComponent`.
+
+**Used by** — `EmrLinkCardsComponent`.

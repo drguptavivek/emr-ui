@@ -81,12 +81,7 @@ describe('EMR UI architecture boundary', () => {
     // local `styles:` it leaks those rules into every consumer. ::ng-deep pierces another component's
     // internals: give the inner component an input instead (e.g. EmrSearchSelect `labelHidden`).
     // ponytail: four older components predate this rule; migrate them, then empty this list.
-    const grandfathered = new Set([
-      'domain/emr-diagnostic-result-summary.component.ts',
-      'domain/emr-document-upload-queue.component.ts',
-      'domain/emr-family-pedigree.component.ts',
-      'domain/emr-staged-checklist.component.ts',
-    ]);
+    const grandfathered = new Set<string>([]);
     for (const { file, text } of sourceText.filter(({ file }) => file.endsWith('.component.ts'))) {
       const name = relative(libraryRoot, file);
       expect(text, name).not.toMatch(/::ng-deep|ViewEncapsulation\.ShadowDom/);

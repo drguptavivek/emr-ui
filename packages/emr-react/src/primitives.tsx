@@ -2,7 +2,7 @@
 
 import { Children, useState, type ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
-import type { ClinicalOption, EmrBadge } from '@drguptavivek/emr-controller';
+import type { ClinicalOption, EmrBadge as EmrBadgeModel } from '@drguptavivek/emr-controller';
 import { useEmrLabels } from './labels';
 import { focusRing, fontFamily, fontWeight, toneColors, useEmrTheme } from './theme';
 
@@ -10,7 +10,7 @@ import { focusRing, fontFamily, fontWeight, toneColors, useEmrTheme } from './th
 type PressState = PressableStateCallbackType & { focused?: boolean };
 
 /** L1. Tone is controller-supplied; the label always carries the meaning, never colour alone. */
-export function EmrBadgeView({ badge }: { badge: EmrBadge }) {
+export function EmrBadgeView({ badge }: { badge: EmrBadgeModel }) {
   const t = useEmrTheme();
   return (
     // The transparent row wrapper takes the parent's alignment (centred in rows) while the pill
@@ -22,6 +22,8 @@ export function EmrBadgeView({ badge }: { badge: EmrBadge }) {
     </View>
   );
 }
+
+export const EmrBadge = EmrBadgeView;
 
 export type EmrButtonVariant = 'primary' | 'outline' | 'ghost';
 

@@ -2,16 +2,24 @@ import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import { EmrButtonComponent } from '../primitives/emr-button.component';
 import { EmrFavouritesPanelComponent } from '../domain/emr-favourites-panel.component';
 import { EmrHierarchyOrderPickerComponent } from '../domain/emr-hierarchy-order-picker.component';
+import { EmrOrderDetailsComponent } from '../domain/emr-order-details.component';
 import { EmrRightFlyoutComponent } from '../domain/emr-right-flyout.component';
 import { favouritesErrorState, favouritesLoadingState, favouritesState, labOrderState, radiologyOrderState } from './fixtures';
 
 const meta: Meta = {
   title: 'EMR / Orders and favourites',
-  decorators: [moduleMetadata({ imports: [EmrButtonComponent, EmrFavouritesPanelComponent, EmrHierarchyOrderPickerComponent, EmrRightFlyoutComponent] })],
+  decorators: [moduleMetadata({ imports: [EmrButtonComponent, EmrFavouritesPanelComponent, EmrHierarchyOrderPickerComponent, EmrOrderDetailsComponent, EmrRightFlyoutComponent] })],
   parameters: { docs: { description: { component: 'Order catalogues and favourites are controlled by a controller. Stories use static synthetic view models only.' } } }
 };
 export default meta;
 type Story = StoryObj;
+
+export const OrderDetailsStandalone: Story = {
+  render: () => ({
+    template: `<div class="emr-story-surface" style="max-width: 520px"><emr-order-details [model]="order" /></div>`,
+    props: { order: labOrderState.selected[0] },
+  }),
+};
 
 export const LaboratoryHierarchy: Story = { render: () => ({ template: `<emr-hierarchy-order-picker [model]="state" />`, props: { state: labOrderState } }) };
 export const RadiologyHierarchyWithPreview: Story = { render: () => ({ template: `<emr-hierarchy-order-picker [model]="state" />`, props: { state: radiologyOrderState } }) };

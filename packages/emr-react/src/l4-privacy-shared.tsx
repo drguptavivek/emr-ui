@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, type TextStyle } from 'react-native';
 import type { ListState, PendingConfirmation } from '@drguptavivek/emr-controller';
 import { EmrStateMessage } from './l1-display';
 import { EmrSheet } from './l4-shell-sheet';
@@ -43,7 +43,12 @@ export const PRIVACY_DEFAULTS = {
 } as const;
 export type EmrPrivacyLabels = typeof PRIVACY_DEFAULTS;
 
-export function usePrivacyText() {
+export function usePrivacyText(): {
+  t: ReturnType<typeof useEmrTheme>;
+  body: TextStyle;
+  bold: TextStyle;
+  small: TextStyle;
+} {
   const t = useEmrTheme();
   const base = { color: t.text, fontFamily: fontFamily(t), fontSize: t.textMd, lineHeight: t.textMd * t.leadingNormal };
   return {

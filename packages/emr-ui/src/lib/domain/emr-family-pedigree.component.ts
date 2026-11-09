@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroUsers } from '@ng-icons/heroicons/outline';
 import {
@@ -214,8 +214,7 @@ import {
       .emr-family-pedigree__relationship .emr-button { grid-column: 2; grid-row: 1 / span 2; }
     }
   `],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmrFamilyPedigreeComponent {
   @Input({ required: true }) model!: FamilyPedigreeViewModel;

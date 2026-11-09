@@ -2158,3 +2158,291 @@ export class EmrPrivacyCentreComponent {
 ```html
 <emr-privacy-centre [model]="model" (intent)="onIntent($event)" />
 ```
+
+
+### EmrPatientIdentityCard
+**Layer** L4 · **Selector** `emr-patient-identity-card` · **Status** proposed · **Story** `emr-identity--card-full-with-alerts`
+
+**Need** — Before acting on a record, staff must see who it is by identifier, with any notices, and confirm or reject it.
+
+**Purpose** — Renders a `PatientIdentityViewModel`. `full`: name, age / sex, aliases, the first identifier as primary (large) with its status badge, the other identifiers with badges, phone / centre / last visit, alerts (tone glyph + text + optional action button), Confirm patient, Not this patient, and one "Add identifier: X" button per `addableSystems`. `compact`: one wrapping line (name, age / sex, primary identifier, badge, "+N" chip) and alerts one per line; fits 360px. It decides nothing.
+
+**Depends on** — none.
+**Used by** — `EmrIdentifierCheckPromptComponent`, `EmrLinkCardsComponent`.
+
+---
+
+### EmrIdentifierCheckPrompt
+**Layer** L4 · **Selector** `emr-identifier-check-prompt` · **Status** proposed · **Story** `emr-identity--check-warnings-not-acknowledged`
+
+**Need** — A new identifier must be checked against existing records, and staff must see why it is blocked or what to acknowledge.
+
+**Purpose** — Renders an `IdentifierCheckViewModel`: an outcome alert (glyph + title + identifier), findings with evidence rows and a compact candidate card, and actions. Warnings: one acknowledge checkbox per finding (emits `findingAcknowledged`, never toggles locally), Confirm only when `canConfirm`, Add as additional / Replace existing only when their flags are set. Blocked: Merge per candidate, Re-enter. Cancel in every outcome.
+
+**Depends on** — `EmrPatientIdentityCardComponent`, `EmrCheckboxComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrLinkCards
+**Layer** L4 · **Selector** `emr-link-cards` · **Status** proposed · **Story** `emr-identity--link-cards-mixed`
+
+**Need** — A patient may hold several cards; staff add them one by one and resolve any that already belong to someone else.
+
+**Purpose** — Renders a `LinkCardsViewModel`: compact identity card, an `emr-identifier-entry` bound to `entry` (typing becomes `entryChanged`, Scan becomes `scanRequested`, type chips become `typeSelected`), an Add card button (`cardEntered`), and a card list (display, status badge, message, warnings). `checking` shows a status text with `aria-busy`; `on_other_patient` shows the candidate and Same person / Not the same person. Each card has a primary radio (`primarySelected`) and Remove (`cardRemoved`). Link cards (`submitRequested`) shows only when `canSubmit`, otherwise `submitError`; Cancel always.
+
+**Depends on** — `EmrIdentifierEntryComponent`, `EmrPatientIdentityCardComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrContactAttemptForm
+**Layer** L4 · **Selector** `emr-contact-attempt-form` · **Status** proposed · **Story** `emr-workflow--contact-ready-to-submit`
+
+**Need** — Staff following up a patient must log who was called, how, and what happened; the app, not the UI, decides outcomes, what each outcome causes and when the attempt may be saved.
+
+**Purpose** — Controlled contact-attempt form: reason heading, number radios with a "Call: <number>" button once one is selected (`callRequested`; the app dials), channel radios, reached toggle, outcome radios with `consequence` shown directly beneath as an info alert, next action date (emits ISO or `null`) with error, note, Save only when `canSubmit` (else `submitError`), Cancel.
+
+**Depends on** — `EmrRadioGroupComponent`, `EmrToggleComponent`, `EmrDateInputComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrContactAttemptSummary
+**Layer** L4 · **Selector** `emr-contact-attempt-summary` · **Status** proposed · **Story** `emr-workflow--contact-summary-with-action`
+
+**Need** — A patient row or banner needs the contact history at a glance, with a way to log the next attempt.
+
+**Purpose** — One-line summary (`text`, optional status badge). Shows a "Log attempt" button emitting `logAttemptRequested` only when the `actionable` input is true; the app decides who may log.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrMergeCompare
+**Layer** L4 · **Selector** `emr-merge-compare` · **Status** proposed · **Story** `emr-workflow--merge-three-sources`
+
+**Need** — Merging duplicate patient records is irreversible clinically; reviewers must see every difference and choose the surviving record and winning values. The app decides what differs and when merging is allowed.
+
+**Purpose** — Compares 2–4 records. Each source header shows name, primary identifier, age · sex and a "Keep as surviving record" radio (`survivorChosen`). Rows are a table (label + one column per source); differing rows carry a "≠ Differs" text badge and a per-source "Use" radio (`fieldChosen`), identical rows show "Same". Below ~720px container width it switches to stacked cards per row. Confirm merge is enabled only when `canConfirm`; Reject; Cancel. Values are never compared in the UI.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrDraftRecordList
+**Layer** L4 · **Selector** `emr-draft-record-list` · **Status** proposed · **Story** `emr-workflow--drafts-mixed`
+
+**Need** — Staff working offline must see unsent records, fix ones filed under the wrong patient, and discard safely; the app decides which actions each row allows and the wording.
+
+**Purpose** — Controlled list of draft/queued/synced/conflict records: title, subtitle, patient, updated time and state badge; Open (`canOpen`), Move to another patient (`canMove`), Discard (`canDiscard`) with a confirmation flyout from `pendingDiscard`; loading/empty/error states with Retry.
+
+**Depends on** — `EmrRightFlyoutComponent`.
+**Used by** — none yet.
+
+
+---
+
+### EmrArrivalLinker
+**Layer** L4 · **Selector** `emr-arrival-linker` · **Status** stable · **Story** `emr-desk-and-spectacles--arrival-linker-default`
+
+**Need** — At the RPC registration desk, staff must link an arriving patient to open referrals (or mark self-referral), select the visit purpose, and optionally attach a UHID.
+
+**Purpose** — Renders `EmrArrivalLinkerModel` and emits `EmrArrivalLinkerIntent`.
+
+**Depends on** — `EmrPatientIdentityCardComponent`, `EmrRadioGroupComponent`, `EmrIdentifierEntryComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrSpectacleDelivery
+**Layer** L4 · **Selector** `emr-spectacle-delivery` · **Status** stable · **Story** `emr-desk-and-spectacles--spectacle-delivery-default`
+
+**Need** — Staff handing over spectacles need to tick which bookings were delivered and record the delivery date.
+
+**Purpose** — Renders `EmrSpectacleDeliveryModel` and emits `EmrSpectacleDeliveryIntent`.
+
+**Depends on** — `EmrPatientIdentityCardComponent`, `EmrDateInputComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrBookedNotDeliveredList
+**Layer** L4 · **Selector** `emr-booked-not-delivered-list` · **Status** stable · **Story** `emr-desk-and-spectacles--booked-not-delivered-default`
+
+**Need** — Optical teams need a filterable, paged work list of spectacles booked but not yet delivered, with one-tap patient selection and calling.
+
+**Purpose** — Renders `EmrBookedNotDeliveredModel` and emits `EmrBookedNotDeliveredIntent`.
+
+**Depends on** — `EmrSelectComponent`, `EmrDateInputComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrCataractEpisodeCard
+**Layer** L4 · **Selector** `emr-cataract-episode-card` · **Status** stable · **Story** `emr-history-patient-history-and-cataract-episode--cataract-episode-operated`
+
+**Need** — Cataract episodes span admission, surgery, and post-op follow-ups; clinicians need a compact summary card showing stage progress, follow-ups, and next actions.
+
+**Purpose** — Renders `EmrCataractEpisode` and emits `EmrCataractEpisodeIntent`.
+
+**Depends on** — `EmrStageStepperComponent`.
+**Used by** — `EmrPatientHistoryTimelineComponent`.
+
+---
+
+### EmrPatientHistoryTimeline
+**Layer** L4 · **Selector** `emr-patient-history-timeline` · **Status** stable · **Story** `emr-history-patient-history-and-cataract-episode--patient-history-populated`
+
+**Need** — Clinicians opening a patient chart need a pinned summary (last spectacle Rx, glaucoma/DR screening, open referrals, bookings, cataract episodes) above chronological visits.
+
+**Purpose** — Renders `EmrPatientHistoryModel` and emits `EmrPatientHistoryIntent`.
+
+**Depends on** — `EmrPatientIdentityCardComponent`, `EmrCataractEpisodeCardComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrRecordDiff
+**Layer** L4 · **Selector** `emr-record-diff` · **Status** stable · **Story** `emr-analytics-and-records--record-diff-default`
+
+**Need** — Audit trails and record amendments require displaying pre-computed field-level diffs with node-path breadcrumbs and before/after values.
+
+**Purpose** — Renders `EmrRecordDiffModel` and emits `EmrRecordDiffIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrUploadQueue
+**Layer** L4 · **Selector** `emr-upload-queue` · **Status** stable · **Story** `emr-analytics-and-records--upload-queue-default`
+
+**Need** — Batch file uploads need a controlled dropzone, per-file progress and status badges, retry/remove actions, and a publish button.
+
+**Purpose** — Renders `EmrUploadQueueModel` and emits `EmrUploadQueueIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrBarChart
+**Layer** L4 · **Selector** `emr-bar-chart` · **Status** stable · **Story** `emr-analytics-and-records--bar-chart-default`
+
+**Need** — Operational dashboards need an accessible bar chart with multi-series support and a built-in data-table view.
+
+**Purpose** — Renders `EmrBarChartModel` and emits `EmrChartIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrFunnelChart
+**Layer** L4 · **Selector** `emr-funnel-chart` · **Status** stable · **Story** `emr-analytics-and-records--funnel-chart-default`
+
+**Need** — Care pathways (screening → referral → arrival → surgery) need an accessible stage-conversion funnel chart with a built-in data-table view.
+
+**Purpose** — Renders `EmrFunnelChartModel` and emits `EmrChartIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrPinPad
+**Layer** L4 · **Selector** `emr-pin-pad` · **Status** stable · **Story** `emr-shell-and-auth--pin-pad-default`
+
+**Need** — Quick workstation/tablet unlock requires a controlled PIN pad that holds no secret and emits digit/delete/submit/biometric/forgot intents.
+
+**Purpose** — Renders `EmrPinPadModel` and emits `EmrPinPadIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrLoginForm
+**Layer** L4 · **Selector** `emr-login-form` · **Status** stable · **Story** `emr-shell-and-auth--login-form-default`
+
+**Need** — Staff sign-in requires a controlled username/password form where the password stays local until submitted.
+
+**Purpose** — Renders `EmrLoginFormModel` and emits `EmrLoginFormIntent`.
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrBottomTabBar
+**Layer** L4 · **Selector** `emr-bottom-tab-bar` · **Status** stable · **Story** `emr-shell-and-auth--bottom-tab-bar-default`
+
+**Need** — Mobile clinical shells need a primary bottom tab bar with a prominent centre Scan trigger.
+
+**Purpose** — Renders `EmrBottomTabItem[]` and emits `EmrBottomTabBarIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrSyncPill
+**Layer** L4 · **Selector** `emr-sync-pill` · **Status** stable · **Story** `emr-shell-and-auth--sync-pill-default`
+
+**Need** — Offline-first headers need a compact, non-colour-alone indicator of sync state that can open sync details when tapped.
+
+**Purpose** — Renders `EmrSyncPillModel` and emits `EmrSyncPillIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrToast
+**Layer** L4 · **Selector** `emr-toast` · **Status** stable · **Story** `emr-shell-and-auth--toast-default`
+
+**Need** — Transient confirmations need a controlled toast banner with no internal timer, an optional action, and a dismiss button.
+
+**Purpose** — Renders `EmrToastModel` and emits `EmrToastIntent`.
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrSheet
+**Layer** L4 · **Selector** `emr-sheet` · **Status** stable · **Story** `emr-shell-and-auth--sheet-open`
+
+**Need** — Secondary workflows need a modal sheet/side panel with header back/close buttons and projected content.
+
+**Purpose** — Emits `EmrSheetIntent` (`closeRequested`, `backRequested`).
+
+**Depends on** — none.
+**Used by** — none yet.
+
+---
+
+### EmrTopBarSearch
+**Layer** L4 · **Selector** `emr-top-bar-search` · **Status** stable · **Story** `emr-shell-and-auth--top-bar-search-open`
+
+**Need** — Global header search needs a combobox with grouped results and keyboard highlight navigation.
+
+**Purpose** — Renders grouped search results and emits `EmrTopBarIntent`.
+
+**Depends on** — none.
+**Used by** — `EmrTopBarComponent`.
+
+---
+
+### EmrTopBar
+**Layer** L4 · **Selector** `emr-top-bar` · **Status** stable · **Story** `emr-shell-and-auth--top-bar-default`
+
+**Need** — Web shells need a top bar combining navigation toggle, title, global search, and user menu trigger.
+
+**Purpose** — Renders `EmrTopBarModel` and emits `EmrTopBarIntent`.
+
+**Depends on** — `EmrTopBarSearchComponent`.
+**Used by** — none yet.

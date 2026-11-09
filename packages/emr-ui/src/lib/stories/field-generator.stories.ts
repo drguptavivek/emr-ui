@@ -1,6 +1,8 @@
 import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import type { FieldGeneratorViewModel, TerminologyConcept, TerminologySource } from '@drguptavivek/emr-controller';
 import { EmrFieldGeneratorComponent } from '../authoring/emr-field-generator.component';
+import { EmrTerminologySearchComponent } from '../authoring/emr-terminology-search.component';
+import { EmrValidationRuleEditorComponent } from '../authoring/emr-validation-rule-editor.component';
 
 const sources: readonly TerminologySource[] = [
   { id: 'loinc', kind: 'loinc', label: 'LOINC', available: true, supportsPagination: true, versionLabel: '2.78' },
@@ -16,7 +18,7 @@ const snomedDiabetes: TerminologyConcept = { sourceId: 'snomed', system: 'http:/
 const draft = (overrides: Partial<FieldGeneratorViewModel['draft']> = {}): FieldGeneratorViewModel['draft'] => ({ schemaVersion: '1.0', id: 'field-example', revision: 1, label: 'Clinical field', type: 'text', required: false, repeats: false, validationRules: [], terminologyBindings: [], ...overrides });
 const base = (overrides: Partial<FieldGeneratorViewModel> = {}): FieldGeneratorViewModel => ({ draft: draft(), sources, terminologySearches: {}, validationErrors: {}, saving: false, ...overrides });
 
-const meta: Meta = { title: 'EMR / Authoring / Field generator', decorators: [moduleMetadata({ imports: [EmrFieldGeneratorComponent] })], parameters: { docs: { description: { component: 'Controlled field authoring surface for reusable EMR fields. It emits draft, validation and terminology intents; configured controllers own APIs, clinical rules, terminology resolution, FHIR mapping and persistence.' } } } };
+const meta: Meta = { title: 'EMR / Authoring / Field generator', decorators: [moduleMetadata({ imports: [EmrFieldGeneratorComponent, EmrTerminologySearchComponent, EmrValidationRuleEditorComponent] })], parameters: { docs: { description: { component: 'Controlled field authoring surface for reusable EMR fields. It emits draft, validation and terminology intents; configured controllers own APIs, clinical rules, terminology resolution, FHIR mapping and persistence.' } } } };
 export default meta;
 type Story = StoryObj;
 
@@ -31,3 +33,5 @@ export const Invalid: Story = { render: () => ({ template: `<emr-field-generator
 export const ReadOnly: Story = { render: () => ({ template: `<emr-field-generator [model]="model" />`, props: { model: base({ draft: draft({ id: 'readonly-field', label: 'Read-only clinical field', description: 'Published definition.', type: 'decimal', readOnly: true, defaultValue: 12.4, terminologyBindings: [{ id: 'binding-loinc', role: 'question-meaning', concept: loincWeight, strength: 'preferred' }] }), dirty: false, readOnly: true }) } }) };
 export const Mobile: Story = { ...WeightWithLoincAndUcum, parameters: { viewport: { defaultViewport: 'mobile1' } } };
 export const TwoInstances: Story = { render: () => ({ template: `<emr-field-generator headingId="field-generator-one" [model]="first" /><emr-field-generator headingId="field-generator-two" [model]="second" />`, props: { first: base({ draft: draft({ id: 'first-field', label: 'First field' }) }), second: base({ draft: draft({ id: 'second-field', label: 'Second field', type: 'date' }) }) } }) };
+export const TerminologySearchStandalone: Story = { render: () => ({ template: `<emr-terminology-search headingId="standalone-term-search" [model]="model" (intent)="onIntent($event)" />`, props: { model: { role: 'question-meaning' as const, label: 'Question meaning (LOINC / SNOMED CT)', sources, search: { sourceId: 'loinc', role: 'question-meaning' as const, query: 'weight', options: [loincWeight], page: 1, pageSize: 10, total: 1, loading: false }, bindings: [{ id: 'binding-loinc-weight', role: 'question-meaning' as const, concept: loincWeight, strength: 'preferred' as const }] }, onIntent: (intent: unknown) => console.info('terminology-search intent', intent) } }) };
+export const ValidationRuleEditorStandalone: Story = { render: () => ({ template: `<emr-validation-rule-editor headingId="standalone-val-rules" [model]="model" (intent)="onIntent($event)" />`, props: { model: { rules: [{ id: 'weight-min', kind: 'minimum' as const, value: 0, message: 'Weight must be positive.' }, { id: 'weight-max', kind: 'maximum' as const, value: 300, message: 'Weight must not exceed 300 kg.' }] }, onIntent: (intent: unknown) => console.info('validation-rule-editor intent', intent) } }) };

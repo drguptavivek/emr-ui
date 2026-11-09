@@ -31,6 +31,8 @@ export class EmrToggleComponent {
   checkedValue(event: Event): boolean { return (event.target as HTMLInputElement).checked; }
 }
 
+let nextRadioGroupId = 0;
+
 @Component({
   selector: 'emr-radio-group',
   standalone: true,
@@ -47,7 +49,7 @@ export class EmrToggleComponent {
   encapsulation: ViewEncapsulation.None
 })
 export class EmrRadioGroupComponent {
-  @Input() name = 'emr-radio';
+  @Input() name = `emr-radio-${++nextRadioGroupId}`;
   @Input() label = '';
   @Input() value: string | null = null;
   @Input() options: readonly EmrOption[] = [];

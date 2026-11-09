@@ -1,7 +1,8 @@
 {
   "name": "@drguptavivek/emr-ui",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
   "peerDependencies": {
     "@angular/cdk": "^22.1.2",
     "@angular/common": "^22.1.2",
@@ -16,9 +17,15 @@
     "tslib": "^2.8.0"
   },
   "sideEffects": [
-    "./styles/emr.css"
+    "./styles/emr.css",
+    "./styles/emr-print.css"
   ],
   "exports": {
-    "./styles/emr.css": "./styles/emr.css"
+    "./styles/emr.css": "./styles/emr.css",
+    "./styles/emr-print.css": "./styles/emr-print.css",
+    "./assets/anatomy/*": "./assets/anatomy/*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

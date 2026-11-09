@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { EmrOption } from '@drguptavivek/emr-controller';
 
+let nextSearchSelectId = 0;
+
 @Component({
   selector: 'emr-search-select',
   standalone: true,
@@ -52,7 +54,7 @@ import { EmrOption } from '@drguptavivek/emr-controller';
   encapsulation: ViewEncapsulation.None
 })
 export class EmrSearchSelectComponent {
-  @Input() controlId = 'emr-search';
+  @Input() controlId = `emr-search-${++nextSearchSelectId}`;
   @Input() label = 'Search';
   /** Keep the label for assistive tech but hide it visually, when a surrounding frame already shows one. */
   @Input() labelHidden = false;

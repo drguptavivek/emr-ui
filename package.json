@@ -4,21 +4,32 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.13.1",
+  "bin": {
+    "emr": "./bin/emr.mjs"
+  },
   "scripts": {
-    "build": "pnpm build:controller && pnpm build:ui && pnpm build:storybook",
+    "build": "pnpm build:controller && pnpm build:ui && pnpm build:react && pnpm registry:build && pnpm build:storybook",
     "build:controller": "tsc -p packages/emr-controller/tsconfig.json",
+    "build:react": "pnpm --filter @drguptavivek/emr-react build",
+    "registry:build": "node scripts/build-registry.mjs",
+    "emr": "node bin/emr.mjs",
     "check:node-controller": "node -e \"import('./packages/emr-controller/dist/index.js').then(module => { if (!module.StateController) process.exit(1) })\"",
     "check:ssr": "node tests/ssr-smoke.mjs",
-    "build:ui": "ng build emr-ui",
+    "build:ui": "ng build emr-ui && node -e \"const fs=require('node:fs');const p='dist/emr-ui/package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(j.peerDependencies?.['@drguptavivek/emr-controller']?.startsWith('workspace:'))j.peerDependencies['@drguptavivek/emr-controller']='^'+j.version;fs.writeFileSync(p,JSON.stringify(j,null,2)+'\\n');\"",
     "storybook": "pnpm build:controller && ng run emr-ui:storybook",
     "build:storybook": "pnpm build:controller && ng run emr-ui:build-storybook",
+    "site": "pnpm build:controller && pnpm registry:build && pnpm --filter @drguptavivek/emr-react harness:next",
+    "site:build": "node scripts/build-gh-pages.mjs",
+    "site:build:full": "node scripts/build-gh-pages.mjs --with-storybook",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:visual": "playwright test",
     "check:architecture": "vitest run packages/emr-ui/src/lib/architecture.spec.ts",
-    "check": "pnpm test && pnpm build:controller && pnpm check:node-controller && pnpm build:ui && pnpm check:ssr && pnpm check:react && pnpm check:stories",
+    "check": "pnpm test && pnpm build:controller && pnpm check:node-controller && pnpm build:ui && pnpm check:ssr && pnpm check:react && pnpm build:react && pnpm registry:build && pnpm check:stories",
     "check:react": "pnpm --filter @drguptavivek/emr-react typecheck && pnpm --filter @drguptavivek/emr-react typecheck:native",
-    "check:stories": "tsc -p packages/emr-ui/tsconfig.storybook.json --noEmit --sourceMap"
+    "check:stories": "tsc -p packages/emr-ui/tsconfig.storybook.json --noEmit --sourceMap",
+    "release:dry-run": "pnpm check && pnpm --dir packages/emr-controller publish --dry-run --no-git-checks && pnpm --dir dist/emr-ui publish --dry-run --no-git-checks && pnpm --dir packages/emr-react publish --dry-run --no-git-checks",
+    "release:publish": "pnpm check && pnpm --dir packages/emr-controller publish --access public --no-git-checks && pnpm --dir dist/emr-ui publish --access public --no-git-checks && pnpm --dir packages/emr-react publish --access public --no-git-checks"
   },
   "dependencies": {
     "@angular/animations": "22.1.2",

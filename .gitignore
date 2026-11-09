@@ -1,5 +1,6 @@
 node_modules/
 dist/
+registry/
 storybook-static/
 coverage/
 test-results/
@@ -11,5 +12,6 @@ playwright-report/
 .codex-artifacts
 .trace-mcp/
 .next/
+out/
 next-env.d.ts
 .expo/

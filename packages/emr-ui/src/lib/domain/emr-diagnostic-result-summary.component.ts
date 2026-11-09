@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   DiagnosticResultIntent,
   DiagnosticResultViewModel
@@ -112,8 +112,7 @@ import {
       .emr-diagnostic-summary__accessible-list span { color: var(--emr-text-muted); text-align: right; }
     }
   `],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmrDiagnosticResultSummaryComponent {
   @Input({ required: true }) model!: DiagnosticResultViewModel;

@@ -1,6 +1,6 @@
-import { HarnessForm } from '../../harness-form';
+import { GalleryPage } from '../../gallery/gallery-page';
 
-// Server component: proves the library can sit under an App Router server page.
+// Server component rendering the full browsable EMR Component Catalog & Shadcn Registry.
 export default function Page() {
-  return <HarnessForm title="emr-react · Next.js harness" />;
+  return <GalleryPage />;
 }

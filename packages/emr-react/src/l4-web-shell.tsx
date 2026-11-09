@@ -16,7 +16,7 @@ import { EmrButton } from './primitives';
 import { fontFamily, fontWeight, useEmrTheme } from './theme';
 
 export * from './l4-web-shell-nav';
-export type { EmrSearchGroup, EmrSearchResult } from './l4-web-shell-search';
+export { EmrTopBarSearch, type EmrSearchGroup, type EmrSearchResult, type EmrTopBarSearchLabels } from './l4-web-shell-search';
 export type {
   EmrAppShellIntent,
   EmrAppShellModel,

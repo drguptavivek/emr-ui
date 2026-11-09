@@ -112,15 +112,42 @@ describe('EMR React architecture boundary', () => {
         expect(exportedNames.has('EmrTypedField')).toBe(true);
         continue;
       }
-      if (entry.id === 'EmrBadgeComponent') {
-        expect(exportedNames.has('EmrBadgeView')).toBe(true);
-        continue;
-      }
       const reactName = entry.id.replace(/Component$/, '');
       expect(
         exportedNames.has(reactName),
         `Missing emr-react export ${reactName} for catalog entry ${entry.id}`
       ).toBe(true);
     }
+  });
+
+  it('has a corresponding entry in catalog.manifest.ts for every Emr* component exported from .tsx modules', () => {
+    const catalogReactNames = new Set(
+      EMR_CATALOG.filter((entry) => entry.kind === 'component').map((entry) => entry.id.replace(/Component$/, ''))
+    );
+    // Documented aliases, internal input helpers, and React context providers
+    const allowedExtras = new Set([
+      'EmrBadgeView',
+      'EmrIdentifierEntryField',
+      'EmrBarcodeScanField',
+      'EmrTypedText',
+      'EmrDateTimeText',
+      'EmrLabelsProvider',
+      'EmrThemeProvider',
+      'EmrRow',
+      'EmrOptionChip',
+    ]);
+    const tsxFiles = reactSources.filter(({ file }) => file.endsWith('.tsx') && !file.endsWith('.native.tsx'));
+    const unmapped: string[] = [];
+
+    for (const { rel, text } of tsxFiles) {
+      for (const m of text.matchAll(/export\s+function\s+(Emr[A-Z]\w+)/g)) {
+        const name = m[1];
+        if (!catalogReactNames.has(name) && !allowedExtras.has(name)) {
+          unmapped.push(`${name} (${rel})`);
+        }
+      }
+    }
+
+    expect(unmapped, `Unmapped React components missing from EMR_CATALOG: ${unmapped.join(', ')}`).toEqual([]);
   });
 });

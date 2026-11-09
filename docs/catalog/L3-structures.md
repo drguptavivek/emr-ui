@@ -655,3 +655,25 @@ const options = filterImageTemplates(all, query, groupId, groups, favouriteIds);
 **Depends on** — none (uses `NgIcon` and the shared `emr-icon-button`, `emr-search-input`, `emr-button`, `emr-empty`, `emr-sr-only` classes).
 
 **Used by** — none yet (intended as the background chooser for the clinical annotation canvas).
+
+
+---
+
+### EmrDataTable
+**Layer** L3 · **Selector** `emr-data-table` · **Status** stable · **Story** `emr-structures-data-table--default-table`
+
+**Need** — Operational and clinical tables (screening rosters, delivery lists, audit tables, batch exports) need a controlled, accessible data table with column sorting, search, row selection, row actions, and pagination without duplicating sorting/pagination state in the UI.
+
+**Purpose** — Renders a controlled `<table>` driven by `EmrDataTableModel` (sortable column headers with `aria-sort`, optional search box, optional multi-row selection checkboxes, cell badges, per-row action buttons, pagination bar, and loading/error/empty states) and emits `EmrDataTableIntent` (`sortRequested`, `pageRequested`, `rowSelected`, `rowsSelected`, `rowActionRequested`, `searchChanged`, `retryRequested`). Never sorts, filters, or slices rows locally.
+
+**API**
+```ts
+export class EmrDataTableComponent {
+  readonly model = input.required<EmrDataTableModel>();
+  readonly headingId = input<string>();
+  readonly intent = output<EmrDataTableIntent>();
+}
+```
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified component graph.

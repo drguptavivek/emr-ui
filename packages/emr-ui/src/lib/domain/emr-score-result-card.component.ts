@@ -59,7 +59,7 @@ const STATUS_TEXT: Record<Exclude<ClinicalAssessmentStatus, 'recorded'>, string>
               <caption class="emr-sr-only">Score components</caption>
               <thead><tr><th scope="col">Component</th><th scope="col" class="sc__val">Score</th></tr></thead>
               <tbody>
-                @for (c of model.result?.components; track c.id) {
+                @for (c of model.result.components; track c.id) {
                   <tr>
                     <th scope="row"><button type="button" class="sc__pick" (click)="intent.emit({ type: 'componentSelected', componentId: c.id })">{{ c.label }}</button></th>
                     <td class="sc__val">{{ c.value }}</td>

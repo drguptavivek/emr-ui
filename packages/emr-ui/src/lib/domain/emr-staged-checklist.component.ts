@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { EmrStageStepperComponent } from '../primitives/emr-stage-stepper.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroCheckCircle } from '@ng-icons/heroicons/outline';
@@ -66,8 +66,7 @@ import type { ChecklistItemDefinition, ChecklistItemState, StagedChecklistIntent
     .emr-staged-checklist__description { font-size:var(--emr-text-md); margin-inline-start: 28px; } .emr-staged-checklist__error { color: var(--emr-danger); font-size:var(--emr-text-md); } :focus-visible { outline: 3px solid var(--emr-focus); outline-offset: 2px; }
     @media (max-width: 640px) { .emr-staged-checklist__header, .emr-staged-checklist__phase-heading { flex-direction: column; } .emr-button { width: 100%; } }
   `],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmrStagedChecklistComponent {
   @Input({ required: true }) model!: StagedChecklistViewModel;

@@ -106,6 +106,8 @@ let nextId = 0;
       (closeRequested)="intent.emit({ type: 'withdrawDismissed' })">
       @if (model().pendingWithdrawal; as p) {
         <p class="rr__text">{{ p.body }}</p>
+      }
+      @if (model().pendingWithdrawal; as p) {
         <div emrFlyoutFooter class="rr__actions">
           <button type="button" class="emr-button emr-button--outline" (click)="intent.emit({ type: 'withdrawDismissed' })">{{ p.cancelLabel }}</button>
           <button type="button" class="emr-button emr-button--danger" (click)="intent.emit({ type: 'withdrawConfirmed', requestId: p.requestId })">{{ p.confirmLabel }}</button>

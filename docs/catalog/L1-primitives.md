@@ -1098,3 +1098,42 @@ On narrow screens (`max-width: 767px`) each cell renders its `data-label` (Field
 
 **Depends on** — L0 tokens only
 **Used by** — not consumed internally
+
+
+---
+
+### EmrStatTile
+**Layer** L1 · **Selector** `emr-stat-tile` · **Status** stable · **Story** `emr-primitives-stat-tile--four-kpi-row`
+
+**Need** — Dashboards, desk headers, and privacy centres need a compact count/KPI card that opens the backing list when tapped without the UI ever counting, rounding, or picking a severity tone.
+
+**Purpose** — Renders an `EmrStatTileModel` (`key`, `label`, `value`, optional `sub` and `status` badge). When `interactive` is true and not `readOnly`, it renders a `<button type="button">` emitting `{ type: 'statSelected', key }`; otherwise it renders a static `<div role="group">`.
+
+**API**
+```ts
+export class EmrStatTileComponent {
+  readonly model = input.required<EmrStatTileModel>();
+  readonly interactive = input(true);
+  readonly readOnly = input(false);
+  readonly controlId = input<string>();
+  readonly intent = output<EmrStatTileIntent>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `EmrStatTileModel` (required) | — | key, label, value, sub, status, accessibilityLabel |
+| `interactive` | `boolean` | `true` | renders as a button when true and not readOnly |
+| `readOnly` | `boolean` | `false` | renders static group when true |
+| `controlId` | `string \| undefined` | `undefined` | optional DOM id |
+| `intent` (output) | `OutputEmitterRef<EmrStatTileIntent>` | — | `{ type: 'statSelected', key }` |
+
+**Example**
+```html
+<emr-stat-tile [model]="tile" (intent)="onTileSelected($event)" />
+```
+
+**Depends on** — L0 tokens only
+**Used by** — not consumed internally

@@ -13,6 +13,7 @@ export * from './lib/primitives/emr-vas.component';
 export * from './lib/primitives/emr-card-layout.component';
 export * from './lib/primitives/emr-status-cell.component';
 export * from './lib/primitives/emr-stage-stepper.component';
+export * from './lib/primitives/emr-stat-tile.component';
 
 // ---------------------------------------------------------------------
 // L2 fields
@@ -22,6 +23,7 @@ export * from './lib/fields/emr-typed-field.component';
 export * from './lib/fields/emr-coded-input.component';
 export * from './lib/fields/emr-attestation.component';
 export * from './lib/fields/emr-schedule-slot-picker.component';
+export * from './lib/fields/emr-identifier-entry.component';
 
 // ---------------------------------------------------------------------
 // L3 structures
@@ -35,6 +37,7 @@ export * from './lib/structures/emr-annotation-toolbar.component';
 export * from './lib/structures/emr-annotation-list.component';
 export * from './lib/structures/emr-image-template-picker.component';
 export * from './lib/structures/emr-time-axis.component';
+export * from './lib/structures/emr-data-table.component';
 
 // ---------------------------------------------------------------------
 // L4 domain
@@ -94,3 +97,18 @@ export * from './lib/domain/emr-sharing-grants.component';
 export * from './lib/domain/emr-access-log.component';
 export * from './lib/domain/emr-rights-requests.component';
 export * from './lib/domain/emr-privacy-centre.component';
+
+// L4 identity & workflow (shared contracts: emr-controller identity.models / workflow.models)
+export * from './lib/domain/emr-patient-identity-card.component';
+export * from './lib/domain/emr-identifier-check-prompt.component';
+export * from './lib/domain/emr-link-cards.component';
+export * from './lib/domain/emr-contact-attempt-form.component';
+export * from './lib/domain/emr-contact-attempt-summary.component';
+export * from './lib/domain/emr-merge-compare.component';
+export * from './lib/domain/emr-draft-record-list.component';
+
+// L4 desk, history, records, charts, and mobile/web shell
+export * from './lib/domain/emr-desk.component';
+export * from './lib/domain/emr-patient-history.component';
+export * from './lib/domain/emr-records-and-charts.component';
+export * from './lib/domain/emr-mobile-and-web-shell.component';

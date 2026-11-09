@@ -102,6 +102,8 @@ export function EmrBarcodeScanField({ value, onValueChange, onSubmit, normalised
   );
 }
 
+export const EmrIdentifierEntry = EmrBarcodeScanField;
+
 /** L4. Who this is, by identifier. First identifier is primary. Compact wraps within 360dp. */
 export function EmrPatientIdentityCard({ model: m, mode, labels, onIntent }: {
   model: EmrPatientIdentity;

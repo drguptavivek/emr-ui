@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroArrowUpTray } from '@ng-icons/heroicons/outline';
 import type { DocumentCandidate, DocumentUploadIntent, DocumentUploadQueueViewModel, SelectedDocumentSource } from '@drguptavivek/emr-controller';
 
 @Component({
-  selector: 'emr-document-upload-queue', standalone: true, encapsulation: ViewEncapsulation.None, changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'emr-document-upload-queue', standalone: true, changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIcon],
   providers: [...provideIcons({ heroArrowUpTray })],
   template: `

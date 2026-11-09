@@ -1,6 +1,7 @@
 import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
 import type { EhrTemplateDefinition, EhrTemplateViewModel, EmrGeneratedFieldDefinition, TemplateArtifactResult } from '@drguptavivek/emr-controller';
 import { derivePreview } from '@drguptavivek/emr-controller';
+import { EmrFieldLibraryPickerComponent } from '../authoring/emr-field-library-picker.component';
 import { EmrTemplateComposerComponent } from '../authoring/emr-template-composer.component';
 import { EmrTemplatePreviewComponent } from '../authoring/emr-template-preview.component';
 
@@ -14,7 +15,7 @@ const makeTemplate = (sections: EhrTemplateDefinition['sections'], overrides: Pa
 const placement = (source: EmrGeneratedFieldDefinition, id = source.id) => ({ id, sourceFieldId: source.id, sourceFieldRevision: source.revision, field: source });
 const makeModel = (template: EhrTemplateDefinition, overrides: Partial<EhrTemplateViewModel> = {}): EhrTemplateViewModel => ({ template, fieldLibrary: [chief, weight, pulse, loincBound], fieldLibraryQuery: '', selectedSectionId: template.sections[0]?.id, preview: derivePreview(template), loading: false, saving: false, dirty: false, ...overrides });
 const general = makeTemplate([{ id: 'history', label: 'History', description: 'Presenting concern and relevant history.', fields: [placement(chief)] }, { id: 'examination', label: 'General examination', description: 'Record core observations.', fields: [placement(weight), placement(pulse)] }]);
-const meta: Meta = { title: 'EMR / Templates / Composer', decorators: [moduleMetadata({ imports: [EmrTemplateComposerComponent, EmrTemplatePreviewComponent] })], parameters: { docs: { description: { component: 'Controlled, reusable EHR template composition surfaces. The UI emits intents; controllers own field catalogues, terminology, validation, persistence and artifact conversion.' } } } };
+const meta: Meta = { title: 'EMR / Templates / Composer', decorators: [moduleMetadata({ imports: [EmrTemplateComposerComponent, EmrTemplatePreviewComponent, EmrFieldLibraryPickerComponent] })], parameters: { docs: { description: { component: 'Controlled, reusable EHR template composition surfaces. The UI emits intents; controllers own field catalogues, terminology, validation, persistence and artifact conversion.' } } } };
 export default meta;
 type Story = StoryObj;
 
@@ -31,3 +32,4 @@ export const ExportedArtifact: Story = { render: () => ({ template: `<emr-templa
 export const ReadonlyPublished: Story = { render: () => ({ template: `<emr-template-composer [model]="model" />`, props: { model: makeModel(general, { readOnly: true, template: { ...general, status: 'active' } }) } }) };
 export const Mobile: Story = { render: () => ({ template: `<div style="max-width: 430px"><emr-template-composer [model]="model" /></div>`, props: { model: makeModel(general, { selectedSectionId: 'history' }) } }) };
 export const TwoInstances: Story = { render: () => ({ template: `<emr-template-composer headingId="template-composer-one" [model]="first" /><emr-template-composer headingId="template-composer-two" [model]="second" />`, props: { first: makeModel(general, { selectedSectionId: 'history' }), second: makeModel({ ...general, id: 'second-template', title: 'Second reusable template' }, { selectedSectionId: 'examination' }) } }) };
+export const FieldLibraryPickerStandalone: Story = { render: () => ({ template: `<emr-field-library-picker headingId="standalone-field-library" [model]="model" (intent)="onIntent($event)" />`, props: { model: { fields: [chief, weight, pulse, loincBound], query: '', selectedSectionId: 'examination' }, onIntent: (intent: unknown) => console.info('field-library-picker intent', intent) } }) };

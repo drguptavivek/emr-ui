@@ -79,6 +79,8 @@ let nextId = 0;
       (closeRequested)="intent.emit({ type: 'revokeDismissed' })">
       @if (model().pendingRevoke; as p) {
         <p class="sg__confirm">{{ p.body }}</p>
+      }
+      @if (model().pendingRevoke; as p) {
         <div emrFlyoutFooter class="sg__confirm-actions">
           <button type="button" class="emr-button emr-button--outline" (click)="intent.emit({ type: 'revokeDismissed' })">{{ p.cancelLabel }}</button>
           <button type="button" class="emr-button emr-button--danger" (click)="intent.emit({ type: 'revokeConfirmed', grantId: p.grantId })">{{ p.confirmLabel }}</button>

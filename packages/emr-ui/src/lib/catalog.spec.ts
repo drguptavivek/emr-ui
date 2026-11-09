@@ -140,6 +140,13 @@ describe('EMR UI catalog manifest', () => {
     expect(mismatches, mismatches.join('\n')).toEqual([]);
   });
 
+  it('has at least one Storybook story id for every component entry in EMR_CATALOG', () => {
+    const missingStories = EMR_CATALOG.filter((entry) => entry.kind === 'component' && entry.stories.length === 0).map(
+      (entry) => entry.id
+    );
+    expect(missingStories, `Components missing Storybook stories: ${missingStories.join(', ')}`).toEqual([]);
+  });
+
   if (!existsSync(docsCatalogRoot)) {
     it.skip('documents every entry under docs/catalog (skipped: docs/catalog does not exist yet)', () => {});
   } else {
