@@ -825,9 +825,64 @@ export function PrescribingTableDemo() {
       case 'amendRequested':
         setSigned(false);
         break;
+      case 'quickSigSubmitted': {
+        const raw = intent.command.trim().toLowerCase();
+        if (!raw) break;
+        const isTaper = raw.includes('taper');
+        const site = raw.includes(' od') ? 'OD' : raw.includes(' os') ? 'OS' : raw.includes(' ou') ? 'OU' : undefined;
+        let slots = makeSlots(1, 0, 1, 0);
+        if (raw.includes('qid') || raw.includes('1-1-1-1')) slots = makeSlots(1, 1, 1, 1);
+        else if (raw.includes('tds') || raw.includes('tid') || raw.includes('1-1-1-0')) slots = makeSlots(1, 1, 1, 0);
+        else if (raw.includes('bd') || raw.includes('bid') || raw.includes('1-0-1-0')) slots = makeSlots(1, 0, 1, 0);
+        else if (raw.includes('hs') || raw.includes('night')) slots = makeSlots(0, 0, 0, 1);
+        else if (raw.includes('od') && !raw.includes(' od')) slots = makeSlots(1, 0, 0, 0);
+
+        const durMatch = raw.match(/\b(\d+)\s*(d|day|days|wk|wks|week|weeks|mo|month|months)\b/);
+        const durationCount = durMatch ? Number(durMatch[1]) : isTaper ? 28 : 7;
+        const durationUnit =
+          raw.includes('cont')
+            ? 'cont'
+            : durMatch?.[2].startsWith('w')
+              ? 'weeks'
+              : durMatch?.[2].startsWith('m')
+                ? 'months'
+                : 'days';
+
+        const matchedFormulary = FORMULARY_ITEMS.find((f) =>
+          raw.includes(f.drugName.split(' ')[0].toLowerCase()) || raw.includes(f.code.toLowerCase()),
+        );
+
+        const newRow = computeRowAnnotations({
+          id: `rx-sig-${Date.now()}`,
+          drugName: matchedFormulary?.drugName ?? intent.command.split(' ')[0],
+          strength: matchedFormulary?.strength ?? '',
+          form: matchedFormulary?.form ?? (site ? 'drop' : 'tablet'),
+          formLabel: matchedFormulary?.formLabel ?? (site ? 'Eye drops' : 'Tablet'),
+          route: matchedFormulary?.route ?? (site ? 'eye' : 'oral'),
+          site: site ?? matchedFormulary?.site,
+          slots,
+          unitLabel: matchedFormulary?.unitLabel ?? (site ? 'drop' : 'tab'),
+          durationCount,
+          durationUnit,
+          foodRelation: matchedFormulary?.defaultFoodRelation ?? (site ? 'Anytime' : 'After food'),
+          instructions: matchedFormulary?.defaultInstructions ?? `Parsed from SmartSig: "${intent.command}"`,
+          taperExpanded: isTaper,
+          taperSteps: isTaper
+            ? [
+                { id: `tp-${Date.now()}-1`, periodLabel: 'Week 1', frequencyLabel: '1 drop 4× daily (QID)' },
+                { id: `tp-${Date.now()}-2`, periodLabel: 'Week 2', frequencyLabel: '1 drop 3× daily (TDS)' },
+                { id: `tp-${Date.now()}-3`, periodLabel: 'Week 3', frequencyLabel: '1 drop 2× daily (BD)' },
+                { id: `tp-${Date.now()}-4`, periodLabel: 'Week 4', frequencyLabel: '1 drop once daily (OD), then stop' },
+              ]
+            : [],
+        });
+        setRows((prev) => [...prev, newRow]);
+        break;
+      }
     }
   };
 
+  const hasSteroid = rows.some((r) => r.drugName.toLowerCase().includes('prednisolone'));
   const model: PrescribingTableViewModel = {
     title: 'Multi-Row Clinical Prescribing Table (Rx Composer)',
     rows,
@@ -836,6 +891,30 @@ export function PrescribingTableDemo() {
       { id: 'cataract-postop', label: 'Cataract Post-Op Kit' },
       { id: 'dry-eye', label: 'Dry Eye Regimen' },
       { id: 'antibiotic-fever', label: 'Antibiotic + PPI' },
+    ],
+    quickSigExamples: [
+      { command: 'moxi 1qid ou 7d', label: 'Moxifloxacin QID OU 7d' },
+      { command: 'pred 1qid ou taper', label: 'Prednisolone 4wk Taper' },
+      { command: 'timolol 1bd od cont', label: 'Timolol BD OD Cont' },
+      { command: 'para 1tds 5d', label: 'Paracetamol TDS 5d' },
+    ],
+    safetyAlerts: [
+      {
+        id: 'allergy-check',
+        tone: 'success',
+        badgeLabel: 'Allergy & Duplicate Check',
+        message: '0 cross-reactivity conflicts against documented patient allergies (Sulfa).',
+      },
+      ...(hasSteroid
+        ? [
+            {
+              id: 'steroid-iop',
+              tone: 'warning' as const,
+              badgeLabel: 'Steroid IOP Advisory',
+              message: 'Topical corticosteroid > 14 days — baseline & 2-week IOP tonometry check advised.',
+            },
+          ]
+        : []),
     ],
     slotDefinitions: PRESCRIBING_SLOTS,
     presets: PRESCRIBING_PRESETS,

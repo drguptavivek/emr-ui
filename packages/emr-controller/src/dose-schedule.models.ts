@@ -1,4 +1,4 @@
-import type { EmrBadge } from './models.js';
+import type { EmrBadge, EmrTone } from './models.js';
 
 /**
  * Dosage forms the component can draw an icon for. Purely presentational: the form picks a glyph and
@@ -116,11 +116,26 @@ export interface PrescribingFavouriteSet {
   label: string;
 }
 
+export interface PrescribingSafetyAlert {
+  id: string;
+  tone: EmrTone;
+  badgeLabel: string;
+  message: string;
+  rowId?: string;
+}
+
+export interface PrescribingQuickSigExample {
+  command: string;
+  label: string;
+}
+
 export interface PrescribingTableViewModel {
   title?: string;
   rows: readonly PrescribingRow[];
   formulary?: readonly PrescribingFormularyItem[];
   favourites?: readonly PrescribingFavouriteSet[];
+  quickSigExamples?: readonly PrescribingQuickSigExample[];
+  safetyAlerts?: readonly PrescribingSafetyAlert[];
   slotDefinitions: readonly { id: string; label: string; shortLabel?: string; timeHint?: string }[];
   presets?: readonly { id: string; label: string; slotIds: readonly string[] }[];
   formOptions?: readonly { value: DoseForm; label: string }[];
@@ -142,6 +157,7 @@ export type PrescribingTableIntent =
   | { type: 'rowRemoveRequested'; rowId: string }
   | { type: 'rowMoveRequested'; rowId: string; direction: 'up' | 'down' }
   | { type: 'rowDuplicateRequested'; rowId: string }
+  | { type: 'quickSigSubmitted'; command: string }
   | { type: 'formularySelected'; rowId: string; item: PrescribingFormularyItem }
   | { type: 'drugNameChanged'; rowId: string; drugName: string }
   | { type: 'strengthChanged'; rowId: string; strength: string }

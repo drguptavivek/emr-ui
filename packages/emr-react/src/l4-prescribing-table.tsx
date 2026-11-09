@@ -77,6 +77,8 @@ export function EmrPrescribingTable({
   const ff = fontFamily(t);
   const locked = !!(m.readOnly || (m.status?.tone === 'success' && !m.canSign));
   const [activeDrugRowId, setActiveDrugRowId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'sig' | 'patient'>('grid');
+  const [quickSigText, setQuickSigText] = useState('');
 
   const forms = m.formOptions ?? DEFAULT_FORMS;
   const routes = m.routeOptions ?? DEFAULT_ROUTES;
@@ -268,10 +270,315 @@ export function EmrPrescribingTable({
             </View>
           ) : null}
           {m.status ? <EmrBadgeView badge={m.status} /> : null}
+          <View style={{ flexDirection: 'row', gap: 4 }}>
+            {(
+              [
+                { id: 'grid', label: 'Dense Grid (Cerner)' },
+                { id: 'sig', label: 'Sig Summary (Epic)' },
+                { id: 'patient', label: 'Patient Matrix' },
+              ] as const
+            ).map((vm) => {
+              const active = viewMode === vm.id;
+              return (
+                <Pressable
+                  key={vm.id}
+                  role="button"
+                  aria-pressed={active}
+                  onPress={() => setViewMode(vm.id)}
+                  style={({ focused }: PressState) => [
+                    styles.favPill,
+                    {
+                      borderColor: active ? t.primary : t.border,
+                      backgroundColor: active ? t.primarySoft : t.surface,
+                    },
+                    focusRing(t, focused),
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: active ? t.primaryContrast : t.text,
+                      fontFamily: ff,
+                      fontSize: t.textXs,
+                      fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+                    }}
+                  >
+                    {vm.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       </View>
 
-      {/* Scrollable Table Surface */}
+      {/* Epic-style Quick-Sig / SmartSig Command Bar */}
+      {!locked ? (
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderColor: t.border,
+            backgroundColor: t.surface,
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 10,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <SvgIcon name="pen" size={14} color={t.primary} />
+            <Text style={{ color: t.primaryContrast, fontFamily: ff, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
+              SmartSig Quick-Order:
+            </Text>
+          </View>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: 420 }}>
+            <ThemedInput
+              value={quickSigText}
+              onChangeText={(txt: string) => setQuickSigText(txt)}
+              placeholder='Type shorthand e.g. "moxi 1qid ou 7d" or "pred 1qid ou taper"...'
+              aria-label="SmartSig shorthand command"
+              onSubmitEditing={() => {
+                if (!quickSigText.trim()) return;
+                onIntent({ type: 'quickSigSubmitted', command: quickSigText.trim() });
+                setQuickSigText('');
+              }}
+              style={{ minHeight: 34, height: 34, paddingVertical: 4, fontSize: t.textXs, fontFamily: t.fontMono }}
+            />
+          </View>
+          <EmrButton
+            small
+            variant="ghost"
+            label="+ Parse & Add Row"
+            disabled={!quickSigText.trim()}
+            onPress={() => {
+              if (!quickSigText.trim()) return;
+              onIntent({ type: 'quickSigSubmitted', command: quickSigText.trim() });
+              setQuickSigText('');
+            }}
+          />
+          {m.quickSigExamples?.length ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.text2xs }}>1-click:</Text>
+              {m.quickSigExamples.map((ex) => (
+                <Pressable
+                  key={ex.command}
+                  role="button"
+                  onPress={() => onIntent({ type: 'quickSigSubmitted', command: ex.command })}
+                  style={({ focused, hovered }: PressState & { hovered?: boolean }) => [
+                    styles.favPill,
+                    {
+                      borderColor: t.primaryBorder,
+                      backgroundColor: hovered ? t.primaryHover : t.surfaceSoft,
+                    },
+                    focusRing(t, focused),
+                  ]}
+                >
+                  <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightMedium) }}>
+                    {ex.command}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      {/* Clinical Safety & Allergy Reconciliation Strip */}
+      {m.safetyAlerts?.length ? (
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderBottomWidth: 1,
+            borderColor: t.border,
+            backgroundColor: t.surfaceSoft,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 10,
+            alignItems: 'center',
+          }}
+        >
+          {m.safetyAlerts.map((alert) => {
+            const tc = toneColors(t, alert.tone);
+            const iconName = alert.tone === 'danger' ? 'danger' : alert.tone === 'warning' ? 'warning' : alert.tone === 'success' ? 'check' : 'info';
+            return (
+              <View
+                key={alert.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: tc.color,
+                  backgroundColor: tc.backgroundColor,
+                }}
+              >
+                <SvgIcon name={iconName} size={13} color={tc.color} />
+                <Text style={{ color: tc.color, fontFamily: ff, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
+                  {alert.badgeLabel}:
+                </Text>
+                <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textXs }}>
+                  {alert.message}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
+
+      {viewMode === 'sig' ? (
+        <View style={{ padding: 16, gap: 10 }}>
+          {m.rows.map((row, idx) => {
+            const isFirst = idx === 0;
+            const isLast = idx === m.rows.length - 1;
+            const pattern = row.slots.map((s) => formatDoseAmount(s.amount)).join(' – ');
+            return (
+              <View
+                key={row.id}
+                style={{
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: t.border,
+                  backgroundColor: idx % 2 === 1 ? t.surfaceSoft : t.surface,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 10,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, minWidth: 260 }}>
+                  <View style={[styles.rowNumBadge, { backgroundColor: t.primarySoft, borderColor: t.primaryBorder }]}>
+                    <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
+                      {idx + 1}
+                    </Text>
+                  </View>
+                  <View style={{ gap: 2, flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold) }}>
+                        {row.drugName || 'Unnamed medication'} {row.strength}
+                      </Text>
+                      <EmrBadgeView badge={{ label: `${row.formLabel} · ${row.route.toUpperCase()}${row.site ? ` (${row.site})` : ''}`, tone: 'neutral' }} />
+                      {row.frequencyCode ? <EmrBadgeView badge={{ label: row.frequencyCode, tone: 'info' }} /> : null}
+                      <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
+                        [{pattern}]
+                      </Text>
+                      <EmrBadgeView
+                        badge={{
+                          label:
+                            row.durationUnit === 'cont' || row.durationUnit === 'stat'
+                              ? row.durationUnit.toUpperCase()
+                              : `${row.durationCount ?? 0} ${row.durationUnit}`,
+                          tone: 'success',
+                        }}
+                      />
+                    </View>
+                    <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.textXs }}>
+                      Sig: {row.unitLabel} ({pattern}) · {row.foodRelation}
+                      {row.instructions ? ` · ${row.instructions}` : ''}
+                      {row.taperSteps?.length
+                        ? ` · Taper: ${row.taperSteps.map((st) => `${st.periodLabel}: ${st.frequencyLabel}`).join(' → ')}`
+                        : ''}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.orderBtnGroup}>
+                  {!locked ? (
+                    <>
+                      {iconBtn(`${row.id}-sig-up`, 'chevron-up', `Move row ${idx + 1} up`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' }), isFirst)}
+                      {iconBtn(`${row.id}-sig-down`, 'chevron-down', `Move row ${idx + 1} down`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' }), isLast)}
+                      {iconBtn(`${row.id}-sig-add`, 'plus', `Insert below row ${idx + 1}`, () => onIntent({ type: 'rowAddRequested', afterRowId: row.id }))}
+                      {iconBtn(`${row.id}-sig-del`, 'minus', `Remove row ${idx + 1}`, () => onIntent({ type: 'rowRemoveRequested', rowId: row.id }), m.rows.length <= 1, true)}
+                    </>
+                  ) : null}
+                  <EmrButton small variant="ghost" label="Edit in Grid" onPress={() => setViewMode('grid')} />
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ) : viewMode === 'patient' ? (
+        <View style={{ padding: 16, gap: 12 }}>
+          <View
+            style={{
+              padding: 10,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: t.primaryBorder,
+              backgroundColor: t.primarySoft,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <SvgIcon name="info" size={15} color={t.primaryContrast} />
+            <Text style={{ color: t.primaryContrast, fontFamily: ff, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium) }}>
+              Patient Daily Schedule Matrix · Leave at least 5 minutes between different eye drops. Instil eye ointments last.
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+            {m.slotDefinitions.map((slotDef) => {
+              const activeMeds = m.rows
+                .map((r) => ({ row: r, slot: r.slots.find((s) => s.id === slotDef.id) }))
+                .filter((x) => (x.slot?.amount ?? 0) > 0);
+              return (
+                <View
+                  key={slotDef.id}
+                  style={{
+                    flex: 1,
+                    minWidth: 210,
+                    padding: 12,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: t.border,
+                    backgroundColor: t.surfaceSoft,
+                    gap: 8,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
+                      {slotDef.label}
+                    </Text>
+                    <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: t.textXs }}>
+                      {slotDef.timeHint ?? ''}
+                    </Text>
+                  </View>
+                  {activeMeds.length === 0 ? (
+                    <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.textXs }}>No doses scheduled</Text>
+                  ) : (
+                    activeMeds.map(({ row, slot }) => (
+                      <View
+                        key={row.id}
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          borderWidth: 1,
+                          borderColor: t.border,
+                          backgroundColor: t.surface,
+                          gap: 2,
+                        }}
+                      >
+                        <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
+                          {row.drugName} {row.strength}
+                        </Text>
+                        <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
+                          {formatDoseAmount(slot?.amount ?? 0)} {row.unitLabel} {row.site ? `· ${row.site}` : ''} ({row.foodRelation})
+                        </Text>
+                      </View>
+                    ))
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      ) : (
+      /* Scrollable Table Surface */
       <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ minWidth: '100%' }}>
         <View style={{ flex: 1, minWidth: 980 }}>
           {/* Column Headers */}
@@ -750,6 +1057,7 @@ export function EmrPrescribingTable({
           })}
         </View>
       </ScrollView>
+      )}
 
       {/* Table Footer: Add Row + Sign-off */}
       <View style={[styles.footerBar, { borderTopColor: t.border, backgroundColor: t.surfaceSoft }]}>
