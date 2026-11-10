@@ -803,3 +803,221 @@ export interface EmrCrossConsultationEntry {
   readonly status: 'Requested' | 'Acknowledged' | 'Completed';
   readonly consultantReply?: string;
 }
+
+// ---------------------------------------------------------------------------
+// 16. Multi-Viewport PACS / DICOMweb Viewer (EmrPacsViewer)
+// ---------------------------------------------------------------------------
+
+export interface PacsKeyImagePin {
+  readonly id: string;
+  readonly studyId: string;
+  readonly modality: string;
+  readonly slice: number;
+  readonly label: string;
+}
+
+export interface PacsViewerViewModel {
+  readonly title?: string;
+  readonly studies: readonly EmrPacsStudyEntry[];
+  readonly activeStudyId: string;
+  readonly compareStudyId?: string;
+  readonly layoutMode: '1-up' | '2-up-od-os' | '2-up-compare';
+  readonly syncScroll: boolean;
+  readonly cinePlaying?: boolean;
+  readonly pinnedKeyImages?: readonly PacsKeyImagePin[];
+  readonly readOnly?: boolean;
+}
+
+export type PacsViewerIntent =
+  | { type: 'studySelected'; studyId: string }
+  | { type: 'compareStudySelected'; studyId: string }
+  | { type: 'layoutModeChanged'; layoutMode: PacsViewerViewModel['layoutMode'] }
+  | { type: 'syncScrollToggled' }
+  | { type: 'sliceStepped'; studyId: string; delta: number }
+  | { type: 'windowPresetChanged'; studyId: string; preset: EmrPacsStudyEntry['windowPreset'] }
+  | { type: 'zoomChanged'; studyId: string; zoomPercent: number }
+  | { type: 'invertToggled'; studyId: string }
+  | { type: 'cineToggled' }
+  | { type: 'keyImagePinned'; studyId: string; slice: number; label: string }
+  | { type: 'impressionPulledToNote'; studyId: string; text: string };
+
+// ---------------------------------------------------------------------------
+// 17. Multi-Specialty Examination & Dosing Matrix (EmrSpecialtyExamMatrix)
+// ---------------------------------------------------------------------------
+
+export interface EmrOphthalmicSegmentRow {
+  readonly id: string;
+  readonly segment: 'Anterior Segment' | 'Tonometry & Gonioscopy' | 'Posterior Segment';
+  readonly structureLabel: string;
+  readonly odValue: string;
+  readonly osValue: string;
+  readonly normalDefault: string;
+  readonly quickChips: readonly string[];
+  readonly abnormalOd?: boolean;
+  readonly abnormalOs?: boolean;
+}
+
+export interface EmrDermRegionRow {
+  readonly id: string;
+  readonly regionLabel: string;
+  readonly bsaPercent: number;
+  readonly ftuPerDose: number;
+  readonly active: boolean;
+}
+
+export interface EmrOncologyAgentRow {
+  readonly id: string;
+  readonly drugName: string;
+  readonly standardMgPerM2: number;
+  readonly calculatedDoseMg: number;
+  readonly routeLabel: string;
+}
+
+export interface SpecialtyExamMatrixViewModel {
+  readonly title?: string;
+  readonly activeSpecialty: 'ophthalmology' | 'pediatrics' | 'dermatology' | 'oncology';
+  readonly ophthalmicRows: readonly EmrOphthalmicSegmentRow[];
+  readonly pediatrics: {
+    readonly weightKg: number;
+    readonly heightCm: number;
+    readonly bsaM2: string;
+    readonly weightCentileLabel: string;
+    readonly heightCentileLabel: string;
+    readonly targetDrugLabel: string;
+    readonly mgPerKgPerDose: number;
+    readonly concentrationMgPer5Ml: number;
+    readonly calculatedMgPerDose: number;
+    readonly calculatedMlPerDose: number;
+    readonly maxDailyMgLabel: string;
+  };
+  readonly dermatology: {
+    readonly morphologyLabel: string;
+    readonly regions: readonly EmrDermRegionRow[];
+    readonly totalBsaPercent: number;
+    readonly totalFtuPerApp: number;
+    readonly totalGramsFor14DaysBd: number;
+  };
+  readonly oncology: {
+    readonly regimenName: string;
+    readonly cycleNumber: number;
+    readonly cycleDayLabel: string;
+    readonly ecogScore: 0 | 1 | 2 | 3 | 4;
+    readonly bsaM2: number;
+    readonly ancCountLabel: string;
+    readonly plateletCountLabel: string;
+    readonly safetyGatePassed: boolean;
+    readonly doseReductionPercent: 100 | 80 | 75 | 50;
+    readonly agents: readonly EmrOncologyAgentRow[];
+  };
+  readonly readOnly?: boolean;
+}
+
+export type SpecialtyExamMatrixIntent =
+  | { type: 'specialtyChanged'; specialty: SpecialtyExamMatrixViewModel['activeSpecialty'] }
+  | { type: 'ophthalmicCellChanged'; rowId: string; eye: 'od' | 'os'; value: string }
+  | { type: 'ophthalmicCopyOdToOs'; rowId?: string }
+  | { type: 'ophthalmicApplyWnlAll' }
+  | { type: 'pediatricWeightChanged'; weightKg: number }
+  | { type: 'pediatricMgPerKgChanged'; mgPerKgPerDose: number }
+  | { type: 'dermRegionToggled'; regionId: string }
+  | { type: 'oncologyDoseReductionChanged'; percent: 100 | 80 | 75 | 50 }
+  | { type: 'oncologyEcogChanged'; score: 0 | 1 | 2 | 3 | 4 }
+  | { type: 'summaryPulledToExam'; summaryText: string };
+
+// ---------------------------------------------------------------------------
+// 18. Inpatient eMAR & Nursing Administration Grid (EmrInpatientMar)
+// ---------------------------------------------------------------------------
+
+export interface EmrMarSlotAdmin {
+  readonly slotId: string;
+  readonly scheduledTime: string;
+  readonly status: 'due' | 'given' | 'held' | 'refused' | 'not-due';
+  readonly administeredAtLabel?: string;
+  readonly verifiedByLabel?: string;
+  readonly bcmaScanned?: boolean;
+  readonly holdReason?: string;
+}
+
+export interface EmrMarOrderRow {
+  readonly id: string;
+  readonly drugName: string;
+  readonly strength: string;
+  readonly formLabel: string;
+  readonly formularyCode?: string;
+  readonly doseLabel: string;
+  readonly routeLabel: string;
+  readonly siteLabel?: string;
+  readonly frequencyCode: string;
+  readonly stepPhase?: 'step-down' | 'step-up';
+  readonly stepLabel?: string;
+  readonly highAlert?: boolean;
+  readonly dualSignVerified?: boolean;
+  readonly instructions?: string;
+  readonly administrations: readonly EmrMarSlotAdmin[];
+}
+
+export interface InpatientMarViewModel {
+  readonly title?: string;
+  readonly wardBedLabel: string;
+  readonly shiftLabel: string;
+  readonly nurseLabel: string;
+  readonly timeColumns: readonly { id: string; timeLabel: string; slotLabel: string }[];
+  readonly orders: readonly EmrMarOrderRow[];
+  readonly readOnly?: boolean;
+}
+
+export type InpatientMarIntent =
+  | { type: 'slotStatusCycled'; orderId: string; slotId: string }
+  | { type: 'slotStatusChanged'; orderId: string; slotId: string; status: EmrMarSlotAdmin['status']; holdReason?: string }
+  | { type: 'bcmaScanSimulated'; orderId: string; slotId: string }
+  | { type: 'dualSignVerified'; orderId: string };
+
+// ---------------------------------------------------------------------------
+// 19. Print-Ready OPD Prescription & IPD Discharge Summary (EmrEncounterSummaryPrint)
+// ---------------------------------------------------------------------------
+
+export interface EmrPrintPrescriptionRow {
+  readonly id: string;
+  readonly drugName: string;
+  readonly strength: string;
+  readonly formLabel: string;
+  readonly formularyCode?: string;
+  readonly doseQtyUnit: string;
+  readonly frequencyPattern: string;
+  readonly routeSite: string;
+  readonly durationLabel: string;
+  readonly dispenseTotalLabel?: string;
+  readonly instructions: string;
+  readonly stepLabel?: string;
+}
+
+export interface EncounterSummaryPrintViewModel {
+  readonly documentMode: 'opd-rx' | 'ipd-discharge';
+  readonly facilityName: string;
+  readonly facilityDepartment: string;
+  readonly encounterDateLabel: string;
+  readonly encounterId: string;
+  readonly patientName: string;
+  readonly patientAgeSex: string;
+  readonly patientIdentifiers: readonly { label: string; value: string }[];
+  readonly careSettingLabel: string;
+  readonly allergiesSummary: readonly string[];
+  readonly chronicConditionsSummary: readonly string[];
+  readonly vitalsSummary: readonly { label: string; value: string }[];
+  readonly diagnoses: readonly EmrDiagnosisEntry[];
+  readonly historySummary: readonly { code: string; value: string }[];
+  readonly examinationSummary: readonly { code: string; value: string }[];
+  readonly pacsKeyFindingsSummary: readonly string[];
+  readonly prescriptions: readonly EmrPrintPrescriptionRow[];
+  readonly investigations: readonly EmrInvestigationOrder[];
+  readonly treatmentAdvises: readonly string[];
+  readonly crossConsultations: readonly EmrCrossConsultationEntry[];
+  readonly followUpDateLabel: string;
+  readonly prescriberName: string;
+  readonly prescriberRegNo: string;
+  readonly signedAtLabel?: string;
+}
+
+export type EncounterSummaryPrintIntent =
+  | { type: 'documentModeChanged'; mode: 'opd-rx' | 'ipd-discharge' }
+  | { type: 'printTriggered' };

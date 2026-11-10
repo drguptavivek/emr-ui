@@ -12,10 +12,20 @@ import type {
   EmrPacsStudyEntry,
   EmrPriorLabEntry,
   EmrPriorNoteEntry,
+  EncounterSummaryPrintViewModel,
+  InpatientMarViewModel,
   NavItem,
+  PacsViewerViewModel,
   PatientBannerViewModel,
+  SpecialtyExamMatrixViewModel,
 } from '@drguptavivek/emr-controller';
 import { ThemedInput } from '../../src/inputs-core';
+import {
+  EmrEncounterSummaryPrint,
+  EmrInpatientMar,
+  EmrPacsViewer,
+  EmrSpecialtyExamMatrix,
+} from '../../src/l4-encounter-surfaces';
 import { EmrCaptureStatusBar, EmrPatientBanner } from '../../src/l4-shell';
 import { EmrAppShell, type EmrAppShellIntent, type EmrSearchGroup } from '../../src/l4-web-shell';
 import { EmrBadgeView, EmrButton } from '../../src/primitives';
@@ -1986,7 +1996,19 @@ function ClinicalEncounterWebShellDemo() {
             </View>
           ) : null}
 
-          {/* 8. Encounter Capture Status & Sign-Off Bar */}
+          {/* 8. Multi-Specialty Examination & Dosing Matrix (Ophthalmology OD/OS, Pediatrics mg/kg, Dermatology FTU, Oncology BSA) */}
+          {showSection('exam') ? <SpecialtyExamMatrixDemo /> : null}
+
+          {/* 9. Dedicated Multi-Viewport PACS Compare Viewer (1-Up, 2-Up OD vs OS, 2-Up Active vs Prior Baseline) */}
+          {showSection('pacs') ? <PacsViewerDemo /> : null}
+
+          {/* 10. Inpatient eMAR & Nursing Kardex Grid (shown in IPD mode or All view) */}
+          {(careSetting === 'ipd' || activeNavId === 'all') ? <InpatientMarDemo /> : null}
+
+          {/* 11. Print-Ready OPD Prescription & IPD Discharge Summary (.emr-print) */}
+          {showSection('treatment') ? <EncounterSummaryPrintDemo defaultMode={careSetting === 'ipd' ? 'ipd-discharge' : 'opd-rx'} /> : null}
+
+          {/* 12. Encounter Capture Status & Sign-Off Bar */}
           <EmrCaptureStatusBar
             model={statusBar}
             onIntent={(i) => {
@@ -2026,10 +2048,489 @@ function ClinicalEncounterWebShellDemo() {
   );
 }
 
+export function PacsViewerDemo() {
+  const [model, setModel] = useState<PacsViewerViewModel>({
+    title: 'Multi-Viewport PACS & DICOMweb Compare Viewer (1-Up · 2-Up OD/OS · Active vs Prior)',
+    studies: INITIAL_PACS_STUDIES,
+    activeStudyId: 'pacs-1',
+    compareStudyId: 'pacs-2',
+    layoutMode: '2-up-od-os',
+    syncScroll: true,
+    pinnedKeyImages: [
+      { id: 'pin-1', studyId: 'pacs-1', modality: 'OCT', slice: 16, label: 'OCT Slice 16 · OD CST 418 µm' },
+    ],
+  });
+
+  return (
+    <EmrPacsViewer
+      model={model}
+      onIntent={(intent) => {
+        switch (intent.type) {
+          case 'studySelected':
+            setModel((prev) => ({ ...prev, activeStudyId: intent.studyId }));
+            break;
+          case 'layoutModeChanged':
+            setModel((prev) => ({ ...prev, layoutMode: intent.layoutMode }));
+            break;
+          case 'syncScrollToggled':
+            setModel((prev) => ({ ...prev, syncScroll: !prev.syncScroll }));
+            break;
+          case 'sliceStepped':
+            setModel((prev) => ({
+              ...prev,
+              studies: prev.studies.map((s) =>
+                s.id === intent.studyId
+                  ? { ...s, currentSlice: Math.max(1, Math.min(s.sliceCount, s.currentSlice + intent.delta)) }
+                  : s,
+              ),
+            }));
+            break;
+          case 'windowPresetChanged':
+            setModel((prev) => ({
+              ...prev,
+              studies: prev.studies.map((s) => (s.id === intent.studyId ? { ...s, windowPreset: intent.preset } : s)),
+            }));
+            break;
+          case 'zoomChanged':
+            setModel((prev) => ({
+              ...prev,
+              studies: prev.studies.map((s) => (s.id === intent.studyId ? { ...s, zoomPercent: intent.zoomPercent } : s)),
+            }));
+            break;
+          case 'invertToggled':
+            setModel((prev) => ({
+              ...prev,
+              studies: prev.studies.map((s) => (s.id === intent.studyId ? { ...s, inverted: !s.inverted } : s)),
+            }));
+            break;
+          case 'keyImagePinned':
+            setModel((prev) => ({
+              ...prev,
+              pinnedKeyImages: [
+                ...(prev.pinnedKeyImages ?? []),
+                {
+                  id: `pin-${Date.now()}`,
+                  studyId: intent.studyId,
+                  modality: prev.studies.find((s) => s.id === intent.studyId)?.modality ?? 'DICOM',
+                  slice: intent.slice,
+                  label: intent.label,
+                },
+              ],
+            }));
+            break;
+        }
+      }}
+    />
+  );
+}
+
+export function SpecialtyExamMatrixDemo() {
+  const [model, setModel] = useState<SpecialtyExamMatrixViewModel>({
+    title: 'Multi-Specialty Structured Clinical Examination & Safe Dosing Matrix',
+    activeSpecialty: 'ophthalmology',
+    ophthalmicRows: [
+      {
+        id: 'cornea',
+        segment: 'Anterior Segment',
+        structureLabel: 'Cornea & Wound',
+        odValue: 'Clear, temporal phaco port well-apposed, Seidel neg',
+        osValue: 'Clear, compact stroma, no KP',
+        normalDefault: 'Clear, lustrous, Fluorescein negative',
+        quickChips: ['Clear', 'Descemet folds +', 'SPK +', 'Seidel neg'],
+      },
+      {
+        id: 'ac',
+        segment: 'Anterior Segment',
+        structureLabel: 'Anterior Chamber',
+        odValue: 'Deep, 0 cells, 0 flare (SUN Grade 0)',
+        osValue: 'Deep & quiet (VH Grade 4)',
+        normalDefault: 'Deep and quiet (0 cells, 0 flare)',
+        quickChips: ['Deep & quiet', 'Cells 1+', 'Flare 1+', 'Shallow VH2'],
+      },
+      {
+        id: 'lens',
+        segment: 'Anterior Segment',
+        structureLabel: 'Lens / PCIOL',
+        odValue: 'Toric PCIOL well-centered in capsular bag',
+        osValue: 'Nuclear Sclerosis Grade II (NS2)',
+        normalDefault: 'Clear crystalline lens',
+        quickChips: ['PCIOL in bag', 'Clear lens', 'NS2 Cataract', 'PCO +'],
+      },
+      {
+        id: 'iop-gonio',
+        segment: 'Tonometry & Gonioscopy',
+        structureLabel: 'IOP (GAT) & Angle',
+        odValue: '22 mmHg (Steroid responder) · Shaffer Grade IV open',
+        osValue: '15 mmHg · Shaffer Grade IV open',
+        normalDefault: '15 mmHg · Shaffer Grade IV open 360°',
+        quickChips: ['14 mmHg', '22 mmHg (High)', 'Shaffer IV open', 'PAS +'],
+      },
+      {
+        id: 'macula',
+        segment: 'Posterior Segment',
+        structureLabel: 'Macula & Fovea',
+        odValue: 'Dull foveal reflex, cystoid macular oedema (CST 418 µm)',
+        osValue: 'Healthy foveal reflex, CST 258 µm, mild NPDR',
+        normalDefault: 'Healthy foveal reflex, flat macula',
+        quickChips: ['Healthy foveal reflex', 'Cystoid oedema (CMO)', 'Hard exudates', 'Microaneurysms'],
+      },
+    ],
+    pediatrics: {
+      weightKg: 12,
+      heightCm: 88,
+      bsaM2: '0.54',
+      weightCentileLabel: '50th WHO Centile',
+      heightCentileLabel: '55th WHO Centile',
+      targetDrugLabel: 'Amoxicillin Oral Suspension',
+      mgPerKgPerDose: 15,
+      concentrationMgPer5Ml: 250,
+      calculatedMgPerDose: 180,
+      calculatedMlPerDose: 3.6,
+      maxDailyMgLabel: 'Max 90 mg/kg/day (1,080 mg/day)',
+    },
+    dermatology: {
+      morphologyLabel: 'Erythematous scaly plaques over extensor surfaces & trunk',
+      regions: [
+        { id: 'face', regionLabel: 'Face & Neck', bsaPercent: 2.5, ftuPerDose: 2.5, active: false },
+        { id: 'trunk', regionLabel: 'Anterior Trunk', bsaPercent: 6, ftuPerDose: 3.5, active: true },
+        { id: 'arms', regionLabel: 'Bilateral Upper Limbs', bsaPercent: 4, ftuPerDose: 3, active: true },
+        { id: 'legs', regionLabel: 'Bilateral Lower Limbs', bsaPercent: 8, ftuPerDose: 4, active: false },
+      ],
+      totalBsaPercent: 10,
+      totalFtuPerApp: 6.5,
+      totalGramsFor14DaysBd: 91,
+    },
+    oncology: {
+      regimenName: 'CAPOX (Capecitabine + Oxaliplatin)',
+      cycleNumber: 3,
+      cycleDayLabel: 'Days 1–14 (21-Day Cycle)',
+      ecogScore: 1,
+      bsaM2: 1.76,
+      ancCountLabel: '2,450 /µL (≥ 1,500)',
+      plateletCountLabel: '168,000 /µL (≥ 100,000)',
+      safetyGatePassed: true,
+      doseReductionPercent: 100,
+      agents: [
+        { id: 'ag-1', drugName: 'Capecitabine (Oral Tablet 500 mg)', standardMgPerM2: 1000, calculatedDoseMg: 1750, routeLabel: 'Oral BD Days 1–14' },
+        { id: 'ag-2', drugName: 'Oxaliplatin (IV Infusion)', standardMgPerM2: 130, calculatedDoseMg: 228, routeLabel: 'IV over 2h Day 1' },
+      ],
+    },
+  });
+
+  return (
+    <EmrSpecialtyExamMatrix
+      model={model}
+      onIntent={(intent) => {
+        switch (intent.type) {
+          case 'specialtyChanged':
+            setModel((prev) => ({ ...prev, activeSpecialty: intent.specialty }));
+            break;
+          case 'ophthalmicCellChanged':
+            setModel((prev) => ({
+              ...prev,
+              ophthalmicRows: prev.ophthalmicRows.map((r) =>
+                r.id === intent.rowId
+                  ? intent.eye === 'od'
+                    ? { ...r, odValue: intent.value }
+                    : { ...r, osValue: intent.value }
+                  : r,
+              ),
+            }));
+            break;
+          case 'ophthalmicApplyWnlAll':
+            setModel((prev) => ({
+              ...prev,
+              ophthalmicRows: prev.ophthalmicRows.map((r) => ({ ...r, odValue: r.normalDefault, osValue: r.normalDefault })),
+            }));
+            break;
+          case 'ophthalmicCopyOdToOs':
+            setModel((prev) => ({
+              ...prev,
+              ophthalmicRows: prev.ophthalmicRows.map((r) => ({ ...r, osValue: r.odValue })),
+            }));
+            break;
+          case 'pediatricWeightChanged': {
+            const w = intent.weightKg;
+            const mg = Math.round(w * model.pediatrics.mgPerKgPerDose);
+            const ml = Math.round((mg / model.pediatrics.concentrationMgPer5Ml) * 5 * 10) / 10;
+            setModel((prev) => ({
+              ...prev,
+              pediatrics: { ...prev.pediatrics, weightKg: w, calculatedMgPerDose: mg, calculatedMlPerDose: ml },
+            }));
+            break;
+          }
+          case 'dermRegionToggled':
+            setModel((prev) => {
+              const regions = prev.dermatology.regions.map((r) => (r.id === intent.regionId ? { ...r, active: !r.active } : r));
+              const activeRegs = regions.filter((r) => r.active);
+              const totalBsaPercent = activeRegs.reduce((s, r) => s + r.bsaPercent, 0);
+              const totalFtuPerApp = activeRegs.reduce((s, r) => s + r.ftuPerDose, 0);
+              const totalGramsFor14DaysBd = Math.round(totalFtuPerApp * 0.5 * 2 * 14);
+              return {
+                ...prev,
+                dermatology: { ...prev.dermatology, regions, totalBsaPercent, totalFtuPerApp, totalGramsFor14DaysBd },
+              };
+            });
+            break;
+          case 'oncologyDoseReductionChanged':
+            setModel((prev) => ({
+              ...prev,
+              oncology: {
+                ...prev.oncology,
+                doseReductionPercent: intent.percent,
+                agents: prev.oncology.agents.map((ag) => ({
+                  ...ag,
+                  calculatedDoseMg: Math.round(ag.standardMgPerM2 * prev.oncology.bsaM2 * (intent.percent / 100)),
+                })),
+              },
+            }));
+            break;
+        }
+      }}
+    />
+  );
+}
+
+export function InpatientMarDemo() {
+  const [model, setModel] = useState<InpatientMarViewModel>({
+    title: 'Inpatient Electronic Medication Administration Record (eMAR) & Nursing Kardex',
+    wardBedLabel: 'Ward 4 (Ophth & Neuro-Med) · Bed 14B',
+    shiftLabel: 'Morning Shift (10 Nov 2026)',
+    nurseLabel: 'RN K. Nair (Emp #4412)',
+    timeColumns: [
+      { id: 'm', timeLabel: '08:00', slotLabel: 'Morning' },
+      { id: 'a', timeLabel: '14:00', slotLabel: 'Afternoon' },
+      { id: 'e', timeLabel: '18:00', slotLabel: 'Evening' },
+      { id: 'n', timeLabel: '22:00', slotLabel: 'Night' },
+    ],
+    orders: [
+      {
+        id: 'mar-1',
+        drugName: 'Nepafenac',
+        strength: '0.1% w/v',
+        formLabel: 'Ophthalmic Drops',
+        formularyCode: 'RXN-402188',
+        doseLabel: '1 drop',
+        routeLabel: 'Ophthalmic',
+        siteLabel: 'OD (Right Eye)',
+        frequencyCode: 'TDS (1-1-0-1)',
+        administrations: [
+          { slotId: 'm', scheduledTime: '08:00', status: 'given', administeredAtLabel: '08:04 by RN K.N.', bcmaScanned: true },
+          { slotId: 'a', scheduledTime: '14:00', status: 'due' },
+          { slotId: 'e', scheduledTime: '18:00', status: 'not-due' },
+          { slotId: 'n', scheduledTime: '22:00', status: 'due' },
+        ],
+      },
+      {
+        id: 'mar-2',
+        drugName: 'Brinzolamide',
+        strength: '1% w/v',
+        formLabel: 'Ophthalmic Drops',
+        formularyCode: 'RXN-284519',
+        doseLabel: '1 drop',
+        routeLabel: 'Ophthalmic',
+        siteLabel: 'OD (Right Eye)',
+        frequencyCode: 'BD (1-0-0-1)',
+        stepPhase: 'step-down',
+        stepLabel: '↘ Replaces Prednisolone (Steroid Responder)',
+        administrations: [
+          { slotId: 'm', scheduledTime: '08:00', status: 'given', administeredAtLabel: '08:10 by RN K.N.', bcmaScanned: true },
+          { slotId: 'a', scheduledTime: '14:00', status: 'not-due' },
+          { slotId: 'e', scheduledTime: '18:00', status: 'not-due' },
+          { slotId: 'n', scheduledTime: '22:00', status: 'due' },
+        ],
+      },
+      {
+        id: 'mar-3',
+        drugName: 'Mannitol 20%',
+        strength: '20 g/100 mL',
+        formLabel: 'IV Infusion',
+        formularyCode: 'RXN-311474',
+        doseLabel: '100 mL',
+        routeLabel: 'IV Infusion (over 20m)',
+        frequencyCode: 'TDS',
+        highAlert: true,
+        dualSignVerified: true,
+        administrations: [
+          { slotId: 'm', scheduledTime: '08:00', status: 'given', administeredAtLabel: '08:15 · 2-RN Verified', bcmaScanned: true },
+          { slotId: 'a', scheduledTime: '14:00', status: 'due' },
+          { slotId: 'e', scheduledTime: '18:00', status: 'not-due' },
+          { slotId: 'n', scheduledTime: '22:00', status: 'due' },
+        ],
+      },
+      {
+        id: 'mar-4',
+        drugName: 'Metformin HCl (SR)',
+        strength: '500 mg',
+        formLabel: 'Oral Tablet (Scored)',
+        formularyCode: 'RXN-860975',
+        doseLabel: '1 tab',
+        routeLabel: 'Oral',
+        frequencyCode: 'BD (1-0-0-1)',
+        administrations: [
+          { slotId: 'm', scheduledTime: '08:00', status: 'given', administeredAtLabel: '08:30 (After breakfast)', bcmaScanned: true },
+          { slotId: 'a', scheduledTime: '14:00', status: 'not-due' },
+          { slotId: 'e', scheduledTime: '18:00', status: 'not-due' },
+          { slotId: 'n', scheduledTime: '22:00', status: 'due' },
+        ],
+      },
+    ],
+  });
+
+  return (
+    <EmrInpatientMar
+      model={model}
+      onIntent={(intent) => {
+        if (intent.type === 'slotStatusCycled') {
+          const orderCycle: Array<'due' | 'given' | 'held' | 'refused'> = ['due', 'given', 'held', 'refused'];
+          setModel((prev) => ({
+            ...prev,
+            orders: prev.orders.map((ord) =>
+              ord.id === intent.orderId
+                ? {
+                    ...ord,
+                    administrations: ord.administrations.map((adm) => {
+                      if (adm.slotId !== intent.slotId || adm.status === 'not-due') return adm;
+                      const nextStatus = orderCycle[(orderCycle.indexOf(adm.status) + 1) % orderCycle.length]!;
+                      return {
+                        ...adm,
+                        status: nextStatus,
+                        administeredAtLabel: nextStatus === 'given' ? 'Just now · RN K.N.' : undefined,
+                        bcmaScanned: nextStatus === 'given',
+                        holdReason: nextStatus === 'held' ? 'Held per clinical parameter' : undefined,
+                      };
+                    }),
+                  }
+                : ord,
+            ),
+          }));
+        } else if (intent.type === 'dualSignVerified') {
+          setModel((prev) => ({
+            ...prev,
+            orders: prev.orders.map((ord) =>
+              ord.id === intent.orderId ? { ...ord, dualSignVerified: !ord.dualSignVerified } : ord,
+            ),
+          }));
+        }
+      }}
+    />
+  );
+}
+
+export function EncounterSummaryPrintDemo({ defaultMode = 'opd-rx' }: { defaultMode?: 'opd-rx' | 'ipd-discharge' }) {
+  const [mode, setMode] = useState<'opd-rx' | 'ipd-discharge'>(defaultMode);
+
+  const printModel: EncounterSummaryPrintViewModel = {
+    documentMode: mode,
+    facilityName: 'Advanced Multi-Specialty & Ophthalmic Institute',
+    facilityDepartment: 'Department of Ophthalmology, Vitreoretina & Internal Medicine',
+    encounterDateLabel: '10 Nov 2026 · 09:15 IST',
+    encounterId: 'ENC-2026-88412',
+    patientName: 'Aarav Sharma',
+    patientAgeSex: '58 y / Male (68 kg · BSA 1.76 m²)',
+    patientIdentifiers: [
+      { label: 'MRN', value: 'MRN-2026-0842' },
+      { label: 'National Health ID', value: '91-4820-7731-9904' },
+    ],
+    careSettingLabel: mode === 'opd-rx' ? 'Outpatient (OPD Room 4)' : 'Inpatient (Ward 4 · Bed 14B · Day 3)',
+    allergiesSummary: ['Penicillin (Anaphylaxis)', 'Sulfonamides (Rash — Avoid oral Acetazolamide)'],
+    chronicConditionsSummary: ['Type 2 Diabetes Mellitus (8 yrs)', 'Primary Open-Angle Glaucoma (OU)', 'Essential Hypertension'],
+    vitalsSummary: [
+      { label: 'BCVA OD/OS', value: '6/12 (+0.30) / 6/6 (0.00 LogMAR)' },
+      { label: 'IOP OD/OS', value: '22 / 15 mmHg' },
+      { label: 'BP', value: '136/84 mmHg' },
+      { label: 'HbA1c', value: '7.6%' },
+    ],
+    diagnoses: INITIAL_DIAGNOSES,
+    historySummary: INITIAL_CLASSICAL_HISTORY.slice(0, 4).map((h) => ({ code: h.code, value: h.value })),
+    examinationSummary: INITIAL_EXAM_SECTIONS.slice(0, 2).map((e) => ({ code: e.code, value: e.findingsText })),
+    pacsKeyFindingsSummary: [
+      'ACC-2026-OCT-9921 (SD-OCT): OD CST 418 µm (↑ +164 µm vs baseline) with intraretinal cystoid spaces (Irvine-Gass CMO); OS CST 258 µm.',
+      'ACC-2026-FFA-8840 (FFA): Classic late perifoveal petaloid leakage OD; no neovascularization.',
+    ],
+    prescriptions: [
+      {
+        id: 'prx-1',
+        drugName: 'Nepafenac',
+        strength: '0.1% w/v',
+        formLabel: 'Ophthalmic Drops',
+        formularyCode: 'RXN-402188',
+        doseQtyUnit: '1 drop',
+        frequencyPattern: 'TDS (1 - 1 - 0 - 1)',
+        routeSite: 'Ophthalmic · OD',
+        durationLabel: '6 weeks',
+        instructions: '5 min gap between drops; shake bottle well.',
+      },
+      {
+        id: 'prx-2',
+        drugName: 'Brinzolamide',
+        strength: '1% w/v',
+        formLabel: 'Ophthalmic Drops',
+        formularyCode: 'RXN-284519',
+        doseQtyUnit: '1 drop',
+        frequencyPattern: 'BD (1 - 0 - 0 - 1)',
+        routeSite: 'Ophthalmic · OD',
+        durationLabel: '4 weeks',
+        instructions: 'Punctal occlusion for 1 minute after instillation.',
+        stepLabel: '↘ Step-Down Steroid-Sparing IOP Control',
+      },
+      {
+        id: 'prx-3',
+        drugName: 'Metformin HCl (SR)',
+        strength: '500 mg',
+        formLabel: 'Oral Tablet (Scored)',
+        formularyCode: 'RXN-860975',
+        doseQtyUnit: '1 tab',
+        frequencyPattern: 'BD (1 - 0 - 0 - 1)',
+        routeSite: 'Oral',
+        durationLabel: '30 days',
+        dispenseTotalLabel: 'Dispense: 60 tabs',
+        instructions: 'Take after breakfast and dinner.',
+      },
+    ],
+    investigations: INITIAL_INVESTIGATIONS,
+    treatmentAdvises: mode === 'opd-rx' ? OPD_ADVISES : IPD_ADVISES,
+    crossConsultations: INITIAL_CONSULTS,
+    followUpDateLabel: 'Review in 3 weeks with repeat SD-OCT Macula OU & IOP check',
+    prescriberName: 'Dr. Vivek Gupta, MD (Senior Consultant)',
+    prescriberRegNo: 'MCI-REG-48291',
+    signedAtLabel: '10 Nov 2026 09:15 IST',
+  };
+
+  return (
+    <EmrEncounterSummaryPrint
+      model={printModel}
+      onIntent={(intent) => {
+        if (intent.type === 'documentModeChanged') setMode(intent.mode);
+      }}
+    />
+  );
+}
+
 export const gallery: GallerySection[] = [
   {
     id: 'l4-web-shell',
-    title: 'Integrated OPD & IPD Clinical Encounter Web Shell (Patient Banner, Diagnoses, PACS, Prior Notes/Labs, Classical History, Exam, Investigations, Rx & Cross-Consults)',
+    title: 'Integrated OPD & IPD Clinical Encounter Web Shell (Patient Banner, Diagnoses, PACS, Prior Notes/Labs, Classical History, Exam, Investigations, Rx, eMAR & Print Summary)',
     render: () => <ClinicalEncounterWebShellDemo />,
+  },
+  {
+    id: 'l4-pacs-viewer',
+    title: 'EmrPacsViewer · Multi-Viewport PACS & DICOMweb Compare Viewer (1-Up, 2-Up OD vs OS, Active vs Prior)',
+    render: () => <PacsViewerDemo />,
+  },
+  {
+    id: 'l4-specialty-exam-matrix',
+    title: 'EmrSpecialtyExamMatrix · Multi-Specialty Examination & Safe Dosing Matrix (Ophthalmology, Pediatrics, Dermatology, Oncology)',
+    render: () => <SpecialtyExamMatrixDemo />,
+  },
+  {
+    id: 'l4-inpatient-mar',
+    title: 'EmrInpatientMar · Inpatient Electronic Medication Administration Record (eMAR) & Nursing Kardex',
+    render: () => <InpatientMarDemo />,
+  },
+  {
+    id: 'l4-encounter-summary-print',
+    title: 'EmrEncounterSummaryPrint · Print-Ready OPD Prescription & IPD Discharge Summary (.emr-print)',
+    render: () => <EncounterSummaryPrintDemo />,
   },
 ];

@@ -419,6 +419,10 @@ export class EmrToastElement extends EmrControlledDomainElement { protected over
 export class EmrSheetElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Modal Sheet'; }
 export class EmrTopBarSearchElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Top Bar Search'; }
 export class EmrTopBarElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Application Top Bar'; }
+export class EmrPacsViewerElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Multi-Viewport PACS & DICOMweb Viewer'; }
+export class EmrSpecialtyExamMatrixElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Multi-Specialty Examination & Dosing Matrix'; }
+export class EmrInpatientMarElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Inpatient eMAR & Nursing Kardex'; }
+export class EmrEncounterSummaryPrintElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Print-Ready OPD Rx & IPD Discharge Summary'; }
 
 export function registerL4Elements(): void {
   defineEmrElement('emr-medication-list', EmrMedicationListElement);
@@ -488,4 +492,8 @@ export function registerL4Elements(): void {
   defineEmrElement('emr-sheet', EmrSheetElement);
   defineEmrElement('emr-top-bar-search', EmrTopBarSearchElement);
   defineEmrElement('emr-top-bar', EmrTopBarElement);
+  defineEmrElement('emr-pacs-viewer', EmrPacsViewerElement);
+  defineEmrElement('emr-specialty-exam-matrix', EmrSpecialtyExamMatrixElement);
+  defineEmrElement('emr-inpatient-mar', EmrInpatientMarElement);
+  defineEmrElement('emr-encounter-summary-print', EmrEncounterSummaryPrintElement);
 }

@@ -113,3 +113,4 @@ export * from './lib/domain/emr-desk.component';
 export * from './lib/domain/emr-patient-history.component';
 export * from './lib/domain/emr-records-and-charts.component';
 export * from './lib/domain/emr-mobile-and-web-shell.component';
+export * from './lib/domain/emr-encounter-surfaces.component';

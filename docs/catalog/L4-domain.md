@@ -2458,3 +2458,51 @@ export class EmrPrivacyCentreComponent {
 
 **Depends on** — `EmrBadgeComponent`, `EmrButtonComponent`.
 **Used by** — none yet.
+
+---
+
+### EmrPacsViewer
+**Layer** L4 · **Selector** `emr-pacs-viewer` · **Status** stable · **Story** `emr-shell-and-auth--top-bar-default`
+
+**Need** — Clinical encounters require a multi-viewport PACS / DICOMweb diagnostic viewer supporting 1-Up single viewport, 2-Up OD vs OS synchronized slab comparison, and 2-Up Active vs Prior baseline comparison with caliper measurements, Window/Level presets, LUT inversion, key-image pinning, and 1-click impression pull to clinical notes.
+
+**Purpose** — Renders `PacsViewerViewModel` and emits `PacsViewerIntent`.
+
+**Depends on** — `EmrBadgeComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrSpecialtyExamMatrix
+**Layer** L4 · **Selector** `emr-specialty-exam-matrix` · **Status** stable · **Story** `emr-shell-and-auth--top-bar-default`
+
+**Need** — Multi-specialty outpatient and inpatient encounters require structured specialty examination and safe dosing calculation matrices across Ophthalmology (bilateral OD/OS slit-lamp, tonometry, gonioscopy, and fundus matrix with WNL and Copy OD→OS), Pediatrics (weight-based `mg/kg` suspension calculator), Dermatology (BSA% and Fingertip Unit `FTU` calculator), and Oncology (Mosteller BSA `mg/m²` chemo cycle calculator with ANC/Platelet safety gate).
+
+**Purpose** — Renders `SpecialtyExamMatrixViewModel` and emits `SpecialtyExamMatrixIntent`.
+
+**Depends on** — `EmrBadgeComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrInpatientMar
+**Layer** L4 · **Selector** `emr-inpatient-mar` · **Status** stable · **Story** `emr-medications-order-composer--tablet-bd`
+
+**Need** — Inpatient wards require an Electronic Medication Administration Record (eMAR) and nursing Kardex grid linked to 7-column prescription orders (including Backend API dose form, Step-Down/Step-Up phases, BCMA barcode verification, and dual-sign high-alert checks) across scheduled administration time slots.
+
+**Purpose** — Renders `InpatientMarViewModel` and emits `InpatientMarIntent`.
+
+**Depends on** — `EmrBadgeComponent`.
+**Used by** — none yet.
+
+---
+
+### EmrEncounterSummaryPrint
+**Layer** L4 · **Selector** `emr-encounter-summary-print` · **Status** stable · **Story** `emr-medications-order-composer--tablet-bd`
+
+**Need** — Outpatient consultations and inpatient admissions require a print-ready (`.emr-print`) OPD Prescription & Case Sheet or IPD Discharge Summary compiling patient identity, allergies, diagnoses, classical history, examination findings, PACS key findings, 7-column medication schedule (with tablet/capsule dispense totals), investigations, advises, and cross-consultations.
+
+**Purpose** — Renders `EncounterSummaryPrintViewModel` and emits `EncounterSummaryPrintIntent`.
+
+**Depends on** — `EmrButtonComponent`.
+**Used by** — none yet.

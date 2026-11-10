@@ -3,7 +3,7 @@ export const EMR_REGISTRY_MANIFEST = {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "@drguptavivek/emr",
   "homepage": "https://github.com/drguptavivek/emr-ui",
-  "totalItems": 118,
+  "totalItems": 122,
   "layers": {
     "0": "foundations",
     "1": "primitives",
@@ -10660,6 +10660,334 @@ export const EMR_REGISTRY_MANIFEST = {
           "l4-domain.ts"
         ],
         "import": "import { EmrPrescribingTableElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-pacs-viewer",
+      "id": "EmrPacsViewerComponent",
+      "reactName": "EmrPacsViewer",
+      "litName": "EmrPacsViewerElement",
+      "selector": "emr-pacs-viewer",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "kind": "component",
+      "status": "stable",
+      "description": "Multi-viewport PACS & DICOMweb diagnostic compare viewer with 1-Up, 2-Up OD vs OS, and 2-Up Active vs Prior baseline modes, slice scrubbing, W/L presets, caliper pins, and impression pull.",
+      "stories": [
+        "emr-shell-and-auth--top-bar-default"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller"
+      ],
+      "registryDependencies": [
+        "foundations",
+        "emr-badge"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations",
+        "emr-badge"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-pacs-viewer",
+        "angular": "pnpm emr add emr-pacs-viewer --framework angular",
+        "react": "pnpm emr add emr-pacs-viewer --framework react",
+        "expo": "pnpm emr add emr-pacs-viewer --framework expo",
+        "lit": "pnpm emr add emr-pacs-viewer --framework lit"
+      },
+      "angular": {
+        "component": "EmrPacsViewerComponent",
+        "selector": "emr-pacs-viewer",
+        "files": [
+          "domain/emr-encounter-surfaces.component.ts"
+        ],
+        "import": "import { EmrPacsViewerComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrPacsViewer",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrPacsViewer } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrPacsViewer",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrPacsViewer } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrPacsViewerElement",
+        "selector": "emr-pacs-viewer",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrPacsViewerElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-specialty-exam-matrix",
+      "id": "EmrSpecialtyExamMatrixComponent",
+      "reactName": "EmrSpecialtyExamMatrix",
+      "litName": "EmrSpecialtyExamMatrixElement",
+      "selector": "emr-specialty-exam-matrix",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "kind": "component",
+      "status": "stable",
+      "description": "Multi-specialty structured clinical examination & dosing calculator matrix across Ophthalmology (OD/OS slit-lamp & fundus), Pediatrics (mg/kg suspension), Dermatology (BSA% & FTU), and Oncology (BSA mg/m² chemo cycles).",
+      "stories": [
+        "emr-shell-and-auth--top-bar-default"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller"
+      ],
+      "registryDependencies": [
+        "foundations",
+        "emr-badge"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations",
+        "emr-badge"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-specialty-exam-matrix",
+        "angular": "pnpm emr add emr-specialty-exam-matrix --framework angular",
+        "react": "pnpm emr add emr-specialty-exam-matrix --framework react",
+        "expo": "pnpm emr add emr-specialty-exam-matrix --framework expo",
+        "lit": "pnpm emr add emr-specialty-exam-matrix --framework lit"
+      },
+      "angular": {
+        "component": "EmrSpecialtyExamMatrixComponent",
+        "selector": "emr-specialty-exam-matrix",
+        "files": [
+          "domain/emr-encounter-surfaces.component.ts"
+        ],
+        "import": "import { EmrSpecialtyExamMatrixComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrSpecialtyExamMatrix",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrSpecialtyExamMatrix } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrSpecialtyExamMatrix",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrSpecialtyExamMatrix } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrSpecialtyExamMatrixElement",
+        "selector": "emr-specialty-exam-matrix",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrSpecialtyExamMatrixElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-inpatient-mar",
+      "id": "EmrInpatientMarComponent",
+      "reactName": "EmrInpatientMar",
+      "litName": "EmrInpatientMarElement",
+      "selector": "emr-inpatient-mar",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "kind": "component",
+      "status": "stable",
+      "description": "Inpatient Electronic Medication Administration Record (eMAR) & nursing Kardex grid linked to 7-column prescription orders with BCMA verification and dual-sign high-alert checks.",
+      "stories": [
+        "emr-medications-order-composer--tablet-bd"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller"
+      ],
+      "registryDependencies": [
+        "foundations",
+        "emr-badge"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations",
+        "emr-badge"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-inpatient-mar",
+        "angular": "pnpm emr add emr-inpatient-mar --framework angular",
+        "react": "pnpm emr add emr-inpatient-mar --framework react",
+        "expo": "pnpm emr add emr-inpatient-mar --framework expo",
+        "lit": "pnpm emr add emr-inpatient-mar --framework lit"
+      },
+      "angular": {
+        "component": "EmrInpatientMarComponent",
+        "selector": "emr-inpatient-mar",
+        "files": [
+          "domain/emr-encounter-surfaces.component.ts"
+        ],
+        "import": "import { EmrInpatientMarComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrInpatientMar",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrInpatientMar } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrInpatientMar",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrInpatientMar } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrInpatientMarElement",
+        "selector": "emr-inpatient-mar",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrInpatientMarElement } from '@drguptavivek/emr-elements';"
+      },
+      "fileCount": 11
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-encounter-summary-print",
+      "id": "EmrEncounterSummaryPrintComponent",
+      "reactName": "EmrEncounterSummaryPrint",
+      "litName": "EmrEncounterSummaryPrintElement",
+      "selector": "emr-encounter-summary-print",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "kind": "component",
+      "status": "stable",
+      "description": "Print-ready (.emr-print) OPD prescription & IPD discharge summary surface compiling demographics, allergies, diagnoses, history, exam, PACS findings, and 7-column Rx schedule.",
+      "stories": [
+        "emr-medications-order-composer--tablet-bd"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller"
+      ],
+      "registryDependencies": [
+        "foundations",
+        "emr-button"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations",
+        "emr-button"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-encounter-summary-print",
+        "angular": "pnpm emr add emr-encounter-summary-print --framework angular",
+        "react": "pnpm emr add emr-encounter-summary-print --framework react",
+        "expo": "pnpm emr add emr-encounter-summary-print --framework expo",
+        "lit": "pnpm emr add emr-encounter-summary-print --framework lit"
+      },
+      "angular": {
+        "component": "EmrEncounterSummaryPrintComponent",
+        "selector": "emr-encounter-summary-print",
+        "files": [
+          "domain/emr-encounter-surfaces.component.ts"
+        ],
+        "import": "import { EmrEncounterSummaryPrintComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrEncounterSummaryPrint",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrEncounterSummaryPrint } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrEncounterSummaryPrint",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-inputs.logic.ts",
+          "l4-encounter-surfaces.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts",
+          "typed-field.logic.ts"
+        ],
+        "import": "import { EmrEncounterSummaryPrint } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrEncounterSummaryPrintElement",
+        "selector": "emr-encounter-summary-print",
+        "files": [
+          "l4-domain.ts"
+        ],
+        "import": "import { EmrEncounterSummaryPrintElement } from '@drguptavivek/emr-elements';"
       },
       "fileCount": 11
     }
