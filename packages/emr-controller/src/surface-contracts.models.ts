@@ -705,3 +705,101 @@ export interface EmrAppShellModel<TSlot = unknown> {
 
 /** Everything the shell can ask for. Sheet close and the hamburger both mean "toggle the drawer". */
 export type EmrAppShellIntent = EmrTopBarIntent | EmrLeftNavIntent;
+
+// ---------------------------------------------------------------------------
+// 15. Integrated OPD & IPD Clinical Encounter Web Shell Workstation
+// ---------------------------------------------------------------------------
+
+export interface EmrDiagnosisEntry {
+  readonly id: string;
+  readonly code: string;
+  readonly label: string;
+  readonly status: 'principal' | 'confirmed' | 'provisional' | 'comorbidity' | 'resolved';
+  readonly laterality?: 'OD' | 'OS' | 'OU' | 'Systemic';
+  readonly onsetLabel?: string;
+}
+
+export interface EmrPriorNoteEntry {
+  readonly id: string;
+  readonly dateLabel: string;
+  readonly setting: 'OPD' | 'IPD' | 'OT' | 'Emergency';
+  readonly specialty: string;
+  readonly authorLabel: string;
+  readonly title: string;
+  readonly summary: string;
+  readonly findings: string;
+  readonly plan: string;
+}
+
+export interface EmrPriorLabEntry {
+  readonly id: string;
+  readonly dateLabel: string;
+  readonly panelLabel: string;
+  readonly testName: string;
+  readonly valueLabel: string;
+  readonly unit: string;
+  readonly referenceRange: string;
+  readonly flag?: EmrBadge;
+  readonly trendLabel?: string;
+}
+
+export interface EmrPacsStudyEntry {
+  readonly id: string;
+  readonly accessionNumber: string;
+  readonly dateLabel: string;
+  readonly modality: 'OCT' | 'FFA' | 'MRI' | 'CT' | 'X-Ray' | 'USG B-Scan';
+  readonly bodyPart: string;
+  readonly title: string;
+  readonly status: 'Final Report' | 'Preliminary' | 'Images Ready';
+  readonly pacsEndpointLabel: string;
+  readonly sliceCount: number;
+  readonly currentSlice: number;
+  readonly windowPreset: 'Standard' | 'High-Contrast' | 'Bone' | 'Brain/Orbit' | 'Retina/OCT';
+  readonly zoomPercent: number;
+  readonly inverted?: boolean;
+  readonly comparePriorDateLabel?: string;
+  readonly caliperMeasurementLabel?: string;
+  readonly radiologistImpression: string;
+  readonly keyFindings: readonly string[];
+}
+
+export interface EmrClassicalHistoryHeading {
+  readonly id: 'cc' | 'hpi' | 'pmh' | 'psh' | 'drug' | 'allergy' | 'family' | 'social' | 'ros';
+  readonly code: string;
+  readonly title: string;
+  readonly value: string;
+  readonly quickChips: readonly string[];
+  readonly normalMacroText: string;
+}
+
+export interface EmrExaminationSection {
+  readonly id: 'gpe' | 'cvs' | 'rs' | 'cns' | 'abdomen' | 'local';
+  readonly code: string;
+  readonly title: string;
+  readonly findingsText: string;
+  readonly normalMacroText: string;
+  readonly quickChips: readonly string[];
+}
+
+export interface EmrInvestigationOrder {
+  readonly id: string;
+  readonly category: 'Lab / Pathology' | 'Radiology / PACS' | 'Ophthalmic / Specialty' | 'Cardio / Neuro';
+  readonly code: string;
+  readonly name: string;
+  readonly priority: 'Routine' | 'Urgent' | 'STAT';
+  readonly indication: string;
+  readonly status: 'Ordered' | 'Sample Collected' | 'In PACS' | 'Reported';
+}
+
+export interface EmrCrossConsultationEntry {
+  readonly id: string;
+  readonly careSetting: 'opd' | 'ipd';
+  readonly targetSpecialty: string;
+  readonly targetConsultant: string;
+  readonly urgency: 'Routine' | 'Same-Day OPD' | 'Urgent (<4h)' | 'STAT Bedside (<1h)' | 'Co-Management';
+  readonly reasonForConsult: string;
+  readonly clinicalQuestion: string;
+  readonly locationOrClinic: string;
+  readonly status: 'Requested' | 'Acknowledged' | 'Completed';
+  readonly consultantReply?: string;
+}

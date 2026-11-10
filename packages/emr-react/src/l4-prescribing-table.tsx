@@ -270,6 +270,7 @@ export function EmrPrescribingTable({
   const [viewMode, setViewMode] = useState<'grid' | 'sig' | 'patient'>('grid');
   const [quickSigText, setQuickSigText] = useState('');
   const [splitExpandedRows, setSplitExpandedRows] = useState<Record<string, boolean>>({});
+  const [customFormOpenRows, setCustomFormOpenRows] = useState<Record<string, boolean>>({});
 
   const forms = m.formOptions ?? DEFAULT_FORMS;
   const doseUnits = m.doseUnits ?? DEFAULT_DOSE_UNITS;
@@ -803,14 +804,16 @@ export function EmrPrescribingTable({
             const isFirst = idx === 0;
             const isLast = idx === m.rows.length - 1;
             const profile = getFormClinicalProfile(row.form);
-            const rowUnits = m.doseUnits ?? profile.units;
-            const rowRoutes = m.routeOptions ?? profile.routes;
+            const rowUnits = row.allowedUnits ?? m.doseUnits ?? profile.units;
+            const rowRoutes = row.allowedRoutes ?? m.routeOptions ?? profile.routes;
             const rowSites = m.siteOptions ?? profile.sitesByRoute[row.route] ?? [];
             const rowTimings = m.foodOptions ?? profile.timingByRoute[row.route] ?? profile.defaultTiming;
             const activeSlotAmounts = row.slots.map((s) => s.amount ?? 0).filter((a) => a > 0);
             const hasAsymmetricSlots =
               activeSlotAmounts.length > 1 && new Set(activeSlotAmounts).size > 1;
             const isSplitOpen = !!splitExpandedRows[row.id] || hasAsymmetricSlots;
+            const isCustomFormOpen =
+              !!customFormOpenRows[row.id] || (!row.formularyCode && row.drugName.trim() === '');
             const needle = row.drugName.trim().toLowerCase();
             const matchingFormulary: readonly PrescribingFormularyItem[] =
               activeDrugRowId === row.id && m.formulary
@@ -818,6 +821,7 @@ export function EmrPrescribingTable({
                     (f) =>
                       !needle ||
                       f.drugName.toLowerCase().includes(needle) ||
+                      f.code.toLowerCase().includes(needle) ||
                       f.formLabel.toLowerCase().includes(needle) ||
                       (f.specialtyTag && f.specialtyTag.toLowerCase().includes(needle)),
                   )
@@ -846,7 +850,7 @@ export function EmrPrescribingTable({
                 ]}
               >
                 <View style={styles.rowMain}>
-                  {/* Column 1: Drug Name & Strength + Form + Specialty / Step Phase Badge */}
+                  {/* Column 1: Drug Name & Strength + Backend API Formulary Dose Form Metadata */}
                   <View style={[styles.cellDrug, { flex: 1.3, minWidth: 215 }]}>
                     {(row.stepPhase || row.specialtyTag) ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -899,11 +903,14 @@ export function EmrPrescribingTable({
                         <ThemedInput
                           value={row.drugName}
                           editable={!locked}
-                          placeholder="Drug name…"
+                          placeholder="Search Backend Formulary API…"
                           accessibilityLabel={`Row ${idx + 1} medicine name`}
                           onFocus={() => setActiveDrugRowId(row.id)}
                           onBlur={() => setTimeout(() => setActiveDrugRowId((cur) => (cur === row.id ? null : cur)), 160)}
-                          onChangeText={(text) => onIntent({ type: 'drugNameChanged', rowId: row.id, drugName: text })}
+                          onChangeText={(text) => {
+                            onIntent({ type: 'drugNameChanged', rowId: row.id, drugName: text });
+                            onIntent({ type: 'formularySearchRequested', rowId: row.id, query: text });
+                          }}
                           style={{ minHeight: 36, height: 36, paddingVertical: 4, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium) }}
                         />
                       </View>
@@ -919,68 +926,132 @@ export function EmrPrescribingTable({
                       </View>
                     </View>
 
-                    {/* Formulary Quick Suggestions */}
+                    {/* Backend API Formulary Quick Suggestions (passes drugName, strength, and dose form to drive Columns 2–6) */}
                     {matchingFormulary.length > 0 && !locked ? (
                       <View style={[styles.formularyList, { borderColor: t.primaryBorder, backgroundColor: t.surface }]}>
-                        {matchingFormulary.slice(0, 6).map((item) => (
+                        <View style={{ paddingHorizontal: 8, paddingVertical: 4, borderBottomWidth: 1, borderColor: t.border, backgroundColor: t.surfaceSoft }}>
+                          <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                            BACKEND FORMULARY API · SELECTING RESOLVES DOSE FORM & DOWNSTREAM RULES
+                          </Text>
+                        </View>
+                        {matchingFormulary.slice(0, 7).map((item) => (
                           <Pressable
                             key={item.code}
                             role="button"
                             onPress={() => {
                               onIntent({ type: 'formularySelected', rowId: row.id, item });
                               setActiveDrugRowId(null);
+                              setCustomFormOpenRows((prev) => ({ ...prev, [row.id]: false }));
                             }}
                             style={({ hovered }: PressState & { hovered?: boolean }) => [
                               styles.formularyOption,
-                              { backgroundColor: hovered ? t.primarySoft : 'transparent' },
+                              { backgroundColor: hovered ? t.primarySoft : 'transparent', flexDirection: 'column', alignItems: 'flex-start', gap: 2 },
                             ]}
                           >
-                            <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium) }}>
-                              {item.drugName} <Text style={{ color: t.textMuted, fontFamily: t.fontMono }}>{item.strength}</Text>
-                            </Text>
-                            <Text style={{ color: t.primary, fontFamily: ff, fontSize: t.text2xs }}>
-                              {item.specialtyTag ? `${item.specialtyTag} · ` : ''}{item.formLabel}
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', alignItems: 'center', gap: 6 }}>
+                              <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
+                                {item.drugName} <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontWeight: fontWeight(t.weightMedium) }}>{item.strength}</Text>
+                              </Text>
+                              <Text style={{ color: t.primary, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                                [{item.formLabel}]
+                              </Text>
+                            </View>
+                            <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10 }}>
+                              API Code: {item.code} · Route: {item.route.toUpperCase()} · Unit: {item.unitLabel || 'unitless'}{item.stockStatus ? ` · ${item.stockStatus}` : ''}
                             </Text>
                           </Pressable>
                         ))}
                       </View>
                     ) : null}
 
-                    {/* Dosage Form Selector Pills */}
-                    <View style={styles.pillRow}>
-                      {forms.map((f) => {
-                        const sel = row.form === f.value;
-                        return (
-                          <Pressable
-                            key={f.value}
-                            role="button"
-                            disabled={locked}
-                            aria-pressed={sel}
-                            onPress={() => onIntent({ type: 'formChanged', rowId: row.id, form: f.value })}
-                            style={({ focused }: PressState) => [
-                              styles.microPill,
-                              {
-                                borderColor: sel ? t.primary : t.border,
-                                backgroundColor: sel ? t.primarySoft : t.surface,
-                              },
-                              focusRing(t, focused),
-                            ]}
-                          >
-                            <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: ff, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
-                              {f.label}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
+                    {/* Resolved Backend API Dose Form Metadata Strip (with optional Override Form toggle for custom/unlisted drugs) */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                        <View
+                          style={{
+                            paddingHorizontal: 6,
+                            paddingVertical: 2,
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: t.primaryBorder,
+                            backgroundColor: t.surfaceSoft,
+                          }}
+                        >
+                          <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                            API Form: {row.formLabel || row.form}
+                          </Text>
+                        </View>
+                        {row.formularyCode ? (
+                          <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10 }}>
+                            {row.formularyCode}
+                          </Text>
+                        ) : null}
+                        {row.stockStatus ? (
+                          <Text style={{ color: t.success, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
+                            · {row.stockStatus}
+                          </Text>
+                        ) : null}
+                      </View>
+                      {!locked ? (
+                        <Pressable
+                          role="button"
+                          aria-label={`Override dosage form for ${row.drugName || 'unlisted drug'}`}
+                          aria-pressed={isCustomFormOpen}
+                          onPress={() =>
+                            setCustomFormOpenRows((prev) => ({ ...prev, [row.id]: !isCustomFormOpen }))
+                          }
+                          style={({ focused }: PressState) => [
+                            { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4 },
+                            focusRing(t, focused),
+                          ]}
+                        >
+                          <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: 10, textDecorationLine: 'underline' }}>
+                            {isCustomFormOpen ? 'Hide form override' : 'Custom form ▾'}
+                          </Text>
+                        </Pressable>
+                      ) : null}
                     </View>
+
+                    {/* Manual Dosage Form Selector Pills — only expanded for custom/unlisted drugs or when explicitly overridden */}
+                    {isCustomFormOpen ? (
+                      <View style={styles.pillRow}>
+                        {forms.map((f) => {
+                          const sel = row.form === f.value;
+                          return (
+                            <Pressable
+                              key={f.value}
+                              role="button"
+                              disabled={locked}
+                              aria-pressed={sel}
+                              onPress={() => {
+                                onIntent({ type: 'formChanged', rowId: row.id, form: f.value });
+                                setCustomFormOpenRows((prev) => ({ ...prev, [row.id]: false }));
+                              }}
+                              style={({ focused }: PressState) => [
+                                styles.microPill,
+                                {
+                                  borderColor: sel ? t.primary : t.border,
+                                  backgroundColor: sel ? t.primarySoft : t.surface,
+                                },
+                                focusRing(t, focused),
+                              ]}
+                            >
+                              <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: ff, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
+                                {f.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    ) : null}
                   </View>
 
-                  {/* Column 2: Dose Quantity & Form-Specific Unit (unitless, mL, puffs, drops, FTU, mg/m², etc.) */}
+                  {/* Column 2: Dose Quantity & Form-Specific Unit (driven by Backend API form) */}
                   <View style={[styles.cellDuration, { width: 172 }]}>
                     {(() => {
                       const activeSlotAmt = row.slots.find((s) => (s.amount ?? 0) > 0)?.amount;
                       const doseVal = row.doseAmount ?? activeSlotAmt ?? 1;
-                      const doseStep = row.unitLabel === 'mL' ? 2.5 : profile.step;
+                      const doseStep = row.doseStep ?? (row.unitLabel === 'mL' ? 2.5 : profile.step);
                       return (
                         <View style={[styles.durationStepper, { borderColor: t.border, backgroundColor: t.surface }]}>
                           {!locked ? (

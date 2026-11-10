@@ -218,12 +218,23 @@ export class EmrPrescribingTableElement extends EmrLitElement {
               const doseVal = row.doseAmount ?? (row.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
               return html`<tr>
                 <td>
-                  <div style="display:flex;align-items:center;gap:6px;">
-                    <strong>#${idx + 1}</strong>
-                    <input class="emr-control" style="height:34px;min-height:34px;" .value=${row.drugName} ?readonly=${locked} placeholder="Medicine…"
-                      @input=${(e: Event) => this.emitIntent<PrescribingTableIntent>({ type: 'drugNameChanged', rowId: row.id, drugName: (e.target as HTMLInputElement).value })} />
-                    <input class="emr-control" style="width:84px;height:34px;min-height:34px;" .value=${row.strength} ?readonly=${locked} placeholder="500 mg"
-                      @input=${(e: Event) => this.emitIntent<PrescribingTableIntent>({ type: 'strengthChanged', rowId: row.id, strength: (e.target as HTMLInputElement).value })} />
+                  <div style="display:grid;gap:4px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <strong>#${idx + 1}</strong>
+                      <input class="emr-control" style="height:34px;min-height:34px;" .value=${row.drugName} ?readonly=${locked} placeholder="Search Backend Formulary API…"
+                        @input=${(e: Event) => {
+                          const val = (e.target as HTMLInputElement).value;
+                          this.emitIntent<PrescribingTableIntent>({ type: 'drugNameChanged', rowId: row.id, drugName: val });
+                          this.emitIntent<PrescribingTableIntent>({ type: 'formularySearchRequested', rowId: row.id, query: val });
+                        }} />
+                      <input class="emr-control" style="width:84px;height:34px;min-height:34px;" .value=${row.strength} ?readonly=${locked} placeholder="500 mg"
+                        @input=${(e: Event) => this.emitIntent<PrescribingTableIntent>({ type: 'strengthChanged', rowId: row.id, strength: (e.target as HTMLInputElement).value })} />
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;font-family:var(--emr-font-mono);">
+                      <span class="emr-badge emr-badge--neutral">API Form: ${row.formLabel || row.form}</span>
+                      ${row.formularyCode ? html`<span class="emr-muted">${row.formularyCode}</span>` : nothing}
+                      ${row.stockStatus ? html`<span class="emr-muted">· ${row.stockStatus}</span>` : nothing}
+                    </div>
                   </div>
                 </td>
                 <td>

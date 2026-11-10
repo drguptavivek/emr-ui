@@ -73,17 +73,36 @@ export type DoseScheduleIntent =
   | { type: 'instructionsRequested' };
 
 export interface PrescribingFormularyItem {
+  /** Backend Drug Catalog / RxNorm / SNOMED-CT identifier (e.g. 'RXN-860975'). */
   code: string;
+  /** Generic or brand drug name from the backend API. */
   drugName: string;
+  /** Concentration or strength from the backend API (e.g. '0.5% w/v', '500 mg', '200/6 mcg'). */
   strength: string;
+  /** Structured dosage form from the backend API — drives all downstream column UI behavior. */
   form: DoseForm;
+  /** Human-readable dosage form label from the backend API (e.g. 'Ophthalmic Drops', 'Oral Tablet (Scored)', 'Paediatric Suspension'). */
   formLabel: string;
+  /** Default route code from the backend API (e.g. 'eye', 'oral', 'topical', 'inhalation', 'iv-inf', 'ear', 'nasal'). */
   route: string;
+  /** Optional allowed routes for this drug from the backend API. */
+  allowedRoutes?: readonly { value: string; label: string }[];
+  /** Default anatomical site from the backend API (e.g. 'OU', 'OD', 'AU', 'Lesions'). */
   site?: string;
+  /** Default per-administration dose quantity from the backend API. */
   doseAmount?: number;
+  /** Default dose unit from the backend API (e.g. 'drop', 'tab', 'cap', 'mL', 'FTU', 'puff', 'mg'). */
   unitLabel: string;
+  /** Optional allowed dose units for this drug from the backend API. */
+  allowedUnits?: readonly string[];
+  /** Optional dose stepper increment from the backend API (e.g. 0.5 for scored tablets, 2.5 for mL syrup, 1 for drops/caps/puffs). */
+  doseStep?: number;
+  /** Optional specialty or clinical context badge from the backend API. */
   specialtyTag?: string;
+  /** Optional weight/BSA dosing basis note from the backend API (e.g. '15 mg/kg/dose' or '100 mg/m²'). */
   dosingBasisLabel?: string;
+  /** Pharmacy stock / formulary status from the backend API (e.g. 'In Stock', 'Low Stock', 'Non-Formulary'). */
+  stockStatus?: string;
   defaultPresetId?: string;
   defaultDurationCount?: number;
   defaultDurationUnit?: string;
@@ -93,16 +112,23 @@ export interface PrescribingFormularyItem {
 
 export interface PrescribingRow {
   id: string;
+  /** Backend Drug Catalog / RxNorm / SNOMED-CT identifier when resolved from the backend formulary API. */
+  formularyCode?: string;
   drugName: string;
   strength: string;
+  /** Dosage form resolved from the backend API (or fallback for custom/unlisted drugs) — drives Columns 2–6. */
   form: DoseForm;
   formLabel: string;
   route: string;
+  /** Optional backend-supplied allowed routes for this drug's dose form. */
+  allowedRoutes?: readonly { value: string; label: string }[];
   site?: string;
   /** Optional specialty or clinical context badge, e.g. 'Ophthalmology', 'Pediatrics (12 kg)', 'Oncology (BSA 1.7m²)'. */
   specialtyTag?: string;
   /** Optional weight/BSA dosing basis note, e.g. '15 mg/kg/dose' or '100 mg/m²'. */
   dosingBasisLabel?: string;
+  /** Optional pharmacy stock status from the backend API (e.g. 'In Stock', 'Low Stock'). */
+  stockStatus?: string;
   /** Optional parent row ID when this row is a sequential Step-Down or Step-Up titration row. */
   parentRowId?: string;
   /** Whether this row is a 'step-down' (taper) or 'step-up' (escalation/titration) continuation row. */
@@ -111,9 +137,13 @@ export interface PrescribingRow {
   stepLabel?: string;
   /** Per-administration dose quantity (e.g. 1, 0.5, 2, 5). */
   doseAmount?: number | null;
+  /** Optional backend-supplied dose stepper increment (e.g. 0.5, 1, 2.5). */
+  doseStep?: number;
   slots: readonly DoseSlot[];
   /** Dose unit (e.g. '' for unitless, 'drop', 'tab', 'mL', 'puff', 'cap', 'FTU', 'IU', 'mg/m²', 'mg'). */
   unitLabel: string;
+  /** Optional backend-supplied allowed dose units for this drug's dose form. */
+  allowedUnits?: readonly string[];
   /** Controller-supplied frequency badge, e.g. 'BD', 'TDS', 'OD', 'QID', 'HS', 'SOS', 'TAPER'. */
   frequencyCode?: string;
   /** Controller-supplied dose notation, e.g. '1 - 0 - 1 - 0'. */
@@ -176,6 +206,7 @@ export type PrescribingTableIntent =
   | { type: 'rowDuplicateRequested'; rowId: string }
   | { type: 'rowStepTitrationRequested'; rowId: string; direction: 'down' | 'up' }
   | { type: 'quickSigSubmitted'; command: string }
+  | { type: 'formularySearchRequested'; rowId: string; query: string }
   | { type: 'formularySelected'; rowId: string; item: PrescribingFormularyItem }
   | { type: 'drugNameChanged'; rowId: string; drugName: string }
   | { type: 'strengthChanged'; rowId: string; strength: string }

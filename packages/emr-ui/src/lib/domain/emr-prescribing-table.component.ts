@@ -78,7 +78,7 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       class="emr-control"
                       [value]="row.drugName"
                       [readOnly]="!!model().readOnly"
-                      placeholder="Search or type medicine…"
+                      placeholder="Search Backend Formulary API…"
                       [attr.aria-label]="'Row ' + (idx + 1) + ' medicine name'"
                       (input)="onDrugInput(row.id, $event)"
                     />
@@ -92,6 +92,15 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       (input)="onStrengthInput(row.id, $event)"
                     />
                   </div>
+                  <div class="rx-table__presets" style="margin-top: 4px; margin-bottom: 0;">
+                    <span class="rx-table__pattern">API Form: {{ row.formLabel || row.form }}</span>
+                    @if (row.formularyCode) {
+                      <span class="rx-table__slot-label" style="margin-bottom: 0;">{{ row.formularyCode }}</span>
+                    }
+                    @if (row.stockStatus) {
+                      <span class="rx-table__slot-label" style="margin-bottom: 0;">· {{ row.stockStatus }}</span>
+                    }
+                  </div>
                 </td>
 
                 <td class="rx-table__cell-dose">
@@ -101,7 +110,7 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                         type="button"
                         class="rx-table__step-btn"
                         [attr.aria-label]="'Decrease dose for row ' + (idx + 1)"
-                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: stepFor(row.form) * -1 })"
+                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: (row.doseStep ?? stepFor(row.form)) * -1 })"
                       >−</button>
                     }
                     <span class="rx-table__step-val">{{ row.doseAmount ?? 1 }}{{ row.unitLabel ? ' ' + row.unitLabel : '' }}</span>
@@ -110,7 +119,7 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                         type="button"
                         class="rx-table__step-btn"
                         [attr.aria-label]="'Increase dose for row ' + (idx + 1)"
-                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: stepFor(row.form) })"
+                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: row.doseStep ?? stepFor(row.form) })"
                       >+</button>
                     }
                   </div>
@@ -328,7 +337,9 @@ export class EmrPrescribingTableComponent {
   }
 
   onDrugInput(rowId: string, event: Event): void {
-    this.intent.emit({ type: 'drugNameChanged', rowId, drugName: (event.target as HTMLInputElement).value });
+    const val = (event.target as HTMLInputElement).value;
+    this.intent.emit({ type: 'drugNameChanged', rowId, drugName: val });
+    this.intent.emit({ type: 'formularySearchRequested', rowId, query: val });
   }
 
   onStrengthInput(rowId: string, event: Event): void {
