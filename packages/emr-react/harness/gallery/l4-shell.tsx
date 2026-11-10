@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import type { AttestationViewModel, CaptureStatusBarViewModel, PatientBannerViewModel } from '@drguptavivek/emr-controller';
-import { EmrAttestation, EmrButton, EmrCaptureStatusBar, EmrPatientBanner, EmrSheet } from '../../src';
+import { EmrAttestation, EmrButton, EmrCaptureStatusBar, EmrOptionChip, EmrPatientBanner, EmrRow, EmrSheet } from '../../src';
 import type { GallerySection } from './types';
 
 const patient: PatientBannerViewModel = {
@@ -18,15 +18,83 @@ const patient: PatientBannerViewModel = {
   encounterLabel: 'Encounter 0001',
   criticality: { label: 'Critical', tone: 'danger' },
   allergies: [
-    { id: 'a1', label: 'Penicillin', tone: 'danger' },
-    { id: 'a2', label: 'Latex', tone: 'warning' },
-    { id: 'a3', label: 'Peanut', tone: 'warning' },
+    {
+      id: 'a1',
+      label: 'Penicillin',
+      tone: 'danger',
+      reactionLabel: 'Anaphylaxis / Laryngeal Oedema',
+      detail: 'Strict beta-lactam avoidance. Cross-reactivity flagged in prescribing table.',
+      provenanceLabel: 'Verified by Dr. S. Iyer · Immunization & Allergy Registry',
+      recordedAtLabel: '14 Mar 2024',
+    },
+    {
+      id: 'a2',
+      label: 'Latex',
+      tone: 'warning',
+      reactionLabel: 'Contact Urticaria',
+      detail: 'Use nitrile gloves for all ophthalmic & surgical procedures.',
+      provenanceLabel: 'Verified by Operating Theatre Nursing',
+      recordedAtLabel: '02 Aug 2025',
+    },
+    { id: 'a3', label: 'Peanut', tone: 'warning', reactionLabel: 'Bronchospasm' },
   ],
   allergyStatus: { label: 'Allergies recorded', tone: 'warning' },
   allergyChipPrefix: 'Allergy:',
   allergyOverflow: { label: '+1 allergies', tone: 'warning' },
   chronicDiseases: [{ id: 'c1', label: 'Type 2 diabetes', tone: 'info' }],
   alerts: [{ id: 'f1', label: 'Fall risk', tone: 'warning' }],
+  vitals: [
+    {
+      id: 'v-iop-od',
+      label: 'IOP OD (GAT)',
+      valueLabel: '14',
+      unit: 'mmHg',
+      deltaLabel: 'Δ -4',
+      tone: 'success',
+      trendPoints: [22, 19, 18, 16, 14],
+      provenanceLabel: 'Goldmann Applanation · Today 09:42 · CCT 542 µm',
+    },
+    {
+      id: 'v-iop-os',
+      label: 'IOP OS (GAT)',
+      valueLabel: '15',
+      unit: 'mmHg',
+      deltaLabel: 'Δ -2',
+      tone: 'success',
+      trendPoints: [20, 18, 17, 16, 15],
+      provenanceLabel: 'Goldmann Applanation · Today 09:42 · CCT 545 µm',
+    },
+    {
+      id: 'v-va',
+      label: 'BCVA OD / OS',
+      valueLabel: '6/6 · 6/9',
+      tone: 'info',
+      trendPoints: [6, 7, 8, 9, 10],
+      provenanceLabel: 'ETDRS 4m LogMAR Chart · Today 09:30',
+    },
+    {
+      id: 'v-bp',
+      label: 'BP',
+      valueLabel: '128/78',
+      unit: 'mmHg',
+      deltaLabel: 'WNL',
+      tone: 'neutral',
+      trendPoints: [138, 134, 130, 128],
+      provenanceLabel: 'Automated Oscillometric · Today 09:15',
+    },
+    {
+      id: 'v-hba1c',
+      label: 'HbA1c',
+      valueLabel: '6.8',
+      unit: '%',
+      deltaLabel: '↓ -0.4%',
+      tone: 'info',
+      trendPoints: [7.8, 7.4, 7.2, 6.8],
+      provenanceLabel: 'Central Lab HPLC · 04 Nov 2026',
+    },
+  ],
+  activeInspectId: 'a1',
+  layoutMode: 'banner',
   expanded: false,
   bedLabel: 'Bed 12',
   wardLabel: 'Ward 3',
@@ -43,7 +111,38 @@ const signatory = (id: string, name: string, signed: boolean) => ({
 
 function Banner({ compact }: { compact?: boolean }) {
   const [m, setM] = useState(patient);
-  return <EmrPatientBanner model={m} compact={compact} onIntent={(i) => setM({ ...m, expanded: i.expanded })} />;
+  return (
+    <View style={{ gap: 10 }}>
+      {!compact ? (
+        <EmrRow>
+          <EmrOptionChip
+            label="Cerner Horizontal Banner"
+            selected={m.layoutMode === 'banner'}
+            onPress={() => setM({ ...m, layoutMode: 'banner' })}
+          />
+          <EmrOptionChip
+            label="Epic Left-Rail Storyboard"
+            selected={m.layoutMode === 'storyboard'}
+            onPress={() => setM({ ...m, layoutMode: 'storyboard' })}
+          />
+          <EmrOptionChip
+            label="Compact Sticky Header"
+            selected={m.layoutMode === 'compact'}
+            onPress={() => setM({ ...m, layoutMode: 'compact' })}
+          />
+        </EmrRow>
+      ) : null}
+      <EmrPatientBanner
+        model={m}
+        compact={compact}
+        onIntent={(i) => {
+          if (i.type === 'expandedChangeRequested') setM({ ...m, expanded: i.expanded });
+          else if (i.type === 'alertInspectRequested') setM({ ...m, activeInspectId: i.alertId });
+          else if (i.type === 'layoutModeChangeRequested') setM({ ...m, layoutMode: i.layoutMode });
+        }}
+      />
+    </View>
+  );
 }
 
 function StatusBar() {

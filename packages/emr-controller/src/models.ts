@@ -64,6 +64,20 @@ export interface PatientAlert {
   label: string;
   tone: EmrTone;
   detail?: string;
+  reactionLabel?: string;
+  provenanceLabel?: string;
+  recordedAtLabel?: string;
+}
+
+export interface PatientVitalSparkline {
+  id: string;
+  label: string;
+  valueLabel: string;
+  unit?: string;
+  deltaLabel?: string;
+  tone?: EmrTone;
+  trendPoints?: readonly number[];
+  provenanceLabel?: string;
 }
 
 export type CareSetting = 'opd' | 'ipd' | 'emergency' | 'other';
@@ -92,6 +106,12 @@ export interface PatientBannerViewModel {
   chronicDiseaseStatus?: EmrBadge;
   alerts: readonly PatientAlert[];
   expanded: boolean;
+  /** Optional inline vitals / IOP micro-sparklines for Epic Storyboard / Cerner Banner parity. */
+  vitals?: readonly PatientVitalSparkline[];
+  /** Currently inspected alert or vital ID for provenance drilldown popover. */
+  activeInspectId?: string | null;
+  /** Optional layout mode: horizontal Cerner banner, vertical Epic Storyboard rail, or compact header. */
+  layoutMode?: 'banner' | 'storyboard' | 'compact';
   // Inpatient context. Every field is optional and shown verbatim only when supplied; the
   // component computes nothing (no length of stay, no code-status or isolation wording).
   /** For example "Bed 12". */
@@ -234,6 +254,13 @@ export interface ClinicalCellState {
   disabled?: boolean;
   warning?: string;
   error?: string;
+  /** Cerner PowerChart dog-ear indicator for unsaved/modified cell in current session. */
+  modified?: boolean;
+  /** Epic/Cerner last-recorded ghost value & delta badge. */
+  previousValueLabel?: string;
+  deltaLabel?: string;
+  flagBadge?: EmrBadge;
+  quickPresets?: readonly string[];
 }
 
 export interface ClinicalMatrixRowValue {
@@ -270,7 +297,9 @@ export type ClinicalMatrixIntent =
       columnId: string;
       action: string;
       payload?: unknown;
-    };
+    }
+  | { type: 'columnCopyRequested'; fromColumnId: string; toColumnId: string }
+  | { type: 'macroNormalRequested'; columnId?: string };
 
 export interface ClinicalListItem {
   id: string;
@@ -411,7 +440,9 @@ export type TimelineIntent =
   | { type: 'eventSelected'; eventId: string };
 
 export type PatientBannerIntent =
-  | { type: 'expandedChangeRequested'; expanded: boolean };
+  | { type: 'expandedChangeRequested'; expanded: boolean }
+  | { type: 'alertInspectRequested'; alertId: string | null }
+  | { type: 'layoutModeChangeRequested'; layoutMode: 'banner' | 'storyboard' | 'compact' };
 
 export type LeftNavIntent =
   | { type: 'collapseToggleRequested'; collapsed: boolean }

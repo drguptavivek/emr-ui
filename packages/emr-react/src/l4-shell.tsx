@@ -3,8 +3,9 @@
 import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
   AttestationIntent, AttestationViewModel, CaptureStatusBarIntent, CaptureStatusBarViewModel,
-  EmrTone, PatientAlert, PatientBannerIntent, PatientBannerViewModel,
+  EmrTone, PatientAlert, PatientBannerIntent, PatientBannerViewModel, PatientVitalSparkline,
 } from '@drguptavivek/emr-controller';
+import { SvgIcon } from './icons';
 import { EmrChip } from './l1-display';
 import { EmrBadgeView, EmrButton } from './primitives';
 import { focusRing, fontFamily, fontWeight, toneColors, useEmrTheme } from './theme';
@@ -91,10 +92,35 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   return <View style={styles.group}><Text style={x.key}>{title}</Text>{children}</View>;
 }
 
+function MiniSparkline({ points, color }: { points: readonly number[]; color: string }) {
+  if (!points.length) return null;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = Math.max(1, max - min);
+  return (
+    <View aria-hidden style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2, height: 18 }}>
+      {points.map((pt, idx) => {
+        const h = Math.max(4, Math.round(((pt - min) / range) * 14) + 4);
+        return (
+          <View
+            key={idx}
+            style={{
+              width: 3,
+              height: h,
+              borderRadius: 1.5,
+              backgroundColor: color,
+              opacity: idx === points.length - 1 ? 1 : 0.45 + (idx / points.length) * 0.4,
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
 /**
- * L4. Patient banner. All wording and tone come from the model (including allergy prefix and overflow);
- * nothing is derived. `compact` is the sticky phone header: one line of name, age/sex, identifier and
- * critical badges, still expandable through the same `expandedChangeRequested` intent.
+ * L4. Patient banner & Epic Storyboard surface. All wording and tone come from the model (including
+ * allergy prefix, overflow, inline vitals micro-sparklines, and provenance drilldown); nothing is derived.
  */
 export function EmrPatientBanner({ model: m, compact, labels, onIntent }: {
   model: PatientBannerViewModel;
@@ -109,6 +135,15 @@ export function EmrPatientBanner({ model: m, compact, labels, onIntent }: {
   const toggle = () => onIntent({ type: 'expandedChangeRequested', expanded: !m.expanded });
   const alerts = [...m.allergies, ...m.alerts];
   const critical = [m.criticality, m.vip, m.codeStatus, m.isolation, m.allergyStatus].filter((b): b is NonNullable<typeof b> => !!b);
+  const isCompact = compact || m.layoutMode === 'compact';
+  const isStoryboard = !compact && m.layoutMode === 'storyboard';
+
+  const inspectedAlert: PatientAlert | undefined = m.activeInspectId
+    ? [...m.allergies, ...m.alerts, ...m.chronicDiseases].find((a) => a.id === m.activeInspectId)
+    : undefined;
+  const inspectedVital: PatientVitalSparkline | undefined = m.activeInspectId
+    ? m.vitals?.find((v) => v.id === m.activeInspectId)
+    : undefined;
 
   const toggleButton = (
     <Pressable
@@ -118,13 +153,131 @@ export function EmrPatientBanner({ model: m, compact, labels, onIntent }: {
       onPress={toggle}
       style={({ focused }: PressState) => [styles.toggle, focusRing(t, focused), { minWidth: t.controlHeight, minHeight: t.controlHeight }]}
     >
-      <Text aria-hidden style={x.bold}>{m.expanded ? '▲' : '▼'}</Text>
+      <SvgIcon name={m.expanded ? 'chevron-up' : 'chevron-down'} size={16} color={t.text} />
     </Pressable>
   );
 
+  const renderVitalsStrip = () => {
+    if (!m.vitals?.length) return null;
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 8,
+          paddingTop: 8,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: t.border,
+        }}
+      >
+        {m.vitals.map((v) => {
+          const tc = toneColors(t, v.tone ?? 'info');
+          const active = m.activeInspectId === v.id;
+          return (
+            <Pressable
+              key={v.id}
+              role="button"
+              aria-pressed={active}
+              onPress={() => onIntent({ type: 'alertInspectRequested', alertId: active ? null : v.id })}
+              style={({ focused }: PressState) => [
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: active ? t.primary : t.border,
+                  backgroundColor: active ? t.primarySoft : t.surfaceSoft,
+                },
+                focusRing(t, focused),
+              ]}
+            >
+              <View style={{ gap: 1 }}>
+                <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+                  {v.label}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+                  <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: t.fontMono }}>
+                    {v.valueLabel}
+                  </Text>
+                  {v.unit ? <Text style={{ color: t.textMuted, fontSize: t.text2xs }}>{v.unit}</Text> : null}
+                  {v.deltaLabel ? (
+                    <Text style={{ color: tc.color, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: t.fontMono }}>
+                      {v.deltaLabel}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+              {v.trendPoints?.length ? <MiniSparkline points={v.trendPoints} color={tc.color} /> : null}
+            </Pressable>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const renderProvenanceInspector = () => {
+    if (!inspectedAlert && !inspectedVital) return null;
+    const title = inspectedAlert ? inspectedAlert.label : `${inspectedVital?.label}: ${inspectedVital?.valueLabel} ${inspectedVital?.unit ?? ''}`;
+    const tone = inspectedAlert ? inspectedAlert.tone : inspectedVital?.tone ?? 'info';
+    const tc = toneColors(t, tone);
+    return (
+      <View
+        role="region"
+        aria-label={`Clinical provenance for ${title}`}
+        style={{
+          marginTop: 4,
+          padding: 12,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: tc.color,
+          backgroundColor: tc.backgroundColor,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: 12,
+        }}
+      >
+        <View style={{ gap: 4, flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <EmrBadgeView badge={{ label: 'Clinical Provenance & Safety Record', tone }} />
+            <Text style={[x.bold, { color: t.text }]}>{title}</Text>
+          </View>
+          {inspectedAlert?.reactionLabel ? (
+            <Text style={x.body}>Reaction / Manifestation: <Text style={x.bold}>{inspectedAlert.reactionLabel}</Text></Text>
+          ) : null}
+          {inspectedAlert?.detail ? <Text style={x.body}>{inspectedAlert.detail}</Text> : null}
+          <Text style={[x.muted, { fontSize: t.textXs }]}>
+            {inspectedAlert?.provenanceLabel ?? inspectedVital?.provenanceLabel ?? 'Verified in hospital EHR'}
+            {inspectedAlert?.recordedAtLabel ? ` · Recorded ${inspectedAlert.recordedAtLabel}` : ''}
+          </Text>
+        </View>
+        <EmrButton
+          small
+          variant="ghost"
+          label="Close"
+          onPress={() => onIntent({ type: 'alertInspectRequested', alertId: null })}
+        />
+      </View>
+    );
+  };
+
   return (
-    <View role="region" aria-label={`${l.currentPatient}: ${m.displayName}`} style={[styles.banner, { borderColor: t.border, backgroundColor: t.surface }]}>
-      {compact ? (
+    <View
+      role="region"
+      aria-label={`${l.currentPatient}: ${m.displayName}`}
+      style={[
+        styles.banner,
+        {
+          borderColor: t.border,
+          backgroundColor: t.surface,
+          maxWidth: isStoryboard ? 360 : undefined,
+        },
+      ]}
+    >
+      {isCompact ? (
         <View style={styles.compactRow}>
           {/* Content wraps on narrow phones; the expand button stays pinned at the end. */}
           <View style={[styles.wrap, styles.compactContent]}>
@@ -135,33 +288,43 @@ export function EmrPatientBanner({ model: m, compact, labels, onIntent }: {
           {toggleButton}
         </View>
       ) : (
-        <View style={styles.primary}>
-          <View style={styles.identity}>
-            <Text role="heading" style={[x.bold, { fontSize: t.textLg }]}>{m.displayName}</Text>
-            <Text style={x.muted}>{id} · {m.ageLabel} · {m.sexLabel}{m.weightLabel ? ` · ${l.weight} ${m.weightLabel}` : ''}</Text>
-            {m.bedLabel || m.wardLabel || m.lengthOfStayLabel ? (
-              <View style={styles.wrap}>
-                {m.bedLabel ? <Text style={x.bold}>{m.bedLabel}</Text> : null}
-                {m.wardLabel ? <Text style={x.body}>{m.wardLabel}</Text> : null}
-                {m.lengthOfStayLabel ? <Text style={x.body}>{m.lengthOfStayLabel}</Text> : null}
-              </View>
-            ) : null}
+        <View style={{ gap: 10 }}>
+          <View style={[styles.primary, isStoryboard ? { flexDirection: 'column', alignItems: 'stretch' } : null]}>
+            <View style={styles.identity}>
+              <Text role="heading" style={[x.bold, { fontSize: t.textLg }]}>{m.displayName}</Text>
+              <Text style={x.muted}>{id} · {m.ageLabel} · {m.sexLabel}{m.weightLabel ? ` · ${l.weight} ${m.weightLabel}` : ''}</Text>
+              {m.bedLabel || m.wardLabel || m.lengthOfStayLabel ? (
+                <View style={styles.wrap}>
+                  {m.bedLabel ? <Text style={x.bold}>{m.bedLabel}</Text> : null}
+                  {m.wardLabel ? <Text style={x.body}>{m.wardLabel}</Text> : null}
+                  {m.lengthOfStayLabel ? <Text style={x.body}>{m.lengthOfStayLabel}</Text> : null}
+                </View>
+              ) : null}
+            </View>
+            <View aria-label={l.patientStatus} style={styles.wrap}>
+              {m.criticality ? <EmrBadgeView badge={m.criticality} /> : null}
+              {m.vip ? <EmrBadgeView badge={m.vip} /> : null}
+              <EmrBadgeView badge={{ label: m.careSettingLabel, tone: 'info' }} />
+            </View>
+            <View aria-label={l.safetyAlerts} style={styles.wrap}>
+              {m.codeStatus ? <EmrBadgeView badge={m.codeStatus} /> : null}
+              {m.isolation ? <EmrBadgeView badge={m.isolation} /> : null}
+              {m.allergyStatus ? <EmrBadgeView badge={m.allergyStatus} /> : null}
+              {m.allergies.slice(0, 2).map((a) => (
+                <Pressable
+                  key={a.id}
+                  role="button"
+                  onPress={() => onIntent({ type: 'alertInspectRequested', alertId: m.activeInspectId === a.id ? null : a.id })}
+                >
+                  <EmrBadgeView badge={{ label: m.allergyChipPrefix ? `${m.allergyChipPrefix} ${a.label}` : a.label, tone: a.tone }} />
+                </Pressable>
+              ))}
+              {m.allergies.length > 2 && m.allergyOverflow ? <EmrBadgeView badge={m.allergyOverflow} /> : null}
+            </View>
+            {toggleButton}
           </View>
-          <View aria-label={l.patientStatus} style={styles.wrap}>
-            {m.criticality ? <EmrBadgeView badge={m.criticality} /> : null}
-            {m.vip ? <EmrBadgeView badge={m.vip} /> : null}
-            <EmrBadgeView badge={{ label: m.careSettingLabel, tone: 'info' }} />
-          </View>
-          <View aria-label={l.safetyAlerts} style={styles.wrap}>
-            {m.codeStatus ? <EmrBadgeView badge={m.codeStatus} /> : null}
-            {m.isolation ? <EmrBadgeView badge={m.isolation} /> : null}
-            {m.allergyStatus ? <EmrBadgeView badge={m.allergyStatus} /> : null}
-            {m.allergies.slice(0, 2).map((a) => (
-              <EmrBadgeView key={a.id} badge={{ label: m.allergyChipPrefix ? `${m.allergyChipPrefix} ${a.label}` : a.label, tone: a.tone }} />
-            ))}
-            {m.allergies.length > 2 && m.allergyOverflow ? <EmrBadgeView badge={m.allergyOverflow} /> : null}
-          </View>
-          {toggleButton}
+          {renderVitalsStrip()}
+          {renderProvenanceInspector()}
         </View>
       )}
       {m.expanded ? (
@@ -239,7 +402,7 @@ export function EmrCaptureStatusBar({ model: m, labels, onIntent }: {
             : l.notSupplied}
       </Text>
 
-      {m.readOnly ? <EmrBadgeView badge={{ label: `🔒 ${l.readOnly}`, tone: 'neutral' }} /> : null}
+      {m.readOnly ? <EmrBadgeView badge={{ label: `[Locked] ${l.readOnly}`, tone: 'neutral' }} /> : null}
 
       {sig ? (
         <View style={styles.wrap}>

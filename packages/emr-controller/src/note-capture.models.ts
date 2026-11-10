@@ -55,6 +55,31 @@ export interface FieldSuggestion {
   readonly messages?: readonly EmrValidationMessage[];
 }
 
+export interface EmrSmartPhrase {
+  readonly trigger: string;
+  readonly label: string;
+  readonly expansion: string;
+}
+
+export interface EmrSmartLink {
+  readonly token: string;
+  readonly label: string;
+  readonly resolvedValue: string;
+}
+
+export interface EmrSmartList {
+  readonly id: string;
+  readonly label: string;
+  readonly choices: readonly string[];
+  readonly selected?: string;
+}
+
+export interface EmrChartReviewPane {
+  readonly id: string;
+  readonly label: string;
+  readonly items: readonly { readonly title: string; readonly value: string; readonly meta?: string }[];
+}
+
 export interface NoteCaptureViewModel {
   readonly id: string;
   readonly title: string;
@@ -77,6 +102,11 @@ export interface NoteCaptureViewModel {
   readonly summariseError?: string;
   readonly canSummarise: boolean;
   readonly readOnly?: boolean;
+  /** Epic SmartTools: .dotphrase SmartPhrases, @SmartLinks, {SmartLists}, and Split-Pane Chart Review. */
+  readonly smartPhrases?: readonly EmrSmartPhrase[];
+  readonly smartLinks?: readonly EmrSmartLink[];
+  readonly smartLists?: readonly EmrSmartList[];
+  readonly chartReviewPanes?: readonly EmrChartReviewPane[];
 }
 
 /**
@@ -96,7 +126,10 @@ export type NoteCaptureIntent =
   | { type: 'suggestionRejected'; suggestionId: string }
   | { type: 'suggestionReopened'; suggestionId: string }
   | { type: 'acceptAllPendingRequested' }
-  | { type: 'highlightClearRequested' };
+  | { type: 'highlightClearRequested' }
+  | { type: 'smartPhraseTriggered'; trigger: string; expansion: string }
+  | { type: 'smartLinkInserted'; token: string; resolvedValue: string }
+  | { type: 'smartListChoiceSelected'; listId: string; choice: string };
 
 /** What a summariser returns: new spans and the suggestions they feed. Replaces the previous result. */
 export interface NoteCaptureSummary {

@@ -580,23 +580,29 @@ export function EmrPrescribingTable({
       ) : (
       /* Scrollable Table Surface */
       <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ minWidth: '100%' }}>
-        <View style={{ flex: 1, minWidth: 980 }}>
-          {/* Column Headers */}
+        <View style={{ flex: 1, minWidth: 1120 }}>
+          {/* Column Headers: Drug Name & Strength | Dose | Frequency | Route | Duration | Spcl Instructions | Add / Remove / Up / Down */}
           <View style={[styles.tableHead, { borderBottomColor: t.border, backgroundColor: t.surfaceRaised }]}>
-            <Text style={[styles.th, { width: 132, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              # · ROW ORDER
+            <Text style={[styles.th, { flex: 1.4, minWidth: 220, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              DRUG NAME & STRENGTH
             </Text>
-            <Text style={[styles.th, { flex: 1.5, minWidth: 230, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              MEDICINE · STRENGTH · FORM & ROUTE
+            <Text style={[styles.th, { flex: 1.5, minWidth: 250, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              DOSE (M – A – E – N)
             </Text>
-            <Text style={[styles.th, { flex: 1.8, minWidth: 310, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              SCHEDULE (M – A – E – N) & PRESETS
+            <Text style={[styles.th, { width: 152, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              FREQUENCY
             </Text>
-            <Text style={[styles.th, { width: 176, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+            <Text style={[styles.th, { width: 146, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              ROUTE & SITE
+            </Text>
+            <Text style={[styles.th, { width: 164, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
               DURATION (− / +)
             </Text>
-            <Text style={[styles.th, { flex: 1.2, minWidth: 200, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              TIMING · INSTRUCTIONS & TAPER
+            <Text style={[styles.th, { flex: 1.2, minWidth: 196, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              SPCL INSTRUCTIONS
+            </Text>
+            <Text style={[styles.th, { width: 136, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              + / − / ↑ / ↓
             </Text>
           </View>
 
@@ -627,31 +633,19 @@ export function EmrPrescribingTable({
                 ]}
               >
                 <View style={styles.rowMain}>
-                  {/* Cell 1: Row Index + Move Up / Move Down / Add Below / Remove */}
-                  <View style={[styles.cellOrder, { width: 132 }]}>
-                    <View style={[styles.rowNumBadge, { backgroundColor: t.primarySoft, borderColor: t.primaryBorder }]}>
-                      <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
-                        {idx + 1}
-                      </Text>
-                    </View>
-                    {!locked ? (
-                      <View style={styles.orderBtnGroup}>
-                        {iconBtn(`${row.id}-up`, 'chevron-up', `Move row ${idx + 1} up`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' }), isFirst)}
-                        {iconBtn(`${row.id}-down`, 'chevron-down', `Move row ${idx + 1} down`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' }), isLast)}
-                        {iconBtn(`${row.id}-add`, 'plus', `Insert medicine below row ${idx + 1}`, () => onIntent({ type: 'rowAddRequested', afterRowId: row.id }))}
-                        {iconBtn(`${row.id}-del`, 'minus', `Remove row ${idx + 1}`, () => onIntent({ type: 'rowRemoveRequested', rowId: row.id }), m.rows.length <= 1, true)}
-                      </View>
-                    ) : null}
-                  </View>
-
-                  {/* Cell 2: Medicine Name, Strength, Form, Route, Site */}
-                  <View style={[styles.cellDrug, { flex: 1.5, minWidth: 230 }]}>
+                  {/* Column 1: Drug Name & Strength + Form */}
+                  <View style={[styles.cellDrug, { flex: 1.4, minWidth: 220 }]}>
                     <View style={styles.drugTopRow}>
-                      <View style={{ flex: 1, minWidth: 130 }}>
+                      <View style={[styles.rowNumBadge, { backgroundColor: t.primarySoft, borderColor: t.primaryBorder }]}>
+                        <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
+                          {idx + 1}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1, minWidth: 110 }}>
                         <ThemedInput
                           value={row.drugName}
                           editable={!locked}
-                          placeholder="Search or type medicine…"
+                          placeholder="Drug name…"
                           accessibilityLabel={`Row ${idx + 1} medicine name`}
                           onFocus={() => setActiveDrugRowId(row.id)}
                           onBlur={() => setTimeout(() => setActiveDrugRowId((cur) => (cur === row.id ? null : cur)), 160)}
@@ -659,11 +653,11 @@ export function EmrPrescribingTable({
                           style={{ minHeight: 36, height: 36, paddingVertical: 4, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium) }}
                         />
                       </View>
-                      <View style={{ width: 84 }}>
+                      <View style={{ width: 78 }}>
                         <ThemedInput
                           value={row.strength}
                           editable={!locked}
-                          placeholder="500 mg"
+                          placeholder="Strength"
                           accessibilityLabel={`Row ${idx + 1} strength`}
                           onChangeText={(text) => onIntent({ type: 'strengthChanged', rowId: row.id, strength: text })}
                           style={{ minHeight: 36, height: 36, paddingVertical: 4, fontSize: t.textXs, fontFamily: t.fontMono }}
@@ -698,7 +692,7 @@ export function EmrPrescribingTable({
                       </View>
                     ) : null}
 
-                    {/* Form & Route / Eye Site Selector Pills */}
+                    {/* Dosage Form Selector Pills */}
                     <View style={styles.pillRow}>
                       {forms.slice(0, 5).map((f) => {
                         const sel = row.form === f.value;
@@ -725,9 +719,70 @@ export function EmrPrescribingTable({
                         );
                       })}
                     </View>
+                  </View>
 
+                  {/* Column 2: Dose (M - A - E - N Steppers + Pattern Notation) */}
+                  <View style={[styles.cellSchedule, { flex: 1.5, minWidth: 250 }]}>
+                    <View style={styles.slotsRow}>
+                      {m.slotDefinitions.map((def) => renderSlotStepper(row, def))}
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.text2xs }}>
+                        Unit: <Text style={{ color: t.text, fontWeight: fontWeight(t.weightBold) }}>{row.unitLabel}</Text>
+                      </Text>
+                      {row.patternLabel ? (
+                        <View style={[styles.patternPill, { borderColor: t.primaryBorder, backgroundColor: t.surfaceSoft }]}>
+                          <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
+                            {row.patternLabel}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
+
+                  {/* Column 3: Frequency (OD / BD / TDS / QID / HS / PRN) */}
+                  <View style={[styles.cellSchedule, { width: 152 }]}>
+                    {row.frequencyCode ? (
+                      <EmrBadgeView badge={{ label: `Freq: ${row.frequencyCode}`, tone: 'info' }} />
+                    ) : null}
                     <View style={styles.pillRow}>
-                      {routes.slice(0, 3).map((r) => {
+                      {(m.presets ?? [
+                        { id: 'od', label: 'OD', slotIds: ['m'] },
+                        { id: 'bd', label: 'BD', slotIds: ['m', 'n'] },
+                        { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
+                        { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
+                        { id: 'hs', label: 'HS', slotIds: ['n'] },
+                      ]).map((p) => {
+                        const active = row.frequencyCode?.toLowerCase() === p.id.toLowerCase();
+                        return (
+                          <Pressable
+                            key={p.id}
+                            role="button"
+                            disabled={locked}
+                            aria-pressed={active}
+                            onPress={() => onIntent({ type: 'presetApplied', rowId: row.id, presetId: p.id })}
+                            style={({ focused }: PressState) => [
+                              styles.presetChip,
+                              {
+                                borderColor: active ? t.primary : t.border,
+                                backgroundColor: active ? t.primarySoft : t.surface,
+                              },
+                              focusRing(t, focused),
+                            ]}
+                          >
+                            <Text style={{ color: active ? t.primaryContrast : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                              {p.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  {/* Column 4: Route & Eye Site (Oral / Ophthalmic / Topical + OU / OD / OS) */}
+                  <View style={[styles.cellSchedule, { width: 146 }]}>
+                    <View style={styles.pillRow}>
+                      {routes.slice(0, 4).map((r) => {
                         const sel = row.route === r.value;
                         return (
                           <Pressable
@@ -751,88 +806,39 @@ export function EmrPrescribingTable({
                           </Pressable>
                         );
                       })}
-
-                      {row.route === 'eye' || row.form === 'drop' || row.form === 'ointment'
-                        ? sites.map((s) => {
-                            const sel = row.site === s.value;
-                            return (
-                              <Pressable
-                                key={s.value}
-                                role="button"
-                                disabled={locked}
-                                aria-pressed={sel}
-                                onPress={() => onIntent({ type: 'siteChanged', rowId: row.id, site: s.value })}
-                                style={({ focused }: PressState) => [
-                                  styles.microPill,
-                                  {
-                                    borderColor: sel ? t.primary : t.border,
-                                    backgroundColor: sel ? t.primary : t.surface,
-                                  },
-                                  focusRing(t, focused),
-                                ]}
-                              >
-                                <Text style={{ color: sel ? '#ffffff' : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-                                  {s.value}
-                                </Text>
-                              </Pressable>
-                            );
-                          })
-                        : null}
                     </View>
-                  </View>
-
-                  {/* Cell 3: Schedule Steppers (M - A - E - N) + Quick Frequency Presets */}
-                  <View style={[styles.cellSchedule, { flex: 1.8, minWidth: 310 }]}>
-                    <View style={styles.presetSummaryRow}>
+                    {row.route === 'eye' || row.form === 'drop' || row.form === 'ointment' ? (
                       <View style={styles.pillRow}>
-                        {(m.presets ?? [
-                          { id: 'od', label: 'OD', slotIds: ['m'] },
-                          { id: 'bd', label: 'BD', slotIds: ['m', 'n'] },
-                          { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
-                          { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
-                          { id: 'hs', label: 'HS', slotIds: ['n'] },
-                        ]).map((p) => {
-                          const active = row.frequencyCode?.toLowerCase() === p.id.toLowerCase();
+                        {sites.map((s) => {
+                          const sel = row.site === s.value;
                           return (
                             <Pressable
-                              key={p.id}
+                              key={s.value}
                               role="button"
                               disabled={locked}
-                              aria-pressed={active}
-                              onPress={() => onIntent({ type: 'presetApplied', rowId: row.id, presetId: p.id })}
+                              aria-pressed={sel}
+                              onPress={() => onIntent({ type: 'siteChanged', rowId: row.id, site: s.value })}
                               style={({ focused }: PressState) => [
-                                styles.presetChip,
+                                styles.microPill,
                                 {
-                                  borderColor: active ? t.primary : t.border,
-                                  backgroundColor: active ? t.primarySoft : t.surface,
+                                  borderColor: sel ? t.primary : t.border,
+                                  backgroundColor: sel ? t.primary : t.surface,
                                 },
                                 focusRing(t, focused),
                               ]}
                             >
-                              <Text style={{ color: active ? t.primaryContrast : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-                                {p.label}
+                              <Text style={{ color: sel ? '#ffffff' : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                                {s.value}
                               </Text>
                             </Pressable>
                           );
                         })}
                       </View>
-
-                      {row.patternLabel ? (
-                        <View style={[styles.patternPill, { borderColor: t.primaryBorder, backgroundColor: t.surfaceSoft }]}>
-                          <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
-                            {row.patternLabel}
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
-
-                    <View style={styles.slotsRow}>
-                      {m.slotDefinitions.map((def) => renderSlotStepper(row, def))}
-                    </View>
+                    ) : null}
                   </View>
 
-                  {/* Cell 4: Duration Stepper (− [ N ] + days/weeks/months) */}
-                  <View style={[styles.cellDuration, { width: 176 }]}>
+                  {/* Column 5: Duration Stepper (− [ N ] + days/weeks/months) */}
+                  <View style={[styles.cellDuration, { width: 164 }]}>
                     <View style={[styles.durationStepper, { borderColor: t.border, backgroundColor: t.surface }]}>
                       {!locked ? (
                         <Pressable
@@ -911,8 +917,8 @@ export function EmrPrescribingTable({
                     </View>
                   </View>
 
-                  {/* Cell 5: Food / Timing + Remarks + Taper Schedule Button */}
-                  <View style={[styles.cellTiming, { flex: 1.2, minWidth: 200 }]}>
+                  {/* Column 6: Special Instructions & Food Timing + Taper */}
+                  <View style={[styles.cellTiming, { flex: 1.2, minWidth: 196 }]}>
                     <View style={styles.pillRow}>
                       {foodOptions.slice(0, 4).map((food) => {
                         const sel = row.foodRelation === food;
@@ -945,7 +951,7 @@ export function EmrPrescribingTable({
                         <ThemedInput
                           value={row.instructions}
                           editable={!locked}
-                          placeholder="Instructions / remarks…"
+                          placeholder="Spcl instructions…"
                           accessibilityLabel={`Row ${idx + 1} instructions`}
                           onChangeText={(text) => onIntent({ type: 'instructionsChanged', rowId: row.id, instructions: text })}
                           style={{ minHeight: 34, height: 34, paddingVertical: 4, fontSize: t.textXs }}
@@ -969,6 +975,20 @@ export function EmrPrescribingTable({
                         </Text>
                       </Pressable>
                     </View>
+                  </View>
+
+                  {/* Column 7: Add / Remove / Up / Down (+ / − / ↑ / ↓) */}
+                  <View style={[styles.cellOrder, { width: 136, justifyContent: 'center' }]}>
+                    {!locked ? (
+                      <View style={styles.orderBtnGroup}>
+                        {iconBtn(`${row.id}-add`, 'plus', `Insert medicine below row ${idx + 1}`, () => onIntent({ type: 'rowAddRequested', afterRowId: row.id }))}
+                        {iconBtn(`${row.id}-del`, 'minus', `Remove row ${idx + 1}`, () => onIntent({ type: 'rowRemoveRequested', rowId: row.id }), m.rows.length <= 1, true)}
+                        {iconBtn(`${row.id}-up`, 'chevron-up', `Move row ${idx + 1} up`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' }), isFirst)}
+                        {iconBtn(`${row.id}-down`, 'chevron-down', `Move row ${idx + 1} down`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' }), isLast)}
+                      </View>
+                    ) : (
+                      <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.textXs }}>Locked</Text>
+                    )}
                   </View>
                 </View>
 

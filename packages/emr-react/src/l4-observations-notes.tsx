@@ -247,6 +247,23 @@ export function EmrObservationFlowsheet({
         const editable = !!cell?.editable && !model.readOnly && !isFooter;
         const body = cell ? (
           <>
+            {cell.modified ? (
+              <View
+                aria-label="Modified value"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: 0,
+                  height: 0,
+                  borderStyle: 'solid',
+                  borderTopWidth: 9,
+                  borderLeftWidth: 9,
+                  borderTopColor: t.warning,
+                  borderLeftColor: 'transparent',
+                }}
+              />
+            ) : null}
             {cell.valueLabel !== null ? (
               <Text
                 numberOfLines={1}
@@ -272,6 +289,33 @@ export function EmrObservationFlowsheet({
                 {flowsheetStatusWord(cell.status, statusWords, l.notSupplied)}
               </Text>
             )}
+            {cell.deltaLabel || cell.previousValueLabel ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                {cell.deltaLabel ? (
+                  <Text
+                    style={{
+                      color: cell.flag?.tone === 'danger' ? t.danger : cell.flag?.tone === 'warning' ? t.warning : t.primary,
+                      fontSize: t.text2xs,
+                      fontWeight: fontWeight(t.weightBold),
+                      fontFamily: mono,
+                    }}
+                  >
+                    {cell.deltaLabel}
+                  </Text>
+                ) : null}
+                {cell.previousValueLabel ? (
+                  <Text
+                    style={{
+                      color: t.textMuted,
+                      fontSize: t.text2xs,
+                      fontFamily: mono,
+                    }}
+                  >
+                    prev {cell.previousValueLabel}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
             {cell.flag ? <EmrBadgeView badge={cell.flag} /> : null}
             {cell.note ? (
               <Text
@@ -379,12 +423,40 @@ export function EmrObservationFlowsheet({
           {model.title}
         </Text>
         {!model.readOnly && !model.loading && !model.error ? (
-          <EmrButton
-            variant="outline"
-            small
-            label={l.addColumn}
-            onPress={() => onIntent({ type: 'columnAddRequested' })}
-          />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            {model.columns.length > 1 ? (
+              <EmrButton
+                variant="outline"
+                small
+                label="Copy Prev Col"
+                onPress={() => {
+                  const currentCol = model.columns.find(c => c.current) ?? model.columns[model.columns.length - 1];
+                  if (currentCol) {
+                    onIntent({ type: 'copyPreviousColumnRequested', targetColumnId: currentCol.id });
+                  }
+                }}
+              />
+            ) : null}
+            {model.columns.length > 0 ? (
+              <EmrButton
+                variant="outline"
+                small
+                label="✓ WNL Col"
+                onPress={() => {
+                  const currentCol = model.columns.find(c => c.current) ?? model.columns[model.columns.length - 1];
+                  if (currentCol) {
+                    onIntent({ type: 'macroNormalColumnRequested', targetColumnId: currentCol.id });
+                  }
+                }}
+              />
+            ) : null}
+            <EmrButton
+              variant="outline"
+              small
+              label={l.addColumn}
+              onPress={() => onIntent({ type: 'columnAddRequested' })}
+            />
+          </View>
         ) : null}
       </View>
 
@@ -1406,6 +1478,23 @@ export function EmrClinicalTranscript({
   const [draft, setDraft] = useState('');
   const [editDraft, setEditDraft] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showChartReview, setShowChartReview] = useState(true);
+  const [activeChartPaneId, setActiveChartPaneId] = useState<string | null>(null);
+
+  const handleDraftChange = (nextText: string) => {
+    if (model.smartPhrases?.length && nextText.endsWith(' ')) {
+      for (const sp of model.smartPhrases) {
+        if (nextText.endsWith(`${sp.trigger} `)) {
+          const expanded =
+            nextText.slice(0, nextText.length - (sp.trigger.length + 1)) + `${sp.expansion} `;
+          setDraft(expanded);
+          onIntent({ type: 'smartPhraseTriggered', trigger: sp.trigger, expansion: sp.expansion });
+          return;
+        }
+      }
+    }
+    setDraft(nextText);
+  };
 
   const { views } = buildTranscriptSegmentViews(model, `emr-transcript-${uid}`, l.describeFeeds);
 
@@ -1443,7 +1532,7 @@ export function EmrClinicalTranscript({
         ? '●'
         : model.dictation.status === 'processing'
           ? '◷'
-          : '🎙';
+          : '◉';
 
   return (
     <View
@@ -1532,7 +1621,7 @@ export function EmrClinicalTranscript({
               variant="outline"
               small
               disabled={!model.dictation.canStart}
-              label={`🎙 ${l.startDictation}`}
+              label={`◉ ${l.startDictation}`}
               onPress={() => onIntent({ type: 'dictationStartRequested' })}
             />
             <EmrButton
@@ -1820,9 +1909,250 @@ export function EmrClinicalTranscript({
         )}
       </ScrollView>
 
-      {/* Typed Note Entry */}
+      {/* Epic Split-Pane Chart Review (Prior Notes / Labs / IOP-VA) */}
+      {model.chartReviewPanes?.length ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: t.border,
+            borderRadius: 6,
+            backgroundColor: t.surfaceRaised,
+            padding: 10,
+            gap: 8,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <Text
+                style={{
+                  color: t.textMuted,
+                  fontSize: t.text2xs,
+                  fontWeight: fontWeight(t.weightBold),
+                  letterSpacing: 0.6,
+                  textTransform: 'uppercase',
+                  fontFamily: font,
+                }}
+              >
+                SPLIT-PANE CHART REVIEW
+              </Text>
+              {model.chartReviewPanes.map(pane => {
+                const active = (activeChartPaneId ?? model.chartReviewPanes?.[0]?.id) === pane.id;
+                return (
+                  <Pressable
+                    key={pane.id}
+                    role="button"
+                    aria-label={`Chart review tab ${pane.label}`}
+                    {...pressedProps(active)}
+                    onPress={() => {
+                      setActiveChartPaneId(pane.id);
+                      setShowChartReview(true);
+                    }}
+                    style={({ focused }: PressState) => [
+                      focusRing(t, focused),
+                      {
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        borderRadius: 4,
+                        borderWidth: 1,
+                        borderColor: active ? t.primary : t.border,
+                        backgroundColor: active ? t.primarySoft : t.surface,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color: active ? t.primary : t.text,
+                        fontSize: t.text2xs,
+                        fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+                        fontFamily: font,
+                      }}
+                    >
+                      {pane.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Pressable
+              role="button"
+              aria-label={showChartReview ? 'Hide chart review' : 'Show chart review'}
+              onPress={() => setShowChartReview(prev => !prev)}
+            >
+              <Text style={{ color: t.primary, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                {showChartReview ? 'Hide ▴' : 'Show ▾'}
+              </Text>
+            </Pressable>
+          </View>
+          {showChartReview ? (
+            (() => {
+              const activePane =
+                model.chartReviewPanes.find(p => p.id === (activeChartPaneId ?? model.chartReviewPanes?.[0]?.id)) ??
+                model.chartReviewPanes[0];
+              if (!activePane) return null;
+              return (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {activePane.items.map((item, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 4,
+                        borderWidth: 1,
+                        borderColor: t.border,
+                        backgroundColor: t.surface,
+                      }}
+                    >
+                      <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontFamily: font }}>
+                        {item.title}
+                      </Text>
+                      <Text style={{ color: t.text, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: mono }}>
+                        {item.value}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              );
+            })()
+          ) : null}
+        </View>
+      ) : null}
+
+      {/* Typed Note Entry + Epic SmartTools Bar */}
       {!model.readOnly ? (
         <View style={styles.ctTypeForm}>
+          {(model.smartPhrases?.length || model.smartLinks?.length || model.smartLists?.length) ? (
+            <View
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: t.border,
+                backgroundColor: t.surfaceSoft,
+                gap: 6,
+              }}
+            >
+              {model.smartPhrases?.length ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                  <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                    SMARTPHRASES (.dotphrase):
+                  </Text>
+                  {model.smartPhrases.map(sp => (
+                    <Pressable
+                      key={sp.trigger}
+                      role="button"
+                      aria-label={`Insert SmartPhrase ${sp.trigger}: ${sp.label}`}
+                      onPress={() => {
+                        setDraft(prev => (prev ? `${prev.trimEnd()} ${sp.expansion}` : sp.expansion));
+                        onIntent({ type: 'smartPhraseTriggered', trigger: sp.trigger, expansion: sp.expansion });
+                      }}
+                      style={({ focused }: PressState) => [
+                        focusRing(t, focused),
+                        {
+                          paddingHorizontal: 7,
+                          paddingVertical: 3,
+                          borderRadius: 4,
+                          borderWidth: 1,
+                          borderColor: t.primary,
+                          backgroundColor: t.primarySoft,
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: t.primary, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: mono }}>
+                        {sp.trigger} ({sp.label})
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+
+              {model.smartLinks?.length ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                  <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                    SMARTLINKS (@token@):
+                  </Text>
+                  {model.smartLinks.map(sl => (
+                    <Pressable
+                      key={sl.token}
+                      role="button"
+                      aria-label={`Insert SmartLink ${sl.token}: ${sl.resolvedValue}`}
+                      onPress={() => {
+                        setDraft(prev => (prev ? `${prev.trimEnd()} ${sl.resolvedValue}` : sl.resolvedValue));
+                        onIntent({ type: 'smartLinkInserted', token: sl.token, resolvedValue: sl.resolvedValue });
+                      }}
+                      style={({ focused }: PressState) => [
+                        focusRing(t, focused),
+                        {
+                          paddingHorizontal: 7,
+                          paddingVertical: 3,
+                          borderRadius: 4,
+                          borderWidth: 1,
+                          borderColor: t.info,
+                          backgroundColor: t.infoSoft,
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: t.info, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: mono }}>
+                        {sl.token} → {sl.resolvedValue}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+
+              {model.smartLists?.length ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                  <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                    SMARTLISTS ({'{'}choice{'}'}):
+                  </Text>
+                  {model.smartLists.map(list => (
+                    <View key={list.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                      <Text style={{ color: t.text, fontSize: t.text2xs, fontWeight: fontWeight(t.weightMedium), fontFamily: font }}>
+                        {'{'}{list.label}:{'}'}
+                      </Text>
+                      {list.choices.map(choice => {
+                        const active = list.selected === choice;
+                        return (
+                          <Pressable
+                            key={choice}
+                            role="button"
+                            aria-label={`${list.label}: ${choice}`}
+                            {...pressedProps(active)}
+                            onPress={() => {
+                              setDraft(prev => (prev ? `${prev.trimEnd()} ${choice}` : choice));
+                              onIntent({ type: 'smartListChoiceSelected', listId: list.id, choice });
+                            }}
+                            style={({ focused }: PressState) => [
+                              focusRing(t, focused),
+                              {
+                                paddingHorizontal: 6,
+                                paddingVertical: 2,
+                                borderRadius: 4,
+                                borderWidth: 1,
+                                borderColor: active ? t.primary : t.border,
+                                backgroundColor: active ? t.primarySoft : t.surface,
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={{
+                                color: active ? t.primary : t.text,
+                                fontSize: t.text2xs,
+                                fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+                                fontFamily: font,
+                              }}
+                            >
+                              {choice}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
           <Text
             style={{
               color: t.text,
@@ -1841,7 +2171,7 @@ export function EmrClinicalTranscript({
                 aria-label={l.typeNoteLabel}
                 placeholder={l.typeNotePlaceholder}
                 value={draft}
-                onChangeText={setDraft}
+                onChangeText={handleDraftChange}
               />
             </View>
             <EmrButton

@@ -6,7 +6,10 @@ import {
   ClinicalMatrixValues
 } from './models.js';
 
-type ClinicalMatrixExternalIntent = Extract<ClinicalMatrixIntent, { type: 'cellFocused' | 'customCellIntent' }>;
+type ClinicalMatrixExternalIntent = Extract<
+  ClinicalMatrixIntent,
+  { type: 'cellFocused' | 'customCellIntent' | 'columnCopyRequested' | 'macroNormalRequested' }
+>;
 
 export interface ClinicalMatrixControllerState {
   schema: ClinicalMatrixSchema;
@@ -118,8 +121,30 @@ export class ClinicalMatrixController extends StateController<
       });
       break;
     }
+    case 'columnCopyRequested': {
+      this.setState(state => {
+        const nextValues = { ...state.values };
+        for (const schemaRow of state.schema.rows) {
+          const row = nextValues[schemaRow.id];
+          if (!row) continue;
+          const src = row.cells[intent.fromColumnId];
+          const dst = row.cells[intent.toColumnId];
+          if (!src || !dst || dst.readOnly || dst.disabled) continue;
+          nextValues[schemaRow.id] = {
+            ...row,
+            cells: {
+              ...row.cells,
+              [intent.toColumnId]: { ...dst, value: src.value, modified: true },
+            },
+          };
+        }
+        return { ...state, values: nextValues, lastExternalIntent: intent };
+      });
+      break;
+    }
     case 'cellFocused':
     case 'customCellIntent':
+    case 'macroNormalRequested':
       this.setState(state => ({ ...state, lastExternalIntent: intent }));
       break;
     default:

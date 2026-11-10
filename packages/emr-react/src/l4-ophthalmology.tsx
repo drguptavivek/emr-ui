@@ -33,6 +33,7 @@ import type {
   SpectaclePrescriptionField,
   SpectaclePrescriptionIntent,
   SpectaclePrescriptionViewModel,
+  VaChartType,
 } from '@drguptavivek/emr-controller';
 import { ThemedInput } from './inputs-core';
 import {
@@ -422,6 +423,77 @@ export const SPECTACLE_RX_DEFAULTS = {
   dash: '—',
 } as const;
 
+const VA_CHART_OPTIONS: readonly { id: VaChartType; label: string; quickLines: readonly string[] }[] = [
+  { id: 'snellen-6m', label: 'Snellen 6m (6/6)', quickLines: ['6/5', '6/6', '6/9', '6/12', '6/18', '6/24', '6/36', '6/60', 'CF', 'HM'] },
+  { id: 'snellen-20ft', label: 'Snellen 20ft (20/20)', quickLines: ['20/15', '20/20', '20/30', '20/40', '20/60', '20/80', '20/120', '20/200', 'CF', 'HM'] },
+  { id: 'logmar', label: 'LogMAR (0.00)', quickLines: ['-0.10', '0.00', '+0.18', '+0.30', '+0.48', '+0.60', '+0.78', '+1.00', '+1.90', '+2.30'] },
+  { id: 'etdrs', label: 'ETDRS (85 Letters)', quickLines: ['90L', '85L', '76L', '70L', '61L', '55L', '46L', '35L', 'CF', 'HM'] },
+  { id: 'decimal', label: 'Decimal (1.0)', quickLines: ['1.2', '1.0', '0.67', '0.50', '0.33', '0.25', '0.17', '0.10', 'CF', 'HM'] },
+];
+
+export function resolveLogMarBadgeText(rawVa: string, explicitLogMar?: string): string | null {
+  if (explicitLogMar) return `LogMAR ${explicitLogMar}`;
+  const clean = rawVa.trim().toUpperCase();
+  if (!clean) return null;
+  const lookup: Record<string, string> = {
+    '6/5': '-0.08',
+    '6/6': '0.00',
+    '6/7.5': '+0.10',
+    '6/9': '+0.18',
+    '6/12': '+0.30',
+    '6/15': '+0.40',
+    '6/18': '+0.48',
+    '6/24': '+0.60',
+    '6/30': '+0.70',
+    '6/36': '+0.78',
+    '6/60': '+1.00',
+    '3/60': '+1.30',
+    '1/60': '+1.78',
+    '20/15': '-0.12',
+    '20/20': '0.00',
+    '20/25': '+0.10',
+    '20/30': '+0.18',
+    '20/40': '+0.30',
+    '20/50': '+0.40',
+    '20/60': '+0.48',
+    '20/80': '+0.60',
+    '20/100': '+0.70',
+    '20/120': '+0.78',
+    '20/200': '+1.00',
+    '20/400': '+1.30',
+    'CF': '+1.90 (CF)',
+    'HM': '+2.30 (HM)',
+    'PL': '+2.70 (PL)',
+    'LP': '+2.70 (LP)',
+    'NPL': '+3.00 (NPL)',
+    'NLP': '+3.00 (NLP)',
+  };
+  if (lookup[clean]) return `LogMAR ${lookup[clean]}`;
+  const frac = clean.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
+  if (frac) {
+    const num = Number(frac[1]);
+    const den = Number(frac[2]);
+    if (num > 0 && den > 0) {
+      const lm = -Math.log10(num / den);
+      const formatted = (lm > 0.005 ? '+' : '') + lm.toFixed(2);
+      return `LogMAR ${formatted}`;
+    }
+  }
+  const etdrs = clean.match(/^(\d+)\s*L(?:ETTERS)?$/);
+  if (etdrs) {
+    const letters = Number(etdrs[1]);
+    const lm = (85 - letters) * 0.02;
+    const formatted = (lm > 0.005 ? '+' : '') + lm.toFixed(2);
+    return `LogMAR ${formatted}`;
+  }
+  const numOnly = Number(clean);
+  if (!Number.isNaN(numOnly)) {
+    const formatted = (numOnly > 0.005 ? '+' : '') + numOnly.toFixed(2);
+    return `LogMAR ${formatted}`;
+  }
+  return null;
+}
+
 export type EmrSpectaclePrescriptionLabels = typeof SPECTACLE_RX_DEFAULTS;
 
 export interface EmrSpectaclePrescriptionProps {
@@ -507,9 +579,125 @@ export function EmrSpectaclePrescription({
       );
     }
 
+    const canStepDiopter = !readOnly && !field.disabled && field.type === 'decimal';
+    const canStepAxis = !readOnly && !field.disabled && field.id === 'axis';
+    const isVaField = field.id === 'visual-acuity' || field.id.toLowerCase().includes('va');
+    const activeChartOption = VA_CHART_OPTIONS.find((c) => c.id === (model.vaChartType ?? 'snellen-6m')) ?? VA_CHART_OPTIONS[0]!;
+    const logMarBadgeText = isVaField ? resolveLogMarBadgeText(val, model.logMarEquivalents?.[eye.id]) : null;
+
     return (
       <View style={styles.rxCellInner}>
-        {control}
+        {isVaField ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{ flex: 1, minWidth: 84 }}>{control}</View>
+            {logMarBadgeText ? (
+              <View
+                aria-label={`LogMAR equivalent for ${eyeLabel}: ${logMarBadgeText}`}
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 5,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: t.primaryBorder,
+                  backgroundColor: t.primarySoft,
+                }}
+              >
+                <Text style={{ color: t.primaryContrast, fontSize: t.textXs, fontFamily: fontMono(t), fontWeight: fontWeight(t.weightBold) }}>
+                  {logMarBadgeText}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          control
+        )}
+        {isVaField && !readOnly && !field.disabled ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 3 }}>
+            {activeChartOption.quickLines.slice(0, 6).map((line) => (
+              <Pressable
+                key={line}
+                role="button"
+                aria-label={`Set ${eyeLabel} visual acuity to ${line}`}
+                onPress={() => onIntent({ type: 'cellEditRequested', eyeId: eye.id, fieldId: field.id, value: line })}
+                style={({ focused }: PressState) => [
+                  {
+                    paddingHorizontal: 5,
+                    paddingVertical: 2,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: val === line ? t.primary : t.border,
+                    backgroundColor: val === line ? t.primarySoft : t.surfaceSoft,
+                  },
+                  focusRing(t, focused),
+                ]}
+              >
+                <Text style={{ color: val === line ? t.primaryContrast : t.textMuted, fontSize: t.text2xs, fontFamily: fontMono(t), fontWeight: fontWeight(t.weightBold) }}>
+                  {line}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+        {(canStepDiopter || canStepAxis) ? (
+          <View style={{ flexDirection: 'row', gap: 4 }}>
+            <Pressable
+              role="button"
+              aria-label={`Decrease ${field.label} for ${eyeLabel}`}
+              onPress={() =>
+                onIntent({
+                  type: 'cellStepped',
+                  eyeId: eye.id,
+                  fieldId: field.id,
+                  delta: canStepAxis ? -5 : -0.25,
+                })
+              }
+              style={({ focused }: PressState) => [
+                {
+                  flex: 1,
+                  paddingVertical: 2,
+                  alignItems: 'center',
+                  borderRadius: 4,
+                  borderWidth: 1,
+                  borderColor: t.border,
+                  backgroundColor: t.surfaceSoft,
+                },
+                focusRing(t, focused),
+              ]}
+            >
+              <Text style={{ color: t.text, fontSize: t.text2xs, fontFamily: fontMono(t), fontWeight: fontWeight(t.weightBold) }}>
+                {canStepAxis ? '−5°' : '−0.25'}
+              </Text>
+            </Pressable>
+            <Pressable
+              role="button"
+              aria-label={`Increase ${field.label} for ${eyeLabel}`}
+              onPress={() =>
+                onIntent({
+                  type: 'cellStepped',
+                  eyeId: eye.id,
+                  fieldId: field.id,
+                  delta: canStepAxis ? 5 : 0.25,
+                })
+              }
+              style={({ focused }: PressState) => [
+                {
+                  flex: 1,
+                  paddingVertical: 2,
+                  alignItems: 'center',
+                  borderRadius: 4,
+                  borderWidth: 1,
+                  borderColor: t.border,
+                  backgroundColor: t.surfaceSoft,
+                },
+                focusRing(t, focused),
+              ]}
+            >
+              <Text style={{ color: t.text, fontSize: t.text2xs, fontFamily: fontMono(t), fontWeight: fontWeight(t.weightBold) }}>
+                {canStepAxis ? '+5°' : '+0.25'}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
         {warn ? (
           <Text style={{ color: t.warning, fontSize: t.textXs, fontFamily: font }}>{warn}</Text>
         ) : null}
@@ -593,13 +781,137 @@ export function EmrSpectaclePrescription({
               {model.description}
             </Text>
           ) : null}
+          {/* Top-Left VA Chart Type Settings Switcher (Snellen 6m / 20ft / LogMAR / ETDRS / Decimal) */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 }}>
+            <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+              VA Chart Type:
+            </Text>
+            {VA_CHART_OPTIONS.map((opt) => {
+              const active = (model.vaChartType ?? 'snellen-6m') === opt.id;
+              return (
+                <Pressable
+                  key={opt.id}
+                  role="button"
+                  aria-pressed={active}
+                  onPress={() => onIntent({ type: 'vaChartTypeChanged', chartType: opt.id })}
+                  style={({ focused }: PressState) => [
+                    {
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 6,
+                      borderWidth: 1,
+                      borderColor: active ? t.primary : t.border,
+                      backgroundColor: active ? t.primarySoft : t.surfaceSoft,
+                    },
+                    focusRing(t, focused),
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: active ? t.primaryContrast : t.text,
+                      fontSize: t.textXs,
+                      fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+                      fontFamily: font,
+                    }}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
         {model.readOnly ? (
           <View style={[styles.statusPill, { borderColor: t.border }]}>
             <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: font }}>{l.readOnly}</Text>
           </View>
-        ) : null}
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+            <EmrButton
+              small
+              variant="outline"
+              label="Copy OD → OS"
+              onPress={() => onIntent({ type: 'copyEyeRequested', fromEyeId: 'od', toEyeId: 'os' })}
+            />
+            <EmrButton
+              small
+              variant="outline"
+              label="Copy OS → OD"
+              onPress={() => onIntent({ type: 'copyEyeRequested', fromEyeId: 'os', toEyeId: 'od' })}
+            />
+            {model.slitLampRows?.length ? (
+              <EmrButton
+                small
+                variant="ghost"
+                label="✓ OU Normal (WNL)"
+                onPress={() => onIntent({ type: 'slitLampMacroNormalRequested', scope: 'ou' })}
+              />
+            ) : null}
+          </View>
+        )}
       </View>
+
+      {/* Epic Kaleidoscope IOP Tonometry & Pachymetry Bar */}
+      {model.iopReadings ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 10,
+            padding: 12,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: t.border,
+            backgroundColor: t.surfaceSoft,
+          }}
+        >
+          {model.eyes.map((eye) => {
+            const iop = model.iopReadings?.[eye.id];
+            if (!iop) return null;
+            return (
+              <View
+                key={eye.id}
+                style={{
+                  flex: 1,
+                  minWidth: 240,
+                  padding: 10,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: t.border,
+                  backgroundColor: t.surface,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <View style={{ gap: 2 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                      {spectacleEyeAccessibleLabel(eye)} · IOP Tonometry
+                    </Text>
+                    <EmrBadgeView badge={{ label: iop.methodLabel, tone: 'info' }} />
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
+                    <Text style={{ color: t.text, fontSize: t.textXl, fontWeight: fontWeight(t.weightBold), fontFamily: fontMono(t) }}>
+                      {iop.valueLabel}
+                    </Text>
+                    {iop.deltaLabel ? (
+                      <Text style={{ color: t.success, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontMono(t) }}>
+                        {iop.deltaLabel}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontFamily: font }}>
+                    {iop.pachymetryLabel ?? ''} {iop.timeLabel ? `· ${iop.timeLabel}` : ''}
+                  </Text>
+                </View>
+                {iop.flag ? <EmrBadgeView badge={iop.flag} /> : null}
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
 
       {errorEntries.length > 0 ? (
         <View role="alert" style={[styles.rxErrorBanner, { backgroundColor: t.dangerSoft }]}>
@@ -702,6 +1014,228 @@ export function EmrSpectaclePrescription({
           </View>
         </ScrollView>
       )}
+
+      {/* Epic Kaleidoscope Paired OD / OS Slit-Lamp & Fundus Examination Grid */}
+      {model.slitLampRows?.length ? (
+        <View
+          style={{
+            marginTop: 8,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: t.border,
+            overflow: 'hidden',
+          }}
+        >
+          <View
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              backgroundColor: t.surfaceRaised,
+              borderBottomWidth: 1,
+              borderBottomColor: t.border,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
+            <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+              Kaleidoscope Slit-Lamp & Anterior/Posterior Segment Exam (OD | Structure | OS)
+            </Text>
+            {!model.readOnly ? (
+              <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                <EmrButton
+                  small
+                  variant="ghost"
+                  label="✓ OD Normal"
+                  onPress={() => onIntent({ type: 'slitLampMacroNormalRequested', scope: 'od' })}
+                />
+                <EmrButton
+                  small
+                  variant="ghost"
+                  label="✓ OS Normal"
+                  onPress={() => onIntent({ type: 'slitLampMacroNormalRequested', scope: 'os' })}
+                />
+                <EmrButton
+                  small
+                  variant="ghost"
+                  label="✓ Both Eyes WNL"
+                  onPress={() => onIntent({ type: 'slitLampMacroNormalRequested', scope: 'ou' })}
+                />
+              </View>
+            ) : null}
+          </View>
+
+          {model.slitLampRows.map((slRow, rIdx) => (
+            <View
+              key={slRow.id}
+              style={{
+                flexDirection: stacked ? 'column' : 'row',
+                borderBottomWidth: rIdx < model.slitLampRows!.length - 1 ? 1 : 0,
+                borderBottomColor: t.border,
+                backgroundColor: rIdx % 2 === 1 ? t.surfaceSoft : t.surface,
+                padding: 10,
+                gap: 10,
+                alignItems: stacked ? 'stretch' : 'center',
+              }}
+            >
+              {/* OD (Right Eye) Column */}
+              <View style={{ flex: 1, gap: 4, position: 'relative' }}>
+                {slRow.modifiedOd ? (
+                  <View
+                    aria-label="Modified OD finding"
+                    style={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -4,
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: t.primary,
+                      zIndex: 2,
+                    }}
+                  />
+                ) : null}
+                <ThemedInput
+                  aria-label={`Right eye (OD) ${slRow.label}`}
+                  value={slRow.odValue}
+                  editable={!model.readOnly}
+                  onChangeText={(txt) => onIntent({ type: 'slitLampChanged', rowId: slRow.id, eyeId: 'od', value: txt })}
+                />
+                {!model.readOnly ? (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+                    {slRow.quickFindings.map((qf) => (
+                      <Pressable
+                        key={`od-${qf}`}
+                        role="button"
+                        onPress={() => onIntent({ type: 'slitLampChanged', rowId: slRow.id, eyeId: 'od', value: qf })}
+                        style={({ focused }: PressState) => [
+                          {
+                            paddingHorizontal: 6,
+                            paddingVertical: 2,
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: slRow.odValue === qf ? t.primary : t.border,
+                            backgroundColor: slRow.odValue === qf ? t.primarySoft : t.surface,
+                          },
+                          focusRing(t, focused),
+                        ]}
+                      >
+                        <Text style={{ color: slRow.odValue === qf ? t.primaryContrast : t.textMuted, fontSize: t.text2xs, fontFamily: font }}>
+                          {qf}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Center Structure Label + Copy OD->OS & WNL Macro */}
+              <View style={{ width: stacked ? '100%' : 164, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: font, textAlign: 'center' }}>
+                  {slRow.label}
+                </Text>
+                {!model.readOnly ? (
+                  <View style={{ flexDirection: 'row', gap: 4 }}>
+                    <Pressable
+                      role="button"
+                      aria-label={`Set ${slRow.label} normal for both eyes`}
+                      onPress={() => onIntent({ type: 'slitLampMacroNormalRequested', scope: 'ou', rowId: slRow.id })}
+                      style={({ focused }: PressState) => [
+                        {
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 4,
+                          borderWidth: 1,
+                          borderColor: t.primaryBorder,
+                          backgroundColor: t.primarySoft,
+                        },
+                        focusRing(t, focused),
+                      ]}
+                    >
+                      <Text style={{ color: t.primaryContrast, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                        WNL
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      role="button"
+                      aria-label={`Copy ${slRow.label} from OD to OS`}
+                      onPress={() => onIntent({ type: 'slitLampCopyEyeRequested', fromEyeId: 'od', toEyeId: 'os', rowId: slRow.id })}
+                      style={({ focused }: PressState) => [
+                        {
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 4,
+                          borderWidth: 1,
+                          borderColor: t.border,
+                          backgroundColor: t.surface,
+                        },
+                        focusRing(t, focused),
+                      ]}
+                    >
+                      <Text style={{ color: t.text, fontSize: t.text2xs, fontFamily: fontMono(t) }}>
+                        OD→OS
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* OS (Left Eye) Column */}
+              <View style={{ flex: 1, gap: 4, position: 'relative' }}>
+                {slRow.modifiedOs ? (
+                  <View
+                    aria-label="Modified OS finding"
+                    style={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -4,
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: t.primary,
+                      zIndex: 2,
+                    }}
+                  />
+                ) : null}
+                <ThemedInput
+                  aria-label={`Left eye (OS) ${slRow.label}`}
+                  value={slRow.osValue}
+                  editable={!model.readOnly}
+                  onChangeText={(txt) => onIntent({ type: 'slitLampChanged', rowId: slRow.id, eyeId: 'os', value: txt })}
+                />
+                {!model.readOnly ? (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+                    {slRow.quickFindings.map((qf) => (
+                      <Pressable
+                        key={`os-${qf}`}
+                        role="button"
+                        onPress={() => onIntent({ type: 'slitLampChanged', rowId: slRow.id, eyeId: 'os', value: qf })}
+                        style={({ focused }: PressState) => [
+                          {
+                            paddingHorizontal: 6,
+                            paddingVertical: 2,
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: slRow.osValue === qf ? t.primary : t.border,
+                            backgroundColor: slRow.osValue === qf ? t.primarySoft : t.surface,
+                          },
+                          focusRing(t, focused),
+                        ]}
+                      >
+                        <Text style={{ color: slRow.osValue === qf ? t.primaryContrast : t.textMuted, fontSize: t.text2xs, fontFamily: font }}>
+                          {qf}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }

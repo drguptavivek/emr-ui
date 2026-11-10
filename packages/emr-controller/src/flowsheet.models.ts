@@ -32,6 +32,12 @@ export interface FlowsheetCell {
   readonly note?: string;
   /** Whether the cell can be selected for editing. The controller decides. */
   readonly editable?: boolean;
+  /** Cerner PowerChart top-right dog-ear triangle indicating unsaved/amended value. */
+  readonly modified?: boolean;
+  /** Last-recorded ghost value & delta badge. */
+  readonly previousValueLabel?: string;
+  readonly deltaLabel?: string;
+  readonly provenanceLabel?: string;
 }
 
 export type FlowsheetCellMap = Readonly<Record<string, Readonly<Record<string, FlowsheetCell>>>>;
@@ -59,8 +65,11 @@ export interface FlowsheetViewModel {
 
 export type FlowsheetIntent =
   | { readonly type: 'cellSelected'; readonly rowId: string; readonly columnId: string }
+  | { readonly type: 'cellEditRequested'; readonly rowId: string; readonly columnId: string; readonly valueLabel: string }
   | { readonly type: 'columnSelected'; readonly columnId: string }
   | { readonly type: 'columnAddRequested' }
+  | { readonly type: 'copyPreviousColumnRequested'; readonly targetColumnId: string }
+  | { readonly type: 'macroNormalColumnRequested'; readonly targetColumnId: string }
   | { readonly type: 'rowSelected'; readonly rowId: string }
   | { readonly type: 'retryRequested' };
 

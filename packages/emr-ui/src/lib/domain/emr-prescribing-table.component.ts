@@ -58,53 +58,21 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
         <table class="rx-table__grid">
           <thead>
             <tr>
-              <th scope="col"># · Order</th>
-              <th scope="col">Medicine · Strength · Form &amp; Route</th>
-              <th scope="col">Schedule (M – A – E – N) &amp; Presets</th>
+              <th scope="col">Drug Name &amp; Strength</th>
+              <th scope="col">Dose (M – A – E – N)</th>
+              <th scope="col">Frequency</th>
+              <th scope="col">Route &amp; Site</th>
               <th scope="col">Duration (− / +)</th>
-              <th scope="col">Timing · Instructions &amp; Taper</th>
+              <th scope="col">Spcl Instructions</th>
+              <th scope="col">+ / − / ↑ / ↓</th>
             </tr>
           </thead>
           <tbody>
             @for (row of model().rows; track row.id; let idx = $index; let first = $first; let last = $last) {
               <tr class="rx-table__row">
-                <td class="rx-table__cell-order">
-                  <span class="rx-table__num">{{ idx + 1 }}</span>
-                  @if (!model().readOnly) {
-                    <div class="rx-table__btn-row">
-                      <button
-                        type="button"
-                        class="rx-table__icon-btn"
-                        [disabled]="first"
-                        [attr.aria-label]="'Move row ' + (idx + 1) + ' up'"
-                        (click)="intent.emit({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' })"
-                      >↑</button>
-                      <button
-                        type="button"
-                        class="rx-table__icon-btn"
-                        [disabled]="last"
-                        [attr.aria-label]="'Move row ' + (idx + 1) + ' down'"
-                        (click)="intent.emit({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })"
-                      >↓</button>
-                      <button
-                        type="button"
-                        class="rx-table__icon-btn"
-                        [attr.aria-label]="'Insert medicine below row ' + (idx + 1)"
-                        (click)="intent.emit({ type: 'rowAddRequested', afterRowId: row.id })"
-                      >+</button>
-                      <button
-                        type="button"
-                        class="rx-table__icon-btn rx-table__icon-btn--danger"
-                        [disabled]="model().rows.length <= 1"
-                        [attr.aria-label]="'Remove row ' + (idx + 1)"
-                        (click)="intent.emit({ type: 'rowRemoveRequested', rowId: row.id })"
-                      >−</button>
-                    </div>
-                  }
-                </td>
-
                 <td class="rx-table__cell-drug">
                   <div class="rx-table__drug-inputs">
+                    <span class="rx-table__num">{{ idx + 1 }}</span>
                     <input
                       type="text"
                       class="emr-control"
@@ -127,21 +95,6 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                 </td>
 
                 <td class="rx-table__cell-schedule">
-                  @if (model().presets?.length && !model().readOnly) {
-                    <div class="rx-table__presets">
-                      @for (preset of model().presets!; track preset.id) {
-                        <button
-                          type="button"
-                          class="rx-table__pill"
-                          [attr.aria-pressed]="row.frequencyCode?.toLowerCase() === preset.id.toLowerCase()"
-                          (click)="intent.emit({ type: 'presetApplied', rowId: row.id, presetId: preset.id })"
-                        >{{ preset.label }}</button>
-                      }
-                      @if (row.patternLabel) {
-                        <span class="rx-table__pattern">{{ row.patternLabel }}</span>
-                      }
-                    </div>
-                  }
                   <div class="rx-table__slots">
                     @for (def of model().slotDefinitions; track def.id) {
                       <div class="rx-table__slot">
@@ -168,6 +121,28 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       </div>
                     }
                   </div>
+                </td>
+
+                <td class="rx-table__cell-frequency">
+                  @if (model().presets?.length && !model().readOnly) {
+                    <div class="rx-table__presets">
+                      @for (preset of model().presets!; track preset.id) {
+                        <button
+                          type="button"
+                          class="rx-table__pill"
+                          [attr.aria-pressed]="row.frequencyCode?.toLowerCase() === preset.id.toLowerCase()"
+                          (click)="intent.emit({ type: 'presetApplied', rowId: row.id, presetId: preset.id })"
+                        >{{ preset.label }}</button>
+                      }
+                      @if (row.patternLabel) {
+                        <span class="rx-table__pattern">{{ row.patternLabel }}</span>
+                      }
+                    </div>
+                  }
+                </td>
+
+                <td class="rx-table__cell-route">
+                  <span class="rx-table__pattern">{{ row.route }}</span>
                 </td>
 
                 <td class="rx-table__cell-duration">
@@ -199,7 +174,7 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       class="emr-control"
                       [value]="row.instructions"
                       [readOnly]="!!model().readOnly"
-                      placeholder="Instructions…"
+                      placeholder="Spcl instructions…"
                       [attr.aria-label]="'Row ' + (idx + 1) + ' instructions'"
                       (input)="onInstructionsInput(row.id, $event)"
                     />
@@ -210,6 +185,40 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       (click)="intent.emit({ type: 'taperToggleRequested', rowId: row.id })"
                     >Taper</button>
                   </div>
+                </td>
+
+                <td class="rx-table__cell-order">
+                  @if (!model().readOnly) {
+                    <div class="rx-table__btn-row">
+                      <button
+                        type="button"
+                        class="rx-table__icon-btn"
+                        [attr.aria-label]="'Insert medicine below row ' + (idx + 1)"
+                        (click)="intent.emit({ type: 'rowAddRequested', afterRowId: row.id })"
+                      >+</button>
+                      <button
+                        type="button"
+                        class="rx-table__icon-btn rx-table__icon-btn--danger"
+                        [disabled]="model().rows.length <= 1"
+                        [attr.aria-label]="'Remove row ' + (idx + 1)"
+                        (click)="intent.emit({ type: 'rowRemoveRequested', rowId: row.id })"
+                      >−</button>
+                      <button
+                        type="button"
+                        class="rx-table__icon-btn"
+                        [disabled]="first"
+                        [attr.aria-label]="'Move row ' + (idx + 1) + ' up'"
+                        (click)="intent.emit({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' })"
+                      >↑</button>
+                      <button
+                        type="button"
+                        class="rx-table__icon-btn"
+                        [disabled]="last"
+                        [attr.aria-label]="'Move row ' + (idx + 1) + ' down'"
+                        (click)="intent.emit({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })"
+                      >↓</button>
+                    </div>
+                  }
                 </td>
               </tr>
             }

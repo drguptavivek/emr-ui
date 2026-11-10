@@ -168,11 +168,93 @@ const INITIAL_SPECTACLE_MODEL: SpectaclePrescriptionViewModel = {
       addition: '+1.50',
       prism: '',
       base: '',
-      'visual-acuity': '6/6',
+      'visual-acuity': '6/9',
     },
   },
+  vaChartType: 'snellen-6m',
+  iopReadings: {
+    od: {
+      valueLabel: '14 mmHg',
+      methodLabel: 'GAT (Goldmann)',
+      timeLabel: '09:42',
+      deltaLabel: 'Δ −4 mmHg vs last visit',
+      pachymetryLabel: 'CCT 542 µm',
+      flag: { label: 'Normal', tone: 'success' },
+    },
+    os: {
+      valueLabel: '15 mmHg',
+      methodLabel: 'GAT (Goldmann)',
+      timeLabel: '09:42',
+      deltaLabel: 'Δ −2 mmHg vs last visit',
+      pachymetryLabel: 'CCT 545 µm',
+      flag: { label: 'Normal', tone: 'success' },
+    },
+  },
+  slitLampRows: [
+    {
+      id: 'lids-conj',
+      label: 'Lids & Conjunctiva',
+      normalPreset: 'Quiet, no injection, puncta patent',
+      quickFindings: ['Quiet, no injection', 'MGD 1+', 'Papillae 1+', 'SCH temporal', 'Pterygium nasal'],
+      odValue: 'Quiet, no injection, puncta patent',
+      osValue: 'Quiet, no injection, puncta patent',
+    },
+    {
+      id: 'cornea',
+      label: 'Cornea',
+      normalPreset: 'Clear, compact, no fluorescein stain',
+      quickFindings: ['Clear, no stain', 'SPK inferior 1+', 'Arcus senilis', 'Endothelial guttata'],
+      odValue: 'Clear, compact, no fluorescein stain',
+      osValue: 'Clear, compact, no fluorescein stain',
+    },
+    {
+      id: 'ac-iris',
+      label: 'Anterior Chamber & Iris',
+      normalPreset: 'Deep & quiet, VH4, round reactive pupil',
+      quickFindings: ['Deep & quiet, VH4', 'Cells 1+, Flare trace', 'PXF on pupillary margin', 'PI patent'],
+      odValue: 'Deep & quiet, VH4, round reactive pupil',
+      osValue: 'Deep & quiet, VH4, round reactive pupil',
+    },
+    {
+      id: 'lens',
+      label: 'Lens / IOL',
+      normalPreset: 'Clear crystalline lens',
+      quickFindings: ['PCIOL well-centered in bag', 'NS 1+', 'NS 2+ Cortical 1+', 'PSC central', 'Clear lens'],
+      odValue: 'PCIOL well-centered in bag',
+      osValue: 'NS 2+ Cortical 1+',
+      modifiedOs: true,
+    },
+    {
+      id: 'fundus-disc',
+      label: 'Optic Disc & Macula',
+      normalPreset: 'CDR 0.3, healthy NRR, flat macula, foveal reflex +',
+      quickFindings: ['CDR 0.3, flat macula', 'CDR 0.6, inferior notch', 'Hard drusen macula', 'Mild NPDR'],
+      odValue: 'CDR 0.3, healthy NRR, flat macula, foveal reflex +',
+      osValue: 'CDR 0.3, healthy NRR, flat macula, foveal reflex +',
+    },
+  ],
   notes: { od: '', os: 'Near addition supplied for both eyes.' },
 };
+
+const VA_EQUIV_TABLE: Record<string, Record<string, string>> = {
+  '6/5': { 'snellen-6m': '6/5', 'snellen-20ft': '20/15', logmar: '-0.08', etdrs: '89L', decimal: '1.2' },
+  '6/6': { 'snellen-6m': '6/6', 'snellen-20ft': '20/20', logmar: '0.00', etdrs: '85L', decimal: '1.0' },
+  '6/9': { 'snellen-6m': '6/9', 'snellen-20ft': '20/30', logmar: '+0.18', etdrs: '76L', decimal: '0.67' },
+  '6/12': { 'snellen-6m': '6/12', 'snellen-20ft': '20/40', logmar: '+0.30', etdrs: '70L', decimal: '0.50' },
+  '6/18': { 'snellen-6m': '6/18', 'snellen-20ft': '20/60', logmar: '+0.48', etdrs: '61L', decimal: '0.33' },
+  '6/24': { 'snellen-6m': '6/24', 'snellen-20ft': '20/80', logmar: '+0.60', etdrs: '55L', decimal: '0.25' },
+  '6/36': { 'snellen-6m': '6/36', 'snellen-20ft': '20/120', logmar: '+0.78', etdrs: '46L', decimal: '0.17' },
+  '6/60': { 'snellen-6m': '6/60', 'snellen-20ft': '20/200', logmar: '+1.00', etdrs: '35L', decimal: '0.10' },
+};
+
+function convertVaScale(val: string, targetScale: string): string {
+  for (const row of Object.values(VA_EQUIV_TABLE)) {
+    if (Object.values(row).includes(val.trim())) {
+      return row[targetScale] ?? val;
+    }
+  }
+  return val;
+}
 
 function SpectaclePrescriptionDemo() {
   const t = useEmrTheme();
@@ -204,6 +286,90 @@ function SpectaclePrescriptionDemo() {
             [intent.fieldId]: intent.value,
           },
         },
+      }));
+    } else if (intent.type === 'cellStepped') {
+      setModel(prev => {
+        const curRaw = prev.values[intent.eyeId]?.[intent.fieldId] ?? '0';
+        const curNum = Number(curRaw.replace('+', '')) || 0;
+        let nextFormatted: string;
+        if (intent.fieldId === 'axis') {
+          const deg = Math.min(180, Math.max(0, Math.round(curNum + intent.delta)));
+          nextFormatted = String(deg).padStart(3, '0');
+        } else {
+          const stepped = Math.round((curNum + intent.delta) * 100) / 100;
+          nextFormatted = (stepped > 0 ? '+' : '') + stepped.toFixed(2);
+        }
+        return {
+          ...prev,
+          values: {
+            ...prev.values,
+            [intent.eyeId]: {
+              ...prev.values[intent.eyeId],
+              [intent.fieldId]: nextFormatted,
+            },
+          },
+        };
+      });
+    } else if (intent.type === 'vaChartTypeChanged') {
+      setModel(prev => ({
+        ...prev,
+        vaChartType: intent.chartType,
+        values: {
+          ...prev.values,
+          od: {
+            ...prev.values['od'],
+            'visual-acuity': convertVaScale(prev.values['od']?.['visual-acuity'] ?? '6/6', intent.chartType),
+          },
+          os: {
+            ...prev.values['os'],
+            'visual-acuity': convertVaScale(prev.values['os']?.['visual-acuity'] ?? '6/9', intent.chartType),
+          },
+        },
+      }));
+    } else if (intent.type === 'copyEyeRequested') {
+      setModel(prev => ({
+        ...prev,
+        values: {
+          ...prev.values,
+          [intent.toEyeId]: { ...prev.values[intent.fromEyeId] },
+        },
+        notes: {
+          ...prev.notes,
+          [intent.toEyeId]: prev.notes?.[intent.fromEyeId] ?? '',
+        },
+      }));
+    } else if (intent.type === 'slitLampChanged') {
+      setModel(prev => ({
+        ...prev,
+        slitLampRows: prev.slitLampRows?.map(r =>
+          r.id === intent.rowId
+            ? intent.eyeId === 'od'
+              ? { ...r, odValue: intent.value, modifiedOd: true }
+              : { ...r, osValue: intent.value, modifiedOs: true }
+            : r,
+        ),
+      }));
+    } else if (intent.type === 'slitLampMacroNormalRequested') {
+      setModel(prev => ({
+        ...prev,
+        slitLampRows: prev.slitLampRows?.map(r => {
+          if (intent.rowId && r.id !== intent.rowId) return r;
+          return {
+            ...r,
+            odValue: intent.scope === 'od' || intent.scope === 'ou' ? r.normalPreset : r.odValue,
+            osValue: intent.scope === 'os' || intent.scope === 'ou' ? r.normalPreset : r.osValue,
+          };
+        }),
+      }));
+    } else if (intent.type === 'slitLampCopyEyeRequested') {
+      setModel(prev => ({
+        ...prev,
+        slitLampRows: prev.slitLampRows?.map(r => {
+          if (intent.rowId && r.id !== intent.rowId) return r;
+          return intent.toEyeId === 'os'
+            ? { ...r, osValue: r.odValue, modifiedOs: true }
+            : { ...r, odValue: r.osValue, modifiedOd: true };
+        }),
       }));
     } else if (intent.type === 'notesEditRequested') {
       setModel(prev => ({

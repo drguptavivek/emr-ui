@@ -2901,6 +2901,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPatientBanner",
         "files": [
+          "icons.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
           "l4-shell-sheet.tsx",
@@ -2915,6 +2916,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPatientBanner",
         "files": [
+          "icons.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
           "l4-shell-sheet.tsx",
@@ -2934,7 +2936,7 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrPatientBannerElement } from '@drguptavivek/emr-elements';"
       },
-      "fileCount": 10
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6370,6 +6372,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrCaptureStatusBar",
         "files": [
+          "icons.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
           "l4-shell-sheet.tsx",
@@ -6384,6 +6387,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrCaptureStatusBar",
         "files": [
+          "icons.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
           "l4-shell-sheet.tsx",
@@ -6403,7 +6407,7 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrCaptureStatusBarElement } from '@drguptavivek/emr-elements';"
       },
-      "fileCount": 10
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7120,6 +7124,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrAttestation",
         "files": [
+          "icons.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
           "l4-shell-sheet.tsx",
@@ -7134,6 +7139,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrAttestation",
         "files": [
+          "icons.tsx",
           "l1-display.tsx",
           "l1-inputs.logic.ts",
           "l4-shell-sheet.tsx",
@@ -7153,7 +7159,7 @@ export const EMR_REGISTRY_MANIFEST = {
         ],
         "import": "import { EmrAttestationElement } from '@drguptavivek/emr-elements';"
       },
-      "fileCount": 10
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",

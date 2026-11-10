@@ -201,11 +201,13 @@ export class EmrPrescribingTableElement extends EmrLitElement {
         <table class="rx-grid">
           <thead>
             <tr>
-              <th># · Order</th>
-              <th>Medicine · Strength</th>
-              <th>Schedule (M – A – E – N)</th>
+              <th>Drug Name &amp; Strength</th>
+              <th>Dose (M – A – E – N)</th>
+              <th>Frequency</th>
+              <th>Route &amp; Site</th>
               <th>Duration (− / +)</th>
-              <th>Instructions & Taper</th>
+              <th>Spcl Instructions</th>
+              <th>+ / − / ↑ / ↓</th>
             </tr>
           </thead>
           <tbody>
@@ -215,30 +217,8 @@ export class EmrPrescribingTableElement extends EmrLitElement {
               const step = row.form === 'tablet' ? 0.5 : 1;
               return html`<tr>
                 <td>
-                  <strong>#${idx + 1}</strong>
-                  ${!locked
-                    ? html`<div style="display:flex;gap:4px;margin-top:4px;">
-                        <button type="button" class="rx-icon-btn" ?disabled=${first} aria-label="Move row up"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' })}>
-                          ${renderEmrSvgIcon('chevron-up', 13)}
-                        </button>
-                        <button type="button" class="rx-icon-btn" ?disabled=${last} aria-label="Move row down"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })}>
-                          ${renderEmrSvgIcon('chevron-down', 13)}
-                        </button>
-                        <button type="button" class="rx-icon-btn" aria-label="Insert row below"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowAddRequested', afterRowId: row.id })}>
-                          ${renderEmrSvgIcon('plus', 13)}
-                        </button>
-                        <button type="button" class="rx-icon-btn rx-icon-btn--danger" ?disabled=${m.rows.length <= 1} aria-label="Remove row"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowRemoveRequested', rowId: row.id })}>
-                          ${renderEmrSvgIcon('minus', 13)}
-                        </button>
-                      </div>`
-                    : nothing}
-                </td>
-                <td>
-                  <div style="display:flex;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <strong>#${idx + 1}</strong>
                     <input class="emr-control" style="height:34px;min-height:34px;" .value=${row.drugName} ?readonly=${locked} placeholder="Medicine…"
                       @input=${(e: Event) => this.emitIntent<PrescribingTableIntent>({ type: 'drugNameChanged', rowId: row.id, drugName: (e.target as HTMLInputElement).value })} />
                     <input class="emr-control" style="width:84px;height:34px;min-height:34px;" .value=${row.strength} ?readonly=${locked} placeholder="500 mg"
@@ -264,6 +244,12 @@ export class EmrPrescribingTableElement extends EmrLitElement {
                   </div>
                 </td>
                 <td>
+                  <span style="font-family:var(--emr-font-mono);font-size:12px;font-weight:700;">${row.frequencyCode} ${row.patternLabel ? `(${row.patternLabel})` : ''}</span>
+                </td>
+                <td>
+                  <span style="font-size:12px;">${row.route}${row.site ? ` · ${row.site.toUpperCase()}` : ''}</span>
+                </td>
+                <td>
                   <div class="rx-mini-stepper">
                     ${!locked
                       ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'durationStepped', rowId: row.id, delta: -1 })}>${renderEmrSvgIcon('minus', 12)}</button>`
@@ -275,8 +261,30 @@ export class EmrPrescribingTableElement extends EmrLitElement {
                   </div>
                 </td>
                 <td>
-                  <input class="emr-control" style="height:34px;min-height:34px;" .value=${row.instructions} ?readonly=${locked} placeholder="Instructions…"
+                  <input class="emr-control" style="height:34px;min-height:34px;" .value=${row.instructions} ?readonly=${locked} placeholder="Spcl instructions…"
                     @input=${(e: Event) => this.emitIntent<PrescribingTableIntent>({ type: 'instructionsChanged', rowId: row.id, instructions: (e.target as HTMLInputElement).value })} />
+                </td>
+                <td>
+                  ${!locked
+                    ? html`<div style="display:flex;gap:4px;">
+                        <button type="button" class="rx-icon-btn" aria-label="Insert row below"
+                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowAddRequested', afterRowId: row.id })}>
+                          ${renderEmrSvgIcon('plus', 13)}
+                        </button>
+                        <button type="button" class="rx-icon-btn rx-icon-btn--danger" ?disabled=${m.rows.length <= 1} aria-label="Remove row"
+                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowRemoveRequested', rowId: row.id })}>
+                          ${renderEmrSvgIcon('minus', 13)}
+                        </button>
+                        <button type="button" class="rx-icon-btn" ?disabled=${first} aria-label="Move row up"
+                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' })}>
+                          ${renderEmrSvgIcon('chevron-up', 13)}
+                        </button>
+                        <button type="button" class="rx-icon-btn" ?disabled=${last} aria-label="Move row down"
+                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })}>
+                          ${renderEmrSvgIcon('chevron-down', 13)}
+                        </button>
+                      </div>`
+                    : nothing}
                 </td>
               </tr>`;
             })}

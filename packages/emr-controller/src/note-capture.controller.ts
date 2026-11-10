@@ -77,6 +77,15 @@ export class NoteCaptureController extends StateController<NoteCaptureViewModel,
         : { ...s, status: 'edited', editedValue: intent.value, editedValueLabel: labelFor(s, intent.value) });
       case 'acceptAllPendingRequested':
         return this.setState(state => ({ ...state, suggestions: state.suggestions.map(s => (s.status === 'pending' ? { ...s, status: 'accepted' as SuggestionStatus } : s)) }));
+      case 'smartPhraseTriggered':
+        return this.appendTyped(intent.expansion);
+      case 'smartLinkInserted':
+        return this.appendTyped(intent.resolvedValue);
+      case 'smartListChoiceSelected':
+        return this.setState(state => ({
+          ...state,
+          smartLists: state.smartLists?.map(l => (l.id === intent.listId ? { ...l, selected: intent.choice } : l)),
+        }));
     }
   }
 

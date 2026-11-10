@@ -101,8 +101,24 @@ const initialVitals: FlowsheetViewModel = {
     vitalCols.map(x => x.id),
     (rId, _cId, i) => {
       const value = vitalData[rId]?.[i] ?? null;
+      const prev = i > 0 ? vitalData[rId]?.[i - 1] ?? null : null;
       if (value === null) return cell(null, { status: 'unable-to-assess', editable: true });
-      return cell(value, { flag: vitalFlags[rId]?.[i], editable: true });
+      const isMod = (rId === 'temp' && i === 3) || (rId === 'hr' && i === 3) || (rId === 'bp' && i === 7);
+      const delta =
+        rId === 'temp' && i === 3
+          ? 'Δ +0.4'
+          : rId === 'hr' && i === 3
+            ? 'Δ +8'
+            : rId === 'bp' && i === 7
+              ? 'Δ −2'
+              : undefined;
+      return cell(value, {
+        flag: vitalFlags[rId]?.[i],
+        editable: true,
+        modified: isMod,
+        deltaLabel: delta,
+        previousValueLabel: isMod && prev ? prev : undefined,
+      });
     },
   ),
   selectedCell: { rowId: 'hr', columnId: 't3' },
@@ -215,6 +231,52 @@ function FlowsheetDemo({ initial }: { initial: FlowsheetViewModel }) {
             col(nextId, '22:00', 'New', true),
           ],
         };
+      });
+    } else if (e.type === 'copyPreviousColumnRequested') {
+      setModel(m => {
+        const targetIdx = m.columns.findIndex(c => c.id === e.targetColumnId);
+        if (targetIdx <= 0) return m;
+        const prevColId = m.columns[targetIdx - 1]!.id;
+        const nextCells: Record<string, Record<string, FlowsheetCell>> = {};
+        for (const r of m.rows) {
+          const rowCells = { ...(m.cells[r.id] ?? {}) };
+          const prevCell = rowCells[prevColId];
+          if (prevCell) {
+            rowCells[e.targetColumnId] = {
+              ...prevCell,
+              modified: true,
+              previousValueLabel: prevCell.valueLabel ?? undefined,
+              deltaLabel: 'Copied',
+            };
+          }
+          nextCells[r.id] = rowCells;
+        }
+        return { ...m, cells: nextCells };
+      });
+    } else if (e.type === 'macroNormalColumnRequested') {
+      const normalDefaults: Record<string, string> = {
+        temp: '36.8',
+        hr: '72',
+        rr: '14',
+        bp: '120/76',
+        spo2: '99',
+        pain: '0',
+      };
+      setModel(m => {
+        const nextCells: Record<string, Record<string, FlowsheetCell>> = {};
+        for (const r of m.rows) {
+          const rowCells = { ...(m.cells[r.id] ?? {}) };
+          const prevVal = rowCells[e.targetColumnId]?.valueLabel ?? undefined;
+          rowCells[e.targetColumnId] = {
+            valueLabel: normalDefaults[r.id] ?? 'WNL',
+            editable: true,
+            modified: true,
+            previousValueLabel: prevVal,
+            deltaLabel: 'WNL',
+          };
+          nextCells[r.id] = rowCells;
+        }
+        return { ...m, cells: nextCells };
       });
     }
   };
@@ -538,6 +600,73 @@ const initialNoteModel: NoteCaptureViewModel = {
   highlightedSpanIds: ['p1'],
   highlightedSuggestionIds: ['f1', 'f3'],
   canSummarise: true,
+  smartPhrases: [
+    {
+      trigger: '.postop',
+      label: 'Post-Op Cataract Day 1',
+      expansion: 'Post-op Day 1 Phaco + PCIOL: Wound well-apposed, cornea clear, AC deep and quiet, PCIOL centered in bag.',
+    },
+    {
+      trigger: '.keratitis',
+      label: 'Bacterial Keratitis Plan',
+      expansion: 'Start fortified Moxifloxacin 0.5% q1h round the clock, Homatropine 2% BID, review in 48 hours with corneal scraping Gram/KOH.',
+    },
+    {
+      trigger: '.glaucoma',
+      label: 'POAG Target IOP Check',
+      expansion: 'IOP above target; counselled on strict drop adherence and punctal occlusion. Continue Latanoprost 0.005% QHS.',
+    },
+  ],
+  smartLinks: [
+    { token: '@VA@', label: 'Visual Acuity', resolvedValue: 'VA OD 6/12 (0.30 LogMAR), OS 6/6 (0.00 LogMAR)' },
+    { token: '@IOP@', label: 'Tonometry', resolvedValue: 'IOP OD 24 mmHg (H), OS 15 mmHg (Goldmann)' },
+    { token: '@VITALS@', label: 'Vitals', resolvedValue: 'BP 128/78 mmHg, HR 72 bpm, SpO2 99%' },
+    { token: '@ALLERGIES@', label: 'Allergies', resolvedValue: 'Allergies: Penicillin (Anaphylaxis), Sulfonamides' },
+  ],
+  smartLists: [
+    {
+      id: 'eye',
+      label: 'Eye',
+      choices: ['Right eye (OD)', 'Left eye (OS)', 'Both eyes (OU)'],
+      selected: 'Right eye (OD)',
+    },
+    {
+      id: 'followup',
+      label: 'Follow-up',
+      choices: ['Review in 24h', 'Review in 48h', 'Review in 1 week'],
+      selected: 'Review in 48h',
+    },
+  ],
+  chartReviewPanes: [
+    {
+      id: 'iop-va',
+      label: 'Today VA & IOP',
+      items: [
+        { title: 'VA Right (OD)', value: '6/12 (+0.30 LogMAR)' },
+        { title: 'VA Left (OS)', value: '6/6 (0.00 LogMAR)' },
+        { title: 'IOP Right (OD)', value: '24 mmHg (High)' },
+        { title: 'IOP Left (OS)', value: '15 mmHg' },
+      ],
+    },
+    {
+      id: 'prior-note',
+      label: 'Prior Visit (14 Feb)',
+      items: [
+        { title: 'Diagnosis', value: 'Contact lens overwear OD' },
+        { title: 'Baseline VA', value: 'OD 6/6 · OS 6/6' },
+        { title: 'Baseline IOP', value: 'OD 16 mmHg · OS 15 mmHg' },
+      ],
+    },
+    {
+      id: 'labs',
+      label: 'Recent Labs',
+      items: [
+        { title: 'HbA1c', value: '6.8% (03 Mar)' },
+        { title: 'Fasting Glucose', value: '112 mg/dL' },
+        { title: 'Corneal Scrape', value: 'Pending culture' },
+      ],
+    },
+  ],
 };
 
 function applyNoteIntent(state: NoteCaptureViewModel, intent: NoteCaptureIntent): NoteCaptureViewModel {
@@ -648,6 +777,13 @@ function applyNoteIntent(state: NoteCaptureViewModel, intent: NoteCaptureIntent)
         ...state,
         suggestions: state.suggestions.map(s =>
           s.status === 'pending' ? { ...s, status: 'accepted' } : s,
+        ),
+      };
+    case 'smartListChoiceSelected':
+      return {
+        ...state,
+        smartLists: state.smartLists?.map(l =>
+          l.id === intent.listId ? { ...l, selected: intent.choice } : l,
         ),
       };
     default:
