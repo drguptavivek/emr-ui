@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { createElement, useEffect, useMemo, useState } from 'react';
+import { Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { EmrBadgeView, EmrThemeProvider, SvgIcon, useEmrTheme, type EmrColorScheme, type EmrTokens } from '../../src';
 import { HarnessForm } from '../harness-form';
 import { galleryGroups } from './index';
 import { EMR_REGISTRY_MANIFEST } from './registry-manifest';
 
-type SiteTab = 'showcase' | 'registry' | 'form';
+type SiteTab = 'showcase' | 'lit' | 'registry' | 'form';
 type FrameworkTab = 'react' | 'angular' | 'expo' | 'lit';
 type PalettePresetId = 'clinical-slate' | 'surgical-teal' | 'royal-blue' | 'forest-emerald' | 'ophthal-dark-room';
 type FontStackId = 'inter' | 'ibm-plex' | 'atkinson' | 'system';
@@ -396,7 +396,7 @@ function Surface({
   const [tab, setTab] = useState<SiteTab>('showcase');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const [selectedLayer, setSelectedLayer] = useState<number | 'all'>('all');
-  const [framework, setFramework] = useState<FrameworkTab>('react');
+  const [framework, setFramework] = useState<FrameworkTab>('lit');
   const [query, setQuery] = useState('');
   const [customizerOpen, setCustomizerOpen] = useState(true);
 
@@ -474,12 +474,13 @@ function Surface({
               EMR Component System · L0–L6 Catalog
             </Text>
             <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: t.fontFamily }}>
-              117 installable components synchronized across Lit Web Components (`@drguptavivek/emr-elements`), Angular (`@drguptavivek/emr-ui`), React Web & Expo (`@drguptavivek/emr-react`)
+              {EMR_REGISTRY_MANIFEST.totalItems - 1} installable components synchronized across Lit Web Components (`@drguptavivek/emr-elements`), Angular (`@drguptavivek/emr-ui`), React Web & Expo (`@drguptavivek/emr-react`)
             </Text>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             {pillButton('tab-showcase', `Interactive Showcase (${galleryGroups.length} groups)`, tab === 'showcase', () => setTab('showcase'))}
+            {pillButton('tab-lit', 'Lit Web Components (<emr-*>)', tab === 'lit', () => setTab('lit'))}
             {pillButton('tab-registry', `Shadcn Registry (${EMR_REGISTRY_MANIFEST.totalItems} items)`, tab === 'registry', () => setTab('registry'))}
             {pillButton('tab-form', 'OPD Clinical Form Demo', tab === 'form', () => setTab('form'))}
             {pillButton(
@@ -488,6 +489,9 @@ function Surface({
               customizerOpen,
               () => setCustomizerOpen((v) => !v),
             )}
+            {pillButton('link-lit', 'Standalone Lit App ↗', false, () => {
+              void Linking.openURL('./lit/index.html');
+            })}
             {pillButton('link-storybook', 'Angular Storybook ↗', false, () => {
               void Linking.openURL('./storybook/index.html');
             })}
@@ -786,6 +790,64 @@ function Surface({
 
       {tab === 'form' ? (
         <HarnessForm title="emr-react · Live OPD Clinical Form" />
+      ) : tab === 'lit' ? (
+        <View style={{ flex: 1, maxWidth: 1400, width: '100%', alignSelf: 'center', padding: 16, gap: 12 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 8,
+              padding: 12,
+              borderRadius: radiusPx,
+              borderWidth: 1,
+              borderColor: t.primaryBorder,
+              backgroundColor: t.surface,
+            }}
+          >
+            <View style={{ gap: 2 }}>
+              <Text style={{ color: t.text, fontSize: t.textMd, fontWeight: '700', fontFamily: t.fontFamily }}>
+                {'Lit Web Components (@drguptavivek/emr-elements) · Native Shadow DOM Custom Elements (<emr-*>)'}
+              </Text>
+              <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: t.fontMono }}>
+                pnpm emr init --framework lit && pnpm emr add emr-prescribing-table emr-pacs-viewer emr-specialty-exam-matrix emr-inpatient-mar emr-encounter-summary-print --framework lit
+              </Text>
+            </View>
+            <Pressable
+              role="button"
+              onPress={() => {
+                void Linking.openURL('./lit/index.html');
+              }}
+              style={{
+                minHeight: 34,
+                paddingHorizontal: 12,
+                justifyContent: 'center',
+                borderRadius: radiusPx,
+                borderWidth: 1,
+                borderColor: t.primary,
+                backgroundColor: t.primarySoft,
+              }}
+            >
+              <Text style={{ color: t.primaryContrast, fontSize: t.textXs, fontWeight: '700', fontFamily: t.fontFamily }}>
+                Open Full-Screen Lit Web App (/lit/index.html) ↗
+              </Text>
+            </Pressable>
+          </View>
+          {Platform.OS === 'web'
+            ? createElement('iframe' as unknown as React.ComponentType<Record<string, unknown>>, {
+                src: './lit/index.html',
+                title: 'EMR Lit Web Components Live Workstation',
+                style: {
+                  width: '100%',
+                  minHeight: '82vh',
+                  border: '1px solid ' + t.border,
+                  borderRadius: String(radiusPx) + 'px',
+                  background: t.surface,
+                },
+              })
+            : null}
+        </View>
       ) : tab === 'registry' ? (
         <ScrollView
           keyboardShouldPersistTaps="handled"

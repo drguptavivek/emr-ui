@@ -3,6 +3,12 @@ import { property } from 'lit/decorators.js';
 import type {
   DoseScheduleIntent,
   DoseScheduleViewModel,
+  EncounterSummaryPrintIntent,
+  EncounterSummaryPrintViewModel,
+  InpatientMarIntent,
+  InpatientMarViewModel,
+  PacsViewerIntent,
+  PacsViewerViewModel,
   PatientBannerIntent,
   PatientBannerViewModel,
   PrescribingRow,
@@ -10,6 +16,8 @@ import type {
   PrescribingTableViewModel,
   ScoreResultCardIntent,
   ScoreResultCardViewModel,
+  SpecialtyExamMatrixIntent,
+  SpecialtyExamMatrixViewModel,
 } from '@drguptavivek/emr-controller';
 import { EmrLitElement, defineEmrElement, emrShadowStyles } from './foundations.js';
 import { renderEmrSvgIcon } from './icons.js';
@@ -419,10 +427,230 @@ export class EmrToastElement extends EmrControlledDomainElement { protected over
 export class EmrSheetElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Modal Sheet'; }
 export class EmrTopBarSearchElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Top Bar Search'; }
 export class EmrTopBarElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Application Top Bar'; }
-export class EmrPacsViewerElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Multi-Viewport PACS & DICOMweb Viewer'; }
-export class EmrSpecialtyExamMatrixElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Multi-Specialty Examination & Dosing Matrix'; }
-export class EmrInpatientMarElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Inpatient eMAR & Nursing Kardex'; }
-export class EmrEncounterSummaryPrintElement extends EmrControlledDomainElement { protected override surfaceTitle = 'Print-Ready OPD Rx & IPD Discharge Summary'; }
+export class EmrPacsViewerElement extends EmrLitElement {
+  static override styles = [emrShadowStyles, l4Styles];
+  @property({ type: Object }) model?: PacsViewerViewModel;
+
+  override render() {
+    const m = this.model;
+    if (!m) return nothing;
+    const active = m.studies.find((s) => s.id === m.activeStudyId) ?? m.studies[0];
+    return html`
+      <section class="emr-card" style="padding:14px;display:grid;gap:10px;">
+        <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="emr-badge emr-badge--info">DICOMweb PACS</span>
+            <strong>${m.title ?? 'Multi-Viewport PACS & DICOMweb Compare Viewer'}</strong>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${(['1-up', '2-up-od-os', '2-up-compare'] as const).map(
+              (mode) => html`<button type="button" class="emr-btn emr-btn--small ${m.layoutMode === mode ? 'emr-btn--primary' : ''}"
+                @click=${() => this.emitIntent<PacsViewerIntent>({ type: 'layoutModeChanged', layoutMode: mode })}>
+                ${mode === '1-up' ? '▣ 1-Up Single' : mode === '2-up-od-os' ? '◫ 2-Up OD vs OS' : '⇄ 2-Up Active vs Prior'}
+              </button>`,
+            )}
+          </div>
+        </header>
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${m.studies.map(
+            (st) => html`<button type="button" class="emr-btn emr-btn--small ${st.id === active?.id ? 'emr-btn--primary' : ''}"
+              @click=${() => this.emitIntent<PacsViewerIntent>({ type: 'studySelected', studyId: st.id })}>
+              [${st.modality}] ${st.bodyPart} (${st.accessionNumber})
+            </button>`,
+          )}
+        </div>
+
+        ${active
+          ? html`
+              <div style="padding:12px;border-radius:8px;background:#09111a;color:#e2e8f0;font-family:var(--emr-font-mono);display:grid;gap:8px;">
+                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;font-size:12px;color:#38bdf8;">
+                  <strong>[${active.modality}] ${active.title} (${m.layoutMode.toUpperCase()})</strong>
+                  <span>Slice ${active.currentSlice}/${active.sliceCount} · W/L: ${active.windowPreset} · Zoom: ${active.zoomPercent}%</span>
+                </div>
+                <div style="color:#f59e0b;font-size:12px;font-weight:700;">Caliper: ${active.caliperMeasurementLabel ?? '—'}</div>
+                <div style="font-size:12px;font-family:var(--emr-font-family);color:#cbd5e1;">${active.radiologistImpression}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <button type="button" class="emr-btn emr-btn--small" @click=${() => this.emitIntent<PacsViewerIntent>({ type: 'sliceStepped', studyId: active.id, delta: -1 })}>− Slice</button>
+                  <button type="button" class="emr-btn emr-btn--small" @click=${() => this.emitIntent<PacsViewerIntent>({ type: 'sliceStepped', studyId: active.id, delta: 1 })}>+ Slice</button>
+                  <button type="button" class="emr-btn emr-btn--small" @click=${() => this.emitIntent<PacsViewerIntent>({ type: 'invertToggled', studyId: active.id })}>Invert LUT</button>
+                  <button type="button" class="emr-btn emr-btn--small emr-btn--primary" @click=${() => this.emitIntent<PacsViewerIntent>({ type: 'impressionPulledToNote', studyId: active.id, text: active.radiologistImpression })}>↳ Pull Impression to Note</button>
+                </div>
+              </div>
+            `
+          : nothing}
+      </section>
+    `;
+  }
+}
+
+export class EmrSpecialtyExamMatrixElement extends EmrLitElement {
+  static override styles = [emrShadowStyles, l4Styles];
+  @property({ type: Object }) model?: SpecialtyExamMatrixViewModel;
+
+  override render() {
+    const m = this.model;
+    if (!m) return nothing;
+    return html`
+      <section class="emr-card" style="padding:14px;display:grid;gap:10px;">
+        <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="emr-badge emr-badge--info">SPECIALTY EXAM</span>
+            <strong>${m.title ?? 'Multi-Specialty Examination & Dosing Matrix'}</strong>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${(['ophthalmology', 'pediatrics', 'dermatology', 'oncology'] as const).map(
+              (sp) => html`<button type="button" class="emr-btn emr-btn--small ${m.activeSpecialty === sp ? 'emr-btn--primary' : ''}"
+                @click=${() => this.emitIntent<SpecialtyExamMatrixIntent>({ type: 'specialtyChanged', specialty: sp })}>
+                ${sp.toUpperCase()}
+              </button>`,
+            )}
+          </div>
+        </header>
+
+        ${m.activeSpecialty === 'ophthalmology'
+          ? html`
+              <div style="display:flex;gap:6px;">
+                <button type="button" class="emr-btn emr-btn--small" @click=${() => this.emitIntent<SpecialtyExamMatrixIntent>({ type: 'ophthalmicApplyWnlAll' })}>✓ All WNL (OU)</button>
+                <button type="button" class="emr-btn emr-btn--small" @click=${() => this.emitIntent<SpecialtyExamMatrixIntent>({ type: 'ophthalmicCopyOdToOs' })}>⇄ Copy OD → OS</button>
+              </div>
+              <table class="rx-grid" style="min-width:600px;">
+                <thead><tr><th>Ocular Structure</th><th>Right Eye (OD)</th><th>Left Eye (OS)</th></tr></thead>
+                <tbody>
+                  ${m.ophthalmicRows.map(
+                    (r) => html`<tr>
+                      <td><strong>${r.structureLabel}</strong><div class="emr-muted" style="font-size:11px;">${r.segment}</div></td>
+                      <td>${r.odValue}</td>
+                      <td>${r.osValue}</td>
+                    </tr>`,
+                  )}
+                </tbody>
+              </table>
+            `
+          : m.activeSpecialty === 'pediatrics'
+            ? html`<div style="padding:10px;border-radius:8px;background:var(--emr-surface-soft);font-family:var(--emr-font-mono);">
+                Weight: <strong>${m.pediatrics.weightKg} kg</strong> (${m.pediatrics.weightCentileLabel}) · Target: ${m.pediatrics.targetDrugLabel} = <strong>${m.pediatrics.calculatedMgPerDose} mg (${m.pediatrics.calculatedMlPerDose} mL via Oral Syringe)</strong>
+              </div>`
+            : m.activeSpecialty === 'dermatology'
+              ? html`<div style="padding:10px;border-radius:8px;background:var(--emr-surface-soft);font-family:var(--emr-font-mono);">
+                  Affected BSA: <strong>${m.dermatology.totalBsaPercent}%</strong> · Single Application: <strong>${m.dermatology.totalFtuPerApp} FTU</strong> · 14d BD Total: <strong>${m.dermatology.totalGramsFor14DaysBd} g</strong>
+                </div>`
+              : html`<div style="padding:10px;border-radius:8px;background:var(--emr-surface-soft);font-family:var(--emr-font-mono);">
+                  <strong>${m.oncology.regimenName}</strong> · Cycle ${m.oncology.cycleNumber} · BSA: ${m.oncology.bsaM2} m² · Dose Level: ${m.oncology.doseReductionPercent}% · ANC: ${m.oncology.ancCountLabel}
+                </div>`}
+      </section>
+    `;
+  }
+}
+
+export class EmrInpatientMarElement extends EmrLitElement {
+  static override styles = [emrShadowStyles, l4Styles];
+  @property({ type: Object }) model?: InpatientMarViewModel;
+
+  override render() {
+    const m = this.model;
+    if (!m) return nothing;
+    return html`
+      <section class="emr-card" style="padding:14px;display:grid;gap:10px;">
+        <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <strong>${m.title ?? 'Inpatient eMAR & Nursing Kardex'}</strong>
+            <div class="emr-muted" style="font-size:12px;font-family:var(--emr-font-mono);">${m.wardBedLabel} · ${m.shiftLabel} · Nurse: ${m.nurseLabel}</div>
+          </div>
+          <span class="emr-badge emr-badge--success">BCMA Barcode Verified</span>
+        </header>
+        <div style="overflow-x:auto;">
+          <table class="rx-grid" style="min-width:740px;">
+            <thead>
+              <tr>
+                <th>Ordered Medication (Backend API Form &amp; Route)</th>
+                ${m.timeColumns.map((c) => html`<th>${c.timeLabel} (${c.slotLabel})</th>`)}
+              </tr>
+            </thead>
+            <tbody>
+              ${m.orders.map(
+                (ord) => html`<tr>
+                  <td>
+                    <strong>${ord.drugName} ${ord.strength}</strong>
+                    <div class="emr-muted" style="font-size:11px;font-family:var(--emr-font-mono);">
+                      API Form: ${ord.formLabel} · ${ord.doseLabel} · ${ord.frequencyCode} · ${ord.routeLabel}
+                    </div>
+                  </td>
+                  ${m.timeColumns.map((col) => {
+                    const adm = ord.administrations.find((a) => a.slotId === col.id);
+                    const st = adm?.status ?? 'not-due';
+                    return html`<td>
+                      <button type="button" class="emr-btn emr-btn--small ${st === 'given' ? 'emr-btn--primary' : ''}"
+                        ?disabled=${st === 'not-due'}
+                        @click=${() => this.emitIntent<InpatientMarIntent>({ type: 'slotStatusCycled', orderId: ord.id, slotId: col.id })}>
+                        ${st.toUpperCase()}
+                      </button>
+                    </td>`;
+                  })}
+                </tr>`,
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+}
+
+export class EmrEncounterSummaryPrintElement extends EmrLitElement {
+  static override styles = [emrShadowStyles, l4Styles];
+  @property({ type: Object }) model?: EncounterSummaryPrintViewModel;
+
+  override render() {
+    const m = this.model;
+    if (!m) return nothing;
+    return html`
+      <section class="emr-card" style="padding:16px;display:grid;gap:12px;">
+        <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:2px solid var(--emr-primary);padding-bottom:10px;">
+          <div>
+            <strong>${m.facilityName}</strong>
+            <div class="emr-muted" style="font-size:12px;">${m.facilityDepartment} · ${m.documentMode === 'opd-rx' ? 'OPD PRESCRIPTION' : 'IPD DISCHARGE SUMMARY'}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button type="button" class="emr-btn emr-btn--small ${m.documentMode === 'opd-rx' ? 'emr-btn--primary' : ''}"
+              @click=${() => this.emitIntent<EncounterSummaryPrintIntent>({ type: 'documentModeChanged', mode: 'opd-rx' })}>OPD Rx</button>
+            <button type="button" class="emr-btn emr-btn--small ${m.documentMode === 'ipd-discharge' ? 'emr-btn--primary' : ''}"
+              @click=${() => this.emitIntent<EncounterSummaryPrintIntent>({ type: 'documentModeChanged', mode: 'ipd-discharge' })}>IPD Summary</button>
+            <button type="button" class="emr-btn emr-btn--small emr-btn--primary"
+              @click=${() => this.emitIntent<EncounterSummaryPrintIntent>({ type: 'printTriggered' })}>Print (.emr-print)</button>
+          </div>
+        </header>
+        <div style="font-size:12px;">
+          <strong>Patient:</strong> ${m.patientName} (${m.patientAgeSex}) · <strong>Encounter:</strong> ${m.encounterId} · <strong>Allergies:</strong> ${m.allergiesSummary.join(', ')}
+        </div>
+        <table class="rx-grid" style="min-width:680px;">
+          <thead>
+            <tr>
+              <th>1. Drug &amp; API Form</th>
+              <th>2. Dose Qty</th>
+              <th>3. Freq (M-A-E-N)</th>
+              <th>4. Route/Site</th>
+              <th>5. Duration &amp; Dispense</th>
+              <th>6. Instructions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${m.prescriptions.map(
+              (rx, i) => html`<tr>
+                <td><strong>${i + 1}. ${rx.drugName} ${rx.strength}</strong><div class="emr-muted" style="font-size:11px;">API Form: ${rx.formLabel}</div></td>
+                <td>${rx.doseQtyUnit}</td>
+                <td><strong>${rx.frequencyPattern}</strong></td>
+                <td>${rx.routeSite}</td>
+                <td>${rx.durationLabel} ${rx.dispenseTotalLabel ? html`<div style="color:var(--emr-success);font-weight:700;font-size:11px;">${rx.dispenseTotalLabel}</div>` : nothing}</td>
+                <td>${rx.instructions}</td>
+              </tr>`,
+            )}
+          </tbody>
+        </table>
+      </section>
+    `;
+  }
+}
 
 export function registerL4Elements(): void {
   defineEmrElement('emr-medication-list', EmrMedicationListElement);
