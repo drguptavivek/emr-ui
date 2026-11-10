@@ -278,23 +278,35 @@ export class EmrPrescribingTableElement extends EmrLitElement {
                 </td>
                 <td>
                   ${!locked
-                    ? html`<div style="display:flex;gap:4px;">
-                        <button type="button" class="rx-icon-btn" aria-label="Insert row below"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowAddRequested', afterRowId: row.id })}>
-                          ${renderEmrSvgIcon('plus', 13)}
-                        </button>
-                        <button type="button" class="rx-icon-btn rx-icon-btn--danger" ?disabled=${m.rows.length <= 1} aria-label="Remove row"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowRemoveRequested', rowId: row.id })}>
-                          ${renderEmrSvgIcon('minus', 13)}
-                        </button>
-                        <button type="button" class="rx-icon-btn" ?disabled=${first} aria-label="Move row up"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' })}>
-                          ${renderEmrSvgIcon('chevron-up', 13)}
-                        </button>
-                        <button type="button" class="rx-icon-btn" ?disabled=${last} aria-label="Move row down"
-                          @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })}>
-                          ${renderEmrSvgIcon('chevron-down', 13)}
-                        </button>
+                    ? html`<div style="display:grid;gap:4px;">
+                        <div style="display:flex;gap:4px;">
+                          <button type="button" class="rx-icon-btn" aria-label="Insert row below"
+                            @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowAddRequested', afterRowId: row.id })}>
+                            ${renderEmrSvgIcon('plus', 13)}
+                          </button>
+                          <button type="button" class="rx-icon-btn rx-icon-btn--danger" ?disabled=${m.rows.length <= 1} aria-label="Remove row"
+                            @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowRemoveRequested', rowId: row.id })}>
+                            ${renderEmrSvgIcon('minus', 13)}
+                          </button>
+                          <button type="button" class="rx-icon-btn" ?disabled=${first} aria-label="Move row up"
+                            @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' })}>
+                            ${renderEmrSvgIcon('chevron-up', 13)}
+                          </button>
+                          <button type="button" class="rx-icon-btn" ?disabled=${last} aria-label="Move row down"
+                            @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })}>
+                            ${renderEmrSvgIcon('chevron-down', 13)}
+                          </button>
+                        </div>
+                        <div style="display:flex;gap:4px;">
+                          <button type="button" class="rx-icon-btn" style="width:auto;padding:0 6px;font-size:10px;font-weight:700;" aria-label="Add Step-Down row"
+                            @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowStepTitrationRequested', rowId: row.id, direction: 'down' })}>
+                            ↘ Step-Dn
+                          </button>
+                          <button type="button" class="rx-icon-btn" style="width:auto;padding:0 6px;font-size:10px;font-weight:700;" aria-label="Add Step-Up row"
+                            @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'rowStepTitrationRequested', rowId: row.id, direction: 'up' })}>
+                            ↗ Step-Up
+                          </button>
+                        </div>
                       </div>`
                     : nothing}
                 </td>

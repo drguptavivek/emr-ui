@@ -80,7 +80,10 @@ export interface PrescribingFormularyItem {
   formLabel: string;
   route: string;
   site?: string;
+  doseAmount?: number;
   unitLabel: string;
+  specialtyTag?: string;
+  dosingBasisLabel?: string;
   defaultPresetId?: string;
   defaultDurationCount?: number;
   defaultDurationUnit?: string;
@@ -96,10 +99,20 @@ export interface PrescribingRow {
   formLabel: string;
   route: string;
   site?: string;
+  /** Optional specialty or clinical context badge, e.g. 'Ophthalmology', 'Pediatrics (12 kg)', 'Oncology (BSA 1.7m²)'. */
+  specialtyTag?: string;
+  /** Optional weight/BSA dosing basis note, e.g. '15 mg/kg/dose' or '100 mg/m²'. */
+  dosingBasisLabel?: string;
+  /** Optional parent row ID when this row is a sequential Step-Down or Step-Up titration row. */
+  parentRowId?: string;
+  /** Whether this row is a 'step-down' (taper) or 'step-up' (escalation/titration) continuation row. */
+  stepPhase?: 'step-down' | 'step-up';
+  /** Human-readable phase badge, e.g. '↳ Step-Down (Week 2)' or '↳ Step-Up (Days 4–7)'. */
+  stepLabel?: string;
   /** Per-administration dose quantity (e.g. 1, 0.5, 2, 5). */
   doseAmount?: number | null;
   slots: readonly DoseSlot[];
-  /** Dose unit (e.g. '' for unitless, 'drop', 'tab', 'mL', 'puff', 'cap', 'mg'). */
+  /** Dose unit (e.g. '' for unitless, 'drop', 'tab', 'mL', 'puff', 'cap', 'FTU', 'IU', 'mg/m²', 'mg'). */
   unitLabel: string;
   /** Controller-supplied frequency badge, e.g. 'BD', 'TDS', 'OD', 'QID', 'HS', 'SOS', 'TAPER'. */
   frequencyCode?: string;
@@ -161,6 +174,7 @@ export type PrescribingTableIntent =
   | { type: 'rowRemoveRequested'; rowId: string }
   | { type: 'rowMoveRequested'; rowId: string; direction: 'up' | 'down' }
   | { type: 'rowDuplicateRequested'; rowId: string }
+  | { type: 'rowStepTitrationRequested'; rowId: string; direction: 'down' | 'up' }
   | { type: 'quickSigSubmitted'; command: string }
   | { type: 'formularySelected'; rowId: string; item: PrescribingFormularyItem }
   | { type: 'drugNameChanged'; rowId: string; drugName: string }

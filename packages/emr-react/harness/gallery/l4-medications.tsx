@@ -384,13 +384,16 @@ const PRESCRIBING_PRESETS = [
 ] as const;
 
 const FORMULARY_ITEMS: readonly PrescribingFormularyItem[] = [
-  { code: 'F-01', drugName: 'Moxifloxacin', strength: '0.5%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OD', unitLabel: 'drop', defaultPresetId: 'qid', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: '5 min gap', defaultInstructions: 'Instil 1 drop cleanly; wait 5 min before other drops.' },
-  { code: 'F-02', drugName: 'Prednisolone acetate', strength: '1%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OD', unitLabel: 'drop', defaultPresetId: 'qid', defaultDurationCount: 4, defaultDurationUnit: 'weeks', defaultFoodRelation: '5 min gap', defaultInstructions: 'Shake well before use. Follow weekly taper.' },
-  { code: 'F-03', drugName: 'Carboxymethylcellulose', strength: '0.5%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OU', unitLabel: 'drop', defaultPresetId: 'qid', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'Anytime', defaultInstructions: 'Lubricating eye drops.' },
-  { code: 'F-04', drugName: 'Paracetamol', strength: '500 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: '', defaultPresetId: 'tds', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Take after meals for pain or fever.' },
-  { code: 'F-05', drugName: 'Amoxicillin + Clavulanate', strength: '625 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: 'tab', defaultPresetId: 'bd', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Complete the full 5-day antibiotic course.' },
-  { code: 'F-06', drugName: 'Salbutamol MDI', strength: '100 mcg', form: 'spray', formLabel: 'Inhaler', route: 'nasal', unitLabel: 'puff', defaultPresetId: 'sos', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'Anytime', defaultInstructions: '2 puffs SOS for breathlessness.' },
-  { code: 'F-07', drugName: 'Lactulose', strength: '10 g/15 mL', form: 'liquid', formLabel: 'Syrup / Liquid', route: 'oral', unitLabel: 'mL', defaultPresetId: 'hs', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: 'At bedtime', defaultInstructions: 'Take 15 mL at bedtime with water.' },
+  { code: 'F-01', drugName: 'Moxifloxacin', strength: '0.5%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OD', doseAmount: 1, unitLabel: 'drop', specialtyTag: 'Ophthalmology', defaultPresetId: 'qid', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: '5 min gap', defaultInstructions: 'Instil 1 drop cleanly; wait 5 min before other drops.' },
+  { code: 'F-02', drugName: 'Prednisolone acetate', strength: '1%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OD', doseAmount: 1, unitLabel: 'drop', specialtyTag: 'Ophthalmology', defaultPresetId: 'qid', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: 'Shake well', defaultInstructions: 'Shake well before use. Use ↘ Step-Dn for weekly taper.' },
+  { code: 'F-03', drugName: 'Amoxicillin Suspension', strength: '250 mg/5 mL', form: 'liquid', formLabel: 'Liquid / Syrup', route: 'oral', doseAmount: 7.5, unitLabel: 'mL', specialtyTag: 'Pediatrics', dosingBasisLabel: '15 mg/kg · 12 kg = 180 mg', defaultPresetId: 'tds', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'Use oral syringe', defaultInstructions: 'Measure 7.5 mL accurately with oral syringe.' },
+  { code: 'F-04', drugName: 'Mometasone Furoate', strength: '0.1%', form: 'ointment', formLabel: 'Oint / Cream', route: 'topical', site: 'Lesions', doseAmount: 1.5, unitLabel: 'FTU', specialtyTag: 'Dermatology', dosingBasisLabel: '1.5 FTU ≈ 0.75 g', defaultPresetId: 'od', defaultDurationCount: 14, defaultDurationUnit: 'days', defaultFoodRelation: 'Thin layer only', defaultInstructions: 'Apply thin layer to affected plaques once daily.' },
+  { code: 'F-05', drugName: 'Ciprofloxacin + Dexamethasone', strength: '0.3%/0.1%', form: 'drop', formLabel: 'Ear drops', route: 'ear', site: 'AD', doseAmount: 4, unitLabel: 'drop', specialtyTag: 'ENT', defaultPresetId: 'bd', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: 'Tilt head 2 min', defaultInstructions: 'Warm bottle in hand; keep ear dry during bath.' },
+  { code: 'F-06', drugName: 'Capecitabine', strength: '500 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', doseAmount: 3, unitLabel: 'tab', specialtyTag: 'Oncology', dosingBasisLabel: '1000 mg/m² · BSA 1.5m²', defaultPresetId: 'bd', defaultDurationCount: 14, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Cycle Days 1–14, then 7 days rest. Swallow whole.' },
+  { code: 'F-07', drugName: 'Mannitol 20%', strength: '20 g/100 mL', form: 'injection', formLabel: 'Inj / Inf', route: 'iv-inf', doseAmount: 100, unitLabel: 'mL', specialtyTag: 'Neurosurgery', dosingBasisLabel: '0.5 g/kg IV osmotherapy', defaultPresetId: 'tds', defaultDurationCount: 3, defaultDurationUnit: 'days', defaultFoodRelation: 'Infuse over 20m (Mannitol)', defaultInstructions: 'Hold if serum Na > 155 mmol/L or osmolality > 320.' },
+  { code: 'F-08', drugName: 'Gabapentin', strength: '100 mg', form: 'capsule', formLabel: 'Capsule', route: 'oral', doseAmount: 1, unitLabel: 'cap', specialtyTag: 'Neurology', defaultPresetId: 'hs', defaultDurationCount: 3, defaultDurationUnit: 'days', defaultFoodRelation: 'At bedtime', defaultInstructions: 'Click ↗ Step-Up to titrate HS → BD → TDS.' },
+  { code: 'F-09', drugName: 'Salbutamol MDI', strength: '100 mcg', form: 'inhaler', formLabel: 'Inhaler / Spray', route: 'inhalation', doseAmount: 2, unitLabel: 'puff', specialtyTag: 'Gen Med', defaultPresetId: 'sos', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'Use spacer', defaultInstructions: '2 puffs SOS for wheeze/breathlessness.' },
+  { code: 'F-10', drugName: 'Paracetamol', strength: '500 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', doseAmount: 1, unitLabel: '', specialtyTag: 'Gen Med', defaultPresetId: 'tds', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Take after meals for pain or fever.' },
 ];
 
 function computeRowAnnotations(row: PrescribingRow): PrescribingRow {
@@ -523,8 +526,70 @@ export function PrescribingTableDemo() {
         });
         break;
       }
+      case 'rowStepTitrationRequested': {
+        setRows((prev) => {
+          const idx = prev.findIndex((r) => r.id === intent.rowId);
+          if (idx < 0) return prev;
+          const src = prev[idx]!;
+          const curDose = src.doseAmount ?? (src.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
+          const curFreq = (src.frequencyCode ?? 'BD').toLowerCase();
+          const downOrder = ['qid', 'tds', 'bd', 'od', 'hs'] as const;
+          const upOrder = ['hs', 'od', 'bd', 'tds', 'qid'] as const;
+
+          let nextPresetId = curFreq;
+          let nextDose = curDose;
+
+          if (intent.direction === 'down') {
+            const pos = downOrder.indexOf(curFreq as never);
+            if (pos >= 0 && pos < downOrder.length - 1) {
+              nextPresetId = downOrder[pos + 1]!;
+            } else {
+              nextDose = Math.max(0.5, Math.round((curDose / 2) * 100) / 100);
+            }
+          } else {
+            const pos = upOrder.indexOf(curFreq as never);
+            if (pos >= 0 && pos < upOrder.length - 1) {
+              nextPresetId = upOrder[pos + 1]!;
+            } else {
+              nextDose = curDose + (src.form === 'tablet' ? 0.5 : 1);
+            }
+          }
+
+          const preset =
+            PRESCRIBING_PRESETS.find((p) => p.id === nextPresetId) ?? PRESCRIBING_PRESETS[0]!;
+          const siblingSteps = prev.filter(
+            (r) => r.parentRowId === (src.parentRowId ?? src.id) || r.id === (src.parentRowId ?? src.id),
+          ).length;
+          const phaseNum = siblingSteps + 1;
+          const stepRow = computeRowAnnotations({
+            ...src,
+            id: `rx-${++nextRxSeq}`,
+            parentRowId: src.parentRowId ?? src.id,
+            stepPhase: intent.direction === 'down' ? 'step-down' : 'step-up',
+            stepLabel:
+              intent.direction === 'down'
+                ? `↘ Step-Down Phase ${phaseNum}`
+                : `↗ Step-Up Phase ${phaseNum}`,
+            doseAmount: nextDose,
+            slots: PRESCRIBING_SLOTS.map((def) => ({
+              id: def.id,
+              label: def.label,
+              timeHint: def.timeHint,
+              amount: preset.slotIds.includes(def.id as never) ? nextDose : 0,
+            })),
+            instructions:
+              intent.direction === 'down'
+                ? `Then step down to ${preset.label} (${nextDose}${src.unitLabel ? ' ' + src.unitLabel : ''})`
+                : `Then step up to ${preset.label} (${nextDose}${src.unitLabel ? ' ' + src.unitLabel : ''})`,
+          });
+
+          return [...prev.slice(0, idx + 1), stepRow, ...prev.slice(idx + 1)];
+        });
+        break;
+      }
       case 'formularySelected': {
         const it = intent.item;
+        const dose = it.doseAmount ?? 1;
         const preset = PRESCRIBING_PRESETS.find((p) => p.id === (it.defaultPresetId ?? 'bd')) ?? PRESCRIBING_PRESETS[1]!;
         setRows((prev) =>
           prev.map((r) =>
@@ -537,12 +602,15 @@ export function PrescribingTableDemo() {
                   formLabel: it.formLabel,
                   route: it.route,
                   site: it.site,
+                  specialtyTag: it.specialtyTag,
+                  dosingBasisLabel: it.dosingBasisLabel,
+                  doseAmount: dose,
                   unitLabel: it.unitLabel,
                   slots: PRESCRIBING_SLOTS.map((s) => ({
                     id: s.id,
                     label: s.label,
                     timeHint: s.timeHint,
-                    amount: preset.slotIds.includes(s.id as never) ? 1 : 0,
+                    amount: preset.slotIds.includes(s.id as never) ? dose : 0,
                   })),
                   durationCount: it.defaultDurationCount ?? 5,
                   durationUnit: it.defaultDurationUnit ?? 'days',
@@ -562,43 +630,69 @@ export function PrescribingTableDemo() {
         setRows((prev) => prev.map((r) => (r.id === intent.rowId ? { ...r, strength: intent.strength } : r)));
         break;
       case 'formChanged': {
-        const labels: Partial<Record<DoseForm, string>> = {
-          tablet: 'Tablet',
-          drop: 'Eye drops',
-          capsule: 'Capsule',
-          ointment: 'Ointment',
-          liquid: 'Syrup / Liquid',
+        const defaults: Partial<
+          Record<
+            DoseForm,
+            { label: string; unit: string; dose: number; route: string; site?: string; food: string }
+          >
+        > = {
+          tablet: { label: 'Tablet', unit: '', dose: 1, route: 'oral', food: 'After food' },
+          capsule: { label: 'Capsule', unit: 'cap', dose: 1, route: 'oral', food: 'After food' },
+          drop: { label: 'Drops', unit: 'drop', dose: 1, route: 'eye', site: 'OU', food: '5 min gap' },
+          liquid: { label: 'Liquid / Syrup', unit: 'mL', dose: 5, route: 'oral', food: 'Use oral syringe' },
+          ointment: { label: 'Oint / Cream', unit: 'FTU', dose: 1, route: 'topical', site: 'Lesions', food: 'Thin layer only' },
+          inhaler: { label: 'Inhaler / Spray', unit: 'puff', dose: 2, route: 'inhalation', food: 'Use spacer' },
+          spray: { label: 'Inhaler / Spray', unit: 'spray', dose: 2, route: 'nasal', site: 'Both Nostrils', food: 'Prime spray' },
+          injection: { label: 'Inj / Inf', unit: 'mg', dose: 1, route: 'iv-inf', food: 'Infuse over 30m' },
         };
-        const units: Partial<Record<DoseForm, string>> = {
-          tablet: 'tab',
-          drop: 'drop',
-          capsule: 'cap',
-          ointment: 'app',
-          liquid: 'mL',
+        const d = defaults[intent.form] ?? {
+          label: intent.form,
+          unit: '',
+          dose: 1,
+          route: 'oral',
+          food: 'After food',
+        };
+        setRows((prev) =>
+          prev.map((r) => {
+            if (r.id !== intent.rowId) return r;
+            const nextSlots = r.slots.map((s) => ({
+              ...s,
+              amount: (s.amount ?? 0) > 0 ? d.dose : 0,
+            }));
+            return computeRowAnnotations({
+              ...r,
+              form: intent.form,
+              formLabel: d.label,
+              doseAmount: d.dose,
+              unitLabel: d.unit,
+              route: d.route,
+              site: d.site,
+              foodRelation: d.food,
+              slots: nextSlots,
+            });
+          }),
+        );
+        break;
+      }
+      case 'routeChanged': {
+        const defaultSiteByRoute: Record<string, string | undefined> = {
+          eye: 'OU',
+          ivt: 'OD',
+          ear: 'AU',
+          nasal: 'Both Nostrils',
+          topical: 'Lesions',
+          sc: 'Abdomen',
+          im: 'Deltoid',
         };
         setRows((prev) =>
           prev.map((r) =>
             r.id === intent.rowId
-              ? {
-                  ...r,
-                  form: intent.form,
-                  formLabel: labels[intent.form] ?? intent.form,
-                  unitLabel: units[intent.form] ?? 'dose',
-                  route: intent.form === 'drop' ? 'eye' : r.route,
-                  site: intent.form === 'drop' ? r.site ?? 'OU' : r.site,
-                }
+              ? { ...r, route: intent.route, site: defaultSiteByRoute[intent.route] }
               : r,
           ),
         );
         break;
       }
-      case 'routeChanged':
-        setRows((prev) =>
-          prev.map((r) =>
-            r.id === intent.rowId ? { ...r, route: intent.route, site: intent.route === 'eye' ? r.site ?? 'OU' : undefined } : r,
-          ),
-        );
-        break;
       case 'siteChanged':
         setRows((prev) => prev.map((r) => (r.id === intent.rowId ? { ...r, site: intent.site } : r)));
         break;
@@ -791,22 +885,93 @@ export function PrescribingTableDemo() {
       case 'favouriteApplied': {
         if (intent.favouriteId === 'cataract-postop') {
           setRows(initialPrescribingRows);
-        } else if (intent.favouriteId === 'dry-eye') {
+        } else if (intent.favouriteId === 'multi-specialty') {
           setRows([
             computeRowAnnotations({
               id: `rx-${++nextRxSeq}`,
-              drugName: 'Carboxymethylcellulose',
-              strength: '0.5%',
-              form: 'drop',
-              formLabel: 'Eye drops',
-              route: 'eye',
-              site: 'OU',
-              slots: makeSlots(1, 1, 1, 1),
-              unitLabel: 'drop',
-              durationCount: 30,
+              drugName: 'Amoxicillin Suspension',
+              strength: '250 mg/5 mL',
+              form: 'liquid',
+              formLabel: 'Liquid / Syrup',
+              route: 'oral',
+              specialtyTag: 'Pediatrics',
+              dosingBasisLabel: '15 mg/kg · 12 kg = 180 mg',
+              doseAmount: 7.5,
+              slots: makeSlots(7.5, 7.5, 0, 7.5),
+              unitLabel: 'mL',
+              durationCount: 5,
               durationUnit: 'days',
-              foodRelation: 'Anytime',
-              instructions: 'Preservative-free tear substitute.',
+              foodRelation: 'Use oral syringe',
+              instructions: 'Give 7.5 mL TDS via calibrated oral syringe.',
+            }),
+            computeRowAnnotations({
+              id: `rx-${++nextRxSeq}`,
+              drugName: 'Mometasone Furoate',
+              strength: '0.1%',
+              form: 'ointment',
+              formLabel: 'Oint / Cream',
+              route: 'topical',
+              site: 'Lesions',
+              specialtyTag: 'Dermatology',
+              dosingBasisLabel: '1.5 FTU ≈ 0.75 g',
+              doseAmount: 1.5,
+              slots: makeSlots(1.5, 0, 0, 0),
+              unitLabel: 'FTU',
+              durationCount: 14,
+              durationUnit: 'days',
+              foodRelation: 'Thin layer only',
+              instructions: 'Apply 1.5 FTU to plaques once daily.',
+            }),
+            computeRowAnnotations({
+              id: `rx-${++nextRxSeq}`,
+              drugName: 'Ciprofloxacin + Dexamethasone',
+              strength: '0.3%/0.1%',
+              form: 'drop',
+              formLabel: 'Ear drops',
+              route: 'ear',
+              site: 'AD',
+              specialtyTag: 'ENT',
+              doseAmount: 4,
+              slots: makeSlots(4, 0, 0, 4),
+              unitLabel: 'drop',
+              durationCount: 7,
+              durationUnit: 'days',
+              foodRelation: 'Tilt head 2 min',
+              instructions: '4 drops in right ear (AD) twice daily.',
+            }),
+            computeRowAnnotations({
+              id: `rx-${++nextRxSeq}`,
+              drugName: 'Capecitabine',
+              strength: '500 mg',
+              form: 'tablet',
+              formLabel: 'Tablet',
+              route: 'oral',
+              specialtyTag: 'Oncology',
+              dosingBasisLabel: '1000 mg/m² · BSA 1.5m²',
+              doseAmount: 3,
+              slots: makeSlots(3, 0, 0, 3),
+              unitLabel: 'tab',
+              durationCount: 14,
+              durationUnit: 'days',
+              foodRelation: 'After food',
+              instructions: 'Cycle Days 1–14 (84 tabs total), then 7 days rest.',
+            }),
+            computeRowAnnotations({
+              id: `rx-${++nextRxSeq}`,
+              drugName: 'Mannitol 20%',
+              strength: '20 g/100 mL',
+              form: 'injection',
+              formLabel: 'Inj / Inf',
+              route: 'iv-inf',
+              specialtyTag: 'Neurosurgery',
+              dosingBasisLabel: '0.5 g/kg IV osmotherapy',
+              doseAmount: 100,
+              slots: makeSlots(100, 100, 0, 100),
+              unitLabel: 'mL',
+              durationCount: 3,
+              durationUnit: 'days',
+              foodRelation: 'Infuse over 20m (Mannitol)',
+              instructions: 'Monitor GCS, pupils, and serum Na q6h.',
             }),
           ]);
         } else if (intent.favouriteId === 'antibiotic-fever') {
@@ -921,9 +1086,9 @@ export function PrescribingTableDemo() {
     rows,
     formulary: FORMULARY_ITEMS,
     favourites: [
-      { id: 'cataract-postop', label: 'Cataract Post-Op Kit' },
-      { id: 'dry-eye', label: 'Dry Eye Regimen' },
-      { id: 'antibiotic-fever', label: 'Antibiotic + PPI' },
+      { id: 'cataract-postop', label: 'Ophthalmology Cataract Kit' },
+      { id: 'multi-specialty', label: 'Multi-Specialty (Peds · Derm · ENT · Onco · Neuro)' },
+      { id: 'antibiotic-fever', label: 'Gen Med (Antibiotic + PPI)' },
     ],
     quickSigExamples: [
       { command: 'moxi 1qid ou 7d', label: 'Moxifloxacin QID OU 7d' },

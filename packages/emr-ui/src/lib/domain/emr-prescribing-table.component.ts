@@ -237,6 +237,20 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                         (click)="intent.emit({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' })"
                       >↓</button>
                     </div>
+                    <div class="rx-table__btn-row" style="margin-top: 4px;">
+                      <button
+                        type="button"
+                        class="rx-table__pill"
+                        [attr.aria-label]="'Add Step-Down titration row below row ' + (idx + 1)"
+                        (click)="intent.emit({ type: 'rowStepTitrationRequested', rowId: row.id, direction: 'down' })"
+                      >↘ Step-Dn</button>
+                      <button
+                        type="button"
+                        class="rx-table__pill"
+                        [attr.aria-label]="'Add Step-Up titration row below row ' + (idx + 1)"
+                        (click)="intent.emit({ type: 'rowStepTitrationRequested', rowId: row.id, direction: 'up' })"
+                      >↗ Step-Up</button>
+                    </div>
                   }
                 </td>
               </tr>

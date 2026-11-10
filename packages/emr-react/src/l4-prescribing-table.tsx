@@ -18,13 +18,201 @@ type PressState = PressableStateCallbackType & { focused?: boolean };
 
 const DEFAULT_FORMS: readonly { value: DoseForm; label: string }[] = [
   { value: 'tablet', label: 'Tablet' },
-  { value: 'drop', label: 'Eye drops' },
   { value: 'capsule', label: 'Capsule' },
-  { value: 'ointment', label: 'Ointment' },
-  { value: 'liquid', label: 'Syrup / Liquid' },
-  { value: 'spray', label: 'Spray' },
-  { value: 'injection', label: 'Injection' },
+  { value: 'drop', label: 'Drops' },
+  { value: 'liquid', label: 'Liquid / Syrup' },
+  { value: 'ointment', label: 'Oint / Cream' },
+  { value: 'inhaler', label: 'Inhaler / Spray' },
+  { value: 'injection', label: 'Inj / Inf' },
 ];
+
+interface FormClinicalProfile {
+  readonly units: readonly string[];
+  readonly step: number;
+  readonly routes: readonly { value: string; label: string }[];
+  readonly sitesByRoute: Readonly<Record<string, readonly { value: string; label: string }[]>>;
+  readonly timingByRoute: Readonly<Record<string, readonly string[]>>;
+  readonly defaultTiming: readonly string[];
+}
+
+const EYE_SITES = [
+  { value: 'OU', label: 'OU (Both)' },
+  { value: 'OD', label: 'OD (Right)' },
+  { value: 'OS', label: 'OS (Left)' },
+] as const;
+
+const EAR_SITES = [
+  { value: 'AU', label: 'AU (Both Ears)' },
+  { value: 'AD', label: 'AD (Right Ear)' },
+  { value: 'AS', label: 'AS (Left Ear)' },
+] as const;
+
+const NASAL_SITES = [
+  { value: 'Both Nostrils', label: 'Both Nostrils' },
+  { value: 'R Nostril', label: 'R Nostril' },
+  { value: 'L Nostril', label: 'L Nostril' },
+] as const;
+
+const DERM_SITES = [
+  { value: 'Lesions', label: 'Lesions' },
+  { value: 'Face', label: 'Face' },
+  { value: 'Scalp', label: 'Scalp' },
+  { value: 'Trunk', label: 'Trunk' },
+  { value: 'Limbs', label: 'Limbs' },
+] as const;
+
+const INJ_SITES = [
+  { value: 'Abdomen', label: 'Abdomen' },
+  { value: 'Thigh', label: 'Thigh' },
+  { value: 'Deltoid', label: 'Deltoid' },
+] as const;
+
+function getFormClinicalProfile(form: DoseForm): FormClinicalProfile {
+  switch (form) {
+    case 'tablet':
+      return {
+        units: ['', 'tab', 'mg'],
+        step: 0.5,
+        routes: [
+          { value: 'oral', label: 'Oral' },
+          { value: 'sl', label: 'Sublingual (SL)' },
+          { value: 'ng', label: 'NG / Ryle Tube' },
+        ],
+        sitesByRoute: {},
+        timingByRoute: {},
+        defaultTiming: ['After food', 'Before food', 'Empty stomach', 'At bedtime'],
+      };
+    case 'capsule':
+      return {
+        units: ['', 'cap', 'mg'],
+        step: 1,
+        routes: [
+          { value: 'oral', label: 'Oral' },
+          { value: 'ng', label: 'NG Tube' },
+        ],
+        sitesByRoute: {},
+        timingByRoute: {},
+        defaultTiming: ['After food', 'Before food', 'Empty stomach', 'At bedtime'],
+      };
+    case 'drop':
+      return {
+        units: ['drop', 'mL', ''],
+        step: 1,
+        routes: [
+          { value: 'eye', label: 'Ophthalmic (Eye)' },
+          { value: 'ear', label: 'Otic (Ear · ENT)' },
+          { value: 'nasal', label: 'Nasal (ENT)' },
+          { value: 'oral', label: 'Oral Drops (Peds)' },
+        ],
+        sitesByRoute: {
+          eye: EYE_SITES,
+          ear: EAR_SITES,
+          nasal: NASAL_SITES,
+        },
+        timingByRoute: {
+          eye: ['5 min gap', 'Shake well', 'Punctal occlusion', 'At bedtime'],
+          ear: ['Tilt head 2 min', 'Keep ear dry', 'Warm bottle'],
+          nasal: ['Clear nose first', 'After steam', 'Head tilted back'],
+          oral: ['Use dropper', 'With milk/feed', 'After feed'],
+        },
+        defaultTiming: ['5 min gap', 'Shake well', 'At bedtime'],
+      };
+    case 'liquid':
+      return {
+        units: ['mL', 'tsp', 'mg/kg', 'mg', ''],
+        step: 2.5,
+        routes: [
+          { value: 'oral', label: 'Oral (Peds/Med)' },
+          { value: 'gargle', label: 'Gargle (ENT)' },
+          { value: 'ng', label: 'NG / PEG Tube' },
+        ],
+        sitesByRoute: {},
+        timingByRoute: {
+          gargle: ['Dilute 1:1 warm water', 'Swish 30s — do not swallow', 'After meals'],
+        },
+        defaultTiming: ['Use oral syringe', 'Shake well', 'After food', 'At bedtime'],
+      };
+    case 'ointment':
+    case 'cream':
+    case 'gel':
+      return {
+        units: ['FTU', 'app', 'ribbon', 'g', ''],
+        step: 0.5,
+        routes: [
+          { value: 'topical', label: 'Topical (Derm)' },
+          { value: 'eye', label: 'Ophthalmic (Eye)' },
+          { value: 'nasal', label: 'Anterior Nares' },
+        ],
+        sitesByRoute: {
+          topical: DERM_SITES,
+          eye: EYE_SITES,
+          nasal: NASAL_SITES,
+        },
+        timingByRoute: {
+          eye: ['Instil ointment last', 'At bedtime', '5 min gap'],
+          topical: ['Thin layer only', 'On damp skin', 'Sunscreen AM', 'Wash off 5m'],
+        },
+        defaultTiming: ['Thin layer only', 'On damp skin', 'At bedtime'],
+      };
+    case 'spray':
+    case 'inhaler':
+      return {
+        units: ['puff', 'spray', 'respule', 'mL', ''],
+        step: 1,
+        routes: [
+          { value: 'inhalation', label: 'Inhalation' },
+          { value: 'neb', label: 'Nebuliser' },
+          { value: 'nasal', label: 'Intranasal (ENT)' },
+        ],
+        sitesByRoute: {
+          nasal: NASAL_SITES,
+        },
+        timingByRoute: {
+          inhalation: ['Rinse mouth after', 'Use spacer', 'Before exercise'],
+          neb: ['Dilute in 3 mL NS', 'Via mask/mouthpiece'],
+          nasal: ['Prime spray', 'Aim away from septum'],
+        },
+        defaultTiming: ['Rinse mouth after', 'Use spacer', 'Anytime'],
+      };
+    case 'injection':
+      return {
+        units: ['mg', 'mL', 'IU', 'mg/m²', 'mg/kg', 'g'],
+        step: 1,
+        routes: [
+          { value: 'iv-inf', label: 'IV Infusion' },
+          { value: 'iv-bolus', label: 'IV Bolus' },
+          { value: 'sc', label: 'Subcut (SC)' },
+          { value: 'im', label: 'IM' },
+          { value: 'ivt', label: 'Intravitreal' },
+          { value: 'it', label: 'Intrathecal' },
+        ],
+        sitesByRoute: {
+          sc: INJ_SITES,
+          im: INJ_SITES,
+          ivt: EYE_SITES,
+        },
+        timingByRoute: {
+          'iv-inf': ['Infuse over 30m', 'Infuse over 20m (Mannitol)', 'Pre-medicate 30m prior', 'Monitor vitals'],
+          sc: ['Rotate site', 'Before meal (Insulin)', 'At bedtime'],
+          ivt: ['Sterile prep + Povidone', 'Check IOP post-inj'],
+        },
+        defaultTiming: ['Infuse over 30m', 'Monitor vitals', 'Rotate site'],
+      };
+    default:
+      return {
+        units: ['', 'sachet', 'supp', 'patch', 'mg', 'mL'],
+        step: 1,
+        routes: [
+          { value: 'oral', label: 'Oral' },
+          { value: 'pr', label: 'Per Rectum (PR)' },
+          { value: 'transdermal', label: 'Transdermal' },
+        ],
+        sitesByRoute: {},
+        timingByRoute: {},
+        defaultTiming: ['After food', 'Dissolve in water', 'Rotate patch site'],
+      };
+  }
+}
 
 const DEFAULT_ROUTES: readonly { value: string; label: string }[] = [
   { value: 'oral', label: 'Oral' },
@@ -81,6 +269,7 @@ export function EmrPrescribingTable({
   const [activeDrugRowId, setActiveDrugRowId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'sig' | 'patient'>('grid');
   const [quickSigText, setQuickSigText] = useState('');
+  const [splitExpandedRows, setSplitExpandedRows] = useState<Record<string, boolean>>({});
 
   const forms = m.formOptions ?? DEFAULT_FORMS;
   const doseUnits = m.doseUnits ?? DEFAULT_DOSE_UNITS;
@@ -604,8 +793,8 @@ export function EmrPrescribingTable({
             <Text style={[styles.th, { flex: 1.2, minWidth: 192, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
               SPCL INSTRUCTIONS
             </Text>
-            <Text style={[styles.th, { width: 136, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              + / − / ↑ / ↓
+            <Text style={[styles.th, { width: 152, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              + / − / ↑ / ↓ · STEP
             </Text>
           </View>
 
@@ -613,6 +802,15 @@ export function EmrPrescribingTable({
           {m.rows.map((row, idx) => {
             const isFirst = idx === 0;
             const isLast = idx === m.rows.length - 1;
+            const profile = getFormClinicalProfile(row.form);
+            const rowUnits = m.doseUnits ?? profile.units;
+            const rowRoutes = m.routeOptions ?? profile.routes;
+            const rowSites = m.siteOptions ?? profile.sitesByRoute[row.route] ?? [];
+            const rowTimings = m.foodOptions ?? profile.timingByRoute[row.route] ?? profile.defaultTiming;
+            const activeSlotAmounts = row.slots.map((s) => s.amount ?? 0).filter((a) => a > 0);
+            const hasAsymmetricSlots =
+              activeSlotAmounts.length > 1 && new Set(activeSlotAmounts).size > 1;
+            const isSplitOpen = !!splitExpandedRows[row.id] || hasAsymmetricSlots;
             const needle = row.drugName.trim().toLowerCase();
             const matchingFormulary: readonly PrescribingFormularyItem[] =
               activeDrugRowId === row.id && m.formulary
@@ -620,7 +818,8 @@ export function EmrPrescribingTable({
                     (f) =>
                       !needle ||
                       f.drugName.toLowerCase().includes(needle) ||
-                      f.formLabel.toLowerCase().includes(needle),
+                      f.formLabel.toLowerCase().includes(needle) ||
+                      (f.specialtyTag && f.specialtyTag.toLowerCase().includes(needle)),
                   )
                 : [];
 
@@ -631,20 +830,72 @@ export function EmrPrescribingTable({
                   styles.rowBlock,
                   {
                     borderBottomColor: t.border,
-                    backgroundColor: idx % 2 === 1 ? t.surfaceSoft : t.surface,
+                    backgroundColor: row.stepPhase
+                      ? t.surfaceRaised
+                      : idx % 2 === 1
+                        ? t.surfaceSoft
+                        : t.surface,
+                    borderLeftWidth: row.stepPhase ? 3 : 0,
+                    borderLeftColor:
+                      row.stepPhase === 'step-down'
+                        ? t.warning
+                        : row.stepPhase === 'step-up'
+                          ? t.info
+                          : 'transparent',
                   },
                 ]}
               >
                 <View style={styles.rowMain}>
-                  {/* Column 1: Drug Name & Strength + Form */}
-                  <View style={[styles.cellDrug, { flex: 1.4, minWidth: 220 }]}>
+                  {/* Column 1: Drug Name & Strength + Form + Specialty / Step Phase Badge */}
+                  <View style={[styles.cellDrug, { flex: 1.3, minWidth: 215 }]}>
+                    {(row.stepPhase || row.specialtyTag) ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        {row.stepPhase ? (
+                          <View
+                            style={{
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                              borderRadius: 4,
+                              borderWidth: 1,
+                              borderColor: row.stepPhase === 'step-down' ? t.warning : t.info,
+                              backgroundColor: row.stepPhase === 'step-down' ? t.warningSoft : t.infoSoft,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: row.stepPhase === 'step-down' ? t.warning : t.info,
+                                fontFamily: t.fontMono,
+                                fontSize: 10,
+                                fontWeight: fontWeight(t.weightBold),
+                              }}
+                            >
+                              {row.stepLabel ?? (row.stepPhase === 'step-down' ? '↘ STEP-DOWN PHASE' : '↗ STEP-UP PHASE')}
+                            </Text>
+                          </View>
+                        ) : null}
+                        {row.specialtyTag ? (
+                          <View
+                            style={{
+                              paddingHorizontal: 6,
+                              paddingVertical: 1,
+                              borderRadius: 4,
+                              backgroundColor: t.primarySoft,
+                            }}
+                          >
+                            <Text style={{ color: t.primaryContrast, fontFamily: ff, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
+                              {row.specialtyTag}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
                     <View style={styles.drugTopRow}>
                       <View style={[styles.rowNumBadge, { backgroundColor: t.primarySoft, borderColor: t.primaryBorder }]}>
                         <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
                           {idx + 1}
                         </Text>
                       </View>
-                      <View style={{ flex: 1, minWidth: 110 }}>
+                      <View style={{ flex: 1, minWidth: 105 }}>
                         <ThemedInput
                           value={row.drugName}
                           editable={!locked}
@@ -656,7 +907,7 @@ export function EmrPrescribingTable({
                           style={{ minHeight: 36, height: 36, paddingVertical: 4, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium) }}
                         />
                       </View>
-                      <View style={{ width: 78 }}>
+                      <View style={{ width: 76 }}>
                         <ThemedInput
                           value={row.strength}
                           editable={!locked}
@@ -671,7 +922,7 @@ export function EmrPrescribingTable({
                     {/* Formulary Quick Suggestions */}
                     {matchingFormulary.length > 0 && !locked ? (
                       <View style={[styles.formularyList, { borderColor: t.primaryBorder, backgroundColor: t.surface }]}>
-                        {matchingFormulary.slice(0, 5).map((item) => (
+                        {matchingFormulary.slice(0, 6).map((item) => (
                           <Pressable
                             key={item.code}
                             role="button"
@@ -688,7 +939,7 @@ export function EmrPrescribingTable({
                               {item.drugName} <Text style={{ color: t.textMuted, fontFamily: t.fontMono }}>{item.strength}</Text>
                             </Text>
                             <Text style={{ color: t.primary, fontFamily: ff, fontSize: t.text2xs }}>
-                              {item.formLabel}
+                              {item.specialtyTag ? `${item.specialtyTag} · ` : ''}{item.formLabel}
                             </Text>
                           </Pressable>
                         ))}
@@ -697,7 +948,7 @@ export function EmrPrescribingTable({
 
                     {/* Dosage Form Selector Pills */}
                     <View style={styles.pillRow}>
-                      {forms.slice(0, 5).map((f) => {
+                      {forms.map((f) => {
                         const sel = row.form === f.value;
                         return (
                           <Pressable
@@ -715,7 +966,7 @@ export function EmrPrescribingTable({
                               focusRing(t, focused),
                             ]}
                           >
-                            <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: ff, fontSize: 11, fontWeight: fontWeight(t.weightMedium) }}>
+                            <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: ff, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
                               {f.label}
                             </Text>
                           </Pressable>
@@ -724,12 +975,12 @@ export function EmrPrescribingTable({
                     </View>
                   </View>
 
-                  {/* Column 2: Dose Quantity & Unit (unitless, mL, puffs, drops, tabs, etc.) */}
+                  {/* Column 2: Dose Quantity & Form-Specific Unit (unitless, mL, puffs, drops, FTU, mg/m², etc.) */}
                   <View style={[styles.cellDuration, { width: 172 }]}>
                     {(() => {
                       const activeSlotAmt = row.slots.find((s) => (s.amount ?? 0) > 0)?.amount;
                       const doseVal = row.doseAmount ?? activeSlotAmt ?? 1;
-                      const doseStep = row.form === 'tablet' || row.unitLabel === 'tab' ? 0.5 : row.unitLabel === 'mL' ? 2.5 : 1;
+                      const doseStep = row.unitLabel === 'mL' ? 2.5 : profile.step;
                       return (
                         <View style={[styles.durationStepper, { borderColor: t.border, backgroundColor: t.surface }]}>
                           {!locked ? (
@@ -782,7 +1033,7 @@ export function EmrPrescribingTable({
                     })()}
 
                     <View style={styles.pillRow}>
-                      {doseUnits.map((u) => {
+                      {rowUnits.map((u) => {
                         const sel = (row.unitLabel ?? '') === u;
                         const label = u === '' ? '—' : u;
                         return (
@@ -809,9 +1060,14 @@ export function EmrPrescribingTable({
                         );
                       })}
                     </View>
+                    {row.dosingBasisLabel ? (
+                      <Text style={{ color: t.info, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
+                        {row.dosingBasisLabel}
+                      </Text>
+                    ) : null}
                   </View>
 
-                  {/* Column 3: Frequency (OD / BD / TDS / QID / HS / SOS + Morn-Aft-Even-Night M-A-E-N Steppers) */}
+                  {/* Column 3: Frequency (OD / BD / TDS / QID / HS / SOS + Progressive M–A–E–N Disclosure) */}
                   <View style={[styles.cellSchedule, { flex: 1.6, minWidth: 268 }]}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
                       <View style={styles.pillRow}>
@@ -847,23 +1103,95 @@ export function EmrPrescribingTable({
                           );
                         })}
                       </View>
-                      {row.patternLabel ? (
-                        <View style={[styles.patternPill, { borderColor: t.primaryBorder, backgroundColor: t.surfaceSoft }]}>
-                          <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
-                            {row.patternLabel}
-                          </Text>
-                        </View>
-                      ) : null}
+                      <Pressable
+                        role="button"
+                        aria-label="Toggle split M-A-E-N slot steppers"
+                        aria-pressed={isSplitOpen}
+                        onPress={() =>
+                          setSplitExpandedRows((prev) => ({ ...prev, [row.id]: !prev[row.id] }))
+                        }
+                        style={({ focused }: PressState) => [
+                          styles.microPill,
+                          {
+                            borderColor: isSplitOpen ? t.primary : t.border,
+                            backgroundColor: isSplitOpen ? t.primarySoft : t.surfaceSoft,
+                          },
+                          focusRing(t, focused),
+                        ]}
+                      >
+                        <Text style={{ color: isSplitOpen ? t.primaryContrast : t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                          ⇄ Split
+                        </Text>
+                      </Pressable>
                     </View>
-                    <View style={styles.slotsRow}>
-                      {m.slotDefinitions.map((def) => renderSlotStepper(row, def))}
+
+                    {/* Compact Clickable M – A – E – N Bar (always visible; clicking any slot cycles 0 -> Dose -> ½ -> 2x) */}
+                    <View style={{ flexDirection: 'row', gap: 4 }}>
+                      {m.slotDefinitions.map((def) => {
+                        const slotAmt = row.slots.find((s) => s.id === def.id)?.amount ?? 0;
+                        const active = slotAmt > 0;
+                        const baseDose = row.doseAmount ?? 1;
+                        const shortTag = (def.shortLabel ?? def.label).slice(0, 4);
+                        return (
+                          <Pressable
+                            key={def.id}
+                            role="button"
+                            disabled={locked}
+                            aria-label={`${def.label} slot: ${formatDoseAmount(slotAmt)}`}
+                            aria-pressed={active}
+                            onPress={() => {
+                              const nextAmt =
+                                slotAmt <= 0
+                                  ? baseDose
+                                  : slotAmt === baseDose && row.form === 'tablet'
+                                    ? 0.5
+                                    : 0;
+                              onIntent({ type: 'slotAmountChanged', rowId: row.id, slotId: def.id, amount: nextAmt });
+                            }}
+                            style={({ focused }: PressState) => [
+                              {
+                                flex: 1,
+                                paddingVertical: 4,
+                                paddingHorizontal: 4,
+                                borderRadius: 6,
+                                borderWidth: 1,
+                                borderColor: active ? t.primary : t.border,
+                                backgroundColor: active ? t.primarySoft : t.surface,
+                                alignItems: 'center',
+                              },
+                              focusRing(t, focused),
+                            ]}
+                          >
+                            <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: 9 }}>
+                              {shortTag}
+                            </Text>
+                            <Text
+                              style={{
+                                color: active ? t.primaryContrast : t.textMuted,
+                                fontFamily: t.fontMono,
+                                fontSize: t.textXs,
+                                fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+                              }}
+                            >
+                              {formatDoseAmount(slotAmt)}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
                     </View>
+
+                    {/* Progressive Disclosure: Full − / + Steppers when ⇄ Split is open */}
+                    {isSplitOpen ? (
+                      <View style={styles.slotsRow}>
+                        {m.slotDefinitions.map((def) => renderSlotStepper(row, def))}
+                      </View>
+                    ) : null}
                   </View>
 
-                  {/* Column 4: Route & Eye Site (Oral / Ophthalmic / Topical + OU / OD / OS) */}
+                  {/* Column 4: Context-Aware Route & Anatomical Site */}
                   <View style={[styles.cellSchedule, { width: 146 }]}>
                     <View style={styles.pillRow}>
-                      {routes.slice(0, 4).map((r) => {
+                      {rowRoutes.map((r) => {
                         const sel = row.route === r.value;
                         return (
                           <Pressable
@@ -881,16 +1209,16 @@ export function EmrPrescribingTable({
                               focusRing(t, focused),
                             ]}
                           >
-                            <Text style={{ color: sel ? t.text : t.textMuted, fontFamily: ff, fontSize: 11, fontWeight: fontWeight(t.weightMedium) }}>
+                            <Text style={{ color: sel ? t.text : t.textMuted, fontFamily: ff, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
                               {r.label}
                             </Text>
                           </Pressable>
                         );
                       })}
                     </View>
-                    {row.route === 'eye' || row.form === 'drop' || row.form === 'ointment' ? (
+                    {rowSites.length > 0 ? (
                       <View style={styles.pillRow}>
-                        {sites.map((s) => {
+                        {rowSites.map((s) => {
                           const sel = row.site === s.value;
                           return (
                             <Pressable
@@ -908,7 +1236,7 @@ export function EmrPrescribingTable({
                                 focusRing(t, focused),
                               ]}
                             >
-                              <Text style={{ color: sel ? '#ffffff' : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                              <Text style={{ color: sel ? '#ffffff' : t.text, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
                                 {s.value}
                               </Text>
                             </Pressable>
@@ -918,8 +1246,8 @@ export function EmrPrescribingTable({
                     ) : null}
                   </View>
 
-                  {/* Column 5: Duration Stepper (− [ N ] + days/weeks/months) */}
-                  <View style={[styles.cellDuration, { width: 164 }]}>
+                  {/* Column 5: Duration Stepper (− [ N ] + days/weeks/months) + Tablet/Capsule Dispense Count */}
+                  <View style={[styles.cellDuration, { width: 160 }]}>
                     <View style={[styles.durationStepper, { borderColor: t.border, backgroundColor: t.surface }]}>
                       {!locked ? (
                         <Pressable
@@ -996,12 +1324,41 @@ export function EmrPrescribingTable({
                         );
                       })}
                     </View>
+
+                    {/* Dispense Calculator ONLY for Tablets & Capsules */}
+                    {(row.form === 'tablet' || row.form === 'capsule') && (row.durationCount ?? 0) > 0 ? (
+                      (() => {
+                        const dailyQty = row.slots.reduce((acc, s) => acc + (s.amount ?? 0), 0);
+                        const mult =
+                          row.durationUnit === 'weeks' ? 7 : row.durationUnit === 'months' ? 30 : 1;
+                        const totalCount = Math.ceil(dailyQty * (row.durationCount ?? 1) * mult);
+                        if (totalCount <= 0) return null;
+                        const noun = row.form === 'capsule' ? (totalCount === 1 ? 'cap' : 'caps') : (totalCount === 1 ? 'tab' : 'tabs');
+                        return (
+                          <View
+                            style={{
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                              borderRadius: 4,
+                              backgroundColor: t.successSoft,
+                              borderWidth: 1,
+                              borderColor: t.success,
+                              alignSelf: 'flex-start',
+                            }}
+                          >
+                            <Text style={{ color: t.success, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                              = {totalCount} {noun}
+                            </Text>
+                          </View>
+                        );
+                      })()
+                    ) : null}
                   </View>
 
-                  {/* Column 6: Special Instructions & Food Timing + Taper */}
-                  <View style={[styles.cellTiming, { flex: 1.2, minWidth: 196 }]}>
+                  {/* Column 6: Special Instructions & Route-Aware Timing + Taper */}
+                  <View style={[styles.cellTiming, { flex: 1.2, minWidth: 192 }]}>
                     <View style={styles.pillRow}>
-                      {foodOptions.slice(0, 4).map((food) => {
+                      {rowTimings.slice(0, 4).map((food) => {
                         const sel = row.foodRelation === food;
                         return (
                           <Pressable
@@ -1019,7 +1376,7 @@ export function EmrPrescribingTable({
                               focusRing(t, focused),
                             ]}
                           >
-                            <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: ff, fontSize: 11, fontWeight: fontWeight(t.weightMedium) }}>
+                            <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: ff, fontSize: 10, fontWeight: fontWeight(t.weightMedium) }}>
                               {food}
                             </Text>
                           </Pressable>
@@ -1058,15 +1415,57 @@ export function EmrPrescribingTable({
                     </View>
                   </View>
 
-                  {/* Column 7: Add / Remove / Up / Down (+ / − / ↑ / ↓) */}
-                  <View style={[styles.cellOrder, { width: 136, justifyContent: 'center' }]}>
+                  {/* Column 7: Add / Remove / Up / Down (+ / − / ↑ / ↓) + Step-Down / Step-Up Titration Rows */}
+                  <View style={[styles.cellOrder, { width: 152, justifyContent: 'center', gap: 6 }]}>
                     {!locked ? (
-                      <View style={styles.orderBtnGroup}>
-                        {iconBtn(`${row.id}-add`, 'plus', `Insert medicine below row ${idx + 1}`, () => onIntent({ type: 'rowAddRequested', afterRowId: row.id }))}
-                        {iconBtn(`${row.id}-del`, 'minus', `Remove row ${idx + 1}`, () => onIntent({ type: 'rowRemoveRequested', rowId: row.id }), m.rows.length <= 1, true)}
-                        {iconBtn(`${row.id}-up`, 'chevron-up', `Move row ${idx + 1} up`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' }), isFirst)}
-                        {iconBtn(`${row.id}-down`, 'chevron-down', `Move row ${idx + 1} down`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' }), isLast)}
-                      </View>
+                      <>
+                        <View style={styles.orderBtnGroup}>
+                          {iconBtn(`${row.id}-add`, 'plus', `Insert medicine below row ${idx + 1}`, () => onIntent({ type: 'rowAddRequested', afterRowId: row.id }))}
+                          {iconBtn(`${row.id}-del`, 'minus', `Remove row ${idx + 1}`, () => onIntent({ type: 'rowRemoveRequested', rowId: row.id }), m.rows.length <= 1, true)}
+                          {iconBtn(`${row.id}-up`, 'chevron-up', `Move row ${idx + 1} up`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'up' }), isFirst)}
+                          {iconBtn(`${row.id}-down`, 'chevron-down', `Move row ${idx + 1} down`, () => onIntent({ type: 'rowMoveRequested', rowId: row.id, direction: 'down' }), isLast)}
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 4 }}>
+                          <Pressable
+                            role="button"
+                            aria-label={`Add Step-Down titration row below row ${idx + 1}`}
+                            onPress={() => onIntent({ type: 'rowStepTitrationRequested', rowId: row.id, direction: 'down' })}
+                            style={({ focused, hovered }: PressState & { hovered?: boolean }) => [
+                              styles.microPill,
+                              {
+                                flex: 1,
+                                justifyContent: 'center',
+                                borderColor: t.warning,
+                                backgroundColor: hovered ? t.warningSoft : t.surface,
+                              },
+                              focusRing(t, focused),
+                            ]}
+                          >
+                            <Text style={{ color: t.warning, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                              ↘ Step-Dn
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            role="button"
+                            aria-label={`Add Step-Up titration row below row ${idx + 1}`}
+                            onPress={() => onIntent({ type: 'rowStepTitrationRequested', rowId: row.id, direction: 'up' })}
+                            style={({ focused, hovered }: PressState & { hovered?: boolean }) => [
+                              styles.microPill,
+                              {
+                                flex: 1,
+                                justifyContent: 'center',
+                                borderColor: t.info,
+                                backgroundColor: hovered ? t.infoSoft : t.surface,
+                              },
+                              focusRing(t, focused),
+                            ]}
+                          >
+                            <Text style={{ color: t.info, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                              ↗ Step-Up
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </>
                     ) : (
                       <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.textXs }}>Locked</Text>
                     )}
