@@ -96,11 +96,14 @@ export interface PrescribingRow {
   formLabel: string;
   route: string;
   site?: string;
+  /** Per-administration dose quantity (e.g. 1, 0.5, 2, 5). */
+  doseAmount?: number | null;
   slots: readonly DoseSlot[];
+  /** Dose unit (e.g. '' for unitless, 'drop', 'tab', 'mL', 'puff', 'cap', 'mg'). */
   unitLabel: string;
-  /** Controller-supplied frequency badge, e.g. 'BD', 'TDS', 'OD', 'QID', 'TAPER'. */
+  /** Controller-supplied frequency badge, e.g. 'BD', 'TDS', 'OD', 'QID', 'HS', 'SOS', 'TAPER'. */
   frequencyCode?: string;
-  /** Controller-supplied dose notation, e.g. '1 - 0 - 1'. */
+  /** Controller-supplied dose notation, e.g. '1 - 0 - 1 - 0'. */
   patternLabel?: string;
   durationCount: number | null;
   durationUnit: string;
@@ -139,6 +142,7 @@ export interface PrescribingTableViewModel {
   slotDefinitions: readonly { id: string; label: string; shortLabel?: string; timeHint?: string }[];
   presets?: readonly { id: string; label: string; slotIds: readonly string[] }[];
   formOptions?: readonly { value: DoseForm; label: string }[];
+  doseUnits?: readonly string[];
   routeOptions?: readonly { value: string; label: string }[];
   siteOptions?: readonly { value: string; label: string }[];
   durationUnits?: readonly string[];
@@ -164,6 +168,9 @@ export type PrescribingTableIntent =
   | { type: 'formChanged'; rowId: string; form: DoseForm }
   | { type: 'routeChanged'; rowId: string; route: string }
   | { type: 'siteChanged'; rowId: string; site: string }
+  | { type: 'doseStepped'; rowId: string; delta: number }
+  | { type: 'doseAmountChanged'; rowId: string; amount: number | null }
+  | { type: 'doseUnitChanged'; rowId: string; unitLabel: string }
   | { type: 'slotStepped'; rowId: string; slotId: string; delta: number }
   | { type: 'slotAmountChanged'; rowId: string; slotId: string; amount: number | null }
   | { type: 'presetApplied'; rowId: string; presetId: string }

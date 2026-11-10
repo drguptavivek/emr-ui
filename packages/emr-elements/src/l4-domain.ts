@@ -202,8 +202,8 @@ export class EmrPrescribingTableElement extends EmrLitElement {
           <thead>
             <tr>
               <th>Drug Name &amp; Strength</th>
-              <th>Dose (M – A – E – N)</th>
-              <th>Frequency</th>
+              <th>Dose (Qty &amp; Unit)</th>
+              <th>Frequency (OD/BD/TDS/HS/SOS · M–A–E–N)</th>
               <th>Route &amp; Site</th>
               <th>Duration (− / +)</th>
               <th>Spcl Instructions</th>
@@ -215,6 +215,7 @@ export class EmrPrescribingTableElement extends EmrLitElement {
               const first = idx === 0;
               const last = idx === m.rows.length - 1;
               const step = row.form === 'tablet' ? 0.5 : 1;
+              const doseVal = row.doseAmount ?? (row.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
               return html`<tr>
                 <td>
                   <div style="display:flex;align-items:center;gap:6px;">
@@ -226,25 +227,36 @@ export class EmrPrescribingTableElement extends EmrLitElement {
                   </div>
                 </td>
                 <td>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                    ${m.slotDefinitions.map(
-                      (def) => html`<div style="display:grid;gap:2px;">
-                        <span class="emr-muted" style="font-size:11px;">${def.shortLabel ?? def.label}</span>
-                        <div class="rx-mini-stepper">
-                          ${!locked
-                            ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'slotStepped', rowId: row.id, slotId: def.id, delta: -step })}>${renderEmrSvgIcon('minus', 12)}</button>`
-                            : nothing}
-                          <span class="rx-mini-val">${this.formatAmt(row, def.id)}</span>
-                          ${!locked
-                            ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'slotStepped', rowId: row.id, slotId: def.id, delta: step })}>${renderEmrSvgIcon('plus', 12)}</button>`
-                            : nothing}
-                        </div>
-                      </div>`,
-                    )}
+                  <div class="rx-mini-stepper">
+                    ${!locked
+                      ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'doseStepped', rowId: row.id, delta: -step })}>${renderEmrSvgIcon('minus', 12)}</button>`
+                      : nothing}
+                    <span class="rx-mini-val">${doseVal}${row.unitLabel ? ` ${row.unitLabel}` : ''}</span>
+                    ${!locked
+                      ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'doseStepped', rowId: row.id, delta: step })}>${renderEmrSvgIcon('plus', 12)}</button>`
+                      : nothing}
                   </div>
                 </td>
                 <td>
-                  <span style="font-family:var(--emr-font-mono);font-size:12px;font-weight:700;">${row.frequencyCode} ${row.patternLabel ? `(${row.patternLabel})` : ''}</span>
+                  <div style="display:grid;gap:4px;">
+                    <span style="font-family:var(--emr-font-mono);font-size:12px;font-weight:700;">${row.frequencyCode ?? ''} ${row.patternLabel ? `(${row.patternLabel})` : ''}</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                      ${m.slotDefinitions.map(
+                        (def) => html`<div style="display:grid;gap:2px;">
+                          <span class="emr-muted" style="font-size:11px;">${def.shortLabel ?? def.label}</span>
+                          <div class="rx-mini-stepper">
+                            ${!locked
+                              ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'slotStepped', rowId: row.id, slotId: def.id, delta: -step })}>${renderEmrSvgIcon('minus', 12)}</button>`
+                              : nothing}
+                            <span class="rx-mini-val">${this.formatAmt(row, def.id)}</span>
+                            ${!locked
+                              ? html`<button type="button" class="rx-mini-btn" @click=${() => this.emitIntent<PrescribingTableIntent>({ type: 'slotStepped', rowId: row.id, slotId: def.id, delta: step })}>${renderEmrSvgIcon('plus', 12)}</button>`
+                              : nothing}
+                          </div>
+                        </div>`,
+                      )}
+                    </div>
+                  </div>
                 </td>
                 <td>
                   <span style="font-size:12px;">${row.route}${row.site ? ` · ${row.site.toUpperCase()}` : ''}</span>

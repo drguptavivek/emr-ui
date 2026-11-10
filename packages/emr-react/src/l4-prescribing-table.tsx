@@ -42,6 +42,8 @@ const DEFAULT_SITES: readonly { value: string; label: string }[] = [
 
 const DEFAULT_DURATION_UNITS = ['days', 'weeks', 'months'] as const;
 
+const DEFAULT_DOSE_UNITS = ['', 'drop', 'tab', 'mL', 'puff', 'cap', 'app', 'mg'] as const;
+
 const DEFAULT_FOOD = [
   'After food',
   'Before food',
@@ -81,6 +83,7 @@ export function EmrPrescribingTable({
   const [quickSigText, setQuickSigText] = useState('');
 
   const forms = m.formOptions ?? DEFAULT_FORMS;
+  const doseUnits = m.doseUnits ?? DEFAULT_DOSE_UNITS;
   const routes = m.routeOptions ?? DEFAULT_ROUTES;
   const sites = m.siteOptions ?? DEFAULT_SITES;
   const durationUnits = m.durationUnits ?? DEFAULT_DURATION_UNITS;
@@ -581,24 +584,24 @@ export function EmrPrescribingTable({
       /* Scrollable Table Surface */
       <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ minWidth: '100%' }}>
         <View style={{ flex: 1, minWidth: 1120 }}>
-          {/* Column Headers: Drug Name & Strength | Dose | Frequency | Route | Duration | Spcl Instructions | Add / Remove / Up / Down */}
+          {/* Column Headers: Drug Name & Strength | Dose (Qty & Unit) | Frequency (OD/BD/TDS/HS/SOS & M-A-E-N) | Route & Site | Duration | Spcl Instructions | Add / Remove / Up / Down */}
           <View style={[styles.tableHead, { borderBottomColor: t.border, backgroundColor: t.surfaceRaised }]}>
-            <Text style={[styles.th, { flex: 1.4, minWidth: 220, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+            <Text style={[styles.th, { flex: 1.3, minWidth: 215, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
               DRUG NAME & STRENGTH
             </Text>
-            <Text style={[styles.th, { flex: 1.5, minWidth: 250, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              DOSE (M – A – E – N)
+            <Text style={[styles.th, { width: 172, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              DOSE (QTY & UNIT)
             </Text>
-            <Text style={[styles.th, { width: 152, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
-              FREQUENCY
+            <Text style={[styles.th, { flex: 1.6, minWidth: 268, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+              FREQUENCY (OD/BD/TDS/HS/SOS · M–A–E–N)
             </Text>
             <Text style={[styles.th, { width: 146, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
               ROUTE & SITE
             </Text>
-            <Text style={[styles.th, { width: 164, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+            <Text style={[styles.th, { width: 160, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
               DURATION (− / +)
             </Text>
-            <Text style={[styles.th, { flex: 1.2, minWidth: 196, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
+            <Text style={[styles.th, { flex: 1.2, minWidth: 192, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
               SPCL INSTRUCTIONS
             </Text>
             <Text style={[styles.th, { width: 136, color: t.textMuted, fontFamily: ff, fontSize: t.textXs }]}>
@@ -721,15 +724,129 @@ export function EmrPrescribingTable({
                     </View>
                   </View>
 
-                  {/* Column 2: Dose (M - A - E - N Steppers + Pattern Notation) */}
-                  <View style={[styles.cellSchedule, { flex: 1.5, minWidth: 250 }]}>
-                    <View style={styles.slotsRow}>
-                      {m.slotDefinitions.map((def) => renderSlotStepper(row, def))}
+                  {/* Column 2: Dose Quantity & Unit (unitless, mL, puffs, drops, tabs, etc.) */}
+                  <View style={[styles.cellDuration, { width: 172 }]}>
+                    {(() => {
+                      const activeSlotAmt = row.slots.find((s) => (s.amount ?? 0) > 0)?.amount;
+                      const doseVal = row.doseAmount ?? activeSlotAmt ?? 1;
+                      const doseStep = row.form === 'tablet' || row.unitLabel === 'tab' ? 0.5 : row.unitLabel === 'mL' ? 2.5 : 1;
+                      return (
+                        <View style={[styles.durationStepper, { borderColor: t.border, backgroundColor: t.surface }]}>
+                          {!locked ? (
+                            <Pressable
+                              role="button"
+                              aria-label={`Decrease dose quantity for ${row.drugName || 'medicine'}`}
+                              disabled={doseVal <= doseStep}
+                              onPress={() => onIntent({ type: 'doseStepped', rowId: row.id, delta: -doseStep })}
+                              style={({ focused, hovered }: PressState & { hovered?: boolean }) => [
+                                styles.durStepBtn,
+                                {
+                                  borderRightWidth: 1,
+                                  borderColor: t.border,
+                                  backgroundColor: hovered ? t.primaryHover : t.surfaceSoft,
+                                  opacity: doseVal <= doseStep ? 0.35 : 1,
+                                },
+                                focusRing(t, focused),
+                              ]}
+                            >
+                              <SvgIcon name="minus" size={14} color={t.text} />
+                            </Pressable>
+                          ) : null}
+
+                          <View style={styles.durValueBox}>
+                            <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
+                              {formatDoseAmount(doseVal)}{row.unitLabel ? ` ${row.unitLabel}` : ''}
+                            </Text>
+                          </View>
+
+                          {!locked ? (
+                            <Pressable
+                              role="button"
+                              aria-label={`Increase dose quantity for ${row.drugName || 'medicine'}`}
+                              onPress={() => onIntent({ type: 'doseStepped', rowId: row.id, delta: doseStep })}
+                              style={({ focused, hovered }: PressState & { hovered?: boolean }) => [
+                                styles.durStepBtn,
+                                {
+                                  borderLeftWidth: 1,
+                                  borderColor: t.border,
+                                  backgroundColor: hovered ? t.primaryHover : t.surfaceSoft,
+                                },
+                                focusRing(t, focused),
+                              ]}
+                            >
+                              <SvgIcon name="plus" size={14} color={t.text} />
+                            </Pressable>
+                          ) : null}
+                        </View>
+                      );
+                    })()}
+
+                    <View style={styles.pillRow}>
+                      {doseUnits.map((u) => {
+                        const sel = (row.unitLabel ?? '') === u;
+                        const label = u === '' ? '—' : u;
+                        return (
+                          <Pressable
+                            key={u || 'unitless'}
+                            role="button"
+                            disabled={locked}
+                            aria-label={u === '' ? 'Dose unit: unitless' : `Dose unit: ${u}`}
+                            aria-pressed={sel}
+                            onPress={() => onIntent({ type: 'doseUnitChanged', rowId: row.id, unitLabel: u })}
+                            style={({ focused }: PressState) => [
+                              styles.microPill,
+                              {
+                                borderColor: sel ? t.primary : t.border,
+                                backgroundColor: sel ? t.primarySoft : t.surface,
+                              },
+                              focusRing(t, focused),
+                            ]}
+                          >
+                            <Text style={{ color: sel ? t.primaryContrast : t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(sel ? t.weightBold : t.weightMedium) }}>
+                              {label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
                     </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: t.text2xs }}>
-                        Unit: <Text style={{ color: t.text, fontWeight: fontWeight(t.weightBold) }}>{row.unitLabel}</Text>
-                      </Text>
+                  </View>
+
+                  {/* Column 3: Frequency (OD / BD / TDS / QID / HS / SOS + Morn-Aft-Even-Night M-A-E-N Steppers) */}
+                  <View style={[styles.cellSchedule, { flex: 1.6, minWidth: 268 }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                      <View style={styles.pillRow}>
+                        {(m.presets ?? [
+                          { id: 'od', label: 'OD', slotIds: ['m'] },
+                          { id: 'bd', label: 'BD', slotIds: ['m', 'n'] },
+                          { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
+                          { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
+                          { id: 'hs', label: 'HS', slotIds: ['n'] },
+                          { id: 'sos', label: 'SOS', slotIds: ['m'] },
+                        ]).map((p) => {
+                          const active = row.frequencyCode?.toLowerCase() === p.id.toLowerCase();
+                          return (
+                            <Pressable
+                              key={p.id}
+                              role="button"
+                              disabled={locked}
+                              aria-pressed={active}
+                              onPress={() => onIntent({ type: 'presetApplied', rowId: row.id, presetId: p.id })}
+                              style={({ focused }: PressState) => [
+                                styles.presetChip,
+                                {
+                                  borderColor: active ? t.primary : t.border,
+                                  backgroundColor: active ? t.primarySoft : t.surface,
+                                },
+                                focusRing(t, focused),
+                              ]}
+                            >
+                              <Text style={{ color: active ? t.primaryContrast : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                                {p.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
                       {row.patternLabel ? (
                         <View style={[styles.patternPill, { borderColor: t.primaryBorder, backgroundColor: t.surfaceSoft }]}>
                           <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold) }}>
@@ -738,44 +855,8 @@ export function EmrPrescribingTable({
                         </View>
                       ) : null}
                     </View>
-                  </View>
-
-                  {/* Column 3: Frequency (OD / BD / TDS / QID / HS / PRN) */}
-                  <View style={[styles.cellSchedule, { width: 152 }]}>
-                    {row.frequencyCode ? (
-                      <EmrBadgeView badge={{ label: `Freq: ${row.frequencyCode}`, tone: 'info' }} />
-                    ) : null}
-                    <View style={styles.pillRow}>
-                      {(m.presets ?? [
-                        { id: 'od', label: 'OD', slotIds: ['m'] },
-                        { id: 'bd', label: 'BD', slotIds: ['m', 'n'] },
-                        { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
-                        { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
-                        { id: 'hs', label: 'HS', slotIds: ['n'] },
-                      ]).map((p) => {
-                        const active = row.frequencyCode?.toLowerCase() === p.id.toLowerCase();
-                        return (
-                          <Pressable
-                            key={p.id}
-                            role="button"
-                            disabled={locked}
-                            aria-pressed={active}
-                            onPress={() => onIntent({ type: 'presetApplied', rowId: row.id, presetId: p.id })}
-                            style={({ focused }: PressState) => [
-                              styles.presetChip,
-                              {
-                                borderColor: active ? t.primary : t.border,
-                                backgroundColor: active ? t.primarySoft : t.surface,
-                              },
-                              focusRing(t, focused),
-                            ]}
-                          >
-                            <Text style={{ color: active ? t.primaryContrast : t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-                              {p.label}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
+                    <View style={styles.slotsRow}>
+                      {m.slotDefinitions.map((def) => renderSlotStepper(row, def))}
                     </View>
                   </View>
 

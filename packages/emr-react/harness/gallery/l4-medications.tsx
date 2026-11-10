@@ -380,16 +380,17 @@ const PRESCRIBING_PRESETS = [
   { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
   { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
   { id: 'hs', label: 'HS', slotIds: ['n'] },
+  { id: 'sos', label: 'SOS', slotIds: ['m'] },
 ] as const;
 
 const FORMULARY_ITEMS: readonly PrescribingFormularyItem[] = [
   { code: 'F-01', drugName: 'Moxifloxacin', strength: '0.5%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OD', unitLabel: 'drop', defaultPresetId: 'qid', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: '5 min gap', defaultInstructions: 'Instil 1 drop cleanly; wait 5 min before other drops.' },
   { code: 'F-02', drugName: 'Prednisolone acetate', strength: '1%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OD', unitLabel: 'drop', defaultPresetId: 'qid', defaultDurationCount: 4, defaultDurationUnit: 'weeks', defaultFoodRelation: '5 min gap', defaultInstructions: 'Shake well before use. Follow weekly taper.' },
   { code: 'F-03', drugName: 'Carboxymethylcellulose', strength: '0.5%', form: 'drop', formLabel: 'Eye drops', route: 'eye', site: 'OU', unitLabel: 'drop', defaultPresetId: 'qid', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'Anytime', defaultInstructions: 'Lubricating eye drops.' },
-  { code: 'F-04', drugName: 'Paracetamol', strength: '500 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: 'tab', defaultPresetId: 'tds', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Take after meals for pain or fever.' },
+  { code: 'F-04', drugName: 'Paracetamol', strength: '500 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: '', defaultPresetId: 'tds', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Take after meals for pain or fever.' },
   { code: 'F-05', drugName: 'Amoxicillin + Clavulanate', strength: '625 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: 'tab', defaultPresetId: 'bd', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Complete the full 5-day antibiotic course.' },
-  { code: 'F-06', drugName: 'Pantoprazole', strength: '40 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: 'tab', defaultPresetId: 'od', defaultDurationCount: 14, defaultDurationUnit: 'days', defaultFoodRelation: 'Before food', defaultInstructions: 'Take 30 minutes before breakfast.' },
-  { code: 'F-07', drugName: 'Metformin', strength: '500 mg', form: 'tablet', formLabel: 'Tablet', route: 'oral', unitLabel: 'tab', defaultPresetId: 'bd', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'With food', defaultInstructions: 'Swallow whole with meals.' },
+  { code: 'F-06', drugName: 'Salbutamol MDI', strength: '100 mcg', form: 'spray', formLabel: 'Inhaler', route: 'nasal', unitLabel: 'puff', defaultPresetId: 'sos', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'Anytime', defaultInstructions: '2 puffs SOS for breathlessness.' },
+  { code: 'F-07', drugName: 'Lactulose', strength: '10 g/15 mL', form: 'liquid', formLabel: 'Syrup / Liquid', route: 'oral', unitLabel: 'mL', defaultPresetId: 'hs', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: 'At bedtime', defaultInstructions: 'Take 15 mL at bedtime with water.' },
 ];
 
 function computeRowAnnotations(row: PrescribingRow): PrescribingRow {
@@ -601,6 +602,36 @@ export function PrescribingTableDemo() {
       case 'siteChanged':
         setRows((prev) => prev.map((r) => (r.id === intent.rowId ? { ...r, site: intent.site } : r)));
         break;
+      case 'doseStepped':
+        setRows((prev) =>
+          prev.map((r) => {
+            if (r.id !== intent.rowId) return r;
+            const curDose = r.doseAmount ?? (r.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
+            const nextDose = Math.max(0.25, Math.round((curDose + intent.delta) * 100) / 100);
+            const nextSlots = r.slots.map((s) => ({
+              ...s,
+              amount: (s.amount ?? 0) > 0 ? nextDose : 0,
+            }));
+            return computeRowAnnotations({ ...r, doseAmount: nextDose, slots: nextSlots });
+          }),
+        );
+        break;
+      case 'doseAmountChanged':
+        setRows((prev) =>
+          prev.map((r) => {
+            if (r.id !== intent.rowId) return r;
+            const nextDose = intent.amount ?? 1;
+            const nextSlots = r.slots.map((s) => ({
+              ...s,
+              amount: (s.amount ?? 0) > 0 ? nextDose : 0,
+            }));
+            return computeRowAnnotations({ ...r, doseAmount: nextDose, slots: nextSlots });
+          }),
+        );
+        break;
+      case 'doseUnitChanged':
+        setRows((prev) => prev.map((r) => (r.id === intent.rowId ? { ...r, unitLabel: intent.unitLabel } : r)));
+        break;
       case 'slotStepped':
         setRows((prev) =>
           prev.map((r) => {
@@ -636,19 +667,21 @@ export function PrescribingTableDemo() {
         const preset = PRESCRIBING_PRESETS.find((p) => p.id === intent.presetId);
         if (!preset) break;
         setRows((prev) =>
-          prev.map((r) =>
-            r.id === intent.rowId
-              ? computeRowAnnotations({
-                  ...r,
-                  slots: PRESCRIBING_SLOTS.map((def) => ({
-                    id: def.id,
-                    label: def.label,
-                    timeHint: def.timeHint,
-                    amount: preset.slotIds.includes(def.id as never) ? 1 : 0,
-                  })),
-                })
-              : r,
-          ),
+          prev.map((r) => {
+            if (r.id !== intent.rowId) return r;
+            const dose = r.doseAmount ?? (r.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
+            const annotated = computeRowAnnotations({
+              ...r,
+              doseAmount: dose,
+              slots: PRESCRIBING_SLOTS.map((def) => ({
+                id: def.id,
+                label: def.label,
+                timeHint: def.timeHint,
+                amount: preset.slotIds.includes(def.id as never) ? dose : 0,
+              })),
+            });
+            return { ...annotated, frequencyCode: preset.label };
+          }),
         );
         break;
       }

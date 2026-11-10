@@ -59,8 +59,8 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
           <thead>
             <tr>
               <th scope="col">Drug Name &amp; Strength</th>
-              <th scope="col">Dose (M – A – E – N)</th>
-              <th scope="col">Frequency</th>
+              <th scope="col">Dose (Qty &amp; Unit)</th>
+              <th scope="col">Frequency (OD/BD/TDS/HS/SOS · M–A–E–N)</th>
               <th scope="col">Route &amp; Site</th>
               <th scope="col">Duration (− / +)</th>
               <th scope="col">Spcl Instructions</th>
@@ -94,7 +94,44 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                   </div>
                 </td>
 
-                <td class="rx-table__cell-schedule">
+                <td class="rx-table__cell-dose">
+                  <div class="rx-table__stepper">
+                    @if (!model().readOnly) {
+                      <button
+                        type="button"
+                        class="rx-table__step-btn"
+                        [attr.aria-label]="'Decrease dose for row ' + (idx + 1)"
+                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: stepFor(row.form) * -1 })"
+                      >−</button>
+                    }
+                    <span class="rx-table__step-val">{{ row.doseAmount ?? 1 }}{{ row.unitLabel ? ' ' + row.unitLabel : '' }}</span>
+                    @if (!model().readOnly) {
+                      <button
+                        type="button"
+                        class="rx-table__step-btn"
+                        [attr.aria-label]="'Increase dose for row ' + (idx + 1)"
+                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: stepFor(row.form) })"
+                      >+</button>
+                    }
+                  </div>
+                </td>
+
+                <td class="rx-table__cell-frequency">
+                  @if (model().presets?.length && !model().readOnly) {
+                    <div class="rx-table__presets">
+                      @for (preset of model().presets!; track preset.id) {
+                        <button
+                          type="button"
+                          class="rx-table__pill"
+                          [attr.aria-pressed]="row.frequencyCode?.toLowerCase() === preset.id.toLowerCase()"
+                          (click)="intent.emit({ type: 'presetApplied', rowId: row.id, presetId: preset.id })"
+                        >{{ preset.label }}</button>
+                      }
+                      @if (row.patternLabel) {
+                        <span class="rx-table__pattern">{{ row.patternLabel }}</span>
+                      }
+                    </div>
+                  }
                   <div class="rx-table__slots">
                     @for (def of model().slotDefinitions; track def.id) {
                       <div class="rx-table__slot">
@@ -121,24 +158,6 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       </div>
                     }
                   </div>
-                </td>
-
-                <td class="rx-table__cell-frequency">
-                  @if (model().presets?.length && !model().readOnly) {
-                    <div class="rx-table__presets">
-                      @for (preset of model().presets!; track preset.id) {
-                        <button
-                          type="button"
-                          class="rx-table__pill"
-                          [attr.aria-pressed]="row.frequencyCode?.toLowerCase() === preset.id.toLowerCase()"
-                          (click)="intent.emit({ type: 'presetApplied', rowId: row.id, presetId: preset.id })"
-                        >{{ preset.label }}</button>
-                      }
-                      @if (row.patternLabel) {
-                        <span class="rx-table__pattern">{{ row.patternLabel }}</span>
-                      }
-                    </div>
-                  }
                 </td>
 
                 <td class="rx-table__cell-route">
