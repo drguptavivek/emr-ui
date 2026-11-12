@@ -1,6 +1,6 @@
 # AGENTS.md
 
-EMR component library. Three packages, no app. **Not released — break APIs freely.**
+EMR component library with a framework-neutral controller package and three renderer packages.
 
 - `@drguptavivek/emr-ui` — standalone Angular presentation components
 - `@drguptavivek/emr-react` — React Native components (Expo, and web via react-native-web). Same
@@ -9,21 +9,59 @@ EMR component library. Three packages, no app. **Not released — break APIs fre
   Expo harness (SDK 58, RN 0.88, React 19.3): `pnpm build:controller`, then `pnpm --filter
   @drguptavivek/emr-react harness:expo --android` opens it in Expo Go on a booted emulator.
   Both harnesses render `harness/harness-form.tsx`; screens own keyboard avoidance (edge-to-edge).
+- `@drguptavivek/emr-elements` — Lit Web Components with the same view models and typed intents.
 - `@drguptavivek/emr-controller` — framework-neutral models, ports, headless controllers
   (and the form condition engine: `condition.*`, `form-logic.ts`, `engine-version.ts`). emr-react may import it at
   runtime; emr-ui (Angular) still imports types only.
+
+## When asked to generate a component
+
+1. **Choose the lowest layer that fits.** Find the closest catalog entry and inspect its shared contract,
+   renderer implementations and story. Prefer an L5 recipe using the existing form or matrix when
+   the work is primarily a new set of fields. Add a reusable component when the interaction or layout
+   warrants it. Preserve existing consumer bindings unless the task calls for a migration.
+2. **Specify the full workflow before coding.** List the fields, controls, actions and states the user needs.
+   An entry view must expose actual editable controls for every applicable field, including fields with
+   blank values. Check laterality and repeated rows. A bilateral fundus exam, for example, needs distinct
+   OD and OS entry for each supplied structure. Display accepted values in review and read-only states.
+3. **Put decisions in the controller.** Define or extend the shared immutable model and discriminated intent
+   union in `emr-controller`. The controller or host owns clinical calculations, validation, permissions,
+   terminology, data loading and persistence. The renderer displays supplied values, units, messages,
+   evidence and action availability. On controlled surfaces, emit one intent per action with the precise
+   field, row and eye where applicable. Gate mutation at the control and intent handler. Restore the
+   accepted model value when a draft is rejected or the view locks. Cancel owned async work on teardown
+   and ignore late intents and responses. Preserve unknown and unassessed states,
+   omit unresolved derived values, and display verification only when supplied evidence supports it.
+4. **Complete each advertised renderer.** Public catalog components normally ship in Angular, React Web,
+   Expo / React Native and Lit. Match behavior across targets, including keyboard use, labels, focus, narrow
+   layouts and read-only states. Export the component through each package entry point and wire Lit through
+   its layer registrar and `registerAllEmrElements()`. Verify package and registry installs resolve the actual
+   renderer and its source dependencies. Treat title-and-slot shells, unrelated fallback components and
+   no-op action handlers as incomplete. Keep synthetic fixtures in stories, showcases and tests.
+5. **Make the component discoverable.** Add its real selector, source file, layer, dependencies and story ID
+   to `packages/emr-ui/catalog.manifest.ts`, and document it under `docs/catalog/L<n>-*.md`. Use the existing
+   specialty and workflow categories. Cross-list a component where it serves more than one area, including
+   the parent specialty for a subspecialty. Put reusable controls under shared foundations and forms.
+   Add a Storybook story and update the relevant showcase. Wire the demo host to apply accepted edits
+   and label fixture-backed workflows. Regenerate with `pnpm registry:build` and run
+   `pnpm site:build --base-path=/emr-ui` when the showcase changes.
+6. **Verify the normal consumer path.** Exercise the component with an empty and populated model, enter or
+   change a value, check the exact intent, and confirm that a host update renders back in the UI. Exercise
+   read-only and unavailable states when applicable. Cover a specific regression with a focused test and
+   check interactive or layout changes in the browser or appropriate native harness. Check light and dark
+   themes and print where supported. Run targeted checks during implementation and `pnpm check` once at
+   the end. Report which renderers and interactions were actually verified.
 
 ## The one rule
 
 Components render an immutable view model and emit typed intents. **They own nothing else.**
 
-Never put in `emr-ui`: HTTP, routing, storage, `window`/`document`/`navigator`, services,
-repositories, `@Inject()`, clinical validation, terminology lookup, scoring, or any
-inference about completion, normality, fitness, or safety.
+Keep HTTP, routing, storage, services, repositories, clinical validation, terminology lookup,
+scoring and inference about completion, normality, fitness or safety in the controller or host.
+UI mechanics such as focus, overlay placement, animation, scrolling and zoom can live in renderers.
 
-May live in `emr-ui`: focus movement, overlay placement, animation, scrolling, zoom/pan.
-
-`architecture.spec.ts` enforces this by scanning source text. It will fail you.
+Angular components use type-only controller imports and avoid browser globals and `@Inject()`.
+`architecture.spec.ts` enforces the Angular source boundaries.
 
 ## Layers — import your own layer or lower, never upward
 
@@ -45,31 +83,28 @@ or the suite fails.
 
 ```ts
 // L3 / L4 / L6 — a controlled surface
-@Input({ required: true }) model!: TViewModel;
-@Input() headingId?: string;
-@Output() readonly intent = new EventEmitter<TIntent>();   // exactly ONE output
+readonly model = input.required<TViewModel>();
+readonly headingId = input<string>();
+readonly intent = output<TIntent>();
 
 // L3 — schema-driven: definition is the shape, model is the data
-@Input({ required: true }) definition!: TDefinition;
-@Input() model?: TValues;
+readonly definition = input.required<TDefinition>();
+readonly model = input<TValues>();
 
 // L1 / L2 — a mechanical control
-@Input() controlId?: string;
-@Input() value: T | null = null;
-@Input() readOnly = false;
-@Output() readonly valueChange = new EventEmitter<T | null>();   // [(banana-box)] partner
+readonly controlId = input<string>();
+readonly value = input<T | null>(null);
+readonly readOnly = input(false);
+readonly valueChange = output<T | null>();
 ```
 
 Names are fixed: `model`, `definition`, `controlId`, `headingId`, `idPrefix`, `readOnly`.
 `disabled` is **forbidden above L2**. New interaction = new intent union member, not a new
 output. Full rules: `docs/api-conventions.md`.
 
-> **Migration status.** Inputs are done — every controlled component takes `model`, and
-> schema-driven ones take `definition` + `model`. Two passes remain: folding the ad-hoc
-> outputs (`action`, `eventSelected`, `detailChanged`, nav/flyout events) into each
-> component's `intent` union, and moving decorator `@Input`/`@Output` to signal
-> `input()`/`output()`. Write **new** code to the target above; when you touch an old
-> component, migrate it rather than matching its current style.
+Use Angular signal `input()` and `output()` for new components. React uses the typed
+`onIntent` callback and Lit uses one bubbling, composed `intent` event. Retain the
+documented `native*` escape hatches for non-serializable browser handles.
 
 ## Field contract — meaning ≠ display ≠ state
 
@@ -110,7 +145,7 @@ sections collapsed or overflow clipped; both silently omit clinical data. See `d
 ## Commands
 
 ```bash
-pnpm check          # test + build controller + node ESM import + build ui + SSR. The gate.
+pnpm check          # full tests, package builds, Angular hydration, registry and story typecheck
 pnpm test           # vitest
 pnpm storybook      # catalogue at :6006
 pnpm test:visual    # playwright; baselines are darwin-only
