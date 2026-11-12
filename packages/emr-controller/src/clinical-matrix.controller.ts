@@ -36,6 +36,7 @@ export class ClinicalMatrixController extends StateController<
   }
 
   dispatch(intent: ClinicalMatrixIntent): void {
+    if (this.isDestroyed()) return;
     switch (intent.type) {
     case 'cellEditRequested': {
       this.setState(state => {

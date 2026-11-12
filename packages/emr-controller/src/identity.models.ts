@@ -43,7 +43,10 @@ export interface IdentifierEntryView {
   selectedType?: string;
 }
 
-export type IdentifierEntryIntent = { type: 'scanRequested' } | { type: 'typeSelected'; id: string };
+export type IdentifierEntryIntent =
+  | { type: 'valueChanged'; raw: string }
+  | { type: 'scanRequested' }
+  | { type: 'typeSelected'; id: string };
 
 // ---- Identifier duplicate check ---------------------------------------------------------------------------
 

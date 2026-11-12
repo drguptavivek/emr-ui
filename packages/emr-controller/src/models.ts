@@ -30,6 +30,7 @@ export interface EmrOption<Value extends string = string> {
   label: string;
   description?: string;
   disabled?: boolean;
+  group?: string;
 }
 
 export interface NavItem {

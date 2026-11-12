@@ -321,7 +321,7 @@ export class EmrScheduleSlotPickerComponent {
 ---
 
 ### EmrIdentifierEntry
-**Layer** L2 · **Selector** `emr-identifier-entry` · **Status** proposed · **Story** `emr-identity--entry-type-picker`
+**Layer** L2 · **Selector** `emr-identifier-entry` · **Status** stable · **Story** `emr-identity--entry-type-picker`
 
 **Need** — Patient IDs and cards are scanned or typed, and the field must show what the app understood without owning any format rule.
 
@@ -355,3 +355,172 @@ export class EmrIdentifierEntryComponent {
 **Depends on** — `EmrFieldFrameComponent`.
 
 **Used by** — `EmrLinkCardsComponent`.
+
+---
+
+### EmrScaleField
+**Layer** L2 · **Selector** `emr-scale-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--scales-and-dates`
+
+**Need** — Ordinal and visual-analogue clinical scales (`EmrValueType = 'scale'`, e.g., NRS pain 0–10, PHQ-9 item, EQ-5D VAS) need a schema-bound L2 field combining `EmrFieldFrame`, `EmrLikert` or `EmrVas`, validation messages, and no-value `ClinicalAssessmentStatus` capture.
+
+**Purpose** — Renders `ScaleFieldViewModel` inside `EmrFieldFrame`, switching between `EmrLikert` and `EmrVas` per `widget` / `definition.presentation.widget`, displaying controller-supplied `tone` and `messages`, and emitting `ScaleFieldIntent` (`valueChanged`, `statusChangeRequested`).
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrLikertComponent`, `EmrVasComponent`.
+**Used by** — `EmrTypedFieldComponent` (`scale` valueType).
+
+---
+
+### EmrPartialDateField
+**Layer** L2 · **Selector** `emr-partial-date-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--scales-and-dates`
+
+**Need** — Historical clinical dates (symptom onset `"2019"`, childhood surgery `"2024-06"`, exact event `"2026-03-15"`) frequently have unknown day or month (`EmrValueType = 'partial-date'`).
+
+**Purpose** — Renders precision selector (`YYYY` / `YYYY-MM` / `YYYY-MM-DD`) and coordinated year/month/day inputs inside `EmrFieldFrame` with optional `ClinicalAssessmentStatus`, emitting `PartialDateFieldIntent` without calendar business-rule assumptions.
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
+**Used by** — `EmrTypedFieldComponent` (`partial-date` valueType).
+
+---
+
+### EmrAttachmentField
+**Layer** L2 · **Selector** `emr-attachment-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--attachments-and-signatures`
+
+**Need** — External clinical documents, consent scans, and ophthalmic imaging attachments (`EmrValueType = 'attachment'`) need an L2 field binding `EmrAttachmentRef` list state, file selection, and remove/open intents.
+
+**Purpose** — Wraps `EmrFileTrigger` and an attachment list inside `EmrFieldFrame`, showing filename, media type, byte size, and Open/Remove buttons, emitting `AttachmentFieldIntent` (`filesSelected`, `attachmentRemoveRequested`, `attachmentOpenRequested`, `statusChangeRequested`). Performs zero network upload or storage I/O.
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrFileTriggerComponent`.
+**Used by** — `EmrTypedFieldComponent` (`attachment` valueType).
+
+---
+
+### EmrPairedField
+**Layer** L2 · **Selector** `emr-paired-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--paired-and-measurements`
+
+**Need** — Paired clinical measurements (systolic/diastolic BP `120/80 mmHg`, OD/OS IOP `16/18 mmHg`, cup-to-disc ratio) need a field-framed two-slot control with unit and `ClinicalAssessmentStatus` support.
+
+**Purpose** — Renders `PairedFieldViewModel` (`firstLabel`, `secondLabel`, `separator`, `inputMode`, `unitLabel`, `value`, `status`, `messages`) inside `EmrFieldFrame`, emitting `PairedFieldIntent` (`valueChanged`, `statusChangeRequested`).
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — vitals and bilateral clinical capture forms.
+
+---
+
+### EmrDurationInput
+**Layer** L2 · **Selector** `emr-duration-input` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--paired-and-measurements`
+
+**Need** — Symptom duration (`3 weeks`), prescription course length (`7 days`), follow-up interval (`6 months`), and fasting duration (`8 hours`) require structured `{ amount, unit }` capture.
+
+**Purpose** — Renders a numeric amount input paired with a controller-supplied duration unit selector (`DurationUnitOption[]`) inside `EmrFieldFrame`, emitting `DurationInputIntent` without converting between time units.
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — history, prescribing, and follow-up scheduling forms.
+
+---
+
+### EmrRangeField
+**Layer** L2 · **Selector** `emr-range-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--paired-and-measurements`
+
+**Need** — Target therapeutic ranges (`SpO2 94–98 %`, PRN dose range `5–10 mg`, target IOP `10–14 mmHg`) require structured `{ low, high, unit }` entry.
+
+**Purpose** — Renders low/high numeric inputs and optional unit selector inside `EmrFieldFrame`, displaying controller-supplied validation messages (e.g. if `low > high`) and emitting `RangeFieldIntent`.
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — order parameters, nursing targets, and reference-range authoring.
+
+---
+
+### EmrSignatureCaptureField
+**Layer** L2 · **Selector** `emr-signature-capture-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--attachments-and-signatures`
+
+**Need** — Informed consent, surgical marking sign-off, witness attestation, and optical dispensing receipt require freehand stroke or typed-name signature capture.
+
+**Purpose** — Renders a pointer-captured SVG stroke pad (or typed-name input in `'typed'` mode) with mode switch and Clear button inside `EmrFieldFrame`, emitting `SignatureCaptureIntent` (`strokesChanged`, `typedNameChanged`, `modeChanged`, `clearRequested`) with pure vector stroke coordinates.
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
+**Used by** — `EmrTypedFieldComponent` (`signature` widget) and consent workflows.
+
+---
+
+### EmrPhoneInput
+**Layer** L2 · **Selector** `emr-phone-input` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--demographics-and-macros`
+
+**Need** — Patient registration, emergency contacts, and referring-clinician directories need structured `{ dialCode, nationalNumber, extension? }` capture without hardcoding national numbering plans in UI code.
+
+**Purpose** — Renders a dial-code selector (`PhoneCountryOption[]`), `type="tel"` national number input, and optional extension input inside `EmrFieldFrame`, showing controller-supplied `formattedPreview` and emitting `PhoneInputIntent`.
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — registration and contact forms.
+
+---
+
+### EmrAddressField
+**Layer** L2 · **Selector** `emr-address-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--demographics-and-macros`
+
+**Need** — Patient demographics, pharmacy destinations, and referral addresses require structured multi-part `AddressValue` capture (`line1`, `line2`, `city`, `district`, `state`, `postalCode`, `country`).
+
+**Purpose** — Renders configurable address subfields (`AddressFieldLabels`, `visibleParts`, `stateOptions`, `countryOptions`) in a responsive grid with field-frame error/warning/hint messaging, emitting `AddressFieldIntent`.
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — registration, billing, and referral forms.
+
+---
+
+### EmrMacroTextField
+**Layer** L2 · **Selector** `emr-macro-text-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--demographics-and-macros`
+
+**Need** — High-throughput clinical documentation relies on dot-phrases and quick-insert macros (e.g. `.normsle`, `.postopday1`) without embedding macro dictionaries inside the UI component.
+
+**Purpose** — Renders a multi-line narrative `<textarea>` inside `EmrFieldFrame` with controller-supplied `EmrTextMacro[]` quick-insert chips/suggestions, emitting `MacroTextFieldIntent` (`valueChanged`, `macroInsertRequested`, `macroQueryChanged`, `statusChangeRequested`).
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — clinical notes, examination narratives, and discharge instructions.
+
+---
+
+### EmrLateralityField
+**Layer** L2 · **Selector** `emr-laterality-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--ophthalmology-fields`
+
+**Need** — Wrong-site surgery prevention and ophthalmic/orthopaedic charting require explicit laterality selection (`OD` / `OS` / `OU` or `Right` / `Left` / `Bilateral` / `Unilateral` / `N/A`) rather than ad-hoc dropdowns.
+
+**Purpose** — Renders `EmrSegmentedControl` inside `EmrFieldFrame` driven by controller-supplied `LateralityFieldViewModel`, emitting `LateralityFieldIntent` (`valueChanged`).
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
+**Used by** — ophthalmic orders, surgical booking, and exam headers.
+
+---
+
+### EmrVisualAcuityField
+**Layer** L2 · **Selector** `emr-visual-acuity-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--ophthalmology-fields`
+
+**Need** — Ophthalmic clinics capture visual acuity thousands of times daily across notations (`Snellen 6m`, `Snellen 20ft`, `LogMAR`, `ETDRS`) plus low-vision categories (`CF`, `HM`, `LP`, `NLP`), correction (`Unaided`, `Habitual`, `BCVA`), and `Pinhole` modifier.
+
+**Purpose** — Renders notation selector, acuity value picker/input, letter adjustment (`+/-`), correction selector, pinhole toggle, and controller-supplied `equivalentDisplay` inside `EmrFieldFrame`, emitting `VisualAcuityFieldIntent` with zero Snellen↔LogMAR math in the UI.
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
+**Used by** — visual acuity intake, refraction, and post-operative follow-up.
+
+---
+
+### EmrRefractionField
+**Layer** L2 · **Selector** `emr-refraction-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--ophthalmology-fields`
+
+**Need** — Manifest, cycloplegic, and autorefraction rows require coordinated `Sphere (DS)` / `Cylinder (DC)` / `Axis (1–180°)` / `Add (D)` / `Prism (Δ)` / `Base` entry per eye with controller-computed spherical equivalent display.
+
+**Purpose** — Renders numeric diopter/axis controls and prism-base selector inside `EmrFieldFrame`, displaying controller-supplied `sphericalEquivalentDisplay` and `messages`, and emitting `RefractionFieldIntent` (`partChanged`, `prismBaseChanged`, `statusChangeRequested`).
+
+**Depends on** — `EmrFieldFrameComponent`.
+**Used by** — refraction worksheets, autorefractor imports, and spectacle prescribing.
+
+---
+
+### EmrImageField
+**Layer** L2 · **Selector** `emr-image-field` · **Status** stable · **Story** `foundations-wave2-primitives--image-suite`
+
+**Need** — Clinical photo fields (anterior-segment slit-lamp photos, external ocular/wound photos, consent scan pages, patient ID photos) need thumbnail previews, fullscreen pan/zoom/rotate inspection, interactive cropping, and six-state `ClinicalAssessmentStatus` (e.g. `declined` or `unable-to-assess`) inside standard `EmrFieldFrame` validation chrome.
+
+**Purpose** — Binds `ImageFieldViewModel` to `EmrImageUpload` inside `EmrFieldFrame` with an explicit clinical assessment status selector and camera trigger, emitting `ImageFieldIntent` (`filesSelected`, `itemsChangeRequested`, `imageCropped`, `captionChangeRequested`, `itemRemoveRequested`, `captureRequested`, `statusChangeRequested`).
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrImageUploadComponent`.
+**Used by** — `EmrTypedFieldComponent` (`widget: 'image-upload'`) and clinical photo capture forms.
+

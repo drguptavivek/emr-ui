@@ -4,9 +4,10 @@
  *   - registry/index.json
  *   - registry/items/<slug>.json
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const uiLibDir = join(rootDir, 'packages/emr-ui/src/lib');
@@ -71,54 +72,77 @@ function collectReactFileMap() {
   return map;
 }
 
-function relatedReactFiles(primaryFiles) {
+/** Collect local source imports and React platform variants; fail if an import cannot be copied. */
+function relatedFiles(sourceDir, primaryFiles, react = false, cache = new Map()) {
   const all = new Set();
   const queue = [...primaryFiles];
+  const readCached = (full) => {
+    let entry = cache.get(full);
+    if (!entry) {
+      const text = readFileSync(full, 'utf8');
+      entry = { text, importedFiles: ts.preProcessFile(text).importedFiles };
+      cache.set(full, entry);
+    }
+    return entry;
+  };
   while (queue.length > 0) {
     const file = queue.shift();
     if (!file || all.has(file)) continue;
-    const full = join(reactSrcDir, file);
-    if (!existsSync(full)) continue;
+    const full = join(sourceDir, file);
+    if (!existsSync(full)) throw new Error(`Missing registry source: ${full}`);
     all.add(file);
-    const stem = file.replace(/\.(?:web\.)?tsx?$/, '');
-    for (const ext of ['.tsx', '.web.tsx', '.logic.ts', '.types.ts']) {
-      const candidate = `${stem}${ext}`;
-      if (existsSync(join(reactSrcDir, candidate)) && !all.has(candidate)) {
-        queue.push(candidate);
+    if (react) {
+      const stem = file.replace(/\.(?:web\.)?tsx?$/, '');
+      for (const ext of ['.tsx', '.web.tsx', '.logic.ts', '.types.ts']) {
+        const candidate = `${stem}${ext}`;
+        if (existsSync(join(sourceDir, candidate)) && !all.has(candidate)) queue.push(candidate);
       }
     }
-    const text = readFileSync(full, 'utf8');
-    for (const m of text.matchAll(/from\s+['"](\.\/[^'"]+)['"]/g)) {
-      const rel = m[1].replace(/^\.\//, '');
-      for (const ext of ['.tsx', '.ts', '.web.tsx']) {
-        const candidate = rel.endsWith(ext) ? rel : `${rel}${ext}`;
-        if (existsSync(join(reactSrcDir, candidate)) && !all.has(candidate)) {
-          queue.push(candidate);
-        }
-      }
-    }
-  }
-  return [...all].sort();
-}
-
-function relatedAngularFiles(relFile) {
-  const all = new Set([relFile]);
-  const full = join(uiLibDir, relFile);
-  if (existsSync(full)) {
-    const dir = dirname(relFile);
-    const text = readFileSync(full, 'utf8');
-    for (const m of text.matchAll(/from\s+['"](\.\/[^'"]+\.logic)['"]/g)) {
-      const logicRel = join(dir, `${m[1].replace(/^\.\//, '')}.ts`);
-      if (existsSync(join(uiLibDir, logicRel))) all.add(logicRel);
+    const { importedFiles } = readCached(full);
+    for (const { fileName } of importedFiles) {
+      if (!fileName.startsWith('.')) continue;
+      const base = join(dirname(file), fileName.replace(/\.js$/, ''));
+      const candidates = [base, `${base}.ts`, `${base}.tsx`, `${base}.web.tsx`, join(base, 'index.ts')];
+      const matches = candidates.filter((candidate) => {
+        const path = join(sourceDir, candidate);
+        return existsSync(path) && statSync(path).isFile();
+      });
+      if (!matches.length) throw new Error(`Unresolved registry import ${fileName} in ${full}`);
+      queue.push(...matches);
     }
   }
   return [...all].sort();
 }
 
 export async function generateRegistry({ writeFiles = true } = {}) {
-  const { EMR_CATALOG, EMR_LAYERS } = await import(join(rootDir, 'packages/emr-ui/catalog.manifest.ts'));
+  const { EMR_CATALOG, EMR_CATALOG_CATEGORIES, EMR_LAYERS } = await import(join(rootDir, 'packages/emr-ui/catalog.manifest.ts'));
+  const fileCache = new Map();
+  const readText = (full) => {
+    let entry = fileCache.get(full);
+    if (!entry) {
+      const text = readFileSync(full, 'utf8');
+      entry = { text, importedFiles: /\.tsx?$/.test(full) ? ts.preProcessFile(text).importedFiles : [] };
+      fileCache.set(full, entry);
+    }
+    return entry.text;
+  };
   const reactFileMap = collectReactFileMap();
   const byId = new Map(EMR_CATALOG.map((e) => [e.id, e]));
+  const foundationReactFiles = relatedFiles(reactSrcDir, ['tokens.ts', 'theme.tsx', 'labels.tsx', 'use-controller.ts'], true, fileCache);
+  const foundationLitFiles = relatedFiles(litSrcDir, ['foundations.ts', 'icons.ts'], false, fileCache);
+  const litSourceFiles = readdirSync(litSrcDir).filter((f) => f.endsWith('.ts') && !f.endsWith('.spec.ts'));
+  const litShellBases = new Set(['EmrControlledDomainElement', 'EmrModelElement']);
+  const litShells = new Set(litSourceFiles.flatMap((file) => {
+    const source = readFileSync(join(litSrcDir, file), 'utf8');
+    const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+    return sf.statements.filter((statement) =>
+      ts.isClassDeclaration(statement)
+      && !statement.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.AbstractKeyword)
+      && statement.heritageClauses?.some((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword
+        && clause.types.some((type) => litShellBases.has(type.expression.getText())))
+      && !statement.members.some((member) => member.name?.getText() === 'render')
+    ).map((statement) => statement.name?.text);
+  }));
 
   function resolveTransitiveSlugs(entry, visited = new Set()) {
     const slugs = new Set(['foundations']);
@@ -139,6 +163,7 @@ export async function generateRegistry({ writeFiles = true } = {}) {
     type: 'registry:style',
     layer: 0,
     layerName: EMR_LAYERS[0],
+    categories: ['shared'],
     status: 'stable',
     description: 'L0 design tokens, light/dark themes, print context stylesheet, and React Native token/theme provider.',
     dependencies: ['@drguptavivek/emr-controller'],
@@ -148,15 +173,15 @@ export async function generateRegistry({ writeFiles = true } = {}) {
       import: "@import '@drguptavivek/emr-ui/styles/emr.css';",
     },
     react: {
-      files: ['tokens.ts', 'theme.tsx', 'labels.tsx', 'use-controller.ts'],
+      files: foundationReactFiles,
       import: "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';",
     },
     expo: {
-      files: ['tokens.ts', 'theme.tsx', 'labels.tsx', 'use-controller.ts'],
+      files: foundationReactFiles.filter((f) => !f.endsWith('.web.tsx')),
       import: "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';",
     },
     lit: {
-      files: ['foundations.ts', 'icons.ts'],
+      files: foundationLitFiles,
       import: "import { EmrLitElement, applyEmrCustomTheme, EMR_PALETTE_PRESETS, EMR_FONT_STACKS } from '@drguptavivek/emr-elements';",
     },
     files: [
@@ -164,50 +189,26 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         path: 'packages/emr-ui/src/lib/foundations/emr.css',
         framework: 'angular',
         target: 'styles/emr.css',
-        content: readFileSync(join(uiLibDir, 'foundations/emr.css'), 'utf8'),
+        content: readText(join(uiLibDir, 'foundations/emr.css')),
       },
       {
         path: 'packages/emr-ui/src/lib/foundations/emr-print.css',
         framework: 'angular',
         target: 'styles/emr-print.css',
-        content: readFileSync(join(uiLibDir, 'foundations/emr-print.css'), 'utf8'),
+        content: readText(join(uiLibDir, 'foundations/emr-print.css')),
       },
-      {
-        path: 'packages/emr-react/src/tokens.ts',
+      ...foundationReactFiles.map((f) => ({
+        path: `packages/emr-react/src/${f}`,
         framework: 'react',
-        target: 'components/emr/tokens.ts',
-        content: readFileSync(join(reactSrcDir, 'tokens.ts'), 'utf8'),
-      },
-      {
-        path: 'packages/emr-react/src/theme.tsx',
-        framework: 'react',
-        target: 'components/emr/theme.tsx',
-        content: readFileSync(join(reactSrcDir, 'theme.tsx'), 'utf8'),
-      },
-      {
-        path: 'packages/emr-react/src/labels.tsx',
-        framework: 'react',
-        target: 'components/emr/labels.tsx',
-        content: readFileSync(join(reactSrcDir, 'labels.tsx'), 'utf8'),
-      },
-      {
-        path: 'packages/emr-react/src/use-controller.ts',
-        framework: 'react',
-        target: 'components/emr/use-controller.ts',
-        content: readFileSync(join(reactSrcDir, 'use-controller.ts'), 'utf8'),
-      },
-      {
-        path: 'packages/emr-elements/src/foundations.ts',
+        target: `components/emr/${f}`,
+        content: readText(join(reactSrcDir, f)),
+      })),
+      ...foundationLitFiles.map((f) => ({
+        path: `packages/emr-elements/src/${f}`,
         framework: 'lit',
-        target: 'components/emr/foundations.ts',
-        content: readFileSync(join(litSrcDir, 'foundations.ts'), 'utf8'),
-      },
-      {
-        path: 'packages/emr-elements/src/icons.ts',
-        framework: 'lit',
-        target: 'components/emr/icons.ts',
-        content: readFileSync(join(litSrcDir, 'icons.ts'), 'utf8'),
-      },
+        target: `components/emr/${f}`,
+        content: readText(join(litSrcDir, f)),
+      })),
     ],
   };
 
@@ -218,9 +219,9 @@ export async function generateRegistry({ writeFiles = true } = {}) {
     const reactName = reactNameForEntry(entry);
     const litName = litNameForEntry(entry);
     const primaryReact = reactFileMap.get(reactName) ?? reactFileMap.get('EmrBadgeView') ?? [];
-    const rFiles = relatedReactFiles(primaryReact);
-    const ngFiles = relatedAngularFiles(entry.file);
-    const lFiles = litFilesForLayer(entry.layer);
+    const rFiles = relatedFiles(reactSrcDir, primaryReact, true, fileCache);
+    const ngFiles = relatedFiles(uiLibDir, [entry.file], false, fileCache);
+    const lFiles = relatedFiles(litSrcDir, litFilesForLayer(entry.layer), false, fileCache);
     const directDeps = ['foundations', ...entry.dependsOn.map((id) => slugForEntry(byId.get(id))).filter(Boolean)];
     const transitiveDeps = resolveTransitiveSlugs(entry);
 
@@ -229,19 +230,19 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         path: `packages/emr-ui/src/lib/${f}`,
         framework: 'angular',
         target: `components/emr/${f}`,
-        content: readFileSync(join(uiLibDir, f), 'utf8'),
+        content: readText(join(uiLibDir, f)),
       })),
       ...rFiles.map((f) => ({
         path: `packages/emr-react/src/${f}`,
         framework: 'react',
         target: `components/emr/${f}`,
-        content: readFileSync(join(reactSrcDir, f), 'utf8'),
+        content: readText(join(reactSrcDir, f)),
       })),
       ...lFiles.map((f) => ({
         path: `packages/emr-elements/src/${f}`,
         framework: 'lit',
         target: `components/emr/${f}`,
-        content: readFileSync(join(litSrcDir, f), 'utf8'),
+        content: readText(join(litSrcDir, f)),
       })),
     ];
 
@@ -255,6 +256,7 @@ export async function generateRegistry({ writeFiles = true } = {}) {
       type: 'registry:ui',
       layer: entry.layer,
       layerName: EMR_LAYERS[entry.layer],
+      categories: entry.categories ?? [entry.layer === 6 ? 'authoring' : 'shared'],
       kind: entry.kind,
       status: entry.status,
       description: entry.summary,
@@ -290,6 +292,8 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         selector: slug,
         files: lFiles,
         import: `import { ${litName} } from '@drguptavivek/emr-elements';`,
+        vendorInit: `import { registerL${entry.layer}Elements } from './components/emr/${litFilesForLayer(entry.layer)[0].replace(/\.ts$/, '.js')}';\nregisterL${entry.layer}Elements();`,
+        rendererStatus: litShells.has(litName) ? 'shell' : 'renderer',
       },
       files: itemFiles,
     });
@@ -301,6 +305,7 @@ export async function generateRegistry({ writeFiles = true } = {}) {
     homepage: 'https://github.com/drguptavivek/emr-ui',
     totalItems: items.length,
     layers: EMR_LAYERS,
+    categories: EMR_CATALOG_CATEGORIES,
     items: items.map(({ files, ...summary }) => ({
       ...summary,
       fileCount: files.length,

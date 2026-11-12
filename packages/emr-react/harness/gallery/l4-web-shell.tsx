@@ -17,7 +17,6 @@ import type {
   NavItem,
   PacsViewerViewModel,
   PatientBannerViewModel,
-  SpecialtyExamMatrixViewModel,
 } from '@drguptavivek/emr-controller';
 import { ThemedInput } from '../../src/inputs-core';
 import {
@@ -30,6 +29,7 @@ import { EmrCaptureStatusBar, EmrPatientBanner } from '../../src/l4-shell';
 import { EmrAppShell, type EmrAppShellIntent, type EmrSearchGroup } from '../../src/l4-web-shell';
 import { EmrBadgeView, EmrButton } from '../../src/primitives';
 import { focusRing, fontFamily, fontWeight, useEmrTheme } from '../../src/theme';
+import { makeSpecialtyExamFixture, reduceSpecialtyExamFixture } from './specialty-exam.fixture';
 import { PrescribingTableDemo } from './l4-medications';
 import type { GallerySection } from './types';
 
@@ -2125,169 +2125,18 @@ export function PacsViewerDemo() {
 }
 
 export function SpecialtyExamMatrixDemo() {
-  const [model, setModel] = useState<SpecialtyExamMatrixViewModel>({
-    title: 'Multi-Specialty Structured Clinical Examination & Safe Dosing Matrix',
-    activeSpecialty: 'ophthalmology',
-    ophthalmicRows: [
-      {
-        id: 'cornea',
-        segment: 'Anterior Segment',
-        structureLabel: 'Cornea & Wound',
-        odValue: 'Clear, temporal phaco port well-apposed, Seidel neg',
-        osValue: 'Clear, compact stroma, no KP',
-        normalDefault: 'Clear, lustrous, Fluorescein negative',
-        quickChips: ['Clear', 'Descemet folds +', 'SPK +', 'Seidel neg'],
-      },
-      {
-        id: 'ac',
-        segment: 'Anterior Segment',
-        structureLabel: 'Anterior Chamber',
-        odValue: 'Deep, 0 cells, 0 flare (SUN Grade 0)',
-        osValue: 'Deep & quiet (VH Grade 4)',
-        normalDefault: 'Deep and quiet (0 cells, 0 flare)',
-        quickChips: ['Deep & quiet', 'Cells 1+', 'Flare 1+', 'Shallow VH2'],
-      },
-      {
-        id: 'lens',
-        segment: 'Anterior Segment',
-        structureLabel: 'Lens / PCIOL',
-        odValue: 'Toric PCIOL well-centered in capsular bag',
-        osValue: 'Nuclear Sclerosis Grade II (NS2)',
-        normalDefault: 'Clear crystalline lens',
-        quickChips: ['PCIOL in bag', 'Clear lens', 'NS2 Cataract', 'PCO +'],
-      },
-      {
-        id: 'iop-gonio',
-        segment: 'Tonometry & Gonioscopy',
-        structureLabel: 'IOP (GAT) & Angle',
-        odValue: '22 mmHg (Steroid responder) · Shaffer Grade IV open',
-        osValue: '15 mmHg · Shaffer Grade IV open',
-        normalDefault: '15 mmHg · Shaffer Grade IV open 360°',
-        quickChips: ['14 mmHg', '22 mmHg (High)', 'Shaffer IV open', 'PAS +'],
-      },
-      {
-        id: 'macula',
-        segment: 'Posterior Segment',
-        structureLabel: 'Macula & Fovea',
-        odValue: 'Dull foveal reflex, cystoid macular oedema (CST 418 µm)',
-        osValue: 'Healthy foveal reflex, CST 258 µm, mild NPDR',
-        normalDefault: 'Healthy foveal reflex, flat macula',
-        quickChips: ['Healthy foveal reflex', 'Cystoid oedema (CMO)', 'Hard exudates', 'Microaneurysms'],
-      },
-    ],
-    pediatrics: {
-      weightKg: 12,
-      heightCm: 88,
-      bsaM2: '0.54',
-      weightCentileLabel: '50th WHO Centile',
-      heightCentileLabel: '55th WHO Centile',
-      targetDrugLabel: 'Amoxicillin Oral Suspension',
-      mgPerKgPerDose: 15,
-      concentrationMgPer5Ml: 250,
-      calculatedMgPerDose: 180,
-      calculatedMlPerDose: 3.6,
-      maxDailyMgLabel: 'Max 90 mg/kg/day (1,080 mg/day)',
-    },
-    dermatology: {
-      morphologyLabel: 'Erythematous scaly plaques over extensor surfaces & trunk',
-      regions: [
-        { id: 'face', regionLabel: 'Face & Neck', bsaPercent: 2.5, ftuPerDose: 2.5, active: false },
-        { id: 'trunk', regionLabel: 'Anterior Trunk', bsaPercent: 6, ftuPerDose: 3.5, active: true },
-        { id: 'arms', regionLabel: 'Bilateral Upper Limbs', bsaPercent: 4, ftuPerDose: 3, active: true },
-        { id: 'legs', regionLabel: 'Bilateral Lower Limbs', bsaPercent: 8, ftuPerDose: 4, active: false },
-      ],
-      totalBsaPercent: 10,
-      totalFtuPerApp: 6.5,
-      totalGramsFor14DaysBd: 91,
-    },
-    oncology: {
-      regimenName: 'CAPOX (Capecitabine + Oxaliplatin)',
-      cycleNumber: 3,
-      cycleDayLabel: 'Days 1–14 (21-Day Cycle)',
-      ecogScore: 1,
-      bsaM2: 1.76,
-      ancCountLabel: '2,450 /µL (≥ 1,500)',
-      plateletCountLabel: '168,000 /µL (≥ 100,000)',
-      safetyGatePassed: true,
-      doseReductionPercent: 100,
-      agents: [
-        { id: 'ag-1', drugName: 'Capecitabine (Oral Tablet 500 mg)', standardMgPerM2: 1000, calculatedDoseMg: 1750, routeLabel: 'Oral BD Days 1–14' },
-        { id: 'ag-2', drugName: 'Oxaliplatin (IV Infusion)', standardMgPerM2: 130, calculatedDoseMg: 228, routeLabel: 'IV over 2h Day 1' },
-      ],
-    },
-  });
-
+  const [model, setModel] = useState(makeSpecialtyExamFixture);
   return (
-    <EmrSpecialtyExamMatrix
-      model={model}
-      onIntent={(intent) => {
-        switch (intent.type) {
-          case 'specialtyChanged':
-            setModel((prev) => ({ ...prev, activeSpecialty: intent.specialty }));
-            break;
-          case 'ophthalmicCellChanged':
-            setModel((prev) => ({
-              ...prev,
-              ophthalmicRows: prev.ophthalmicRows.map((r) =>
-                r.id === intent.rowId
-                  ? intent.eye === 'od'
-                    ? { ...r, odValue: intent.value }
-                    : { ...r, osValue: intent.value }
-                  : r,
-              ),
-            }));
-            break;
-          case 'ophthalmicApplyWnlAll':
-            setModel((prev) => ({
-              ...prev,
-              ophthalmicRows: prev.ophthalmicRows.map((r) => ({ ...r, odValue: r.normalDefault, osValue: r.normalDefault })),
-            }));
-            break;
-          case 'ophthalmicCopyOdToOs':
-            setModel((prev) => ({
-              ...prev,
-              ophthalmicRows: prev.ophthalmicRows.map((r) => ({ ...r, osValue: r.odValue })),
-            }));
-            break;
-          case 'pediatricWeightChanged': {
-            const w = intent.weightKg;
-            const mg = Math.round(w * model.pediatrics.mgPerKgPerDose);
-            const ml = Math.round((mg / model.pediatrics.concentrationMgPer5Ml) * 5 * 10) / 10;
-            setModel((prev) => ({
-              ...prev,
-              pediatrics: { ...prev.pediatrics, weightKg: w, calculatedMgPerDose: mg, calculatedMlPerDose: ml },
-            }));
-            break;
-          }
-          case 'dermRegionToggled':
-            setModel((prev) => {
-              const regions = prev.dermatology.regions.map((r) => (r.id === intent.regionId ? { ...r, active: !r.active } : r));
-              const activeRegs = regions.filter((r) => r.active);
-              const totalBsaPercent = activeRegs.reduce((s, r) => s + r.bsaPercent, 0);
-              const totalFtuPerApp = activeRegs.reduce((s, r) => s + r.ftuPerDose, 0);
-              const totalGramsFor14DaysBd = Math.round(totalFtuPerApp * 0.5 * 2 * 14);
-              return {
-                ...prev,
-                dermatology: { ...prev.dermatology, regions, totalBsaPercent, totalFtuPerApp, totalGramsFor14DaysBd },
-              };
-            });
-            break;
-          case 'oncologyDoseReductionChanged':
-            setModel((prev) => ({
-              ...prev,
-              oncology: {
-                ...prev.oncology,
-                doseReductionPercent: intent.percent,
-                agents: prev.oncology.agents.map((ag) => ({
-                  ...ag,
-                  calculatedDoseMg: Math.round(ag.standardMgPerM2 * prev.oncology.bsaM2 * (intent.percent / 100)),
-                })),
-              },
-            }));
-            break;
-        }
-      }}
-    />
+    <View style={{ gap: 8 }}>
+      <EmrButton
+        label={model.readOnly ? 'Unlock fixture' : 'Lock fixture'}
+        onPress={() => setModel(current => ({ ...current, readOnly: !current.readOnly }))}
+      />
+      <EmrSpecialtyExamMatrix
+        model={model}
+        onIntent={intent => setModel(current => reduceSpecialtyExamFixture(current, intent))}
+      />
+    </View>
   );
 }
 
@@ -2396,7 +2245,7 @@ export function InpatientMarDemo() {
                         ...adm,
                         status: nextStatus,
                         administeredAtLabel: nextStatus === 'given' ? 'Just now · RN K.N.' : undefined,
-                        bcmaScanned: nextStatus === 'given',
+                        bcmaScanned: false,
                         holdReason: nextStatus === 'held' ? 'Held per clinical parameter' : undefined,
                       };
                     }),
@@ -2520,7 +2369,7 @@ export const gallery: GallerySection[] = [
   },
   {
     id: 'l4-specialty-exam-matrix',
-    title: 'EmrSpecialtyExamMatrix · Multi-Specialty Examination & Safe Dosing Matrix (Ophthalmology, Pediatrics, Dermatology, Oncology)',
+    title: 'EmrSpecialtyExamMatrix · Fundus Entry & Multi-Specialty Examination',
     render: () => <SpecialtyExamMatrixDemo />,
   },
   {

@@ -1,5 +1,7 @@
 import { StateController } from './contracts.js';
+import type { LiveSearchOptions } from './search.controller.js';
 import {
+  EmrOption,
   GroupAddPreview,
   HierarchyNode,
   HierarchyOrderIntent,
@@ -19,12 +21,15 @@ export class HierarchyOrderController extends StateController<
   HierarchyOrderIntent
 > {
   private request?: AbortController;
+  private timer?: ReturnType<typeof setTimeout>;
+  private queryGeneration = 0;
 
   constructor(
     title: string,
     private readonly repository: OrderCatalogueRepository,
     initial?: Partial<HierarchyOrderViewModel>,
-    private readonly orderKind: SelectedOrder['kind'] = 'laboratory'
+    private readonly orderKind: SelectedOrder['kind'] = 'laboratory',
+    private readonly liveSearch?: LiveSearchOptions
   ) {
     super({
       title,
@@ -37,10 +42,21 @@ export class HierarchyOrderController extends StateController<
   }
 
   dispatch(intent: HierarchyOrderIntent): void {
+    if (this.isDestroyed()) return;
     switch (intent.type) {
-      case 'queryChanged':
-        this.setState(state => ({ ...state, query: intent.query }));
+      case 'queryChanged': {
+        const generation = ++this.queryGeneration;
+        const request = this.request;
+        this.request?.abort();
+        clearTimeout(this.timer);
+        const debounce = this.liveSearch && intent.query.trim().length >= (this.liveSearch.minChars ?? 0)
+          ? this.liveSearch.debounceMs : undefined;
+        this.setState(state => ({ ...state, query: intent.query, roots: [], preview: undefined, loading: debounce !== undefined, error: undefined }));
+        if (!this.isDestroyed() && generation === this.queryGeneration && request === this.request && debounce !== undefined) {
+          this.timer = setTimeout(() => void this.search(), Math.max(0, debounce));
+        }
         return;
+      }
       case 'searchRequested':
       case 'retryRequested':
         void this.search();
@@ -79,31 +95,39 @@ export class HierarchyOrderController extends StateController<
     }
   }
 
-  private async run<T>(operation: (signal: AbortSignal) => Promise<T>): Promise<T | undefined> {
+  private async run<T>(
+    operation: (signal: AbortSignal) => Promise<T>,
+    apply: (state: HierarchyOrderViewModel, value: T) => HierarchyOrderViewModel
+  ): Promise<void> {
+    if (this.isDestroyed()) return;
     this.request?.abort();
     const request = new AbortController();
     this.request = request;
     this.setState(state => ({ ...state, loading: true, error: undefined }));
+    if (request.signal.aborted || this.isDestroyed()) return;
     try {
       const value = await operation(request.signal);
-      if (request.signal.aborted) return undefined;
-      this.setState(state => ({ ...state, loading: false }));
-      return value;
+      if (request.signal.aborted) return;
+      this.setState(state => ({ ...apply(state, value), loading: false }));
     } catch (error: unknown) {
-      if (request.signal.aborted) return undefined;
+      if (request.signal.aborted) return;
       this.setState(state => ({
         ...state,
         loading: false,
         error: error instanceof Error ? error.message : 'Unable to load catalogue'
       }));
-      return undefined;
     }
   }
 
   private async search(): Promise<void> {
+    clearTimeout(this.timer);
     const query = this.getSnapshot().query;
-    const roots = await this.run(signal => this.repository.roots(query, signal));
-    if (roots) this.setState(state => ({ ...state, roots: [...roots] }));
+    const generation = this.queryGeneration;
+    const request = this.request;
+    this.setState(state => ({ ...state, roots: [], preview: undefined }));
+    if (this.isDestroyed() || generation !== this.queryGeneration || request !== this.request) return;
+    await this.run(signal => this.repository.roots(query, signal),
+      (state, roots) => ({ ...state, roots: [...roots] }));
   }
 
   private async expand(nodeId: string, expanded: boolean): Promise<void> {
@@ -111,26 +135,27 @@ export class HierarchyOrderController extends StateController<
       this.setState(state => ({ ...state, roots: updateNode(state.roots, nodeId, { expanded: false }) }));
       return;
     }
-    const children = await this.run(signal => this.repository.children(nodeId, signal));
-    if (children) {
-      this.setState(state => ({
-        ...state,
-        roots: updateNode(state.roots, nodeId, { expanded: true, children: [...children] })
-      }));
+    const node = findNode(this.getSnapshot().roots, nodeId);
+    if (node?.children) {
+      this.setState(state => ({ ...state, roots: updateNode(state.roots, nodeId, { expanded: true }) }));
+      return;
     }
+    await this.run(signal => this.repository.children(nodeId, signal),
+      (state, children) => ({
+        ...state, roots: updateNode(state.roots, nodeId, { expanded: true, children: [...children] })
+      }));
   }
 
   private async addItem(nodeId: string): Promise<void> {
-    const item = await this.run(signal => this.repository.resolveItem(nodeId, signal));
-    if (!item) return;
-    this.setState(state => state.selected.some(existing => existing.catalogueId === item.catalogueId)
+    await this.run(signal => this.repository.resolveItem(nodeId, signal),
+      (state, item) => state.selected.some(existing => existing.catalogueId === item.catalogueId)
       ? state
       : { ...state, selected: [...state.selected, item] });
   }
 
   private async preview(nodeId: string): Promise<void> {
-    const preview = await this.run(signal => this.repository.previewGroup(nodeId, signal));
-    if (preview) this.setState(state => ({ ...state, preview }));
+    await this.run(signal => this.repository.previewGroup(nodeId, signal),
+      (state, preview) => ({ ...state, preview }));
   }
 
   private confirmGroup(groupId: string): void {
@@ -152,8 +177,44 @@ export class HierarchyOrderController extends StateController<
   }
 
   protected override onDestroy(): void {
+    clearTimeout(this.timer);
     this.request?.abort();
   }
+}
+
+function findNode(nodes: readonly HierarchyNode[], id: string): HierarchyNode | undefined {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    const child = node.children && findNode(node.children, id);
+    if (child) return child;
+  }
+  return undefined;
+}
+
+/** Filter a preloaded tree by label or code, retaining and expanding matching paths. */
+export function filterHierarchy(nodes: readonly HierarchyNode[], query: string): readonly HierarchyNode[] {
+  const term = query.trim().toLowerCase();
+  if (!term) return nodes;
+  return nodes.flatMap(node => {
+    if (node.label.toLowerCase().includes(term) || node.code?.toLowerCase().includes(term)) {
+      return [node.children?.length ? { ...node, expanded: true } : node];
+    }
+    const children = node.children ? filterHierarchy(node.children, term) : [];
+    return children.length ? [{ ...node, children, expanded: true }] : [];
+  });
+}
+
+/** Return matching selectable leaves with their ancestor labels as a breadcrumb. */
+export function hierarchySearchOptions(nodes: readonly HierarchyNode[], query: string): readonly EmrOption[] {
+  const term = query.trim().toLocaleLowerCase();
+  const visit = (entries: readonly HierarchyNode[], ancestors: readonly string[]): EmrOption[] =>
+    entries.flatMap(node => {
+      if (node.children?.length) return visit(node.children, [...ancestors, node.label]);
+      if (node.kind !== 'item' || !node.selectable) return [];
+      if (term && ![...ancestors, node.label, node.code ?? ''].some(value => value.toLocaleLowerCase().includes(term))) return [];
+      return [{ value: node.id, label: node.label, description: ancestors.join(' › ') || undefined, disabled: node.disabled }];
+    });
+  return visit(nodes, []);
 }
 
 function updateNode(

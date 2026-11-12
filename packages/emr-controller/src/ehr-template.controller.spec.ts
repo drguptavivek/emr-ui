@@ -68,8 +68,10 @@ describe('EhrTemplateController', () => {
     controller.dispatch({ type: 'artifactImportRequested', format: 'fhir-r4-questionnaire', serialized: '{}' });
     await vi.waitFor(() => expect(controller.getSnapshot().importIssues).toHaveLength(1));
     expect(controller.getSnapshot().dirty).toBe(false);
+    expect(controller.getSnapshot().canAcceptImport).toBe(true);
     controller.dispatch({ type: 'importAccepted' });
     expect(controller.getSnapshot().dirty).toBe(true);
+    expect(controller.getSnapshot().canAcceptImport).toBe(false);
   });
 
   it('clears an older warning import when a later import fails', async () => {
@@ -81,6 +83,7 @@ describe('EhrTemplateController', () => {
     controller.dispatch({ type: 'artifactImportRequested', format: 'fhir-r4-questionnaire', serialized: '{}' });
     await vi.waitFor(() => expect(controller.getSnapshot().importIssues).toHaveLength(1));
     controller.dispatch({ type: 'artifactImportRequested', format: 'internal-json', serialized: '{invalid' });
+    expect(controller.getSnapshot().canAcceptImport).toBe(false);
     controller.dispatch({ type: 'importAccepted' });
     expect(controller.getSnapshot().dirty).toBe(false);
     expect(controller.getSnapshot().template.id).toBe('opd');

@@ -19,6 +19,7 @@ const nextOutDir = join(rootDir, 'packages/emr-react/harness/next/out');
 const registryDir = join(rootDir, 'registry');
 const storybookDir = join(rootDir, 'storybook-static');
 const emrCssPath = join(rootDir, 'packages/emr-ui/src/lib/foundations/emr.css');
+const emrPrintCssPath = join(rootDir, 'packages/emr-ui/src/lib/foundations/emr-print.css');
 
 const withStorybook = process.argv.includes('--with-storybook');
 const basePathArg = process.argv.find((a) => a.startsWith('--base-path='))?.slice('--base-path='.length);
@@ -33,7 +34,11 @@ function run(cmd, env = {}) {
   });
 }
 
-function buildLitIndexHtml() {
+function buildLitIndexHtml(registry) {
+  const components = registry.items
+    .filter((item) => item.lit?.selector)
+    .map((item) => ({ tag: item.lit.selector, categories: item.categories }));
+  const directory = JSON.stringify({ categories: registry.categories, components }).replaceAll('<', '\\u003c');
   return `<!DOCTYPE html>
 <html lang="en" class="emr-theme-light">
 <head>
@@ -133,6 +138,17 @@ function buildLitIndexHtml() {
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 14px;
     }
+    .lit-category-select {
+      justify-self: start;
+      max-width: 100%;
+      min-height: 44px;
+      padding: 6px 12px;
+      border: 1px solid var(--emr-border, #c7d3da);
+      border-radius: 6px;
+      background: var(--emr-surface, #fffefa);
+      color: var(--emr-text, #263847);
+      font: inherit;
+    }
     .lit-catalog-pills {
       display: flex;
       flex-wrap: wrap;
@@ -155,13 +171,14 @@ function buildLitIndexHtml() {
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <button id="btn-care-setting" type="button" class="lit-btn lit-btn--primary">Switch to Inpatient (IPD Ward 4)</button>
       <button id="btn-theme" type="button" class="lit-btn">Toggle Dark / Light Theme</button>
+      <a href="#lit-directory" class="lit-btn">Browse components</a>
       <a href="../index.html" class="lit-btn">← Main Catalog &amp; Registry</a>
     </div>
   </header>
 
   <main class="lit-container">
     <div class="lit-intent-bar">
-      <span id="intent-output">⚡ Shadow DOM CustomEvent('emr-intent') Inspector: Interact with any &lt;emr-*&gt; Web Component below…</span>
+      <span id="intent-output">⚡ Shadow DOM CustomEvent('intent') Inspector: Interact with any &lt;emr-*&gt; Web Component below…</span>
       <span class="lit-tag">Lit 3 Shadow DOM</span>
     </div>
 
@@ -174,10 +191,10 @@ function buildLitIndexHtml() {
       <emr-patient-banner id="el-banner"></emr-patient-banner>
     </section>
 
-    <!-- 2. Multi-Specialty 7-Column Prescribing Table with Backend API Dose Form Resolution -->
+    <!-- 2. Multi-Specialty 7-Column Prescribing Table (fixture values) -->
     <section class="lit-section">
       <h2 class="lit-section-title">
-        2. 7-Column Clinical Prescribing Table (Backend Formulary API Dose-Form + Step-Down / Step-Up)
+        2. 7-Column Clinical Prescribing Table (Fixture dose forms + Step-Down / Step-Up)
         <span class="lit-tag">&lt;emr-prescribing-table&gt;</span>
       </h2>
       <emr-prescribing-table id="el-rx"></emr-prescribing-table>
@@ -186,7 +203,7 @@ function buildLitIndexHtml() {
     <!-- 3. Multi-Viewport PACS & DICOMweb Compare Viewer -->
     <section class="lit-section">
       <h2 class="lit-section-title">
-        3. Multi-Viewport PACS &amp; DICOMweb Compare Viewer (1-Up · 2-Up OD vs OS · Active vs Prior)
+        3. Multi-Viewport PACS &amp; DICOMweb Compare Viewer (fixture studies; no PACS connection)
         <span class="lit-tag">&lt;emr-pacs-viewer&gt;</span>
       </h2>
       <emr-pacs-viewer id="el-pacs"></emr-pacs-viewer>
@@ -198,13 +215,14 @@ function buildLitIndexHtml() {
         4. Multi-Specialty Examination &amp; Safe Dosing Matrix (Ophthalmology · Pediatrics · Dermatology · Oncology)
         <span class="lit-tag">&lt;emr-specialty-exam-matrix&gt;</span>
       </h2>
+      <button type="button" id="btn-exam-lock" class="lit-btn">Lock fixture</button>
       <emr-specialty-exam-matrix id="el-exam"></emr-specialty-exam-matrix>
     </section>
 
     <!-- 5. Inpatient eMAR & Nursing Kardex Grid -->
     <section class="lit-section">
       <h2 class="lit-section-title">
-        5. Inpatient eMAR &amp; Nursing Administration Grid (BCMA Barcode &amp; Dual-Sign)
+        5. Fixture eMAR &amp; Nursing Administration Grid (no barcode or dual-sign evidence)
         <span class="lit-tag">&lt;emr-inpatient-mar&gt;</span>
       </h2>
       <emr-inpatient-mar id="el-mar"></emr-inpatient-mar>
@@ -233,23 +251,93 @@ function buildLitIndexHtml() {
       <emr-data-table id="el-table"></emr-data-table>
     </section>
 
+    <section id="controller-matrix-example" class="lit-section">
+      <h2 class="lit-section-title">Controller integration example</h2>
+      <emr-clinical-matrix></emr-clinical-matrix>
+      <output>
+        <span id="matrix-accepted-od"></span>
+        <span id="matrix-accepted-os"></span>
+      </output>
+    </section>
+
+    <section id="clinical-note-example" class="lit-section">
+      <h2 class="lit-section-title">Clinical note workspace · OPD, IPD and OT</h2>
+      <p>Synthetic clinical records. Signatures and edits are simulated for this session.</p>
+      <div class="lit-grid-2">
+        <label>Care setting
+          <select data-note-setting class="lit-category-select">
+            <option value="opd">OPD consultation</option>
+            <option value="ipd">IPD progress note</option>
+            <option value="ot">OT operative note</option>
+          </select>
+        </label>
+        <label>Viewing as
+          <select data-note-actor class="lit-category-select">
+            <option value="author">Note author</option>
+            <option value="reviewer">Consultant reviewer</option>
+            <option value="clinician">Read-only clinician</option>
+          </select>
+        </label>
+      </div>
+      <emr-clinical-note-workspace></emr-clinical-note-workspace>
+    </section>
+
     <!-- 8. Registered Custom Elements Directory -->
-    <section class="lit-section">
+    <section id="lit-directory" class="lit-section" style="scroll-margin-top: 9rem;">
       <h2 class="lit-section-title">
-        8. Registered &lt;emr-*&gt; Custom Elements in window.customElements
+        8. Lit Components by Specialty &amp; Workflow
       </h2>
+      <label for="lit-category">Specialty / workflow</label>
+      <select id="lit-category" class="lit-category-select" aria-controls="el-directory">
+        <option value="all">All specialties and workflows</option>
+      </select>
+      <p id="lit-directory-count" aria-live="polite"></p>
       <div id="el-directory" class="lit-catalog-pills"></div>
     </section>
   </main>
 
   <script type="module">
-    import { registerAllEmrElements } from './emr-elements.bundle.js';
+    import { createClinicalNoteDemo, mountClinicalMatrixExample, registerAllEmrElements, makeSpecialtyExamFixture, reduceSpecialtyExamFixture, AsyncSearchController, syntheticFormularyRepository, clearFixturePrescriptionProduct, resolveFixturePrescriptionProduct, PRESCRIBING_PRESETS } from './emr-elements.bundle.js';
     registerAllEmrElements();
 
+    const noteExample = document.getElementById('clinical-note-example');
+    const noteElement = noteExample.querySelector('emr-clinical-note-workspace');
+    const noteSetting = noteExample.querySelector('[data-note-setting]');
+    const noteActor = noteExample.querySelector('[data-note-actor]');
+    const noteControllers = Object.fromEntries(
+      ['opd', 'ipd', 'ot'].map(setting => [setting, createClinicalNoteDemo(setting)]),
+    );
+    let activeNote;
+    let unsubscribeNote;
+    function openNote() {
+      unsubscribeNote?.();
+      activeNote = noteControllers[noteSetting.value];
+      noteActor.value = 'author';
+      noteActor.querySelector('[value=reviewer]').disabled = noteSetting.value !== 'ipd';
+      activeNote.selectActor('author');
+      unsubscribeNote = activeNote.subscribe(model => { noteElement.model = model; });
+    }
+    noteSetting.addEventListener('change', openNote);
+    noteActor.addEventListener('change', () => activeNote.selectActor(noteActor.value));
+    noteElement.addEventListener('intent', event => activeNote.dispatch(event.detail));
+    openNote();
+
+    const unmountMatrixExample = mountClinicalMatrixExample(
+      document.querySelector('#controller-matrix-example emr-clinical-matrix'),
+      document.getElementById('matrix-accepted-od'),
+      document.getElementById('matrix-accepted-os'),
+    );
+    window.addEventListener('pagehide', (event) => {
+      if (event.persisted) return;
+      unmountMatrixExample();
+      unsubscribeNote();
+      Object.values(noteControllers).forEach(controller => controller.destroy());
+    });
+
     const intentLog = document.getElementById('intent-output');
-    document.addEventListener('emr-intent', (e) => {
+    document.addEventListener('intent', (e) => {
       const tag = e.target?.tagName?.toLowerCase() || 'emr-element';
-      intentLog.textContent = \`⚡ <\${tag}> emitted emr-intent: \${JSON.stringify(e.detail)}\`;
+      intentLog.textContent = \`⚡ <\${tag}> emitted intent: \${JSON.stringify(e.detail)}\`;
     });
 
     // Theme & Care Setting toggles
@@ -267,9 +355,11 @@ function buildLitIndexHtml() {
         displayName: 'Aarav Sharma',
         ageLabel: '58 y',
         sexLabel: 'Male',
-        weightLabel: '68 kg · BSA 1.76 m²',
         careSetting,
         careSettingLabel: careSetting === 'opd' ? 'Outpatient (OPD Room 4)' : 'Inpatient (IPD Ward 4 · Bed 14B · Day 3)',
+        locationLabel: careSetting === 'opd' ? 'OPD Room 4' : 'Ward 4 · Bed 14B',
+        expanded: false,
+        alerts: [],
         identifiers: [
           { label: 'MRN', value: 'MRN-2026-0842' },
           { label: 'National Health ID', value: '91-4820-7731-9904' },
@@ -290,6 +380,11 @@ function buildLitIndexHtml() {
       };
     };
     updateBanner();
+    bannerEl.addEventListener('intent', (ev) => {
+      if (ev.detail.type === 'expandedChangeRequested') {
+        bannerEl.model = { ...bannerEl.model, expanded: ev.detail.expanded };
+      }
+    });
 
     document.getElementById('btn-care-setting').addEventListener('click', (e) => {
       careSetting = careSetting === 'opd' ? 'ipd' : 'opd';
@@ -308,7 +403,7 @@ function buildLitIndexHtml() {
     let rxSeq = 10;
     let rxModel = {
       title: '7-Column Multi-Specialty Prescribing Table (Lit Shadow DOM)',
-      canSign: true,
+      canSign: false,
       slotDefinitions: slotDefs,
       rows: [
         {
@@ -387,38 +482,71 @@ function buildLitIndexHtml() {
         },
       ],
     };
+    rxModel.formularyLabel = 'Fixture-backed formulary · synthetic data';
+    rxModel.presets = PRESCRIBING_PRESETS;
     rxEl.model = rxModel;
-    rxEl.addEventListener('emr-intent', (ev) => {
+    let searchRowId;
+    const rxSearch = new AsyncSearchController(syntheticFormularyRepository, undefined, { debounceMs: 140, minChars: 1 });
+    const unsubscribeRxSearch = rxSearch.subscribe(state => {
+      if (!searchRowId) return;
+      const row = rxModel.rows.find(item => item.id === searchRowId);
+      if (!row || row.drugName !== state.query) return;
+      rxModel = { ...rxModel, formularySearch: {
+        rowId: searchRowId, query: state.query, items: state.options, loading: state.loading, error: state.error,
+      } };
+      rxEl.model = rxModel;
+    });
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) {
+        unsubscribeRxSearch();
+        rxSearch.destroy();
+      }
+    });
+    rxEl.addEventListener('intent', (ev) => {
+      if (rxModel.readOnly) return;
       const i = ev.detail;
-      if (i.type === 'rowAddRequested') {
+      const updateRow = (edit) => {
+        rxModel = { ...rxModel, rows: rxModel.rows.map(row => row.id === i.rowId ? edit(row) : row) };
+      };
+      if (i.type === 'drugNameChanged') {
+        updateRow(row => row.drugName === i.drugName ? row : row.formularyCode
+          ? clearFixturePrescriptionProduct(row, i.drugName) : { ...row, drugName: i.drugName });
+        rxModel = { ...rxModel, formularySearch: undefined };
+      } else if (i.type === 'strengthChanged') {
+        updateRow(row => ({ ...row, strength: i.strength }));
+      } else if (i.type === 'instructionsChanged') {
+        updateRow(row => ({ ...row, instructions: i.instructions }));
+      } else if (i.type === 'formularySearchRequested') {
+        if (!rxModel.rows.some(row => row.id === i.rowId && row.drugName === i.query)) return;
+        searchRowId = i.rowId;
+        if (rxSearch.getSnapshot().query === i.query) rxSearch.dispatch({ type: 'searchRequested' });
+        else rxSearch.dispatch({ type: 'queryChanged', query: i.query });
+      } else if (i.type === 'formularySelected') {
+        const result = rxModel.formularySearch;
+        if (result?.rowId !== i.rowId || result.loading || result.error || !result.items.includes(i.item)
+          || !rxModel.rows.some(row => row.id === i.rowId && row.drugName === result.query)) return;
+        searchRowId = undefined;
+        rxSearch.dispatch({ type: 'queryChanged', query: '' });
+        updateRow(row => resolveFixturePrescriptionProduct(row, i.item, rxModel));
+        rxModel = { ...rxModel, formularySearch: undefined };
+      } else if (i.type === 'rowAddRequested') {
         const nr = {
-          id: 'rx-' + (++rxSeq),
-          formularyCode: 'RXN-198440',
-          drugName: 'Paracetamol',
-          strength: '500 mg',
-          form: 'tablet',
-          formLabel: 'Oral Tablet (Scored)',
-          stockStatus: 'In Stock',
-          route: 'Oral',
-          doseAmount: 1,
-          unitLabel: 'tab',
-          frequencyCode: 'TDS',
-          patternLabel: '1 - 1 - 0 - 1',
-          slots: [
-            { id: 'm', label: 'Morning', amount: 1 },
-            { id: 'a', label: 'Afternoon', amount: 1 },
-            { id: 'e', label: 'Evening', amount: 0 },
-            { id: 'n', label: 'Night', amount: 1 },
-          ],
-          durationCount: 5,
-          durationUnit: 'days',
-          foodRelation: 'After food',
-          instructions: 'Take after meals.',
+          id: 'rx-' + (++rxSeq), drugName: '', strength: '', form: 'other', formLabel: '', route: '',
+          doseAmount: null, unitLabel: '', slots: rxModel.slotDefinitions.map(slot => ({ ...slot, amount: null })),
+          durationCount: null, durationUnit: 'days', foodRelation: '', instructions: '',
         };
-        rxModel = { ...rxModel, rows: [...rxModel.rows, nr] };
+        const rows = [...rxModel.rows];
+        const after = rows.findIndex(row => row.id === i.afterRowId);
+        rows.splice(after < 0 ? rows.length : after + 1, 0, nr);
+        rxModel = { ...rxModel, rows };
       } else if (i.type === 'rowRemoveRequested') {
         if (rxModel.rows.length > 1) {
           rxModel = { ...rxModel, rows: rxModel.rows.filter((r) => r.id !== i.rowId) };
+          if (searchRowId === i.rowId) {
+            searchRowId = undefined;
+            rxSearch.dispatch({ type: 'queryChanged', query: '' });
+            rxModel = { ...rxModel, formularySearch: undefined };
+          }
         }
       } else if (i.type === 'rowMoveRequested') {
         const idx = rxModel.rows.findIndex((r) => r.id === i.rowId);
@@ -446,12 +574,10 @@ function buildLitIndexHtml() {
           rxModel = { ...rxModel, rows: copy };
         }
       } else if (i.type === 'doseStepped') {
-        rxModel = {
-          ...rxModel,
-          rows: rxModel.rows.map((r) =>
-            r.id === i.rowId ? { ...r, doseAmount: Math.max(0.5, (r.doseAmount || 1) + i.delta) } : r
-          ),
-        };
+        updateRow(row => {
+          const next = Math.round(((row.doseAmount ?? 0) + i.delta) * 100) / 100;
+          return Number.isFinite(next) && next > 0 ? { ...row, doseAmount: next } : row;
+        });
       } else if (i.type === 'durationStepped') {
         rxModel = {
           ...rxModel,
@@ -479,7 +605,7 @@ function buildLitIndexHtml() {
           bodyPart: 'Macula & RNFL (OD/OS)',
           title: 'SD-OCT Macular Cube 512×128 & Optic Disc RNFL',
           status: 'Final Report',
-          pacsEndpointLabel: 'DICOMweb://pacs.hospital.org/studies/oct-9921',
+          pacsEndpointLabel: 'Fixture endpoint · no PACS connection',
           sliceCount: 32,
           currentSlice: 16,
           windowPreset: 'Retina/OCT',
@@ -496,7 +622,7 @@ function buildLitIndexHtml() {
           bodyPart: 'Retina Angiography (OU)',
           title: 'Fundus Fluorescein Angiography (Late Phase 10m)',
           status: 'Final Report',
-          pacsEndpointLabel: 'DICOMweb://pacs.hospital.org/studies/ffa-8840',
+          pacsEndpointLabel: 'Fixture endpoint · no PACS connection',
           sliceCount: 24,
           currentSlice: 18,
           windowPreset: 'High-Contrast',
@@ -508,7 +634,8 @@ function buildLitIndexHtml() {
       ],
     };
     pacsEl.model = pacsModel;
-    pacsEl.addEventListener('emr-intent', (ev) => {
+    pacsEl.addEventListener('intent', (ev) => {
+      if (pacsModel.readOnly) return;
       const i = ev.detail;
       if (i.type === 'studySelected') pacsModel = { ...pacsModel, activeStudyId: i.studyId };
       else if (i.type === 'layoutModeChanged') pacsModel = { ...pacsModel, layoutMode: i.layoutMode };
@@ -525,64 +652,14 @@ function buildLitIndexHtml() {
 
     // 4. Specialty Exam Matrix State
     const examEl = document.getElementById('el-exam');
-    let examModel = {
-      title: 'Multi-Specialty Clinical Examination & Dosing Matrix (Lit Shadow DOM)',
-      activeSpecialty: 'ophthalmology',
-      ophthalmicRows: [
-        { id: 'c1', segment: 'Anterior Segment', structureLabel: 'Cornea & Wound', odValue: 'Clear, temporal phaco port intact', osValue: 'Clear', normalDefault: 'Clear, Fluorescein neg', quickChips: ['Clear'] },
-        { id: 'c2', segment: 'Anterior Segment', structureLabel: 'Anterior Chamber', odValue: 'Deep, 0 cells', osValue: 'Deep & quiet', normalDefault: 'Deep and quiet', quickChips: ['Deep & quiet'] },
-        { id: 'c3', segment: 'Tonometry & Gonioscopy', structureLabel: 'IOP (GAT) & Angle', odValue: '22 mmHg (Steroid responder)', osValue: '15 mmHg', normalDefault: '15 mmHg · Shaffer IV open', quickChips: ['15 mmHg'] },
-        { id: 'c4', segment: 'Posterior Segment', structureLabel: 'Macula & Fovea', odValue: 'Cystoid macular oedema (CST 418 µm)', osValue: 'Healthy foveal reflex (CST 258 µm)', normalDefault: 'Healthy foveal reflex', quickChips: ['Healthy'] },
-      ],
-      pediatrics: {
-        weightKg: 12,
-        heightCm: 88,
-        bsaM2: '0.54',
-        weightCentileLabel: '50th WHO Centile',
-        heightCentileLabel: '55th WHO Centile',
-        targetDrugLabel: 'Amoxicillin Oral Suspension (250 mg/5 mL)',
-        mgPerKgPerDose: 15,
-        concentrationMgPer5Ml: 250,
-        calculatedMgPerDose: 180,
-        calculatedMlPerDose: 3.6,
-        maxDailyMgLabel: 'Max 90 mg/kg/day',
-      },
-      dermatology: {
-        morphologyLabel: 'Erythematous scaly plaques',
-        regions: [],
-        totalBsaPercent: 10,
-        totalFtuPerApp: 6.5,
-        totalGramsFor14DaysBd: 91,
-      },
-      oncology: {
-        regimenName: 'CAPOX (Capecitabine + Oxaliplatin)',
-        cycleNumber: 3,
-        cycleDayLabel: 'Days 1–14',
-        ecogScore: 1,
-        bsaM2: 1.76,
-        ancCountLabel: '2,450 /µL (Gate Passed)',
-        plateletCountLabel: '168,000 /µL',
-        safetyGatePassed: true,
-        doseReductionPercent: 100,
-        agents: [],
-      },
-    };
-    examEl.model = examModel;
-    examEl.addEventListener('emr-intent', (ev) => {
-      const i = ev.detail;
-      if (i.type === 'specialtyChanged') examModel = { ...examModel, activeSpecialty: i.specialty };
-      else if (i.type === 'ophthalmicApplyWnlAll') {
-        examModel = {
-          ...examModel,
-          ophthalmicRows: examModel.ophthalmicRows.map((r) => ({ ...r, odValue: r.normalDefault, osValue: r.normalDefault })),
-        };
-      } else if (i.type === 'ophthalmicCopyOdToOs') {
-        examModel = {
-          ...examModel,
-          ophthalmicRows: examModel.ophthalmicRows.map((r) => ({ ...r, osValue: r.odValue })),
-        };
-      }
-      examEl.model = examModel;
+    const examLock = document.getElementById('btn-exam-lock');
+    examEl.model = makeSpecialtyExamFixture();
+    examLock.addEventListener('click', () => {
+      examEl.model = { ...examEl.model, readOnly: !examEl.model.readOnly };
+      examLock.textContent = examEl.model.readOnly ? 'Unlock fixture' : 'Lock fixture';
+    });
+    examEl.addEventListener('intent', (event) => {
+      examEl.model = reduceSpecialtyExamFixture(examEl.model, event.detail);
     });
 
     // 5. Inpatient eMAR State
@@ -632,7 +709,8 @@ function buildLitIndexHtml() {
       ],
     };
     marEl.model = marModel;
-    marEl.addEventListener('emr-intent', (ev) => {
+    marEl.addEventListener('intent', (ev) => {
+      if (marModel.readOnly) return;
       const i = ev.detail;
       if (i.type === 'slotStatusCycled') {
         const cycle = ['due', 'given', 'held', 'refused'];
@@ -707,7 +785,7 @@ function buildLitIndexHtml() {
       prescriberRegNo: 'MCI-REG-48291',
     };
     printEl.model = printModel;
-    printEl.addEventListener('emr-intent', (ev) => {
+    printEl.addEventListener('intent', (ev) => {
       if (ev.detail.type === 'documentModeChanged') {
         printModel = { ...printModel, documentMode: ev.detail.mode };
         printEl.model = printModel;
@@ -716,41 +794,71 @@ function buildLitIndexHtml() {
       }
     });
 
-    // 7. Data Table
+    // 7. Fixture Data Table
     const tableEl = document.getElementById('el-table');
-    tableEl.definition = {
-      id: 'labs-table',
-      title: 'Prior Pathology & Glycemic Panel (<emr-data-table>)',
+    tableEl.model = {
+      caption: 'Fixture: Prior Pathology & Glycemic Panel (<emr-data-table>)',
       columns: [
-        { id: 'date', label: 'Date' },
-        { id: 'test', label: 'Investigation' },
+        { id: 'date', label: 'Date', sortable: true },
+        { id: 'test', label: 'Investigation', sortable: true },
         { id: 'val', label: 'Result' },
         { id: 'ref', label: 'Reference Range' },
       ],
+      rows: [
+        { id: 'r1', cells: { date: '08 Nov 2026', test: 'HbA1c (HPLC)', val: '7.6 % (High)', ref: '4.0 – 5.6 %' } },
+        { id: 'r2', cells: { date: '08 Nov 2026', test: 'Fasting Plasma Glucose', val: '134 mg/dL', ref: '70 – 99 mg/dL' } },
+        { id: 'r3', cells: { date: '08 Nov 2026', test: 'Serum Creatinine / eGFR', val: '1.02 mg/dL (78 mL/min)', ref: '0.70 – 1.25 mg/dL' } },
+      ],
+      selectedIds: [],
+      sort: { columnId: 'date', direction: 'desc' },
+      filters: [],
+      savedFilters: [],
+      bulkActions: [],
+      density: 'comfortable',
+      page: 1,
+      pageCount: 1,
+      pageSize: 10,
+      pageSizeOptions: [10, 25, 50],
+      summaryLabel: 'Showing 1–3 of 3 fixture results',
+      status: 'ready',
     };
-    tableEl.rows = [
-      { id: 'r1', cells: { date: '08 Nov 2026', test: 'HbA1c (HPLC)', val: '7.6 % (High)', ref: '4.0 – 5.6 %' } },
-      { id: 'r2', cells: { date: '08 Nov 2026', test: 'Fasting Plasma Glucose', val: '134 mg/dL', ref: '70 – 99 mg/dL' } },
-      { id: 'r3', cells: { date: '08 Nov 2026', test: 'Serum Creatinine / eGFR', val: '1.02 mg/dL (78 mL/min)', ref: '0.70 – 1.25 mg/dL' } },
-    ];
-
-    // 8. Populate Registered Custom Elements Directory
-    const tags = [
-      'emr-patient-banner', 'emr-prescribing-table', 'emr-pacs-viewer', 'emr-specialty-exam-matrix',
-      'emr-inpatient-mar', 'emr-encounter-summary-print', 'emr-spectacle-prescription', 'emr-dose-schedule',
-      'emr-observation-flowsheet', 'emr-clinical-transcript', 'emr-clinical-form', 'emr-data-table',
-      'emr-stat-tile', 'emr-button', 'emr-badge', 'emr-text-input', 'emr-number-input', 'emr-select',
-      'emr-checkbox', 'emr-switch', 'emr-app-shell', 'emr-top-bar', 'emr-left-nav', 'emr-work-queue',
-      'emr-medication-reconciliation', 'emr-family-pedigree', 'emr-clinical-annotation-canvas'
-    ];
-    const dirEl = document.getElementById('el-directory');
-    tags.forEach((tag) => {
-      const registered = !!customElements.get(tag);
-      const span = document.createElement('span');
-      span.className = 'lit-tag';
-      span.textContent = \`<\${tag}> \${registered ? '✓' : ''}\`;
-      dirEl.appendChild(span);
+    tableEl.addEventListener('intent', ({ detail }) => {
+      const m = tableEl.model;
+      if (detail.type === 'sortChanged') {
+        const direction = detail.direction === 'asc' ? 1 : -1;
+        const label = (row) => row.cells[detail.columnId] ?? '';
+        const rows = [...m.rows].sort((a, b) => direction * label(a).localeCompare(label(b)));
+        tableEl.model = { ...m, sort: { columnId: detail.columnId, direction: detail.direction }, rows };
+      } else if (detail.type === 'selectionChanged') {
+        tableEl.model = { ...m, selectedIds: detail.selectedIds };
+      } else if (detail.type === 'densityChanged') {
+        tableEl.model = { ...m, density: detail.density };
+      } else if (detail.type === 'pageSizeChanged') {
+        tableEl.model = { ...m, pageSize: detail.pageSize };
+      }
     });
+
+    // 8. Browse all cataloged Lit elements using the exported registry metadata.
+    const directory = ${directory};
+    const selector = document.getElementById('lit-category');
+    for (const [category, label] of Object.entries(directory.categories)) {
+      selector.add(new Option(label, category));
+    }
+    const list = document.getElementById('el-directory');
+    const count = document.getElementById('lit-directory-count');
+    const renderDirectory = () => {
+      const category = selector.value;
+      const visible = directory.components.filter((item) => category === 'all' || item.categories.includes(category));
+      list.replaceChildren(...visible.map(({ tag }) => {
+        const entry = document.createElement('span');
+        entry.className = 'lit-tag';
+        entry.textContent = '<' + tag + '>' + (customElements.get(tag) ? '' : ' · Registration unavailable');
+        return entry;
+      }));
+      count.textContent = visible.length + ' of ' + directory.components.length + ' components';
+    };
+    selector.addEventListener('change', renderDirectory);
+    renderDirectory();
   </script>
 </body>
 </html>`;
@@ -761,17 +869,28 @@ run('pnpm build:controller');
 run('pnpm build:elements');
 run('pnpm registry:build');
 
-// 2. Bundle @drguptavivek/emr-elements into Next.js public/lit/ so Next.js export includes it
+// 2. Bundle the Lit elements and workstation example into the Next.js static export
 mkdirSync(nextPublicLitDir, { recursive: true });
 await esbuild.build({
-  entryPoints: [join(rootDir, 'packages/emr-elements/dist/index.js')],
+  stdin: {
+    resolveDir: rootDir,
+    contents: [
+      "export * from './examples/clinical-matrix/lit-host.mjs';",
+      "export { createClinicalNoteDemo } from './examples/clinical-notes/clinical-note.fixture.ts';",
+      "export { makeSpecialtyExamFixture, reduceSpecialtyExamFixture } from './packages/emr-react/harness/gallery/specialty-exam.fixture.ts';",
+      "export { AsyncSearchController } from './packages/emr-controller/dist/search.controller.js';",
+      "export { syntheticFormularyRepository, clearFixturePrescriptionProduct, resolveFixturePrescriptionProduct, PRESCRIBING_PRESETS } from './packages/emr-react/harness/gallery/prescribing-formulary.fixture.ts';",
+    ].join('\n'),
+  },
   bundle: true,
   format: 'esm',
   minify: true,
   outfile: join(nextPublicLitDir, 'emr-elements.bundle.js'),
 });
 writeFileSync(join(nextPublicLitDir, 'emr.css'), readFileSync(emrCssPath, 'utf8'));
-writeFileSync(join(nextPublicLitDir, 'index.html'), buildLitIndexHtml());
+writeFileSync(join(nextPublicLitDir, 'emr-print.css'), readFileSync(emrPrintCssPath, 'utf8'));
+const registryIndex = JSON.parse(readFileSync(join(registryDir, 'index.json'), 'utf8'));
+writeFileSync(join(nextPublicLitDir, 'index.html'), buildLitIndexHtml(registryIndex));
 
 // 3. Build Next.js static export
 run('pnpm --filter @drguptavivek/emr-react harness:build', {

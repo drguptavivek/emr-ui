@@ -56,9 +56,9 @@ let nextId = 0;
             @if (d.descriptionError) { <span class="emr-field__error" [id]="uid + '-desc-error'">{{ d.descriptionError }}</span> }
           </div>
           @if (d.nominee; as nom) {
-            <emr-text-input [controlId]="uid + '-nom-name'" [label]="l().nomineeName" [value]="nom.name ?? ''" [error]="nom.nameError ?? ''" (valueChange)="intent.emit({ type: 'nomineeChanged', name: $event })" />
-            <emr-text-input [controlId]="uid + '-nom-rel'" [label]="l().nomineeRelationship" [value]="nom.relationship ?? ''" [error]="nom.relationshipError ?? ''" (valueChange)="intent.emit({ type: 'nomineeChanged', relationship: $event })" />
-            <emr-text-input [controlId]="uid + '-nom-contact'" [label]="l().nomineeContact" [value]="nom.contact ?? ''" [error]="nom.contactError ?? ''" (valueChange)="intent.emit({ type: 'nomineeChanged', contact: $event })" />
+            <emr-text-input [controlId]="uid + '-nom-name'" [label]="l().nomineeName" [value]="nom.name ?? ''" [error]="nom.nameError ?? ''" (valueChange)="intent.emit({ type: 'nomineeChanged', name: $event ?? '' })" />
+            <emr-text-input [controlId]="uid + '-nom-rel'" [label]="l().nomineeRelationship" [value]="nom.relationship ?? ''" [error]="nom.relationshipError ?? ''" (valueChange)="intent.emit({ type: 'nomineeChanged', relationship: $event ?? '' })" />
+            <emr-text-input [controlId]="uid + '-nom-contact'" [label]="l().nomineeContact" [value]="nom.contact ?? ''" [error]="nom.contactError ?? ''" (valueChange)="intent.emit({ type: 'nomineeChanged', contact: $event ?? '' })" />
           }
           @if (d.canAttach || d.attachmentsLabel) {
             <div class="rr__attach">

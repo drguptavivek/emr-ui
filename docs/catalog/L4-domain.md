@@ -2401,24 +2401,12 @@ export class EmrPrivacyCentreComponent {
 
 ---
 
-### EmrToast
-**Layer** L4 · **Selector** `emr-toast` · **Status** stable · **Story** `emr-shell-and-auth--toast-default`
-
-**Need** — Transient confirmations need a controlled toast banner with no internal timer, an optional action, and a dismiss button.
-
-**Purpose** — Renders `EmrToastModel` and emits `EmrToastIntent`.
-
-**Depends on** — none.
-**Used by** — none yet.
-
----
-
 ### EmrSheet
 **Layer** L4 · **Selector** `emr-sheet` · **Status** stable · **Story** `emr-shell-and-auth--sheet-open`
 
-**Need** — Secondary workflows need a modal sheet/side panel with header back/close buttons and projected content.
+**Need** — Secondary workflows need a modal sheet/side panel with header back/close buttons, focus trapping, Escape dismissal, and projected content.
 
-**Purpose** — Emits `EmrSheetIntent` (`closeRequested`, `backRequested`).
+**Purpose** — Emits `EmrSheetIntent` (`closeRequested`, `backRequested`) while trapping keyboard focus inside the open dialog panel.
 
 **Depends on** — none.
 **Used by** — none yet.
@@ -2506,3 +2494,11 @@ export class EmrPrivacyCentreComponent {
 
 **Depends on** — `EmrButtonComponent`.
 **Used by** — none yet.
+
+### EmrClinicalNoteWorkspace
+
+The clinical note workspace supports consultation, ward and operative notes. It displays encounter context and clinical event time, authorship and signing details, the current note with addenda, a review queue, and revision history with read-only snapshots and section comparisons.
+
+The controller supplies the current document, review preview, available actions, and structured signature details. A signature carries signer identity, role, purpose, method, and signing time. When the host verifies a digital signature, it supplies the verification result, time, and evidence identifier. The component emits `actionRequested` and `fieldChanged` intents. A signed addendum adds information. An amendment creates a new version linked to the signed version it corrects. An entered-in-error event records why an entry was removed from routine use. Authorisation, durable version checks, audit retention, and digital signature verification belong in the host application and its server.
+
+The showcase uses synthetic data to demonstrate a consultation addendum, a resident progress note co-signature, and a correction to an operative note. Its signing actions simulate clinician attestation. The workspace prints the current signed record and signed addenda.

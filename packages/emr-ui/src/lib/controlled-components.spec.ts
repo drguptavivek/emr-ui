@@ -12,19 +12,22 @@ describe('controlled UI component contracts', () => {
   it('button and form primitives expose outputs rather than hidden state updates', () => {
     const source = component('primitives/emr-button.component.ts') + component('primitives/emr-inputs.component.ts');
 
-    expect(source).toMatch(/@Output\(\)\s+readonly\s+clicked\s*=\s*new EventEmitter/);
-    expect(source).toMatch(/@Output\(\)\s+readonly\s+valueChange\s*=\s*new EventEmitter/);
+    expect(source).toMatch(/readonly\s+clicked\s*=\s*output<MouseEvent>\(\)/);
+    expect(source).toMatch(/readonly\s+valueChange\s*=\s*output</);
+    expect(source).not.toMatch(/@Input|@Output|EventEmitter/);
     expect(source).not.toMatch(/this\.value\s*=/);
   });
 
   it('search-select is controlled by query/options/selected inputs and emits intents', () => {
     const source = component('primitives/emr-search-select.component.ts');
 
-    expect(source).toMatch(/@Input\(\)\s+query\s*=\s*''/);
-    expect(source).toMatch(/@Input\(\)\s+options:\s+readonly\s+EmrOption\[\]/);
-    expect(source).toMatch(/@Input\(\)\s+selected:\s+readonly\s+EmrOption\[\]/);
-    expect(source).toMatch(/@Output\(\)\s+readonly\s+queryChanged/);
-    expect(source).toMatch(/@Output\(\)\s+readonly\s+optionSelected/);
+    expect(source).toMatch(/readonly\s+query\s*=\s*input\(''\)/);
+    expect(source).toMatch(/readonly\s+options\s*=\s*input<readonly\s+EmrOption\[\]>\(\[\]\)/);
+    expect(source).toMatch(/readonly\s+selected\s*=\s*input<readonly\s+EmrOption\[\]>\(\[\]\)/);
+    expect(source).toMatch(/readonly\s+queryChange\s*=\s*output<string>\(\)/);
+    expect(source).toMatch(/readonly\s+queryChanged\s*=\s*output<string>\(\)/);
+    expect(source).toMatch(/readonly\s+optionSelected\s*=\s*output<string>\(\)/);
+    expect(source).not.toMatch(/@Input|@Output|EventEmitter/);
     expect(source).not.toMatch(/this\.(query|options|selected)\s*=/);
   });
 

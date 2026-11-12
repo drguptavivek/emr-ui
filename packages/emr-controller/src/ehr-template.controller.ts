@@ -40,6 +40,7 @@ function initialState(initial: EhrTemplateViewModel): EhrTemplateViewModel {
     preview: derivePreview(template),
     artifact: initial.artifact ? copy(initial.artifact) : undefined,
     importIssues: initial.importIssues ? copy(initial.importIssues) : undefined,
+    canAcceptImport: false,
   };
 }
 
@@ -307,6 +308,7 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
     const request = { token: ++this.requestSequence, controller: new AbortController(), template: templateReference };
     this.exportRequest = request;
     this.setState(state => ({ ...state, loading: true, error: undefined }));
+    if (request.controller.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await this.options.artifactPort.exportTemplate(copy(templateReference), format, { signal: request.controller.signal });
       if (this.exportRequest?.token !== request.token || request.controller.signal.aborted) return;
@@ -319,12 +321,13 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
   }
 
   private async importArtifact(format: TemplateArtifactFormat, serialized: string): Promise<void> {
+    if (this.getSnapshot().readOnly) return;
     this.pendingImport = undefined;
     this.importRequest?.controller.abort();
     this.exportRequest?.controller.abort();
     this.importRequest = undefined;
     this.exportRequest = undefined;
-    this.setState(state => ({ ...state, loading: false }));
+    this.setState(state => ({ ...state, loading: false, canAcceptImport: false }));
     if (format === 'internal-json') {
       let parsed: unknown;
       try { parsed = JSON.parse(serialized); } catch { return this.setState(state => ({ ...state, importIssues: [issue('invalid-json', 'The template JSON could not be parsed.')], error: 'Template import requires correction before it can be applied.' })); }
@@ -335,6 +338,7 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
     const request = { token: ++this.requestSequence, controller: new AbortController() };
     this.importRequest = request;
     this.setState(state => ({ ...state, loading: true, error: undefined, importIssues: undefined }));
+    if (request.controller.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await this.options.artifactPort.importTemplate(serialized, format, { signal: request.controller.signal });
       if (this.importRequest?.token !== request.token || request.controller.signal.aborted) return;
@@ -355,7 +359,10 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
       return;
     }
     this.pendingImport = { template: copy(template), issues: copy(issues) };
-    if (issues.length) this.setState(state => ({ ...state, importIssues: copy(issues), error: 'Review the import issues and explicitly accept the template.' }));
+    if (issues.length) this.setState(state => ({
+      ...state, importIssues: copy(issues), canAcceptImport: !state.readOnly,
+      error: 'Review the import issues and explicitly accept the template.',
+    }));
     else this.acceptImport();
   }
 
@@ -366,7 +373,11 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
     this.saveRequest?.controller.abort();
     this.saveRequest = undefined;
     const template = copy(pending.template);
-    this.setState(state => ({ ...state, template, preview: derivePreview(template), dirty: true, saving: false, concurrencyToken: undefined, importIssues: undefined, error: undefined, selectedSectionId: undefined, selectedPlacementId: undefined }));
+    this.setState(state => ({
+      ...state, template, preview: derivePreview(template), dirty: true, saving: false,
+      concurrencyToken: undefined, importIssues: undefined, canAcceptImport: false,
+      error: undefined, selectedSectionId: undefined, selectedPlacementId: undefined,
+    }));
   }
 
   private async save(): Promise<void> {
@@ -380,6 +391,7 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
     const templateReference = this.getSnapshot().template;
     const template = copy(templateReference);
     this.setState(state => ({ ...state, saving: true, error: undefined }));
+    if (request.controller.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await this.options.repository.save(template, { signal: request.controller.signal, concurrencyToken: this.getSnapshot().concurrencyToken });
       if (this.saveRequest?.token !== request.token || request.controller.signal.aborted) return;

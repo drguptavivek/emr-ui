@@ -187,3 +187,19 @@ describe('DocumentViewerController', () => {
     expect(controller.getSnapshot()).toMatchObject({ open: false, currentDocument: undefined, page: undefined, documentCount: 0 });
   });
 });
+
+describe('DocumentViewerController destruction', () => {
+  it('does not load a page when destroyed while publishing the manifest', async () => {
+    const repository = new FakeRepository();
+    const controller = new DocumentViewerController(initial, repository);
+    controller.subscribe(state => { if (state.currentDocument) controller.destroy(); });
+    controller.dispatch({ type: 'openRequested', documentId: 'private', carouselDocumentIds: ['private'] });
+    repository.manifests.get('private')!.resolve(manifest('private'));
+    await settle();
+    controller.dispatch({ type: 'openRequested', documentId: 'other', carouselDocumentIds: ['other'] });
+    controller.destroy();
+    expect(repository.pageSignals).toHaveLength(0);
+    expect(repository.manifestSignals).toHaveLength(1);
+    expect(repository.manifestSignals[0].aborted).toBe(true);
+  });
+});

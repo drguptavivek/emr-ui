@@ -5,9 +5,11 @@ import { Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from 
 import { EmrBadgeView, EmrThemeProvider, SvgIcon, useEmrTheme, type EmrColorScheme, type EmrTokens } from '../../src';
 import { HarnessForm } from '../harness-form';
 import { galleryGroups } from './index';
+import { resolveSitePublicUrl } from './parity/lit-element-host';
+import { ParityWorkbench } from './parity/parity-workbench';
 import { EMR_REGISTRY_MANIFEST } from './registry-manifest';
 
-type SiteTab = 'showcase' | 'lit' | 'registry' | 'form';
+type SiteTab = 'showcase' | 'parity' | 'lit' | 'registry' | 'form';
 type FrameworkTab = 'react' | 'angular' | 'expo' | 'lit';
 type PalettePresetId = 'clinical-slate' | 'surgical-teal' | 'royal-blue' | 'forest-emerald' | 'ophthal-dark-room';
 type FontStackId = 'inter' | 'ibm-plex' | 'atkinson' | 'system';
@@ -263,6 +265,7 @@ function RegistryCard({
           ? item.reactName
           : 'EmrThemeProvider';
   const selectorLabel = 'selector' in item && item.selector ? `<${item.selector}>` : 'foundations';
+  const litStatus = framework === 'lit' && 'rendererStatus' in item.lit ? item.lit.rendererStatus : undefined;
 
   return (
     <View
@@ -283,8 +286,13 @@ function RegistryCard({
             <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: t.fontMono }}>{selectorLabel}</Text>
           </View>
           <Text style={{ color: t.textMuted, fontSize: t.textSm }}>{item.description}</Text>
+          <Text style={{ color: t.textMuted, fontSize: t.textXs }}>
+            Specialty / workflow: {item.categories.map((category) => EMR_REGISTRY_MANIFEST.categories[category]).join(' · ')}
+          </Text>
         </View>
-        <EmrBadgeView badge={{ label: item.status, tone: item.status === 'stable' ? 'success' : 'neutral' }} />
+        <EmrBadgeView badge={litStatus === 'renderer'
+          ? { label: 'Lit renderer', tone: 'info' }
+          : { label: item.status, tone: item.status === 'stable' ? 'success' : 'neutral' }} />
       </View>
 
       <View
@@ -309,6 +317,16 @@ function RegistryCard({
         <Text selectable style={{ color: t.text, fontSize: t.textSm, fontFamily: t.fontMono }}>
           {importSnippet}
         </Text>
+        {framework === 'lit' && 'vendorInit' in item.lit ? (
+          <>
+            <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: '700', fontFamily: t.fontMono }}>
+              VENDORED SOURCE SETUP
+            </Text>
+            <Text selectable style={{ color: t.text, fontSize: t.textSm, fontFamily: t.fontMono }}>
+              {item.lit.vendorInit}
+            </Text>
+          </>
+        ) : null}
       </View>
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -396,9 +414,39 @@ function Surface({
   const [tab, setTab] = useState<SiteTab>('showcase');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const [selectedLayer, setSelectedLayer] = useState<number | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [framework, setFramework] = useState<FrameworkTab>('lit');
   const [query, setQuery] = useState('');
   const [customizerOpen, setCustomizerOpen] = useState(true);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (
+      urlTab === 'parity' ||
+      urlTab === 'showcase' ||
+      urlTab === 'lit' ||
+      urlTab === 'registry' ||
+      urlTab === 'form'
+    ) {
+      setTab(urlTab);
+      if (urlTab === 'parity') {
+        setCustomizerOpen(false);
+      }
+    }
+  }, []);
+
+  const selectTab = (next: SiteTab) => {
+    setTab(next);
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', next);
+      if (next !== 'parity') {
+        url.searchParams.delete('component');
+      }
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+  };
 
   const trimmedQuery = query.trim().toLowerCase();
   const radiusPx = RADIUS_OPTIONS[customTheme.radius].px;
@@ -423,15 +471,17 @@ function Surface({
   const filteredRegistryItems = useMemo(() => {
     return EMR_REGISTRY_MANIFEST.items.filter((item) => {
       if (selectedLayer !== 'all' && item.layer !== selectedLayer) return false;
+      if (selectedCategory !== 'all' && !item.categories.some((category) => category === selectedCategory)) return false;
       if (!trimmedQuery) return true;
       const reactName = 'reactName' in item ? item.reactName : '';
       return (
         item.name.toLowerCase().includes(trimmedQuery) ||
         reactName.toLowerCase().includes(trimmedQuery) ||
-        item.description.toLowerCase().includes(trimmedQuery)
+        item.description.toLowerCase().includes(trimmedQuery) ||
+        item.categories.some((category) => EMR_REGISTRY_MANIFEST.categories[category].toLowerCase().includes(trimmedQuery))
       );
     });
-  }, [selectedLayer, trimmedQuery]);
+  }, [selectedLayer, selectedCategory, trimmedQuery]);
 
   const pillButton = (key: string, label: string, active: boolean, onPress: () => void) => (
     <Pressable
@@ -468,7 +518,7 @@ function Surface({
           gap: 12,
         }}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 1400, width: '100%', alignSelf: 'center' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: tab === 'parity' ? undefined : 1400, width: '100%', alignSelf: 'center' }}>
           <View style={{ gap: 2 }}>
             <Text role="heading" aria-level={1} style={{ color: t.text, fontSize: t.textXl, fontWeight: '700', fontFamily: t.fontFamily }}>
               EMR Component System · L0–L6 Catalog
@@ -479,10 +529,11 @@ function Surface({
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            {pillButton('tab-showcase', `Interactive Showcase (${galleryGroups.length} groups)`, tab === 'showcase', () => setTab('showcase'))}
-            {pillButton('tab-lit', 'Lit Web Components (<emr-*>)', tab === 'lit', () => setTab('lit'))}
-            {pillButton('tab-registry', `Shadcn Registry (${EMR_REGISTRY_MANIFEST.totalItems} items)`, tab === 'registry', () => setTab('registry'))}
-            {pillButton('tab-form', 'OPD Clinical Form Demo', tab === 'form', () => setTab('form'))}
+            {pillButton('tab-parity', `Parity Workbench · React ⇄ Lit (${EMR_REGISTRY_MANIFEST.totalItems - 1})`, tab === 'parity', () => selectTab('parity'))}
+            {pillButton('tab-showcase', `Interactive Showcase (${galleryGroups.length} groups)`, tab === 'showcase', () => selectTab('showcase'))}
+            {pillButton('tab-lit', 'Lit Web Components (<emr-*>)', tab === 'lit', () => selectTab('lit'))}
+            {pillButton('tab-registry', `Shadcn Registry (${EMR_REGISTRY_MANIFEST.totalItems} items)`, tab === 'registry', () => selectTab('registry'))}
+            {pillButton('tab-form', 'OPD Clinical Form Demo', tab === 'form', () => selectTab('form'))}
             {pillButton(
               'btn-customizer',
               customizerOpen ? 'Hide Theme & Typography Studio' : 'Customize Design & Typography',
@@ -519,7 +570,7 @@ function Surface({
         {customizerOpen ? (
           <View
             style={{
-              maxWidth: 1400,
+              maxWidth: tab === 'parity' ? undefined : 1400,
               width: '100%',
               alignSelf: 'center',
               padding: 14,
@@ -750,7 +801,7 @@ function Surface({
           </View>
         ) : null}
 
-        {tab !== 'form' ? (
+        {tab !== 'form' && tab !== 'parity' ? (
           <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flexWrap: 'wrap', maxWidth: 1400, width: '100%', alignSelf: 'center' }}>
             <TextInput
               value={query}
@@ -758,14 +809,14 @@ function Surface({
               placeholder={
                 tab === 'showcase'
                   ? 'Filter interactive components (e.g. prescribing, banner, pedigree, chart, table)...'
-                  : 'Search 118 registry items by slug, Lit/React/Angular name, or clinical keyword...'
+                  : 'Search the registry by component or clinical area…'
               }
               placeholderTextColor={t.textMuted}
               aria-label="Search components"
               style={{
                 flex: 1,
                 minWidth: 260,
-                minHeight: 40,
+                minHeight: 44,
                 paddingHorizontal: 12,
                 borderRadius: radiusPx,
                 borderWidth: 1,
@@ -788,7 +839,9 @@ function Surface({
         ) : null}
       </View>
 
-      {tab === 'form' ? (
+      {tab === 'parity' ? (
+        <ParityWorkbench radiusPx={radiusPx} />
+      ) : tab === 'form' ? (
         <HarnessForm title="emr-react · Live OPD Clinical Form" />
       ) : tab === 'lit' ? (
         <View style={{ flex: 1, maxWidth: 1400, width: '100%', alignSelf: 'center', padding: 16, gap: 12 }}>
@@ -865,7 +918,34 @@ function Surface({
             )}
           </View>
 
-          <Text style={{ color: t.textMuted, fontSize: t.textSm }}>
+          <View style={{ gap: 6, alignItems: 'flex-start' }}>
+            <Text nativeID="registry-category-label" style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: '700' }}>
+              Specialty / workflow
+            </Text>
+            {Platform.OS === 'web' ? createElement('select', {
+              'aria-labelledby': 'registry-category-label',
+              value: selectedCategory,
+              onChange: (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(event.target.value),
+              style: {
+                minHeight: 40,
+                maxWidth: '100%',
+                padding: '0 12px',
+                borderRadius: radiusPx,
+                border: `1px solid ${t.border}`,
+                backgroundColor: t.surface,
+                color: t.text,
+                fontFamily: t.fontFamily,
+                fontSize: t.textSm,
+              },
+            },
+              createElement('option', { value: 'all' }, 'All specialties and workflows'),
+              ...Object.entries(EMR_REGISTRY_MANIFEST.categories).map(([key, label]) =>
+                createElement('option', { key, value: key }, label)
+              )
+            ) : null}
+          </View>
+
+          <Text role="status" style={{ color: t.textMuted, fontSize: t.textSm }}>
             Showing {filteredRegistryItems.length} of {EMR_REGISTRY_MANIFEST.totalItems} installable registry entries
           </Text>
 
@@ -996,18 +1076,55 @@ export function GalleryPage() {
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
+    const ensureStylesheet = (id: string, href: string) => {
+      if (document.getElementById(id)) return;
+      const link = document.createElement('link');
+      link.id = id;
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    };
+    ensureStylesheet('emr-lit-tokens-css', resolveSitePublicUrl('lit/emr.css'));
+    ensureStylesheet('emr-lit-print-css', resolveSitePublicUrl('lit/emr-print.css'));
+
     const root = document.documentElement;
-    if (overrides.primary) root.style.setProperty('--emr-primary', overrides.primary);
-    if (overrides.primaryHover) root.style.setProperty('--emr-primary-hover', overrides.primaryHover);
-    if (overrides.primaryContrast) root.style.setProperty('--emr-primary-contrast', overrides.primaryContrast);
-    if (overrides.primarySoft) root.style.setProperty('--emr-primary-soft', overrides.primarySoft);
-    if (overrides.primaryBorder) root.style.setProperty('--emr-primary-border', overrides.primaryBorder);
-    if (overrides.focus) root.style.setProperty('--emr-focus', overrides.focus);
-    if (overrides.fontFamily) root.style.setProperty('--emr-font-family', overrides.fontFamily);
-    if (overrides.fontMono) root.style.setProperty('--emr-font-mono', overrides.fontMono);
-    if (overrides.controlHeight) root.style.setProperty('--emr-control-height', `${overrides.controlHeight}px`);
+    root.classList.toggle('emr-theme-dark', scheme === 'dark');
+    root.classList.toggle('emr-theme-light', scheme === 'light');
+
+    const syncProp = (cssVar: string, value: string | undefined) => {
+      if (value) {
+        root.style.setProperty(cssVar, value);
+      } else {
+        root.style.removeProperty(cssVar);
+      }
+    };
+
+    syncProp('--emr-primary', overrides.primary);
+    syncProp('--emr-primary-hover', overrides.primaryHover);
+    syncProp('--emr-primary-contrast', overrides.primaryContrast);
+    syncProp('--emr-primary-soft', overrides.primarySoft);
+    syncProp('--emr-primary-border', overrides.primaryBorder);
+    syncProp('--emr-focus', overrides.focus);
+    syncProp('--emr-bg', overrides.background);
+    syncProp('--emr-surface', overrides.surface);
+    syncProp('--emr-surface-soft', overrides.surfaceSoft);
+    syncProp('--emr-surface-raised', overrides.surfaceRaised);
+    syncProp('--emr-border', overrides.border);
+    syncProp('--emr-text', overrides.text);
+    syncProp('--emr-text-muted', overrides.textMuted);
+    syncProp('--emr-font-family', overrides.fontFamily);
+    syncProp('--emr-font-mono', overrides.fontMono);
+    syncProp('--emr-control-height', overrides.controlHeight ? `${overrides.controlHeight}px` : undefined);
+    syncProp('--emr-compact-height', overrides.compactHeight ? `${overrides.compactHeight}px` : undefined);
+    syncProp('--emr-text-2xs', overrides.text2xs ? `${overrides.text2xs}px` : undefined);
+    syncProp('--emr-text-xs', overrides.textXs ? `${overrides.textXs}px` : undefined);
+    syncProp('--emr-text-sm', overrides.textSm ? `${overrides.textSm}px` : undefined);
+    syncProp('--emr-text-md', overrides.textMd ? `${overrides.textMd}px` : undefined);
+    syncProp('--emr-text-lg', overrides.textLg ? `${overrides.textLg}px` : undefined);
+    syncProp('--emr-text-xl', overrides.textXl ? `${overrides.textXl}px` : undefined);
+    syncProp('--emr-text-2xl', overrides.text2xl ? `${overrides.text2xl}px` : undefined);
     root.style.setProperty('--emr-radius', `${RADIUS_OPTIONS[customTheme.radius].px}px`);
-  }, [overrides, customTheme.radius]);
+  }, [scheme, overrides, customTheme.radius]);
 
   return (
     <EmrThemeProvider scheme={scheme} overrides={overrides}>

@@ -56,6 +56,7 @@ export class NoteCaptureController extends StateController<NoteCaptureViewModel,
   }
 
   dispatch(intent: NoteCaptureIntent): void {
+    if (this.isDestroyed()) return;
     switch (intent.type) {
       case 'spanSelected': return this.selectSpan(intent.spanId);
       case 'suggestionSelected': return this.selectSuggestion(intent.suggestionId);
@@ -91,7 +92,7 @@ export class NoteCaptureController extends StateController<NoteCaptureViewModel,
 
   /** Adapter entry point: a recognised utterance arrives while listening. */
   addSpokenSegment(input: SpokenSegmentInput): void {
-    if (!input.text.trim()) return;
+    if (this.isDestroyed() || !input.text.trim()) return;
     this.addSegment({ ...input, id: this.idFactory(), source: 'spoken' });
   }
 
@@ -162,6 +163,7 @@ export class NoteCaptureController extends StateController<NoteCaptureViewModel,
     this.summariseRun?.abort();
     const run = (this.summariseRun = new AbortController());
     this.setState(state => ({ ...state, summarising: true, canSummarise: false, summariseError: undefined }));
+    if (run.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await this.port.summarise(segments, run.signal);
       if (run.signal.aborted) return;
@@ -207,6 +209,7 @@ export class NoteCaptureController extends StateController<NoteCaptureViewModel,
     this.dictationRun?.abort();
     const run = (this.dictationRun = new AbortController());
     this.setState(state => ({ ...state, dictation: { status: 'listening', label: 'Listening', canStart: false, canStop: true } }));
+    if (run.signal.aborted || this.isDestroyed()) return;
     try {
       await this.port.startDictation(segment => { if (!run.signal.aborted) this.addSpokenSegment(segment); }, run.signal);
     } catch (error) {
@@ -221,6 +224,7 @@ export class NoteCaptureController extends StateController<NoteCaptureViewModel,
   private async stopDictation(): Promise<void> {
     if (!this.getSnapshot().dictation.canStop) return;
     this.setState(state => ({ ...state, dictation: { status: 'processing', label: 'Finishing transcript', canStart: false, canStop: false } }));
+    if (this.isDestroyed()) return;
     try {
       await this.port.stopDictation?.();
     } catch {

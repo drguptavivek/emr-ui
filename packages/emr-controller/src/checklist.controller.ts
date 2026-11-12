@@ -26,6 +26,7 @@ export class StagedChecklistController extends StateController<
   }
 
   dispatch(intent: StagedChecklistIntent): void {
+    if (this.isDestroyed()) return;
     if (intent.type === 'phaseSelected') {
       this.setState(state => state.schema.phases.some(phase => phase.id === intent.phaseId)
         ? { ...state, activePhaseId: intent.phaseId }

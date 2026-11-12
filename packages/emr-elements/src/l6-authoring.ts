@@ -7,7 +7,6 @@ import {
   EMR_PALETTE_PRESETS,
   EMR_RADIUS_MAP,
   EmrLitElement,
-  applyEmrCustomTheme,
   defineEmrElement,
   emrShadowStyles,
   type EmrCustomThemeConfig,
@@ -17,26 +16,10 @@ import {
   type EmrRadiusPresetId,
   type EmrThemePresetId,
 } from './foundations.js';
-import { EmrControlledDomainElement } from './l4-domain.js';
+import { registerL4Elements } from './l4-domain.js';
+import { registerL6AuthoringSurfaces } from './l6-authoring-surfaces.js';
 
-export class EmrFieldGeneratorElement extends EmrControlledDomainElement {
-  protected override surfaceTitle = 'Field Generator';
-}
-export class EmrTerminologySearchElement extends EmrControlledDomainElement {
-  protected override surfaceTitle = 'Terminology Search';
-}
-export class EmrValidationRuleEditorElement extends EmrControlledDomainElement {
-  protected override surfaceTitle = 'Validation Rule Editor';
-}
-export class EmrFieldLibraryPickerElement extends EmrControlledDomainElement {
-  protected override surfaceTitle = 'Field Library Picker';
-}
-export class EmrTemplateComposerElement extends EmrControlledDomainElement {
-  protected override surfaceTitle = 'EHR Template Composer';
-}
-export class EmrTemplatePreviewElement extends EmrControlledDomainElement {
-  protected override surfaceTitle = 'Template Preview';
-}
+export * from './l6-authoring-surfaces.js';
 
 const customizerStyles = css`
   .customizer-grid {
@@ -62,10 +45,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
   @property({ attribute: false }) config: EmrCustomThemeConfig = { ...DEFAULT_EMR_CUSTOM_THEME };
 
   private updateConfig(patch: Partial<EmrCustomThemeConfig>): void {
-    this.config = { ...this.config, ...patch };
-    applyEmrCustomTheme(this.config);
-    this.emitValueChange(this.config);
-    this.emitIntent({ type: 'themeConfigChanged', config: this.config });
+    this.emitIntent({ type: 'themeConfigChanged', config: { ...this.config, ...patch } });
   }
 
   override render() {
@@ -86,7 +66,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
               return html`<button
                 type="button"
                 class="emr-btn emr-btn--secondary"
-                style="min-height:34px;height:34px;padding:0 10px;"
+                style="padding:0 10px;"
                 aria-pressed=${c.preset === id}
                 @click=${() => this.updateConfig({ preset: id })}
               >
@@ -104,7 +84,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
               (r) => html`<button
                 type="button"
                 class="emr-btn emr-btn--secondary"
-                style="min-height:34px;height:34px;padding:0 10px;"
+                style="padding:0 10px;"
                 aria-pressed=${c.radius === r}
                 @click=${() => this.updateConfig({ radius: r })}
               >${EMR_RADIUS_MAP[r].label}</button>`,
@@ -119,7 +99,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
               (d) => html`<button
                 type="button"
                 class="emr-btn emr-btn--secondary"
-                style="min-height:34px;height:34px;padding:0 10px;"
+                style="padding:0 10px;"
                 aria-pressed=${c.density === d}
                 @click=${() => this.updateConfig({ density: d })}
               >${EMR_DENSITY_MAP[d].label}</button>`,
@@ -134,7 +114,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
               (f) => html`<button
                 type="button"
                 class="emr-btn emr-btn--secondary"
-                style="min-height:34px;height:34px;padding:0 10px;"
+                style="padding:0 10px;"
                 aria-pressed=${c.fontStack === f}
                 @click=${() => this.updateConfig({ fontStack: f })}
               >${EMR_FONT_STACKS[f].label}</button>`,
@@ -145,7 +125,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
               (s) => html`<button
                 type="button"
                 class="emr-btn emr-btn--secondary"
-                style="min-height:30px;height:30px;padding:0 10px;"
+                style="padding:0 10px;"
                 aria-pressed=${c.fontScale === s}
                 @click=${() => this.updateConfig({ fontScale: s })}
               >${Math.round(Number(s) * 100)}%</button>`,
@@ -158,11 +138,7 @@ export class EmrThemeCustomizerElement extends EmrLitElement {
 }
 
 export function registerL6Elements(): void {
-  defineEmrElement('emr-field-generator', EmrFieldGeneratorElement);
-  defineEmrElement('emr-terminology-search', EmrTerminologySearchElement);
-  defineEmrElement('emr-validation-rule-editor', EmrValidationRuleEditorElement);
-  defineEmrElement('emr-field-library-picker', EmrFieldLibraryPickerElement);
-  defineEmrElement('emr-template-composer', EmrTemplateComposerElement);
-  defineEmrElement('emr-template-preview', EmrTemplatePreviewElement);
+  registerL4Elements();
+  registerL6AuthoringSurfaces();
   defineEmrElement('emr-theme-customizer', EmrThemeCustomizerElement);
 }

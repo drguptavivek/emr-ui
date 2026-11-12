@@ -30,16 +30,16 @@ let nextId = 0;
       <h3 class="caf__title" [id]="uid + '-title'">{{ model().reasonLabel }}</h3>
       <div class="caf__number">
         <emr-radio-group [name]="uid + '-number'" [label]="l().number" [options]="numberOpts()" [value]="model().selectedNumber ?? null"
-          (valueChange)="intent.emit({ type: 'numberSelected', id: $event })" />
+          (valueChange)="$event !== null && intent.emit({ type: 'numberSelected', id: $event })" />
         @if (model().selectedNumber; as n) {
           <button type="button" class="emr-button emr-button--outline" (click)="intent.emit({ type: 'callRequested', numberId: n })">{{ l().call }}: {{ numberLabel(n) }}</button>
         }
       </div>
       <emr-radio-group [name]="uid + '-channel'" [label]="l().channel" [options]="channelOpts()" [value]="model().selectedChannel ?? null"
-        (valueChange)="intent.emit({ type: 'channelSelected', id: $event })" />
+        (valueChange)="$event !== null && intent.emit({ type: 'channelSelected', id: $event })" />
       <emr-toggle [label]="l().reached" [checked]="model().reached ?? false" (checkedChange)="intent.emit({ type: 'reachedChanged', reached: $event })" />
       <emr-radio-group [name]="uid + '-outcome'" [label]="l().outcome" [options]="outcomeOpts()" [value]="model().selectedOutcome ?? null"
-        (valueChange)="intent.emit({ type: 'outcomeSelected', id: $event })" />
+        (valueChange)="$event !== null && intent.emit({ type: 'outcomeSelected', id: $event })" />
       @if (model().consequence; as c) { <div class="emr-alert emr-tone-info" role="status"><div>{{ c }}</div></div> }
       <emr-date-input [controlId]="uid + '-date'" [label]="l().nextActionDate" [value]="model().nextActionDate ?? ''" [error]="model().nextActionDateError ?? ''"
         (valueChange)="intent.emit({ type: 'nextActionDateChanged', date: $event || null })" />

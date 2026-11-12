@@ -1,7 +1,6 @@
 'use client';
 
-import { useId } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import type {
   EmrBarcodeScanIntent,
   EmrIdentifierCheckIntent,
@@ -15,9 +14,8 @@ import type {
 } from '@drguptavivek/emr-controller';
 import { EmrChip, EmrAlert, EmrCard } from './l1-display';
 import { EmrCheckbox } from './l1-inputs';
-import { ThemedInput } from './inputs-core';
-import { EmrBadgeView, EmrButton, EmrOptionChip, EmrRow } from './primitives';
-import { EmrFieldFrame } from './typed-field';
+import { EmrIdentifierEntry } from './l2-fields';
+import { EmrBadgeView, EmrButton } from './primitives';
 import { fontFamily, fontWeight, useEmrTheme } from './theme';
 
 /** English fallbacks for built-in strings; every one is overridable via the `labels` prop. */
@@ -50,7 +48,7 @@ export type EmrBarcodeScanFieldProps = IdentifierEntryView & {
   /** Keyboard "done"/Enter: the app treats it as "use this value" (e.g. add the card). */
   onSubmit?: () => void;
   labels?: Partial<EmrIdentityLabels>;
-  onIntent: (intent: EmrBarcodeScanIntent) => void;
+  onIntent: (intent: Exclude<EmrBarcodeScanIntent, { type: 'valueChanged' }>) => void;
 };
 
 export type {
@@ -69,40 +67,50 @@ function useText() {
   return { t, body: { ...base, color: t.text }, muted: { ...base, color: t.textMuted, fontSize: t.textSm }, bold: { ...base, color: t.text, fontWeight: fontWeight(t.weightBold) } };
 }
 
-/** L2. Raw text entry plus a Scan request; the app owns the camera and the normaliser. No format rules here. */
-export function EmrBarcodeScanField({ value, onValueChange, onSubmit, normalisedValue, error, warning, label, hint, readOnly, typeOptions, selectedType, labels, onIntent }: EmrBarcodeScanFieldProps) {
-  const { t, muted } = useText();
-  const l = { ...DEFAULTS, ...labels };
-  const id = useId();
-  const hasMessage = !!(error || warning || hint);
+/** L2 backwards-compatible flat-prop wrapper delegating to canonical `EmrIdentifierEntry`. */
+export function EmrBarcodeScanField({
+  value,
+  onValueChange,
+  onSubmit,
+  normalisedValue,
+  error,
+  warning,
+  label,
+  hint,
+  readOnly,
+  typeOptions,
+  selectedType,
+  labels,
+  onIntent,
+}: EmrBarcodeScanFieldProps) {
   return (
-    <EmrFieldFrame label={label} labelNamesControl controlId={id} hint={hint} warning={warning} error={error}>
-      {typeOptions ? (
-        <View role="radiogroup" aria-label={`${label}: ${l.identifierType}`}>
-          <EmrRow>
-            {typeOptions.map(o => (
-              <EmrOptionChip key={o.id} label={o.label} selected={o.id === selectedType} readOnly={readOnly}
-                onPress={() => onIntent({ type: 'typeSelected', id: o.id })} />
-            ))}
-          </EmrRow>
-        </View>
-      ) : null}
-      <View style={styles.entry}>
-        <View style={styles.grow}>
-          {/* The field label is the input's own accessible name (TalkBack ignores labelledby without it). */}
-          <ThemedInput nativeID={id} aria-label={label} aria-labelledby={Platform.OS === 'web' ? `${id}-label` : undefined} aria-describedby={hasMessage ? `${id}-message` : undefined}
-            value={value} onChangeText={onValueChange} invalid={!!error} readOnly={readOnly}
-            autoCapitalize="characters" autoCorrect={false} spellCheck={false}
-            returnKeyType={onSubmit ? 'done' : undefined} blurOnSubmit={false} onSubmitEditing={onSubmit ? () => onSubmit() : undefined} />
-        </View>
-        {readOnly ? null : <EmrButton variant="outline" label={l.scan} accessibilityLabel={`${l.scan}: ${label}`} onPress={() => onIntent({ type: 'scanRequested' })} />}
-      </View>
-      {normalisedValue ? <Text aria-live="polite" style={[muted, { color: t.success }]}>✓ {normalisedValue}</Text> : null}
-    </EmrFieldFrame>
+    <EmrIdentifierEntry
+      model={{
+        label,
+        value,
+        normalisedValue,
+        error,
+        warning,
+        hint,
+        readOnly,
+        typeOptions,
+        selectedType,
+      }}
+      labels={labels}
+      onSubmit={onSubmit}
+      onIntent={intent => {
+        if (intent.type === 'valueChanged') {
+          onValueChange(intent.raw);
+        } else {
+          onIntent(intent);
+        }
+      }}
+    />
   );
 }
 
-export const EmrIdentifierEntry = EmrBarcodeScanField;
+export const EmrIdentifierEntryField = EmrBarcodeScanField;
+export { EmrIdentifierEntry } from './l2-fields';
 
 /** L4. Who this is, by identifier. First identifier is primary. Compact wraps within 360dp. */
 export function EmrPatientIdentityCard({ model: m, mode, labels, onIntent }: {

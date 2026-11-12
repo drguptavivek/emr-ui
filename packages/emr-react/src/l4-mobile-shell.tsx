@@ -218,33 +218,9 @@ export function EmrSyncPill({ model: m, onIntent, labels }: {
   );
 }
 
-// ---- Toast --------------------------------------------------------------------------------
+// ---- Toast (relocated to L1 ./l1-feedback; re-exported for backwards compatibility) -------
 
-/**
- * L4 toast. No timers: the app's queue dismisses. It is transient, so it must never be the only carrier
- * of a blocking clinical error; those belong in an inline EmrAlert. `bottomOffset` lifts it above the tab bar.
- */
-export function EmrToast({ model, bottomOffset = 0, onIntent, labels }: {
-  model: EmrToastModel | null;
-  bottomOffset?: number;
-  onIntent: (intent: EmrToastIntent) => void;
-  labels?: Partial<EmrMobileShellLabels>;
-}) {
-  const t = useEmrTheme();
-  const l = { ...DEFAULTS, ...labels };
-  if (!model) return null;
-  const c = toneColors(t, model.tone);
-  const urgent = model.tone === 'danger' || model.tone === 'warning';
-  return (
-    <View pointerEvents="box-none" style={[styles.toastHost, { bottom: bottomOffset }]}>
-      <View role={urgent ? 'alert' : 'status'} style={[styles.toast, { backgroundColor: c.backgroundColor, borderColor: c.color }]}>
-        <Text style={{ flex: 1, minWidth: 0, color: c.color, fontSize: t.textMd, fontFamily: fontFamily(t) }}>{GLYPH[model.tone]} {model.message}</Text>
-        {model.actionLabel ? <EmrButton small variant="outline" label={model.actionLabel} onPress={() => onIntent({ type: 'actionPressed', id: model.id })} /> : null}
-        <EmrButton small variant="ghost" label="✕" accessibilityLabel={l.dismiss} onPress={() => onIntent({ type: 'dismissed', id: model.id })} />
-      </View>
-    </View>
-  );
-}
+export { EmrToast } from './l1-feedback';
 
 const styles = StyleSheet.create({
   pad: { gap: 16, alignItems: 'center', width: '100%', maxWidth: 360, alignSelf: 'center' },
@@ -257,6 +233,4 @@ const styles = StyleSheet.create({
   tab: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center', gap: 2, borderTopWidth: 3, paddingVertical: 6 },
   scan: { width: 72, height: 72, marginTop: -20, marginHorizontal: 4, borderRadius: 36, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   pill: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, justifyContent: 'center' },
-  toastHost: { position: 'absolute', left: 0, right: 0, paddingHorizontal: 16, paddingBottom: 8 },
-  toast: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, padding: 12 },
 });

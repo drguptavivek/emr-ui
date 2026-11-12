@@ -30,10 +30,15 @@ export abstract class StateController<State, Intent>
 
   protected setState(next: State | ((current: Readonly<State>) => State)): void {
     if (this.destroyed) return;
-    this.state = typeof next === 'function'
+    const state = typeof next === 'function'
       ? (next as (current: Readonly<State>) => State)(this.state)
       : next;
-    for (const listener of this.listeners) listener(this.state);
+    if (this.destroyed) return;
+    this.state = state;
+    for (const listener of this.listeners) {
+      if (this.destroyed) break;
+      listener(this.state);
+    }
   }
 
   protected isDestroyed(): boolean {
@@ -43,6 +48,7 @@ export abstract class StateController<State, Intent>
   abstract dispatch(intent: Intent): void;
 
   destroy(): void {
+    if (this.destroyed) return;
     this.destroyed = true;
     this.listeners.clear();
     this.onDestroy();

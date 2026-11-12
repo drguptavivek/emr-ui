@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import type {
   DoseForm,
+  PrescribingFormularyItem,
   PrescribingRow,
   PrescribingTableIntent,
   PrescribingTableViewModel,
@@ -20,12 +21,12 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
   imports: [EmrBadgeComponent, EmrButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="rx-table" [attr.aria-labelledby]="headingId() ?? 'emr-rx-table-title'">
+    <section class="rx-table" [attr.aria-label]="headingId() ? null : (model().title ?? 'Medication Prescribing Table')" [attr.aria-labelledby]="headingId() ?? null">
       <header class="rx-table__header">
         <div class="rx-table__title-group">
           <span class="rx-table__badge" aria-hidden="true">Rx</span>
           <div>
-            <h3 class="rx-table__title" [id]="headingId() ?? 'emr-rx-table-title'">
+            <h3 class="rx-table__title" [attr.id]="headingId() ?? null">
               {{ model().title ?? 'Medication Prescribing Table' }}
             </h3>
             <p class="rx-table__subtitle">
@@ -78,10 +79,32 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       class="emr-control"
                       [value]="row.drugName"
                       [readOnly]="!!model().readOnly"
-                      placeholder="Search Backend Formulary API…"
+                      placeholder="Medicine name or formulary search"
                       [attr.aria-label]="'Row ' + (idx + 1) + ' medicine name'"
                       (input)="onDrugInput(row.id, $event)"
                     />
+                    @if (searchFor(row.id, row.drugName); as search) {
+                      <div class="rx-table__formulary" [attr.aria-busy]="search.loading">
+                        @if (search.loading) {
+                          <span role="status">Searching formulary…</span>
+                        } @else if (search.error) {
+                          <span role="alert">{{ search.error }}</span>
+                          @if (!model().readOnly) {
+                            <button type="button" class="rx-table__pill" (click)="retryFormulary(row.id, search.query)">Retry search</button>
+                          }
+                        } @else if (search.items.length) {
+                          <div role="group" [attr.aria-label]="'Formulary results for row ' + (idx + 1)">
+                            @for (item of search.items; track item.code) {
+                              <button type="button" class="rx-table__formulary-result" [disabled]="!!model().readOnly" (click)="selectFormulary(row.id, item)">
+                                {{ item.drugName }} {{ item.strength }} · {{ item.formLabel }}
+                              </button>
+                            }
+                          </div>
+                        } @else if (search.query.trim()) {
+                          <span role="status">No formulary matches.</span>
+                        }
+                      </div>
+                    }
                     <input
                       type="text"
                       class="emr-control rx-table__strength"
@@ -93,7 +116,7 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                     />
                   </div>
                   <div class="rx-table__presets" style="margin-top: 4px; margin-bottom: 0;">
-                    <span class="rx-table__pattern">API Form: {{ row.formLabel || row.form }}</span>
+                    <span class="rx-table__pattern">Form: {{ row.formLabel || row.form }}</span>
                     @if (row.formularyCode) {
                       <span class="rx-table__slot-label" style="margin-bottom: 0;">{{ row.formularyCode }}</span>
                     }
@@ -110,16 +133,17 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                         type="button"
                         class="rx-table__step-btn"
                         [attr.aria-label]="'Decrease dose for row ' + (idx + 1)"
-                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: (row.doseStep ?? stepFor(row.form)) * -1 })"
+                        [disabled]="(row.doseAmount ?? 0) <= (row.doseStep ?? stepFor(row.form))"
+                        (click)="stepDose(row.id, -1)"
                       >−</button>
                     }
-                    <span class="rx-table__step-val">{{ row.doseAmount ?? 1 }}{{ row.unitLabel ? ' ' + row.unitLabel : '' }}</span>
+                    <span class="rx-table__step-val">{{ row.doseAmount ?? '—' }}{{ row.unitLabel ? ' ' + row.unitLabel : '' }}</span>
                     @if (!model().readOnly) {
                       <button
                         type="button"
                         class="rx-table__step-btn"
                         [attr.aria-label]="'Increase dose for row ' + (idx + 1)"
-                        (click)="intent.emit({ type: 'doseStepped', rowId: row.id, delta: row.doseStep ?? stepFor(row.form) })"
+                        (click)="stepDose(row.id, 1)"
                       >+</button>
                     }
                   </div>
@@ -193,6 +217,9 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
                       >+</button>
                     }
                   </div>
+                  @if (row.dispenseQuantity; as dispense) {
+                    <span class="rx-table__pattern" style="display:inline-block;margin-top:4px;">= {{ dispense.count }} {{ dispense.unit }}{{ dispense.count === 1 ? '' : 's' }}</span>
+                  }
                 </td>
 
                 <td class="rx-table__cell-timing">
@@ -302,19 +329,21 @@ import { EmrButtonComponent } from '../primitives/emr-button.component';
     .rx-table__row td { padding: 10px 12px; border-bottom: 1px solid var(--emr-border); vertical-align: top; }
     .rx-table__num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; border-radius: 6px; background: var(--emr-primary-soft); color: var(--emr-primary-contrast); font-family: var(--emr-font-mono); font-size: var(--emr-text-xs); font-weight: var(--emr-weight-bold); margin-bottom: 6px; }
     .rx-table__btn-row { display: flex; gap: 4px; }
-    .rx-table__icon-btn { width: 28px; height: 28px; border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); color: var(--emr-text); cursor: pointer; font-size: var(--emr-text-xs); }
+    .rx-table__icon-btn { min-width: var(--emr-control-height); min-height: var(--emr-control-height); border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); color: var(--emr-text); cursor: pointer; font-size: var(--emr-text-xs); }
     .rx-table__icon-btn--danger { border-color: var(--emr-danger); color: var(--emr-danger); }
     .rx-table__drug-inputs { display: flex; gap: 6px; }
+    .rx-table__formulary { display: grid; gap: 4px; margin-top: 4px; }
+    .rx-table__formulary-result { display: block; width: 100%; min-height: var(--emr-control-height); padding: 6px 8px; border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); color: var(--emr-text); text-align: left; cursor: pointer; }
     .rx-table__strength { width: 88px; font-family: var(--emr-font-mono); }
     .rx-table__presets { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-bottom: 6px; }
-    .rx-table__pill { padding: 2px 8px; min-height: 26px; border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); color: var(--emr-text); font-size: var(--emr-text-xs); cursor: pointer; }
+    .rx-table__pill { padding: 4px 10px; min-height: var(--emr-control-height); border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); color: var(--emr-text); font-size: var(--emr-text-xs); cursor: pointer; }
     .rx-table__pill[aria-pressed="true"] { border-color: var(--emr-primary); background: var(--emr-primary-soft); color: var(--emr-primary-contrast); }
     .rx-table__pattern { padding: 2px 8px; border: 1px solid var(--emr-primary-border); border-radius: 6px; background: var(--emr-surface-soft); font-family: var(--emr-font-mono); font-size: var(--emr-text-xs); font-weight: var(--emr-weight-bold); }
     .rx-table__slots { display: flex; gap: 6px; }
     .rx-table__slot { flex: 1; border: 1px solid var(--emr-border); border-radius: 6px; padding: 4px; background: var(--emr-surface-soft); }
     .rx-table__slot-label { display: block; font-size: var(--emr-text-2xs); color: var(--emr-text-muted); margin-bottom: 4px; }
-    .rx-table__stepper { display: flex; align-items: center; border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); overflow: hidden; height: 30px; }
-    .rx-table__step-btn { width: 26px; height: 100%; border: 0; background: var(--emr-surface-soft); color: var(--emr-text); cursor: pointer; font-size: var(--emr-text-sm); }
+    .rx-table__stepper { display: flex; align-items: center; border: 1px solid var(--emr-border); border-radius: 6px; background: var(--emr-surface); overflow: hidden; min-height: var(--emr-control-height); }
+    .rx-table__step-btn { min-width: var(--emr-control-height); min-height: var(--emr-control-height); border: 0; background: var(--emr-surface-soft); color: var(--emr-text); cursor: pointer; font-size: var(--emr-text-sm); }
     .rx-table__step-val { flex: 1; text-align: center; font-family: var(--emr-font-mono); font-size: var(--emr-text-xs); font-weight: var(--emr-weight-bold); padding: 0 4px; }
     .rx-table__timing-row { display: flex; gap: 6px; align-items: center; }
     .rx-table__footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px; background: var(--emr-surface-soft); }
@@ -325,6 +354,11 @@ export class EmrPrescribingTableComponent {
   readonly headingId = input<string>();
   readonly intent = output<PrescribingTableIntent>();
 
+  searchFor(rowId: string, query: string) {
+    const search = this.model().formularySearch;
+    return search?.rowId === rowId && search.query === query ? search : undefined;
+  }
+
   stepFor(form: DoseForm): number {
     return form === 'tablet' ? 0.5 : 1;
   }
@@ -334,6 +368,31 @@ export class EmrPrescribingTableComponent {
     if (n <= 0) return '0';
     if (n === 0.5) return '½';
     return String(n);
+  }
+
+  protected stepDose(rowId: string, direction: -1 | 1): void {
+    const model = this.model();
+    const row = model.rows.find(item => item.id === rowId);
+    if (model.readOnly || !row) return;
+    const step = row.doseStep ?? this.stepFor(row.form);
+    if (!Number.isFinite(step) || step <= 0 || (direction < 0 && (row.doseAmount ?? 0) <= step)) return;
+    this.intent.emit({ type: 'doseStepped', rowId, delta: direction * step });
+  }
+
+  protected selectFormulary(rowId: string, item: PrescribingFormularyItem): void {
+    const model = this.model();
+    const search = model.formularySearch;
+    if (model.readOnly || !search || search.rowId !== rowId || search.loading || search.error
+      || !model.rows.some(row => row.id === rowId && row.drugName === search.query)
+      || !search.items.includes(item)) return;
+    this.intent.emit({ type: 'formularySelected', rowId, item });
+  }
+
+  protected retryFormulary(rowId: string, query: string): void {
+    const model = this.model();
+    if (model.readOnly || model.formularySearch?.rowId !== rowId || model.formularySearch.query !== query
+      || !model.rows.some(row => row.id === rowId && row.drugName === query)) return;
+    this.intent.emit({ type: 'formularySearchRequested', rowId, query });
   }
 
   onDrugInput(rowId: string, event: Event): void {

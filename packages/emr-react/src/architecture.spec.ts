@@ -135,6 +135,26 @@ describe('EMR React architecture boundary', () => {
       'EmrThemeProvider',
       'EmrRow',
       'EmrOptionChip',
+      'EmrToggleGroup',
+      'EmrTreeView',
+      'EmrTreeSelect',
+      'EmrImageViewer',
+      'EmrImageCropper',
+      'EmrImageUpload',
+      'EmrDateRangeInput',
+      'EmrCombobox',
+      'EmrTagInput',
+      'EmrSlider',
+      'EmrRangeSlider',
+      'EmrMaskedInput',
+      'EmrOtpInput',
+      'EmrMenu',
+      'EmrSplitButton',
+      'EmrAccordion',
+      'EmrBreadcrumbs',
+      'EmrColorPicker',
+      'EmrCopyButton',
+      'EmrImageField',
     ]);
     const tsxFiles = reactSources.filter(({ file }) => file.endsWith('.tsx') && !file.endsWith('.native.tsx'));
     const unmapped: string[] = [];
@@ -149,5 +169,55 @@ describe('EMR React architecture boundary', () => {
     }
 
     expect(unmapped, `Unmapped React components missing from EMR_CATALOG: ${unmapped.join(', ')}`).toEqual([]);
+  });
+
+  it('enforces downward layer direction so L1 modules never import from L2/L3/L4/L5/L6 and L2 never imports from L3+', () => {
+    const explicitL1Basenames = new Set([
+      'tokens.ts',
+      'theme.tsx',
+      'icons.tsx',
+      'labels.tsx',
+      'inputs-core.tsx',
+      'primitives.tsx',
+      'stat-tile.tsx',
+    ]);
+    const explicitL2Basenames = new Set([
+      'typed-field.logic.ts',
+      'typed-field.tsx',
+    ]);
+
+    const classifyLayer = (filePath: string): 'L1' | 'L2' | 'HIGHER' => {
+      const base = relative(reactSrcRoot, filePath);
+      if (base.startsWith('l1-') || explicitL1Basenames.has(base)) return 'L1';
+      if (base.startsWith('l2-') || explicitL2Basenames.has(base)) return 'L2';
+      return 'HIGHER';
+    };
+
+    const relativeSpecPattern = /(?:import|export)\s+(?:type\s+)?(?:[^'"]*?\s+from\s+)?['"](\.\/[^'"]+)['"]/g;
+    const violations: string[] = [];
+
+    for (const { file, rel, text } of reactSources) {
+      const base = relative(reactSrcRoot, file);
+      if (base === 'index.ts' || base === 'use-controller.ts') continue;
+      const sourceLayer = classifyLayer(file);
+      if (sourceLayer === 'HIGHER') continue;
+
+      for (const match of text.matchAll(relativeSpecPattern)) {
+        const spec = match[1];
+        const target = resolveModuleFile(reactSrcRoot, spec);
+        if (!target) continue;
+        const targetLayer = classifyLayer(target);
+        if (sourceLayer === 'L1' && targetLayer !== 'L1') {
+          violations.push(`${rel} (L1) -> ${spec} (${targetLayer})`);
+        } else if (sourceLayer === 'L2' && targetLayer === 'HIGHER') {
+          violations.push(`${rel} (L2) -> ${spec} (${targetLayer})`);
+        }
+      }
+    }
+
+    expect(
+      violations,
+      `Upward layer imports detected in L1/L2 modules: ${violations.join('; ')}`
+    ).toEqual([]);
   });
 });

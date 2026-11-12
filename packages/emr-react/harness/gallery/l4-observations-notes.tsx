@@ -25,6 +25,7 @@ import {
   EmrObservationFlowsheet,
   EmrObservationTrend,
 } from '../../src/l4-observations-notes';
+import { clinicalNoteGallery } from './clinical-note-workspace';
 import type { GallerySection } from './types';
 
 // ---------------------------------------------------------------------------
@@ -807,6 +808,7 @@ function NoteCapturePairDemo() {
 }
 
 export const gallery: GallerySection[] = [
+  clinicalNoteGallery,
   {
     id: 'flowsheet-vitals',
     title: 'EmrObservationFlowsheet — vital signs',

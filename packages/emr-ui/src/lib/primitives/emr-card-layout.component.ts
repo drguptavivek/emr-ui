@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input } from '@angular/core';
-
-/**
- * Modular, presentation-only layout primitives shared across catalogue screens.
- * They provide alignment (equal row heights, configurable column widths) without
- * owning any workflow state. Business content is supplied via content projection
- * or strongly typed string inputs.
- */
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  booleanAttribute,
+  computed,
+  input,
+} from '@angular/core';
 
 /** Single card surface wrapper with an optional heading. */
 @Component({
@@ -15,18 +15,18 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input 
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'emr-card',
-    '[class.emr-card--flush]': '!padded()'
+    '[class.emr-card--flush]': '!padded()',
   },
   template: `
     @if (label(); as text) {
       <div class="emr-card__title">{{ text }}</div>
     }
     <div class="emr-card__body"><ng-content /></div>
-  `
+  `,
 })
 export class EmrCardComponent {
   readonly label = input<string>();
-  readonly padded = input(true);
+  readonly padded = input(true, { transform: booleanAttribute });
 }
 
 /**
@@ -42,9 +42,9 @@ export class EmrCardComponent {
   host: {
     class: 'emr-columns',
     '[style.grid-template-columns]': 'template()',
-    '[style.gap]': 'gap()'
+    '[style.gap]': 'gap()',
   },
-  template: `<ng-content />`
+  template: `<ng-content />`,
 })
 export class EmrColumnsComponent {
   readonly count = input(2);
@@ -73,22 +73,22 @@ export class EmrColumnsComponent {
   host: {
     class: 'emr-field-value-row',
     '[class.emr-field-value-row--heading]': 'heading()',
-    role: 'row'
+    role: 'row',
   },
   template: `
     <div class="emr-fvr__cell emr-fvr__field" role="cell" data-label="Field">{{ field() }}</div>
     <div class="emr-fvr__cell emr-fvr__value" role="cell" data-label="Value">
-      {{ heading() ? value() : (value() || placeholder()) }}
+      {{ heading() ? value() : value() || placeholder() }}
     </div>
     <div class="emr-fvr__cell emr-fvr__remarks" role="cell" data-label="Remarks">{{ remarks() }}</div>
     <div class="emr-fvr__cell emr-fvr__notes" role="cell" data-label="Notes">{{ notes() }}</div>
-  `
+  `,
 })
 export class EmrFieldValueRowComponent {
   readonly field = input<string>('');
   readonly value = input<string>('');
   readonly remarks = input<string>('');
   readonly notes = input<string>('');
-  readonly heading = input(false);
+  readonly heading = input(false, { transform: booleanAttribute });
   readonly placeholder = input('—');
 }

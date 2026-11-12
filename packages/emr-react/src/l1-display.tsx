@@ -18,13 +18,67 @@ type PressState = PressableStateCallbackType & { focused?: boolean };
 /** Glyph paired with the text so tone is never colour alone. Neutral carries none. */
 const TONE_GLYPH: Record<EmrTone, string> = { neutral: '', info: 'ℹ', success: '✓', warning: '⚠', danger: '✕' };
 
-/** L1. Small pill; the children are the meaning, tone only styles it. */
-export function EmrChip({ tone = 'neutral', children }: { tone?: EmrTone; children: ReactNode }) {
+/** L1. Small pill; the children are the meaning, tone only styles it. Optional >=44x44 remove action. */
+export function EmrChip({
+  tone = 'neutral',
+  removable,
+  disabled,
+  removeLabel,
+  onRemove,
+  children,
+}: {
+  tone?: EmrTone;
+  removable?: boolean;
+  disabled?: boolean;
+  removeLabel?: string;
+  onRemove?: () => void;
+  children: ReactNode;
+}) {
   const t = useEmrTheme();
   const c = toneColors(t, tone);
+  const defaultRemoveLabel = typeof children === 'string' ? `Remove ${children}` : 'Remove';
   return (
-    <View style={[styles.chip, { backgroundColor: c.backgroundColor, minHeight: t.compactHeight }]}>
-      <Text style={{ color: c.color, fontSize: t.textXs, fontWeight: fontWeight(600), fontFamily: fontFamily(t) }}>{children}</Text>
+    <View
+      style={[
+        styles.chip,
+        removable && styles.chipRemovable,
+        {
+          backgroundColor: c.backgroundColor,
+          minHeight: removable ? Math.max(44, t.controlHeight) : t.compactHeight,
+          opacity: disabled ? 0.6 : 1,
+        },
+      ]}
+    >
+      <Text
+        style={[
+          removable ? styles.chipRemovableText : undefined,
+          { color: c.color, fontSize: t.textXs, fontWeight: fontWeight(600), fontFamily: fontFamily(t) },
+        ]}
+      >
+        {children}
+      </Text>
+      {removable ? (
+        <Pressable
+          role="button"
+          aria-label={removeLabel ?? defaultRemoveLabel}
+          aria-disabled={disabled}
+          disabled={disabled}
+          onPress={disabled ? undefined : onRemove}
+          style={({ pressed, focused }: PressState) => [
+            styles.chipRemoveBtn,
+            focusRing(t, focused),
+            {
+              minWidth: 44,
+              minHeight: 44,
+              backgroundColor: pressed && !disabled ? t.surfaceRaised : 'transparent',
+            },
+          ]}
+        >
+          <Text aria-hidden style={{ color: c.color, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+            ×
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -243,6 +297,9 @@ export function EmrStatusCell({ status, valueLabel, attribution, action, seconda
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   chip: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 },
+  chipRemovable: { paddingLeft: 12, paddingRight: 0, paddingVertical: 0, overflow: 'hidden' },
+  chipRemovableText: { paddingVertical: 4 },
+  chipRemoveBtn: { alignItems: 'center', justifyContent: 'center', borderRadius: 999 },
   alert: { flexDirection: 'row', gap: 10, borderLeftWidth: 4, borderRadius: 8, padding: 12 },
   alertSingleLine: { alignItems: 'center' },
   state: { alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 160, padding: 24 },

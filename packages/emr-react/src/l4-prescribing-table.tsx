@@ -811,12 +811,18 @@ export function EmrPrescribingTable({
             const activeSlotAmounts = row.slots.map((s) => s.amount ?? 0).filter((a) => a > 0);
             const hasAsymmetricSlots =
               activeSlotAmounts.length > 1 && new Set(activeSlotAmounts).size > 1;
-            const isSplitOpen = !!splitExpandedRows[row.id] || hasAsymmetricSlots;
+            const isAsNeeded = row.frequencyCode?.toUpperCase() === 'SOS';
+            const isSplitOpen = !isAsNeeded && (!!splitExpandedRows[row.id] || hasAsymmetricSlots);
             const isCustomFormOpen =
               !!customFormOpenRows[row.id] || (!row.formularyCode && row.drugName.trim() === '');
             const needle = row.drugName.trim().toLowerCase();
+            const search = m.formularySearch?.rowId === row.id && m.formularySearch.query === row.drugName
+              ? m.formularySearch
+              : undefined;
             const matchingFormulary: readonly PrescribingFormularyItem[] =
-              activeDrugRowId === row.id && m.formulary
+              activeDrugRowId === row.id && m.formularySearch
+                ? search && !search.loading && !search.error ? search.items : []
+                : activeDrugRowId === row.id && m.formulary
                 ? m.formulary.filter(
                     (f) =>
                       !needle ||
@@ -850,7 +856,7 @@ export function EmrPrescribingTable({
                 ]}
               >
                 <View style={styles.rowMain}>
-                  {/* Column 1: Drug Name & Strength + Backend API Formulary Dose Form Metadata */}
+                  {/* Column 1: Drug Name & Strength + Formulary Dose Form Metadata */}
                   <View style={[styles.cellDrug, { flex: 1.3, minWidth: 215 }]}>
                     {(row.stepPhase || row.specialtyTag) ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -903,11 +909,17 @@ export function EmrPrescribingTable({
                         <ThemedInput
                           value={row.drugName}
                           editable={!locked}
-                          placeholder="Search Backend Formulary API…"
+                          placeholder="Search formulary…"
                           accessibilityLabel={`Row ${idx + 1} medicine name`}
-                          onFocus={() => setActiveDrugRowId(row.id)}
-                          onBlur={() => setTimeout(() => setActiveDrugRowId((cur) => (cur === row.id ? null : cur)), 160)}
+                          onFocus={() => {
+                            if (locked) return;
+                            setActiveDrugRowId(row.id);
+                            onIntent({ type: 'formularySearchRequested', rowId: row.id, query: row.drugName });
+                          }}
+                          onKeyPress={(event) => { if (event.nativeEvent.key === 'Escape') setActiveDrugRowId(null); }}
                           onChangeText={(text) => {
+                            if (locked) return;
+                            setActiveDrugRowId(row.id);
                             onIntent({ type: 'drugNameChanged', rowId: row.id, drugName: text });
                             onIntent({ type: 'formularySearchRequested', rowId: row.id, query: text });
                           }}
@@ -926,13 +938,30 @@ export function EmrPrescribingTable({
                       </View>
                     </View>
 
-                    {/* Backend API Formulary Quick Suggestions (passes drugName, strength, and dose form to drive Columns 2–6) */}
-                    {matchingFormulary.length > 0 && !locked ? (
+                    {/* Formulary suggestions from the supplied model */}
+                    {activeDrugRowId === row.id && !locked && (matchingFormulary.length > 0 || search) ? (
                       <View style={[styles.formularyList, { borderColor: t.primaryBorder, backgroundColor: t.surface }]}>
                         <View style={{ paddingHorizontal: 8, paddingVertical: 4, borderBottomWidth: 1, borderColor: t.border, backgroundColor: t.surfaceSoft }}>
                           <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
-                            BACKEND FORMULARY API · SELECTING RESOLVES DOSE FORM & DOWNSTREAM RULES
+                            {m.formularyLabel ?? 'Formulary results'}
                           </Text>
+                        </View>
+                        {search?.loading || search?.error || (search && matchingFormulary.length === 0) ? (
+                          <Text role={search.error ? 'alert' : 'status'} style={{ color: t.textMuted, fontFamily: ff, padding: 8 }}>
+                            {search.loading ? 'Searching formulary…' : search.error ? 'Formulary search failed.' : 'No formulary results.'}
+                          </Text>
+                        ) : null}
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+                          {search?.error ? (
+                            <Pressable role="button" onPress={() => onIntent({ type: 'formularySearchRequested', rowId: row.id, query: search.query })}
+                              style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 }}>
+                              <Text style={{ color: t.text }}>Retry formulary search</Text>
+                            </Pressable>
+                          ) : null}
+                          <Pressable role="button" onPress={() => setActiveDrugRowId(null)}
+                            style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 8 }}>
+                            <Text style={{ color: t.text }}>Close formulary results</Text>
+                          </Pressable>
                         </View>
                         {matchingFormulary.slice(0, 7).map((item) => (
                           <Pressable
@@ -957,14 +986,14 @@ export function EmrPrescribingTable({
                               </Text>
                             </View>
                             <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10 }}>
-                              API Code: {item.code} · Route: {item.route.toUpperCase()} · Unit: {item.unitLabel || 'unitless'}{item.stockStatus ? ` · ${item.stockStatus}` : ''}
+                              Code: {item.code} · Route: {item.route.toUpperCase()} · Unit: {item.unitLabel || 'unitless'}{item.stockStatus ? ` · ${item.stockStatus}` : ''}
                             </Text>
                           </Pressable>
                         ))}
                       </View>
                     ) : null}
 
-                    {/* Resolved Backend API Dose Form Metadata Strip (with optional Override Form toggle for custom/unlisted drugs) */}
+                    {/* Dose form metadata with an override for custom or unlisted drugs */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                         <View
@@ -978,7 +1007,7 @@ export function EmrPrescribingTable({
                           }}
                         >
                           <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
-                            API Form: {row.formLabel || row.form}
+                            Form: {row.formLabel || row.form}
                           </Text>
                         </View>
                         {row.formularyCode ? (
@@ -1046,11 +1075,10 @@ export function EmrPrescribingTable({
                     ) : null}
                   </View>
 
-                  {/* Column 2: Dose Quantity & Form-Specific Unit (driven by Backend API form) */}
+                  {/* Column 2: Dose Quantity & Form-Specific Unit */}
                   <View style={[styles.cellDuration, { width: 172 }]}>
                     {(() => {
-                      const activeSlotAmt = row.slots.find((s) => (s.amount ?? 0) > 0)?.amount;
-                      const doseVal = row.doseAmount ?? activeSlotAmt ?? 1;
+                      const doseVal = row.doseAmount;
                       const doseStep = row.doseStep ?? (row.unitLabel === 'mL' ? 2.5 : profile.step);
                       return (
                         <View style={[styles.durationStepper, { borderColor: t.border, backgroundColor: t.surface }]}>
@@ -1058,15 +1086,19 @@ export function EmrPrescribingTable({
                             <Pressable
                               role="button"
                               aria-label={`Decrease dose quantity for ${row.drugName || 'medicine'}`}
-                              disabled={doseVal <= doseStep}
-                              onPress={() => onIntent({ type: 'doseStepped', rowId: row.id, delta: -doseStep })}
+                              disabled={(doseVal == null || doseVal <= doseStep)}
+                              onPress={() => {
+                                if (!locked && doseVal != null && doseVal > doseStep) {
+                                  onIntent({ type: 'doseStepped', rowId: row.id, delta: -doseStep });
+                                }
+                              }}
                               style={({ focused, hovered }: PressState & { hovered?: boolean }) => [
                                 styles.durStepBtn,
                                 {
                                   borderRightWidth: 1,
                                   borderColor: t.border,
                                   backgroundColor: hovered ? t.primaryHover : t.surfaceSoft,
-                                  opacity: doseVal <= doseStep ? 0.35 : 1,
+                                  opacity: (doseVal == null || doseVal <= doseStep) ? 0.35 : 1,
                                 },
                                 focusRing(t, focused),
                               ]}
@@ -1077,7 +1109,7 @@ export function EmrPrescribingTable({
 
                           <View style={styles.durValueBox}>
                             <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold) }}>
-                              {formatDoseAmount(doseVal)}{row.unitLabel ? ` ${row.unitLabel}` : ''}
+                              {doseVal == null ? '—' : `${formatDoseAmount(doseVal)}${row.unitLabel ? ` ${row.unitLabel}` : ''}`}
                             </Text>
                           </View>
 
@@ -1148,7 +1180,7 @@ export function EmrPrescribingTable({
                           { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
                           { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
                           { id: 'hs', label: 'HS', slotIds: ['n'] },
-                          { id: 'sos', label: 'SOS', slotIds: ['m'] },
+                          { id: 'sos', label: 'SOS', slotIds: [] },
                         ]).map((p) => {
                           const active = row.frequencyCode?.toLowerCase() === p.id.toLowerCase();
                           return (
@@ -1174,7 +1206,7 @@ export function EmrPrescribingTable({
                           );
                         })}
                       </View>
-                      <Pressable
+                      {isAsNeeded ? null : <Pressable
                         role="button"
                         aria-label="Toggle split M-A-E-N slot steppers"
                         aria-pressed={isSplitOpen}
@@ -1193,21 +1225,21 @@ export function EmrPrescribingTable({
                         <Text style={{ color: isSplitOpen ? t.primaryContrast : t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
                           ⇄ Split
                         </Text>
-                      </Pressable>
+                      </Pressable>}
                     </View>
 
                     {/* Compact Clickable M – A – E – N Bar (always visible; clicking any slot cycles 0 -> Dose -> ½ -> 2x) */}
-                    <View style={{ flexDirection: 'row', gap: 4 }}>
+                    {isAsNeeded ? null : <View style={{ flexDirection: 'row', gap: 4 }}>
                       {m.slotDefinitions.map((def) => {
                         const slotAmt = row.slots.find((s) => s.id === def.id)?.amount ?? 0;
                         const active = slotAmt > 0;
-                        const baseDose = row.doseAmount ?? 1;
+                        const baseDose = row.doseAmount ?? null;
                         const shortTag = (def.shortLabel ?? def.label).slice(0, 4);
                         return (
                           <Pressable
                             key={def.id}
                             role="button"
-                            disabled={locked}
+                            disabled={locked || (!active && baseDose == null)}
                             aria-label={`${def.label} slot: ${formatDoseAmount(slotAmt)}`}
                             aria-pressed={active}
                             onPress={() => {
@@ -1249,7 +1281,7 @@ export function EmrPrescribingTable({
                           </Pressable>
                         );
                       })}
-                    </View>
+                    </View>}
 
                     {/* Progressive Disclosure: Full − / + Steppers when ⇄ Split is open */}
                     {isSplitOpen ? (
@@ -1396,33 +1428,22 @@ export function EmrPrescribingTable({
                       })}
                     </View>
 
-                    {/* Dispense Calculator ONLY for Tablets & Capsules */}
-                    {(row.form === 'tablet' || row.form === 'capsule') && (row.durationCount ?? 0) > 0 ? (
-                      (() => {
-                        const dailyQty = row.slots.reduce((acc, s) => acc + (s.amount ?? 0), 0);
-                        const mult =
-                          row.durationUnit === 'weeks' ? 7 : row.durationUnit === 'months' ? 30 : 1;
-                        const totalCount = Math.ceil(dailyQty * (row.durationCount ?? 1) * mult);
-                        if (totalCount <= 0) return null;
-                        const noun = row.form === 'capsule' ? (totalCount === 1 ? 'cap' : 'caps') : (totalCount === 1 ? 'tab' : 'tabs');
-                        return (
-                          <View
-                            style={{
-                              paddingHorizontal: 6,
-                              paddingVertical: 2,
-                              borderRadius: 4,
-                              backgroundColor: t.successSoft,
-                              borderWidth: 1,
-                              borderColor: t.success,
-                              alignSelf: 'flex-start',
-                            }}
-                          >
-                            <Text style={{ color: t.success, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
-                              = {totalCount} {noun}
-                            </Text>
-                          </View>
-                        );
-                      })()
+                    {row.dispenseQuantity ? (
+                      <View
+                        style={{
+                          paddingHorizontal: 6,
+                          paddingVertical: 2,
+                          borderRadius: 4,
+                          backgroundColor: t.successSoft,
+                          borderWidth: 1,
+                          borderColor: t.success,
+                          alignSelf: 'flex-start',
+                        }}
+                      >
+                        <Text style={{ color: t.success, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>
+                          = {row.dispenseQuantity.count} {row.dispenseQuantity.unit}{row.dispenseQuantity.count === 1 ? '' : 's'}
+                        </Text>
+                      </View>
                     ) : null}
                   </View>
 

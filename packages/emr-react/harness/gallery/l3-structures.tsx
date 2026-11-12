@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { ClinicalMatrixController } from '@drguptavivek/emr-controller';
 import type { ClinicalCellState, ClinicalListIntent, ClinicalListItem, ClinicalMatrixSchema, ClinicalMatrixValues } from '@drguptavivek/emr-controller';
+import { matrixSchema, matrixValues } from '../../../../examples/clinical-matrix/fixture';
 import {
   EmrAllergyList, EmrChronicDiseaseList, EmrClinicalList, EmrClinicalMatrix, EmrMedicationList, EmrPersonalHistoryList,
   type EmrMatrixCellRendererProps,
@@ -91,6 +92,19 @@ function MatrixDemo({ readOnly, narrow }: { readOnly?: boolean; narrow?: boolean
   );
 }
 
+function ControllerMatrixExample() {
+  const [controller] = useState(() => new ClinicalMatrixController(matrixSchema, matrixValues));
+  const state = useControllerState(controller);
+  const disc = state.values['disc'];
+  return (
+    <View style={{ gap: 8 }}>
+      <EmrClinicalMatrix definition={state.schema} model={state.values} onIntent={intent => controller.dispatch(intent)} />
+      <Text>{`Accepted OD: ${disc?.cells['od']?.value ?? ''}`}</Text>
+      <Text>{`Accepted OS: ${disc?.cells['os']?.value ?? ''}`}</Text>
+    </View>
+  );
+}
+
 export const gallery: GallerySection[] = [
   { id: 'clinical-list', title: 'EmrClinicalList', render: () => (
     <View style={stack}><ListDemo Component={EmrClinicalList} /><ListDemo Component={EmrClinicalList} empty /></View>
@@ -102,6 +116,7 @@ export const gallery: GallerySection[] = [
   { id: 'clinical-matrix', title: 'EmrClinicalMatrix (live, error and warning cells)', render: () => <MatrixDemo /> },
   { id: 'clinical-matrix-narrow', title: 'EmrClinicalMatrix (narrow, cards)', render: () => <MatrixDemo narrow /> },
   { id: 'clinical-matrix-readonly', title: 'EmrClinicalMatrix (read-only)', render: () => <MatrixDemo readOnly /> },
+  { id: 'controller-matrix-example', title: 'Controller integration example', render: () => <ControllerMatrixExample /> },
   { id: 'clinical-matrix-empty', title: 'EmrClinicalMatrix (no values)', render: () => (
     <EmrClinicalMatrix definition={{ ...schema, id: 'empty-matrix', rows: schema.rows.slice(0, 2) }} onIntent={() => {}} />
   ) },

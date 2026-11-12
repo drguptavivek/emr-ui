@@ -1137,3 +1137,417 @@ export class EmrStatTileComponent {
 
 **Depends on** — L0 tokens only
 **Used by** — not consumed internally
+
+---
+
+### EmrToast
+**Layer** L1 · **Selector** `emr-toast` · **Status** stable · **Story** `emr-shell-and-auth--toast-default`, `foundations-building-blocks--feedback-and-overlays`
+
+**Need** — Transient clinical confirmations and warning notifications need a controlled toast banner with no internal timer, an optional action button, and a dismiss button usable at any layer.
+
+**Purpose** — Renders `EmrToastModel` (`tone`, `message`, optional `actionLabel`, `dismissLabel`) with `role="alert"` on `danger`/`warning` tones and `role="status"` otherwise, emitting `EmrToastIntent` (`actionRequested`, `dismissRequested`). Promoted from L4 to L1 with a backwards-compatible re-export from `domain/emr-mobile-and-web-shell.component.ts`.
+
+**Depends on** — L0 tokens only
+**Used by** — shell overlays and notifications
+
+---
+
+### EmrTextarea
+**Layer** L1 · **Selector** `emr-textarea` · **Status** stable · **Story** `foundations-building-blocks--text-and-inputs`
+
+**Need** — Clinical narratives, examination remarks, and free-text instructions require a multi-line `<textarea>` primitive with row sizing, character counter, and shared `EmrFieldBase` label/hint/error/readOnly semantics.
+
+**Purpose** — Renders a controlled `<textarea>` with `rows`, optional `maxLength` character counter, `controlId`, `label`, `hint`, `error`, `required`, `disabled`, and `readOnly`, emitting `valueChange` (`string`) and `blurred`.
+
+**Depends on** — L0 tokens only
+**Used by** — `EmrMacroTextField` (L2)
+
+---
+
+### EmrIconButton
+**Layer** L1 · **Selector** `emr-icon-button` · **Status** stable · **Story** `foundations-building-blocks--actions-and-navigation`
+
+**Need** — Dense clinical toolbars, row actions, and overlay headers need a 44×44px accessible icon-only button that enforces an explicit `label` (`aria-label`).
+
+**Purpose** — Renders a square accessible `<button>` with `icon`, required `label`, `variant`, `size`, `pressed` (`aria-pressed`), `disabled`, and `loading`, emitting `clicked`.
+
+**Depends on** — L0 tokens only
+**Used by** — toolbars, overlays, and action rows
+
+---
+
+### EmrSegmentedControl
+**Layer** L1 · **Selector** `emr-segmented-control` · **Status** stable · **Story** `foundations-building-blocks--choice-and-selection`
+
+**Need** — High-speed 2–5 option clinical toggles (OD/OS/OU, Inpatient/Outpatient/ED, Snellen/LogMAR) need a compact inline segmented control with keyboard navigation.
+
+**Purpose** — Renders a segmented `radiogroup` over `EmrSegmentedOption[]` (`value`, `label`, optional `disabled`, optional `tone`), supporting ArrowLeft/ArrowRight/Home/End keyboard selection, `readOnly`, and `disabled`, emitting `valueChange`.
+
+**Depends on** — L0 tokens only
+**Used by** — `EmrLateralityField` (L2), `EmrVisualAcuityField` (L2), `EmrTypedField` (L2)
+
+---
+
+### EmrSearchInput
+**Layer** L1 · **Selector** `emr-search-input` · **Status** stable · **Story** `foundations-building-blocks--text-and-inputs`
+
+**Need** — Table filters, patient roster search bars, and order-set filters need a standalone search box with clear and submit affordances without a dropdown listbox.
+
+**Purpose** — Renders `type="search"` with an inline clear button and loading indicator, emitting `valueChange`, `cleared`, and `submitted` (on Enter).
+
+**Depends on** — L0 tokens only
+**Used by** — filter bars and search headers
+
+---
+
+### EmrPasswordInput
+**Layer** L1 · **Selector** `emr-password-input` · **Status** stable · **Story** `foundations-building-blocks--text-and-inputs`
+
+**Need** — Controlled-substance witness re-authentication, break-glass PIN/password prompts, and sign-in screens need a password input with controlled or local reveal toggle.
+
+**Purpose** — Renders `type="password"` / `type="text"` with an accessible Show/Hide button, `autoComplete`, `readOnly`, `disabled`, emitting `valueChange`, `revealedChange`, and `blurred`.
+
+**Depends on** — L0 tokens only
+**Used by** — sign-in and witness re-authentication flows
+
+---
+
+### EmrNumericStepper
+**Layer** L1 · **Selector** `emr-numeric-stepper` · **Status** stable · **Story** `foundations-building-blocks--text-and-inputs`
+
+**Need** — Touch-friendly clinical counters (refill counts, tablet quantities, diopter steps, parity counts) need explicit `−` / `+` increment buttons around a numeric input.
+
+**Purpose** — Renders a numeric input flanked by 44×44px decrement/increment buttons respecting `min`, `max`, `step`, `unitLabel`, `readOnly`, and `disabled`, emitting `valueChange` (`number | null`) and `blurred`.
+
+**Depends on** — L0 tokens only
+**Used by** — prescribing, refraction, and bedside numeric entry
+
+---
+
+### EmrCheckboxGroup
+**Layer** L1 · **Selector** `emr-checkbox-group` · **Status** stable · **Story** `foundations-building-blocks--choice-and-selection`
+
+**Need** — Multi-select checklists (review-of-systems symptoms, surgical prep checks, patient education topics) need a `<fieldset>`/`<legend>` checkbox group rather than a `<select multiple>` list.
+
+**Purpose** — Renders a `<fieldset>` of checkboxes from `EmrOption[]` and `value: readonly string[]`, supporting `orientation`, `hint`, `error`, `required`, `readOnly`, and `disabled`, emitting `valueChange` (`string[]`).
+
+**Depends on** — L0 tokens only
+**Used by** — `EmrTypedField` (L2 `multiselect` widget)
+
+---
+
+### EmrPagination
+**Layer** L1 · **Selector** `emr-pagination` · **Status** stable · **Story** `foundations-building-blocks--actions-and-navigation`
+
+**Need** — Patient rosters, audit trails, work queues, and lab tables need consistent page navigation and page-size controls without each L4 table re-implementing pagination chrome.
+
+**Purpose** — Renders a `<nav aria-label="Pagination">` with range summary, Previous/Next buttons, page buttons, and optional `pageSizeOptions` selector, emitting `pageChange` and `pageSizeChange`.
+
+**Depends on** — L0 tokens only
+**Used by** — paginated tables and worklists
+
+---
+
+### EmrDialog
+**Layer** L1 · **Selector** `emr-dialog` · **Status** stable · **Story** `foundations-building-blocks--feedback-and-overlays`
+
+**Need** — Safety confirmations, override prompts, witness sign-offs, and focused forms need a controlled modal dialog with focus trapping, Escape/backdrop dismissal, and unclipped print behaviour.
+
+**Purpose** — When `open` is true, renders an accessible `role="dialog"` `aria-modal="true"` surface with header, body, and optional footer slot, trapping keyboard focus and emitting `closeRequested` (`'escape' | 'backdrop' | 'close-button'`).
+
+**Depends on** — L0 tokens only
+**Used by** — modal confirmations and sign-off flows
+
+---
+
+### EmrPopover
+**Layer** L1 · **Selector** `emr-popover` · **Status** stable · **Story** `foundations-building-blocks--feedback-and-overlays`
+
+**Need** — Flowsheet cell details, reference ranges, and inline quick actions need a controlled anchored disclosure panel with Escape dismissal.
+
+**Purpose** — Renders a trigger wrapper and positioned popover surface when `open` is true, wiring `aria-expanded` and emitting `openChange` (`boolean`).
+
+**Depends on** — L0 tokens only
+**Used by** — inline clinical disclosures and quick-edit cells
+
+---
+
+### EmrTooltip
+**Layer** L1 · **Selector** `emr-tooltip` · **Status** stable · **Story** `foundations-building-blocks--feedback-and-overlays`
+
+**Need** — Abbreviated clinical headers, icon buttons, and compact status indicators need supplementary hover/focus text linked via `aria-describedby`.
+
+**Purpose** — Wraps projected trigger content with a `role="tooltip"` bubble shown on focus/hover (or controlled `open`) without obscuring clinical safety information.
+
+**Depends on** — L0 tokens only
+**Used by** — compact headers and icon actions
+
+---
+
+### EmrProgressBar
+**Layer** L1 · **Selector** `emr-progress-bar` · **Status** stable · **Story** `foundations-building-blocks--status-and-media`
+
+**Need** — Upload progress, sync queues, and staged checklist completion bars need an accessible `role="progressbar"` supporting both determinate and indeterminate states.
+
+**Purpose** — Renders a token-styled track and fill bar with `value` (`number | null` — `null` for indeterminate), `max`, `label`, `valueLabel`, and `tone`.
+
+**Depends on** — L0 tokens only
+**Used by** — sync, upload, and workflow progress indicators
+
+---
+
+### EmrSpinner
+**Layer** L1 · **Selector** `emr-spinner` · **Status** stable · **Story** `foundations-building-blocks--status-and-media`
+
+**Need** — Async terminology searches, button busy states, and panel refreshes need a lightweight CSS/SVG activity spinner with screen-reader status text.
+
+**Purpose** — Renders a `role="status"` animated spinner (`size: 'small' | 'medium' | 'large'`, `label`) respecting `prefers-reduced-motion`.
+
+**Depends on** — L0 tokens only
+**Used by** — loading states across inputs and panels
+
+---
+
+### EmrSkeleton
+**Layer** L1 · **Selector** `emr-skeleton` · **Status** stable · **Story** `foundations-building-blocks--status-and-media`
+
+**Need** — Patient banners, lab tables, and summary cards need layout-preserving shimmer placeholders while records load.
+
+**Purpose** — Renders `aria-hidden="true"` placeholder blocks (`variant: 'text' | 'rect' | 'circle'`, `lines`, `width`, `height`) styled strictly with L0 surface tokens.
+
+**Depends on** — L0 tokens only
+**Used by** — progressive loading placeholders
+
+---
+
+### EmrAvatar
+**Layer** L1 · **Selector** `emr-avatar` · **Status** stable · **Story** `foundations-building-blocks--status-and-media`
+
+**Need** — Care-team attributions, clinician headers, and patient cards need an avatar showing a photo when available or caller-supplied initials/tone fallback.
+
+**Purpose** — Renders a circular avatar (`name`, `initials`, optional `imageUrl`, `size`, `tone`) falling back cleanly to initials if the image is absent or fails to load.
+
+**Depends on** — L0 tokens only
+**Used by** — clinician attribution and identity headers
+
+---
+
+### EmrFileTrigger
+**Layer** L1 · **Selector** `emr-file-trigger` · **Status** stable · **Story** `foundations-building-blocks--status-and-media`
+
+**Need** — Referral letters, external lab PDFs, OCT scans, and wound photos need a keyboard-accessible file picker / dropzone primitive that never performs uploads itself.
+
+**Purpose** — Renders a button/dropzone backed by `<input type="file">`, accepting `accept`, `multiple`, `disabled`, and `readOnly`, and emitting `filesSelected` (`readonly EmrFileSelectionItem[]` metadata).
+
+**Depends on** — L0 tokens only
+**Used by** — `EmrAttachmentField` (L2)
+
+---
+
+### EmrToggleGroup
+**Layer** L1 · **Selector** `emr-toggle-group` · **Status** stable · **Story** `foundations-wave2-primitives--choice-and-tree`
+
+**Need** — Settings panels, consent preferences, and device capability switches often group multiple `role="switch"` toggles in vertical, horizontal, or multi-column grid layouts with exclusive option support.
+
+**Purpose** — Renders a `<fieldset>` of accessible switch controls bound to `value: readonly string[]`, supporting `orientation: 'vertical' | 'horizontal' | 'grid'`, `columns`, `labelPlacement`, `exclusiveValues`, `readOnly`, and controlled DOM rollback.
+
+**Depends on** — L0 tokens only
+
+---
+
+### EmrTreeView
+**Layer** L1 · **Selector** `emr-tree-view` · **Status** stable · **Story** `foundations-wave2-primitives--choice-and-tree`
+
+**Need** — Anatomical hierarchies, ICD/SNOMED chapter trees, hospital ward/bed hierarchies, and document folders require an expandable parent–child tree with keyboard traversal and cascading multi-select checkboxes.
+
+**Purpose** — Renders recursive `EmrTreeNode[]` with WAI-ARIA `role="tree"` / `role="treeitem"` keyboard navigation, single or multi-select (`checkStrategy: 'all' | 'cascade' | 'leaf'` with tri-state indeterminate parent checkboxes), auto-expanding search filter, and Expand/Collapse All controls.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` tree models
+
+---
+
+### EmrTreeSelect
+**Layer** L1 · **Selector** `emr-tree-select` · **Status** stable · **Story** `foundations-wave2-primitives--choice-and-tree`
+
+**Need** — Compact form fields frequently need parent–child hierarchical selection inside a clearable dropdown without dedicating permanent vertical space to an inline tree.
+
+**Purpose** — Renders a field trigger displaying the selected node path or leaf label (or removable chips in `multiple` mode) with a one-click Clear button and a floating searchable parent–child tree panel.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` tree models
+
+---
+
+### EmrImageViewer
+**Layer** L1 · **Selector** `emr-image-viewer` · **Status** stable · **Story** `foundations-wave2-primitives--image-suite`
+
+**Need** — Clinical photos, anterior-segment/fundus captures, wound images, and scanned referrals need pan, zoom, 90° rotation, fine straightening, horizontal/vertical flip, and fullscreen lightbox inspection without coupling to L4 folder models.
+
+**Purpose** — Renders an inline and fullscreen-expandable image inspector supporting single or multi-image galleries (`images`, `activeIndex`), pointer drag-to-pan, wheel/button zoom (`0.25x`–`5x`), `-90°`/`+90°` rotation, straighten slider, flip H/V, and Escape-dismissible modal fullscreen.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` viewport helpers
+
+---
+
+### EmrImageCropper
+**Layer** L1 · **Selector** `emr-image-cropper` · **Status** stable · **Story** `foundations-wave2-primitives--image-suite`
+
+**Need** — Patient ID photos, external slit-lamp/wound photos, and camera document captures require interactive cropping, aspect-ratio locking, rotation, straightening, zoom, and pan prior to committing to the record.
+
+**Purpose** — Renders an interactive crop stage with aspect-ratio presets (`Free`, `1:1`, `4:3`, `16:9`, `3:4`), draggable/resizable normalized crop box (`0..1`), rotate/straighten/flip/zoom controls, and Apply/Reset actions emitting `EmrImageCropResult` (`transform` + cropped `dataUrl` when canvas rasterization is available).
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` crop helpers
+
+---
+
+### EmrImageUpload
+**Layer** L1 · **Selector** `emr-image-upload` · **Status** stable · **Story** `foundations-wave2-primitives--image-suite`
+
+**Need** — Clinical photo entry requires an integrated upload + camera capture + thumbnail preview grid where clinicians can inspect full-screen (pan/zoom/rotate) and crop/straighten each image in place.
+
+**Purpose** — Combines file/camera selection and drag-and-drop with a thumbnail preview grid, fullscreen lightbox inspection, interactive per-image crop/rotate modal, and remove actions.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` image models
+
+---
+
+### EmrDateRangeInput
+**Layer** L1 · **Selector** `emr-date-range-input` · **Status** stable · **Story** `foundations-wave2-primitives--temporal-and-text`
+
+**Need** — Encounter filters, lab/vitals date spans, audit log queries, and leave/admission windows need a coordinated start–end range picker with quick presets rather than two unlinked date inputs.
+
+**Purpose** — Renders coordinated start/end date (or datetime) inputs, an interactive range calendar highlighting in-range days, quick preset chips, chronological ordering normalization, and a Clear action.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` date-range helpers
+
+---
+
+### EmrCombobox
+**Layer** L1 · **Selector** `emr-combobox` · **Status** stable · **Story** `foundations-wave2-primitives--temporal-and-text`
+
+**Need** — Chief complaints, referring clinicians, external facilities, and custom sig phrases need typeahead suggestions from a known list while allowing free-text entry when unlisted.
+
+**Purpose** — Renders a WAI-ARIA `role="combobox"` text input with live local option filtering, grouped option headers, keyboard navigation, free-solo custom value support, and a Clear button.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` option helpers
+
+---
+
+### EmrTagInput
+**Layer** L1 · **Selector** `emr-tag-input` · **Status** stable · **Story** `foundations-wave2-primitives--temporal-and-text`
+
+**Need** — Aliases, batch/lot numbers, specimen labels, keywords, and recipient lists need inline multi-chip free-text entry.
+
+**Purpose** — Renders removable tag chips alongside an inline text input supporting Enter/delimiter tokenization, Backspace removal, duplicate prevention, `maxTags`, optional suggestions, and Clear all.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` tag helpers
+
+---
+
+### EmrSlider
+**Layer** L1 · **Selector** `emr-slider` · **Status** stable · **Story** `foundations-wave2-primitives--formatted-and-sliders`
+
+**Need** — Image zoom, opacity, PACS window/level, brush thickness, and numeric thresholds need a general-purpose continuous or stepped single-thumb slider distinct from clinical `EmrVas`.
+
+**Purpose** — Renders an accessible range control with `min`, `max`, `step`, `unit`, live value display, optional `marks`, `clearable`, and focus-preserving `readOnly` support.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` slider helpers
+
+---
+
+### EmrRangeSlider
+**Layer** L1 · **Selector** `emr-range-slider` · **Status** stable · **Story** `foundations-wave2-primitives--formatted-and-sliders`
+
+**Need** — Age-band filters, target physiological ranges, and numeric cohort filters require a dual-thumb `[low, high]` slider whose handles never cross.
+
+**Purpose** — Renders coordinated minimum and maximum range handles clamped via `clampRangeSliderPair` with configurable `minDistance`, `step`, and `unit`.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` slider helpers
+
+---
+
+### EmrMaskedInput
+**Layer** L1 · **Selector** `emr-masked-input` · **Status** stable · **Story** `foundations-wave2-primitives--formatted-and-sliders`
+
+**Need** — National health IDs (e.g. `99-9999-9999-9999`), policy numbers, and structured serial codes require deterministic pattern formatting as the user types.
+
+**Purpose** — Applies a caller-supplied pattern mask (`9` digit, `A` letter, `*` alphanumeric, literal separators) via `applyInputMask`, emitting masked or unmasked values (`null` when empty) and `completed` when full.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` mask helpers
+
+---
+
+### EmrOtpInput
+**Layer** L1 · **Selector** `emr-otp-input` · **Status** stable · **Story** `foundations-wave2-primitives--formatted-and-sliders`
+
+**Need** — Patient consent verification codes, ABDM/2FA OTPs, and witness PIN confirmations require segmented character slots with paste and auto-advance UX.
+
+**Purpose** — Renders `length` character slots supporting numeric or alphanumeric mode, secret masking, auto-focus advance, Backspace retreat, multi-character paste, and `completed` emission.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` OTP helpers
+
+---
+
+### EmrMenu
+**Layer** L1 · **Selector** `emr-menu` · **Status** stable · **Story** `foundations-wave2-primitives--navigation-and-actions`
+
+**Need** — Row overflow (`⋯`) actions, print/export menus, and secondary workflow commands need a keyboard-navigable WAI-ARIA `role="menu"` primitive.
+
+**Purpose** — Renders a trigger button and floating `role="menu"` list supporting `role="menuitem"` buttons, dividers, keyboard shortcuts, danger tone items, Arrow/Home/End roving focus, and Escape dismissal.
+
+**Depends on** — L0 tokens only
+
+---
+
+### EmrSplitButton
+**Layer** L1 · **Selector** `emr-split-button` · **Status** stable · **Story** `foundations-wave2-primitives--navigation-and-actions`
+
+**Need** — Clinical commit actions (`Sign Encounter` + `▾` *Sign & Lock / Request Co-sign / Save Draft*) need a primary action paired with an adjacent secondary action menu.
+
+**Purpose** — Combines a primary action button (`clicked`) with an attached `>= 44px` menu toggle opening a keyboard-accessible `role="menu"` (`itemSelected`).
+
+**Depends on** — L0 tokens only
+
+---
+
+### EmrAccordion
+**Layer** L1 · **Selector** `emr-accordion` · **Status** stable · **Story** `foundations-wave2-primitives--navigation-and-actions`
+
+**Need** — Long clinical instructions, prior history summaries, and device settings need single- or multi-expand disclosure panels that automatically expand all content when printed.
+
+**Purpose** — Renders disclosure headers (`aria-expanded`, `aria-controls`, ArrowUp/Down/Home/End navigation) and `[hidden]` region panels that `.emr-print` automatically reveals on paper.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` accordion helpers
+
+---
+
+### EmrBreadcrumbs
+**Layer** L1 · **Selector** `emr-breadcrumbs` · **Status** stable · **Story** `foundations-wave2-primitives--navigation-and-actions`
+
+**Need** — Deep document folders, hierarchical order catalogs, and admin configuration screens need path orientation and ancestor jump links.
+
+**Purpose** — Renders `<nav aria-label="Breadcrumb">` with `aria-current="page"` on the active item and an accessible `…` overflow button when `items.length > maxItems`.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` breadcrumb helpers
+
+---
+
+### EmrColorPicker
+**Layer** L1 · **Selector** `emr-color-picker` · **Status** stable · **Story** `foundations-wave2-primitives--navigation-and-actions`
+
+**Need** — Clinical diagram annotations, calendar resource labels, and chart series configuration require an accessible named-swatch color selector rather than an unlabelled native color input alone.
+
+**Purpose** — Renders a `role="radiogroup"` of `>= 44px` named clinical color swatches (`DEFAULT_CLINICAL_COLOR_SWATCHES`), optional custom hex entry, and a Clear button.
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` swatch models
+
+---
+
+### EmrCopyButton
+**Layer** L1 · **Selector** `emr-copy-button` · **Status** stable · **Story** `foundations-wave2-primitives--navigation-and-actions`
+
+**Need** — MRNs, national health IDs, accession numbers, and SNOMED/ICD codes frequently need one-click clipboard copy with screen-reader confirmation.
+
+**Purpose** — Copies `value` to the clipboard (with SSR-safe fallback), announces `copiedLabel` via `role="status" aria-live="polite"`, and emits `copied`.
+
+**Depends on** — L0 tokens only
+

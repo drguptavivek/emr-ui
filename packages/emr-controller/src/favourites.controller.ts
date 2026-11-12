@@ -40,6 +40,7 @@ export class FavouritesController extends StateController<
   }
 
   dispatch(intent: FavouritesIntent): void {
+    if (this.isDestroyed()) return;
     switch (intent.type) {
       case 'opened':
         this.setState(state => ({ ...state, open: true }));
@@ -106,14 +107,17 @@ export class FavouritesController extends StateController<
   }
 
   private async perform<T>(operation: (signal: AbortSignal) => Promise<T>): Promise<T | undefined> {
+    if (this.isDestroyed()) return;
     this.request?.abort();
     const request = new AbortController();
     this.request = request;
     this.setState(state => ({ ...state, loading: true, error: undefined }));
+    if (request.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await operation(request.signal);
       if (request.signal.aborted) return undefined;
       this.setState(state => ({ ...state, loading: false }));
+      if (this.isDestroyed()) return undefined;
       return result;
     } catch (error: unknown) {
       if (request.signal.aborted) return undefined;
@@ -143,7 +147,7 @@ export class FavouritesController extends StateController<
     );
     if (saved) {
       this.setState(state => ({ ...state, mode: 'list', editor: undefined }));
-      await this.load();
+      if (!this.isDestroyed()) await this.load();
     }
   }
 

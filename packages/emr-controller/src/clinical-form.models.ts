@@ -1,5 +1,12 @@
 import type { ClinicalAssessmentStatus, ClinicalOption, ClinicalQuantityValue, EmrBadge } from './models.js';
-import type { EmrCodedValue, EmrPartialDate } from './field-contract.models.js';
+import type { EmrCodedValue, EmrPartialDate, EmrWidgetHint } from './field-contract.models.js';
+import type {
+  EmrAttachmentRef,
+  EmrDurationValue,
+  EmrPairedFieldValue,
+  EmrRangeValue,
+  EmrSignatureStroke,
+} from './l2-fields.models.js';
 
 export type ClinicalFieldType =
   | 'text'
@@ -23,6 +30,12 @@ export type ClinicalFieldValue =
   | ClinicalQuantityValue
   | EmrPartialDate
   | EmrCodedValue
+  | readonly EmrCodedValue[]
+  | readonly EmrAttachmentRef[]
+  | EmrPairedFieldValue
+  | EmrDurationValue
+  | EmrRangeValue
+  | readonly EmrSignatureStroke[]
   | null;
 
 export interface ClinicalFieldDefinition {
@@ -30,12 +43,16 @@ export interface ClinicalFieldDefinition {
   id: string;
   label: string;
   type: ClinicalFieldType;
+  widget?: EmrWidgetHint;
   span?: 3 | 4 | 6 | 8 | 9 | 12;
   placeholder?: string;
   hint?: string;
   required?: boolean;
   unit?: string;
   precision?: number;
+  min?: number;
+  max?: number;
+  step?: number;
   rows?: number;
   options?: readonly ClinicalOption[];
   assessmentStatusOptions?: readonly ClinicalAssessmentStatusOption[];

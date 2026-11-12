@@ -61,6 +61,8 @@ export interface EhrTemplateViewModel {
   preview: ClinicalFormViewModel;
   artifact?: TemplateArtifactResult;
   importIssues?: readonly TemplateArtifactIssue[];
+  /** The controller has a validated import awaiting explicit acceptance. */
+  canAcceptImport?: boolean;
   loading: boolean;
   saving: boolean;
   dirty: boolean;

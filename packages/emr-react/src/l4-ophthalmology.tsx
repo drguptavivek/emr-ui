@@ -431,67 +431,8 @@ const VA_CHART_OPTIONS: readonly { id: VaChartType; label: string; quickLines: r
   { id: 'decimal', label: 'Decimal (1.0)', quickLines: ['1.2', '1.0', '0.67', '0.50', '0.33', '0.25', '0.17', '0.10', 'CF', 'HM'] },
 ];
 
-export function resolveLogMarBadgeText(rawVa: string, explicitLogMar?: string): string | null {
-  if (explicitLogMar) return `LogMAR ${explicitLogMar}`;
-  const clean = rawVa.trim().toUpperCase();
-  if (!clean) return null;
-  const lookup: Record<string, string> = {
-    '6/5': '-0.08',
-    '6/6': '0.00',
-    '6/7.5': '+0.10',
-    '6/9': '+0.18',
-    '6/12': '+0.30',
-    '6/15': '+0.40',
-    '6/18': '+0.48',
-    '6/24': '+0.60',
-    '6/30': '+0.70',
-    '6/36': '+0.78',
-    '6/60': '+1.00',
-    '3/60': '+1.30',
-    '1/60': '+1.78',
-    '20/15': '-0.12',
-    '20/20': '0.00',
-    '20/25': '+0.10',
-    '20/30': '+0.18',
-    '20/40': '+0.30',
-    '20/50': '+0.40',
-    '20/60': '+0.48',
-    '20/80': '+0.60',
-    '20/100': '+0.70',
-    '20/120': '+0.78',
-    '20/200': '+1.00',
-    '20/400': '+1.30',
-    'CF': '+1.90 (CF)',
-    'HM': '+2.30 (HM)',
-    'PL': '+2.70 (PL)',
-    'LP': '+2.70 (LP)',
-    'NPL': '+3.00 (NPL)',
-    'NLP': '+3.00 (NLP)',
-  };
-  if (lookup[clean]) return `LogMAR ${lookup[clean]}`;
-  const frac = clean.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
-  if (frac) {
-    const num = Number(frac[1]);
-    const den = Number(frac[2]);
-    if (num > 0 && den > 0) {
-      const lm = -Math.log10(num / den);
-      const formatted = (lm > 0.005 ? '+' : '') + lm.toFixed(2);
-      return `LogMAR ${formatted}`;
-    }
-  }
-  const etdrs = clean.match(/^(\d+)\s*L(?:ETTERS)?$/);
-  if (etdrs) {
-    const letters = Number(etdrs[1]);
-    const lm = (85 - letters) * 0.02;
-    const formatted = (lm > 0.005 ? '+' : '') + lm.toFixed(2);
-    return `LogMAR ${formatted}`;
-  }
-  const numOnly = Number(clean);
-  if (!Number.isNaN(numOnly)) {
-    const formatted = (numOnly > 0.005 ? '+' : '') + numOnly.toFixed(2);
-    return `LogMAR ${formatted}`;
-  }
-  return null;
+export function resolveLogMarBadgeText(_rawVa: string, explicitLogMar?: string): string | null {
+  return explicitLogMar ? `LogMAR ${explicitLogMar}` : null;
 }
 
 export type EmrSpectaclePrescriptionLabels = typeof SPECTACLE_RX_DEFAULTS;

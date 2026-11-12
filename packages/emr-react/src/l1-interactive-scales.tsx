@@ -48,14 +48,16 @@ function Messages({ error, hint, disabled }: { error?: string; hint?: string; di
  * L1 Likert / numeric scale: radiogroup of pips. The selected pip's colour comes from the
  * controller-supplied `tone`; selection is also shown by a heavier border and bold text.
  */
-export function EmrLikert({ label, hint, error, min = 0, max = 10, value, anchors = [], disabled, readOnly, required, tone, onValueChange, labels }: Omit<ScaleFrameProps, 'labels'> & {
+export function EmrLikert({ label, hint, error, min = 0, max = 10, value, anchors = [], disabled, readOnly, required, clearable, tone, onValueChange, onCleared, labels }: Omit<ScaleFrameProps, 'labels'> & {
   min?: number;
   max?: number;
   value: number | null | undefined;
   anchors?: readonly EmrScaleAnchor[];
   readOnly?: boolean;
+  clearable?: boolean;
   tone?: EmrTone;
-  onValueChange: (value: number) => void;
+  onValueChange: { bivarianceHack(value: number | null): void }['bivarianceHack'];
+  onCleared?: () => void;
   labels?: Partial<InteractiveLabels>;
 }) {
   const t = useEmrTheme();
@@ -64,6 +66,7 @@ export function EmrLikert({ label, hint, error, min = 0, max = 10, value, anchor
   const minAnchor = anchors.find(a => a.value === min);
   const maxAnchor = anchors.find(a => a.value === max);
   const interactive = !disabled && !readOnly;
+  const canClear = Boolean(clearable && value != null && interactive);
   const step = (delta: number) => {
     const next = Math.min(max, Math.max(min, (value ?? (delta > 0 ? min - 1 : max + 1)) + delta));
     if (interactive && next !== value) onValueChange(next);
@@ -74,7 +77,33 @@ export function EmrLikert({ label, hint, error, min = 0, max = 10, value, anchor
   };
   return (
     <View role="radiogroup" aria-label={label} aria-required={required} aria-readonly={readOnly} aria-disabled={disabled} style={styles.frame}>
-      <Legend label={label} required={required} labels={l} />
+      <View style={styles.headerRow}>
+        <Legend label={label} required={required} labels={l} />
+        {canClear ? (
+          <Pressable
+            role="button"
+            aria-label={`Clear ${label}`}
+            onPress={() => {
+              onValueChange(null);
+              onCleared?.();
+            }}
+            style={({ pressed, focused }: PressState) => [
+              styles.clearBtn,
+              focusRing(t, focused),
+              {
+                minHeight: Math.max(44, t.controlHeight),
+                minWidth: 44,
+                borderColor: t.border,
+                backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft,
+              },
+            ]}
+          >
+            <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+              Clear
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
       <View style={styles.track}>
         {points.map(point => {
           const selected = value === point;
@@ -114,7 +143,7 @@ const VERTICAL_LENGTH = 240;
  * on web, mouse/touch/keyboard. Native uses accessibility increment/decrement actions. It derives no
  * severity: anchors, tone and `valueText` come from the controller.
  */
-export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: stepProp, majorInterval = 10, minorInterval, orientation = 'horizontal', anchors = [], readOnly, disabled, required, tone, valueText, onValueChange, labels }: Omit<ScaleFrameProps, 'labels'> & {
+export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: stepProp, majorInterval = 10, minorInterval, orientation = 'horizontal', anchors = [], readOnly, disabled, required, clearable, tone, valueText, onValueChange, onCleared, labels }: Omit<ScaleFrameProps, 'labels'> & {
   min?: number;
   max?: number;
   value: number | null | undefined;
@@ -125,16 +154,19 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: st
   orientation?: 'horizontal' | 'vertical';
   anchors?: readonly EmrScaleAnchor[];
   readOnly?: boolean;
+  clearable?: boolean;
   tone?: EmrTone;
   /** Spoken value, e.g. "72 out of 100". */
   valueText?: string;
   onValueChange: (value: number | null) => void;
+  onCleared?: () => void;
   labels?: Partial<InteractiveLabels>;
 }) {
   const t = useEmrTheme();
   const l = { ...interactiveLabelDefaults, ...labels };
   const vertical = orientation === 'vertical';
   const interactive = !disabled && !readOnly;
+  const canClear = Boolean(clearable && value != null && interactive);
   const span = Math.abs(max - min);
   const step = stepProp ?? (span <= 20 ? 0.1 : 1);
   const effectiveMinor = minorInterval ?? (span <= 20 ? 0.5 : 2);
@@ -201,11 +233,37 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: st
   const formattedValue = value == null ? 'Not set' : step < 1 ? Number(value).toFixed(1) : String(value);
   return (
     <View style={styles.frame}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      <View style={styles.headerRow}>
         <Legend label={label} required={required} labels={l} />
-        <Text style={{ color: value == null ? t.textMuted : accent, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
-          {formattedValue}
-        </Text>
+        <View style={styles.headerRight}>
+          <Text style={{ color: value == null ? t.textMuted : accent, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+            {formattedValue}
+          </Text>
+          {canClear ? (
+            <Pressable
+              role="button"
+              aria-label={`Clear ${label}`}
+              onPress={() => {
+                onValueChange(null);
+                onCleared?.();
+              }}
+              style={({ pressed, focused: btnFocused }: PressState) => [
+                styles.clearBtn,
+                focusRing(t, btnFocused),
+                {
+                  minHeight: Math.max(44, t.controlHeight),
+                  minWidth: 44,
+                  borderColor: t.border,
+                  backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft,
+                },
+              ]}
+            >
+              <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+                Clear
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
       <View style={[styles.vasFrame, vertical && styles.vasFrameVertical]}>
         <View
@@ -246,7 +304,7 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: st
             {percent !== null ? (
               // Mark = filled thumb with the numeric value inside: position and value are text, not colour alone.
               <View style={[styles.thumb, pos(percent), vertical ? styles.thumbV : styles.thumbH, { backgroundColor: accent, borderColor: t.surface }]}>
-                <Text style={{ color: t.surface, fontSize: 10, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{formattedValue}</Text>
+                <Text style={{ color: t.surface, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{formattedValue}</Text>
               </View>
             ) : null}
           </View>
@@ -266,6 +324,9 @@ export function EmrVas({ label, hint, error, min = 0, max = 100, value, step: st
 
 const styles = StyleSheet.create({
   frame: { gap: 6 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  clearBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
   track: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   pip: { flexGrow: 1, flexBasis: 0, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   anchors: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },

@@ -36,4 +36,4 @@ export type CodedInputIntent =
   | { readonly type: 'closeRequested' }
   | { readonly type: 'conceptSelected'; readonly concept: EmrCodedValue }
   | { readonly type: 'conceptRemoveRequested'; readonly code: string; readonly system: string }
-  | { readonly type: 'statusChangeRequested'; readonly status: ClinicalAssessmentStatus };
+  | { readonly type: 'statusChangeRequested'; readonly status: ClinicalAssessmentStatus | undefined };

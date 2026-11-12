@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { filterHierarchy, HierarchyOrderController } from '@drguptavivek/emr-controller';
 import { View } from 'react-native';
 import {
   EmrDocumentUploadQueue,
@@ -20,7 +21,6 @@ import {
   type FavouritesIntent,
   type FavouritesViewModel,
   type HierarchyNode,
-  type HierarchyOrderIntent,
   type HierarchyOrderViewModel,
   type OrderDetailsIntent,
   type PatientDocumentsIntent,
@@ -274,14 +274,6 @@ const previewPage = (documentId: string, pageIndex: number, kind: 'image' | 'pdf
   altText: `Synthetic preview of ${documentId}, ${kind === 'pdf' ? `page ${pageIndex + 1}` : 'image'}`,
 });
 
-function toggleNode(nodes: readonly HierarchyNode[], nodeId: string, expanded: boolean): readonly HierarchyNode[] {
-  return nodes.map(node => {
-    if (node.id === nodeId) return { ...node, expanded };
-    if (node.children) return { ...node, children: toggleNode(node.children, nodeId, expanded) };
-    return node;
-  });
-}
-
 function findNode(nodes: readonly HierarchyNode[], nodeId: string): HierarchyNode | undefined {
   for (const node of nodes) {
     if (node.id === nodeId) return node;
@@ -310,80 +302,28 @@ function OrderDetailsDemo() {
 
 function HierarchyOrderPickerDemo() {
   const [state, setState] = useState<HierarchyOrderViewModel>(initialLabOrderState);
-  const onIntent = (intent: HierarchyOrderIntent) => {
-    switch (intent.type) {
-      case 'queryChanged':
-        setState(s => ({ ...s, query: intent.query }));
-        break;
-      case 'nodeExpansionRequested':
-        setState(s => ({ ...s, roots: toggleNode(s.roots, intent.nodeId, intent.expanded) }));
-        break;
-      case 'itemAddRequested': {
-        const node = findNode(state.roots, intent.nodeId);
-        if (node && !state.selected.some(o => o.catalogueId === node.id)) {
-          setState(s => ({
-            ...s,
-            selected: [
-              ...s.selected,
-              {
-                id: `order-${node.id}`,
-                catalogueId: node.id,
-                label: node.label,
-                code: node.code,
-                kind: 'laboratory',
-                details: { urgency: 'routine', fasting: false, notes: '' },
-              },
-            ],
-          }));
-        }
-        break;
-      }
-      case 'groupPreviewRequested': {
-        const group = findNode(state.roots, intent.nodeId);
-        if (group && group.children) {
-          const items = group.children.map(c => ({ catalogueId: c.id, label: c.label, code: c.code }));
-          const duplicateIds = items.filter(i => state.selected.some(o => o.catalogueId === i.catalogueId)).map(i => i.catalogueId);
-          setState(s => ({
-            ...s,
-            preview: { groupId: group.id, groupLabel: group.label, items, duplicateIds },
-          }));
-        }
-        break;
-      }
-      case 'groupPreviewDismissed':
-        setState(s => ({ ...s, preview: undefined }));
-        break;
-      case 'groupAddConfirmed':
-        setState(s => {
-          if (!s.preview) return s;
-          const existing = new Set(s.selected.map(o => o.catalogueId));
-          const added: SelectedOrder[] = s.preview.items
-            .filter(i => !existing.has(i.catalogueId))
-            .map(i => ({
-              id: `order-${i.catalogueId}`,
-              catalogueId: i.catalogueId,
-              label: i.label,
-              code: i.code,
-              kind: 'laboratory',
-              details: { urgency: 'routine', fasting: false, notes: '' },
-            }));
-          return { ...s, selected: [...s.selected, ...added], preview: undefined };
-        });
-        break;
-      case 'orderRemoveRequested':
-        setState(s => ({ ...s, selected: s.selected.filter(o => o.id !== intent.orderId) }));
-        break;
-      case 'orderDetailChanged':
-        setState(s => ({
-          ...s,
-          selected: s.selected.map(o =>
-            o.id === intent.orderId ? { ...o, details: { ...o.details, [intent.field]: intent.value } } : o,
-          ),
-        }));
-        break;
-    }
-  };
-  return <EmrHierarchyOrderPicker model={state} onIntent={onIntent} />;
+  const controller = useRef<HierarchyOrderController | null>(null);
+  useEffect(() => {
+    const instance: HierarchyOrderController = new HierarchyOrderController('Order laboratory tests', {
+      roots: async query => filterHierarchy(labNodes, query),
+      children: async id => findNode(labNodes, id)?.children ?? [],
+      resolveItem: async id => {
+        const node = findNode(labNodes, id);
+        if (!node) throw new Error('Catalogue item unavailable');
+        return { id: `order-${id}`, catalogueId: id, label: node.label, code: node.code, kind: 'laboratory' };
+      },
+      previewGroup: async id => {
+        const group = findNode(labNodes, id);
+        if (!group) throw new Error('Catalogue group unavailable');
+        const items = (group.children ?? []).map(node => ({ catalogueId: node.id, label: node.label, code: node.code }));
+        return { groupId: id, groupLabel: group.label, items, duplicateIds: items.filter(item => instance.getSnapshot().selected.some(order => order.catalogueId === item.catalogueId)).map(item => item.catalogueId) };
+      },
+    }, initialLabOrderState, 'laboratory', { debounceMs: 200 });
+    controller.current = instance;
+    const unsubscribe = instance.subscribe(setState);
+    return () => { unsubscribe(); instance.destroy(); controller.current = null; };
+  }, []);
+  return <EmrHierarchyOrderPicker model={state} onIntent={intent => controller.current?.dispatch(intent)} />;
 }
 
 function FavouritesPanelDemo() {

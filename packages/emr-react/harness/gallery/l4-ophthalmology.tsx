@@ -33,6 +33,7 @@ import {
 } from '../../src/l4-ophthalmology';
 import { EmrOptionChip, EmrRow } from '../../src/primitives';
 import { fontFamily, useEmrTheme } from '../../src/theme';
+import { GlaucomaFollowUpDemo } from './glaucoma-follow-up';
 import type { GallerySection } from './types';
 
 // ---------------------------------------------------------------------------
@@ -785,6 +786,7 @@ function OctFindingRecordDemo() {
 // ---------------------------------------------------------------------------
 
 export const gallery: GallerySection[] = [
+  { id: 'glaucoma-follow-up', title: 'Glaucoma follow-up · Synthetic encounter', render: () => <GlaucomaFollowUpDemo /> },
   {
     id: 'l4-diagnostic-result-summary',
     title: 'EmrDiagnosticResultSummary',

@@ -1,3 +1,4 @@
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import type {
   EmrBottomTabBarIntent,
@@ -10,13 +11,13 @@ import type {
   EmrSheetIntent,
   EmrSyncPillIntent,
   EmrSyncPillModel,
-  EmrToastIntent,
-  EmrToastModel,
   EmrTone,
   EmrTopBarIntent,
   EmrTopBarModel,
 } from '@drguptavivek/emr-controller';
 import { EmrFieldFrameComponent } from '../fields/emr-field-frame.component';
+
+export { EmrToastComponent } from '../primitives/emr-feedback.component';
 
 const DEFAULT_MOBILE_SHELL_LABELS = {
   pinDelete: 'Delete',
@@ -447,86 +448,12 @@ export class EmrSyncPillComponent {
 }
 
 /**
- * L4 Toast banner: controlled notification with optional action button and dismiss button.
- */
-@Component({
-  selector: 'emr-toast',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (model(); as m) {
-      @let l = text();
-      @let urgent = m.tone === 'danger' || m.tone === 'warning';
-      <div
-        class="emr-toast"
-        [attr.data-tone]="m.tone"
-        [attr.role]="urgent ? 'alert' : 'status'"
-        [style.margin-bottom.px]="bottomOffset()"
-      >
-        <span class="emr-toast__msg">
-          <span aria-hidden="true">{{ glyph(m.tone) }}</span>
-          {{ m.message }}
-        </span>
-        @if (m.actionLabel) {
-          <button
-            type="button"
-            class="emr-button emr-button--small emr-button--outline"
-            (click)="intent.emit({ type: 'actionPressed', id: m.id })"
-          >
-            {{ m.actionLabel }}
-          </button>
-        }
-        <button
-          type="button"
-          class="emr-button emr-button--small emr-button--ghost"
-          [attr.aria-label]="l.dismiss"
-          (click)="intent.emit({ type: 'dismissed', id: m.id })"
-        >
-          ✕
-        </button>
-      </div>
-    }
-  `,
-  styles: [`
-    :host { display: block; font-family: var(--emr-font-family); }
-    .emr-toast {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--emr-border);
-      background: var(--emr-surface);
-      color: var(--emr-text);
-      font-size: var(--emr-text-md);
-    }
-    .emr-toast[data-tone="info"] { background: var(--emr-info-soft); color: var(--emr-info); border-color: var(--emr-info); }
-    .emr-toast[data-tone="success"] { background: var(--emr-success-soft); color: var(--emr-success); border-color: var(--emr-success); }
-    .emr-toast[data-tone="warning"] { background: var(--emr-warning-soft); color: var(--emr-warning); border-color: var(--emr-warning); }
-    .emr-toast[data-tone="danger"] { background: var(--emr-danger-soft); color: var(--emr-danger); border-color: var(--emr-danger); }
-    .emr-toast__msg { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-  `],
-})
-export class EmrToastComponent {
-  readonly model = input<EmrToastModel | null>(null);
-  readonly bottomOffset = input(0);
-  readonly labels = input<Partial<EmrMobileShellLabels>>({});
-  readonly intent = output<EmrToastIntent>();
-
-  protected readonly text = computed(() => ({ ...DEFAULT_MOBILE_SHELL_LABELS, ...this.labels() }));
-
-  protected glyph(tone: EmrTone): string {
-    return TONE_GLYPH[tone];
-  }
-}
-
-/**
  * L4 Sheet / modal panel: side panel on wide viewports, bottom sheet on narrow viewports.
  */
 @Component({
   selector: 'emr-sheet',
   standalone: true,
+  imports: [CdkTrapFocus],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (open()) {
@@ -537,6 +464,8 @@ export class EmrToastComponent {
           class="emr-sheet"
           role="dialog"
           aria-modal="true"
+          cdkTrapFocus
+          [cdkTrapFocusAutoCapture]="true"
           [attr.aria-label]="title() || l.panel"
           tabindex="-1"
         >

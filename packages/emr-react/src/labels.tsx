@@ -14,6 +14,8 @@ export interface EmrLabels {
   dateLabel: string;
   timeLabel: string;
   yes: string;
+  no: string;
+  clear: string;
   select: string;
   close: string;
   required: string;
@@ -32,6 +34,8 @@ export const emrEnglishLabels: EmrLabels = {
   dateLabel: 'Date',
   timeLabel: 'Time',
   yes: 'Yes',
+  no: 'No',
+  clear: 'Clear',
   select: 'Select',
   close: 'Close',
   required: 'required',

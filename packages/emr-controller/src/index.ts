@@ -41,6 +41,7 @@ export * from './field-contract.adapters.js';
 export * from './capture.models.js';
 export * from './scoring.models.js';
 export * from './dose-schedule.models.js';
+export * from './prescribing-dispense.js';
 export * from './note-capture.models.js';
 export * from './note-capture.controller.js';
 export * from './meridian-cross.models.js';
@@ -62,3 +63,8 @@ export * from './time-axis.models.js';
 export * from './surface-contracts.models.js';
 export * from './recipes/index.js';
 
+export * from './glaucoma-follow-up.models.js';
+export * from './glaucoma-follow-up.controller.js';
+export * from './clinical-note.models.js';
+export * from './l2-fields.models.js';
+export * from './l1-primitives.models.js';

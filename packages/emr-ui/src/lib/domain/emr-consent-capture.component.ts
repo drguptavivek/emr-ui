@@ -129,9 +129,9 @@ let nextId = 0;
       @if (m.guardian; as g) {
         <div class="cc__stack">
           <emr-text-input [controlId]="idPrefix() + '-g-name'" [label]="l.guardianName" [required]="g.required" [value]="g.name ?? ''" [error]="g.nameError ?? ''"
-            (valueChange)="intent.emit({ type: 'guardianChanged', name: $event })" />
+            (valueChange)="intent.emit({ type: 'guardianChanged', name: $event ?? '' })" />
           <emr-text-input [controlId]="idPrefix() + '-g-rel'" [label]="l.guardianRelationship" [required]="g.required" [value]="g.relationship ?? ''" [error]="g.relationshipError ?? ''"
-            (valueChange)="intent.emit({ type: 'guardianChanged', relationship: $event })" />
+            (valueChange)="intent.emit({ type: 'guardianChanged', relationship: $event ?? '' })" />
         </div>
       }
 

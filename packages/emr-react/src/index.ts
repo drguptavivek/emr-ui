@@ -3,14 +3,27 @@ export * from './theme';
 export * from './icons';
 export * from './labels';
 export * from './use-controller';
+export * from './l1-field-chrome';
 export * from './primitives';
 export * from './inputs-core';
 export * from './l1-inputs';
 export * from './l1-display';
 export * from './l1-interactive';
+export * from './l1-new-inputs';
+export * from './l1-tree';
+export * from './l1-image';
+export * from './l1-wave2-inputs';
+export * from './l1-wave2-formatted';
+export * from './l1-wave2-navigation';
+export * from './l1-wave2.logic';
+export * from './l1-overlays';
+export * from './l1-feedback';
 export * from './stat-tile';
+export * from './l2-field-frame';
 export * from './typed-field';
 export * from './l2-fields';
+export * from './l2-contract-fields';
+export * from './l2-specialty-fields';
 export * from './clinical-form';
 export * from './l3-structures';
 export * from './l3-annotation';
@@ -41,5 +54,22 @@ export * from './l4-annotation-canvas';
 export * from './l4-observations-notes';
 export * from './l5-recipes';
 export * from './l6-authoring';
-export { isFieldShown, isSectionShown } from './typed-field.logic';
+export {
+  computePrecisionStep,
+  isIsoDateOutOfBounds,
+  localDateTimeToUtcIso,
+  resolveControlledDateTimeParts,
+  resolveControlledNumberDraft,
+  resolveControlledTemporalDraft,
+  toLocalDateTimeInputValue,
+} from './l1-inputs.logic';
+export {
+  isFieldShown,
+  isSectionShown,
+  normalizeTypedField,
+  resolveTypedFieldDispatch,
+  type NormalizedTypedField,
+  type ResolvedTypedWidgetKind,
+} from './typed-field.logic';
 
+export * from './l4-clinical-note';

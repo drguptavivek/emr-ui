@@ -34,6 +34,7 @@ const initialState = (initial: DocumentViewerViewModel): DocumentViewerViewModel
  */
 export class DocumentViewerController extends StateController<DocumentViewerViewModel, DocumentViewerIntent> {
   private readonly repository: DocumentPreviewRepository;
+  private destroying = false;
   private carouselDocumentIds: string[] = [];
   private requestGeneration = 0;
   private requestAbort?: AbortController;
@@ -45,6 +46,7 @@ export class DocumentViewerController extends StateController<DocumentViewerView
   }
 
   dispatch(intent: DocumentViewerIntent): void {
+    if (this.isDestroyed() || this.destroying) return;
     switch (intent.type) {
       case 'openRequested': this.open(intent.documentId, intent.carouselDocumentIds); return;
       case 'closeRequested': this.close(); return;
@@ -60,6 +62,8 @@ export class DocumentViewerController extends StateController<DocumentViewerView
   }
 
   override destroy(): void {
+    if (this.isDestroyed() || this.destroying) return;
+    this.destroying = true;
     this.close();
     super.destroy();
   }
@@ -172,6 +176,7 @@ export class DocumentViewerController extends StateController<DocumentViewerView
   }
 
   private async loadManifest(documentId: string, documentIndex: number): Promise<void> {
+    if (this.isDestroyed()) return;
     const generation = this.beginRequest();
     try {
       const manifest = await this.repository.authorizeAndLoadManifest(documentId, this.signal());
@@ -189,6 +194,7 @@ export class DocumentViewerController extends StateController<DocumentViewerView
   }
 
   private async loadPage(documentId: string, pageIndex: number, parentGeneration?: number): Promise<void> {
+    if (this.isDestroyed() || (parentGeneration !== undefined && !this.isCurrent(parentGeneration))) return;
     const generation = parentGeneration ?? this.beginRequest();
     try {
       const page = await this.repository.loadRasterPage(documentId, pageIndex, this.signal());

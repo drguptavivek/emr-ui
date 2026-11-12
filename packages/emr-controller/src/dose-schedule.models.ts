@@ -150,11 +150,18 @@ export interface PrescribingRow {
   patternLabel?: string;
   durationCount: number | null;
   durationUnit: string;
+  /** Resolved total for the regimen. Omit when the schedule or dose-to-dispense conversion is unresolved. */
+  dispenseQuantity?: PrescribingDispenseQuantity;
   foodRelation: string;
   instructions: string;
   taperExpanded?: boolean;
   taperSteps?: readonly DoseTaperStep[];
   error?: string;
+}
+
+export interface PrescribingDispenseQuantity {
+  count: number;
+  unit: 'tab' | 'cap';
 }
 
 export interface PrescribingFavouriteSet {
@@ -179,6 +186,15 @@ export interface PrescribingTableViewModel {
   title?: string;
   rows: readonly PrescribingRow[];
   formulary?: readonly PrescribingFormularyItem[];
+  /** Controlled results for the active row and query. */
+  formularySearch?: {
+    rowId: string;
+    query: string;
+    items: readonly PrescribingFormularyItem[];
+    loading: boolean;
+    error?: string;
+  };
+  formularyLabel?: string;
   favourites?: readonly PrescribingFavouriteSet[];
   quickSigExamples?: readonly PrescribingQuickSigExample[];
   safetyAlerts?: readonly PrescribingSafetyAlert[];

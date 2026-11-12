@@ -327,3 +327,64 @@ describe('FavouritesController', () => {
     expect(controller.getSnapshot().error).toBe('save failed');
   });
 });
+
+describe('controller destruction', () => {
+  it('runs teardown once and stops notifying listeners immediately', () => {
+    let teardowns = 0;
+    class Controller extends StateController<number, void> {
+      constructor() { super(0); }
+      dispatch(): void { this.setState(1); }
+      protected override onDestroy(): void { teardowns++; }
+    }
+    const controller = new Controller();
+    const seen: number[] = [];
+    controller.subscribe(value => { if (value === 1) controller.destroy(); });
+    controller.subscribe(value => seen.push(value));
+    controller.dispatch();
+    controller.destroy();
+    expect(teardowns).toBe(1);
+    expect(seen).toEqual([0]);
+  });
+
+  it('aborts search and ignores late calls and results', async () => {
+    const pending = deferred<{ items: readonly string[]; total: number }>();
+    const signals: AbortSignal[] = [];
+    const controller = new AsyncSearchController({ search: request => { signals.push(request.signal); return pending.promise; } });
+    controller.dispatch({ type: 'searchRequested' });
+    controller.destroy();
+    controller.dispatch({ type: 'searchRequested' });
+    controller.dispatch({ type: 'pageChanged', page: 2 });
+    pending.resolve({ items: ['late'], total: 1 });
+    await tick();
+    expect(signals).toHaveLength(1);
+    expect(signals[0].aborted).toBe(true);
+    expect(controller.getSnapshot().options).toEqual([]);
+  });
+
+  it('does not issue a search when a listener destroys during loading', () => {
+    let calls = 0;
+    const controller = new AsyncSearchController({ search: async () => { calls++; return { items: [], total: 0 }; } });
+    controller.subscribe(state => { if (state.loading) controller.destroy(); });
+    controller.dispatch({ type: 'searchRequested' });
+    expect(calls).toBe(0);
+  });
+
+  it('does not reload favourites after a late save resolves', async () => {
+    const pending = deferred<FavouriteEntry>();
+    let lists = 0;
+    let signal: AbortSignal | undefined;
+    const controller = new FavouritesController({
+      list: async () => { lists++; return []; },
+      save: (_entry, requestSignal) => { signal = requestSignal; return pending.promise; },
+      delete: async () => undefined, move: async () => undefined, apply: async () => []
+    }, { createId: () => 'id', now: () => 'now' });
+    controller.dispatch({ type: 'createRequested', kind: 'medication' });
+    controller.dispatch({ type: 'editorNameChanged', name: 'Test' });
+    controller.dispatch({ type: 'saveRequested' });
+    controller.destroy();
+    pending.resolve({ id: 'id', name: 'Test', kind: 'medication', orderTemplates: [], updatedAt: 'now' });
+    await tick();
+    expect(signal?.aborted).toBe(true);
+    expect(lists).toBe(0);
+  });
+});

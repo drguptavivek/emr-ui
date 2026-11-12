@@ -226,3 +226,24 @@ describe('NoteCaptureController dictation', () => {
     expect(c.getSnapshot().dictation).toMatchObject({ status: 'error', error: 'Microphone not available', canStart: true });
   });
 });
+
+describe('NoteCaptureController destruction', () => {
+  it('rejects late dictation and summary calls and spoken segments', () => {
+    let calls = 0;
+    let ids = 0;
+    const controller = new NoteCaptureController(model(), {
+      summarise: async () => { calls++; return { spans: [], suggestions: [] }; },
+      startDictation: async () => { calls++; },
+      stopDictation: async () => { calls++; }
+    }, () => { ids++; return 'late'; });
+    const before = controller.getSnapshot();
+    controller.destroy();
+    controller.dispatch({ type: 'summariseRequested' });
+    controller.dispatch({ type: 'dictationStartRequested' });
+    controller.dispatch({ type: 'dictationStopRequested' });
+    controller.addSpokenSegment({ text: 'late', startMs: null, endMs: null, timeLabel: '' });
+    expect(calls).toBe(0);
+    expect(ids).toBe(0);
+    expect(controller.getSnapshot()).toBe(before);
+  });
+});

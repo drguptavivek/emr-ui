@@ -2,7 +2,7 @@
 
 import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
-  AttestationIntent, AttestationViewModel, CaptureStatusBarIntent, CaptureStatusBarViewModel,
+  CaptureStatusBarIntent, CaptureStatusBarViewModel,
   EmrTone, PatientAlert, PatientBannerIntent, PatientBannerViewModel, PatientVitalSparkline,
 } from '@drguptavivek/emr-controller';
 import { SvgIcon } from './icons';
@@ -65,8 +65,6 @@ const STATUS_DEFAULTS = {
   conflictSentence: (remoteRevision: number, localRevision: number, remoteAuthor?: string) =>
     `Their version is revision ${remoteRevision}${remoteAuthor ? ` by ${remoteAuthor}` : ''}; yours was based on revision ${localRevision}.`,
 };
-
-const ATTEST_DEFAULTS = { signatures: 'Signatures', signatories: 'Signatories', signed: 'Signed', notSupplied: 'Not supplied', sign: 'Sign', amend: 'Amend', notCompleted: 'Not completed.' };
 
 /** Glyph paired with text so state is never colour alone. */
 const GLYPH: Record<EmrTone, string> = { neutral: '', info: 'ℹ', success: '✓', warning: '⚠', danger: '✕' };
@@ -461,51 +459,8 @@ export function EmrCaptureStatusBar({ model: m, labels, onIntent }: {
   );
 }
 
-/** L2. Sign / witness / co-sign block. The controller decides who may sign; this renders and emits. */
-export function EmrAttestation({ model: m, labels, onIntent }: {
-  model: AttestationViewModel;
-  labels?: Partial<typeof ATTEST_DEFAULTS>;
-  onIntent: (intent: AttestationIntent) => void;
-}) {
-  const x = useText();
-  const { t } = x;
-  const l = { ...ATTEST_DEFAULTS, ...labels };
-  return (
-    <View role="region" aria-label={m.title || l.signatures} style={styles.group}>
-      {m.title ? <Text role="heading" style={x.key}>{m.title}</Text> : null}
-      {m.statement ? <Text style={x.body}>{m.statement}</Text> : null}
-      {m.signatories.length ? (
-        <View aria-label={l.signatories} style={styles.group}>
-          {m.signatories.map((s) => (
-            <View key={s.id} style={styles.wrap}>
-              <Pressable
-                role="button"
-                onPress={() => onIntent({ type: 'signatorySelected', signatoryId: s.id })}
-                style={({ focused }: PressState) => [focusRing(t, focused), { minHeight: t.controlHeight, justifyContent: 'center' }]}
-              >
-                <Text style={x.bold}>{s.displayName}</Text>
-              </Pressable>
-              <Text style={x.muted}>{s.roleLabel}</Text>
-              <EmrBadgeView badge={s.status} />
-              <Text style={x.muted}>{l.signed}: {s.signedAtLabel || l.notSupplied}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-      {m.error ? (
-        <View role="alert" style={[styles.alert, { borderColor: t.danger, backgroundColor: t.dangerSoft }]}>
-          <Text style={x.body}><Text style={x.bold}>{l.notCompleted}</Text> {m.error}</Text>
-        </View>
-      ) : null}
-      {!m.readOnly && (m.canSign || m.canAmend) ? (
-        <View style={styles.wrap}>
-          {m.canSign ? <EmrButton small label={m.signLabel || l.sign} onPress={() => onIntent({ type: 'signRequested' })} /> : null}
-          {m.canAmend ? <EmrButton small variant="outline" label={m.amendLabel || l.amend} onPress={() => onIntent({ type: 'amendRequested' })} /> : null}
-        </View>
-      ) : null}
-    </View>
-  );
-}
+/** Relocated to L2 (`./l2-fields`); re-exported here for backwards compatibility. */
+export { EmrAttestation } from './l2-fields';
 
 const styles = StyleSheet.create({
   banner: { borderWidth: 1, borderRadius: 8 },

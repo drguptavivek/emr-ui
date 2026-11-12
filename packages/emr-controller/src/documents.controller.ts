@@ -32,6 +32,7 @@ export class DocumentUploadQueueController extends StateController<DocumentUploa
   constructor(initial: DocumentUploadQueueViewModel) { super({ ...initial, candidates: [...initial.candidates] }); }
 
   dispatch(intent: DocumentUploadIntent): void {
+    if (this.isDestroyed()) return;
     if (intent.type === 'filesSelected') {
       if (this.getSnapshot().disabled) return;
       const taken = new Set(this.getSnapshot().candidates.map(candidate => candidate.id));
@@ -73,6 +74,7 @@ export class PatientDocumentsController extends StateController<PatientDocuments
   }
 
   dispatch(intent: PatientDocumentsIntent): void {
+    if (this.isDestroyed()) return;
     switch (intent.type) {
       case 'queryChanged': this.filter({ query: intent.query }); return;
       case 'categoryChanged': this.filter({ category: intent.category }); return;

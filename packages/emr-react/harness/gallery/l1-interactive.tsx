@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import type { EmrOption, TimeAxisViewModel } from '@drguptavivek/emr-controller';
+import { AsyncSearchController, hierarchySearchOptions, type AsyncSearchState, type EmrOption, type HierarchyNode, type TimeAxisViewModel } from '@drguptavivek/emr-controller';
 import { EmrLikert, EmrSearchSelect, EmrStageStepper, EmrTabs, EmrTimeAxis, EmrVas } from '../../src';
 import type { GallerySection } from './types';
 
@@ -37,6 +37,50 @@ function SearchDemo() {
       onQueryChange={setQuery} onSearchRequested={() => setOpen(true)} onOpenRequested={() => setOpen(true)} onCloseRequested={() => setOpen(false)}
       onOptionSelect={toggle} onRemoveRequested={toggle} />
   );
+}
+
+const HIERARCHICAL_CATALOG: readonly HierarchyNode[] = [{
+  id: 'laboratory', label: 'Laboratory', kind: 'group', selectable: false, children: [{
+    id: 'chemistry', label: 'Clinical chemistry', kind: 'group', selectable: false, children: [
+      { id: 'glucose', label: 'Serum glucose', code: 'GLU', kind: 'item', selectable: true },
+      { id: 'creatinine', label: 'Serum creatinine', code: 'CREAT', kind: 'item', selectable: true },
+    ],
+  }, {
+    id: 'haematology', label: 'Haematology', kind: 'group', selectable: false, children: [
+      { id: 'cbc', label: 'Complete blood count', code: 'CBC', kind: 'item', selectable: true },
+    ],
+  }],
+}];
+
+function HierarchySearchDemo() {
+  const [open, setOpen] = useState(false);
+  const [state, setState] = useState<AsyncSearchState<EmrOption>>({ query: '', options: [], selected: [], loading: false, page: 1, pageSize: 20, total: 0 });
+  const controller = useRef<AsyncSearchController<EmrOption> | null>(null);
+  useEffect(() => {
+    const instance = new AsyncSearchController<EmrOption>({
+      search: async ({ query, page, pageSize }) => {
+        const matches = hierarchySearchOptions(HIERARCHICAL_CATALOG, query);
+        return { items: matches.slice((page - 1) * pageSize, page * pageSize), total: matches.length };
+      },
+    }, undefined, { debounceMs: 200 });
+    controller.current = instance;
+    const unsubscribe = instance.subscribe(setState);
+    return () => { unsubscribe(); instance.destroy(); controller.current = null; };
+  }, []);
+  return <EmrSearchSelect label="Search hierarchical catalogue" multiple query={state.query} options={state.options} selected={state.selected}
+    open={open} loading={state.loading} error={state.error}
+    onQueryChange={query => { setOpen(true); controller.current?.dispatch({ type: 'queryChanged', query }); }}
+    onSearchRequested={() => { setOpen(true); controller.current?.dispatch({ type: 'searchRequested' }); }}
+    onOpenRequested={() => { setOpen(true); controller.current?.dispatch({ type: 'searchRequested' }); }}
+    onCloseRequested={() => setOpen(false)}
+    onOptionSelect={value => {
+      const option = state.options.find(item => item.value === value);
+      if (option && !option.disabled && !state.selected.some(item => item.value === value)) {
+        controller.current?.dispatch({ type: 'selectionChanged', selected: [...state.selected, option] });
+      }
+      setOpen(false);
+    }}
+    onRemoveRequested={value => controller.current?.dispatch({ type: 'selectionChanged', selected: state.selected.filter(item => item.value !== value) })} />;
 }
 
 function LikertDemo() {
@@ -102,6 +146,7 @@ function TimeAxisDemo() {
 export const gallery: GallerySection[] = [
   { id: 'tabs', title: 'EmrTabs', render: () => <TabsDemo /> },
   { id: 'search-select', title: 'EmrSearchSelect', render: () => <SearchDemo /> },
+  { id: 'hierarchy-search-select', title: 'EmrSearchSelect — hierarchical catalogue', render: () => <HierarchySearchDemo /> },
   { id: 'likert', title: 'EmrLikert', render: () => <LikertDemo /> },
   { id: 'vas', title: 'EmrVas', render: () => <VasDemo /> },
   { id: 'stage-stepper', title: 'EmrStageStepper', render: () => <StepperDemo /> },

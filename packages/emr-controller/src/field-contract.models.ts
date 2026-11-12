@@ -1,4 +1,4 @@
-import type { ClinicalAssessmentStatus, ClinicalOption } from './models.js';
+import type { ClinicalAssessmentStatus, ClinicalOption, EmrTone } from './models.js';
 import type { ClinicalAssessmentStatusOption, ClinicalFieldValue } from './clinical-form.models.js';
 import type { FieldValidationRule } from './field-generator.models.js';
 import type { TerminologyBinding } from './terminology.models.js';
@@ -51,8 +51,20 @@ export type EmrWidgetHint =
   | 'checkbox'
   | 'chips'
   | 'likert'
+  | 'vas'
+  | 'segmented'
+  | 'toggle'
   | 'search'
-  | 'stepper';
+  | 'search-select'
+  | 'stepper'
+  | 'signature'
+  | 'tree-select'
+  | 'combobox'
+  | 'tag-input'
+  | 'image-upload'
+  | 'slider'
+  | 'masked'
+  | 'otp';
 
 export interface EmrPartialDate {
   readonly value: string;
@@ -102,9 +114,20 @@ export interface EmrFieldPresentation {
   readonly span?: 3 | 4 | 6 | 8 | 9 | 12;
   readonly rows?: number;
   readonly precision?: number; // display rounding only
+  readonly min?: number;
+  readonly max?: number;
+  readonly step?: number;
+  readonly anchors?: {
+    readonly minLabel?: string;
+    readonly midLabel?: string;
+    readonly maxLabel?: string;
+  };
+  readonly optionTones?: Readonly<Record<number, EmrTone>>;
   readonly widget?: EmrWidgetHint;
   readonly unitDisplay?: string; // 'kg' shown to a clinician
   readonly options?: readonly ClinicalOption[]; // display labels for coded answers
+  readonly treeNodes?: readonly import('./l1-primitives.models.js').EmrTreeNode[];
+  readonly mask?: string;
   readonly assessmentStatusOptions?: readonly ClinicalAssessmentStatusOption[];
   readonly customRendererKey?: string;
 }

@@ -41,7 +41,7 @@ import { EmrTabsComponent } from '../primitives/emr-tabs.component';
         <button class="emr-button emr-button--small emr-button--ghost" type="button" (click)="emit({ type: 'backRequested' })">Back to favourites</button>
         <h3>{{ model.items.some(item => item.id === model.editor?.id) ? 'Edit favourite' : 'New favourite' }}</h3>
         <emr-text-input controlId="emr-favourite-name" label="Favourite name" [value]="model.editor.name"
-          [error]="model.error ?? ''" (valueChange)="emit({ type: 'editorNameChanged', name: $event })" />
+          [error]="model.error ?? ''" (valueChange)="emit({ type: 'editorNameChanged', name: $event ?? '' })" />
         <div>
           <strong>Included orders</strong>
           @if (model.editor.orderTemplates.length === 0) { <div class="emr-empty">No order templates included.</div> }

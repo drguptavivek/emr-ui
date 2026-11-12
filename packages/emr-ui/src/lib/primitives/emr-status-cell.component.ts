@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { EmrBadge } from '@drguptavivek/emr-controller';
+import type { EmrBadge } from '@drguptavivek/emr-controller';
 
 export interface EmrStatusCellAttribution {
   nameLabel: string;

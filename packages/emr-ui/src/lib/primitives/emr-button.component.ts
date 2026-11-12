@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  booleanAttribute,
+  input,
+  output,
+} from '@angular/core';
 
 export type EmrButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 export type EmrButtonSize = 'small' | 'medium';
@@ -9,30 +16,41 @@ export type EmrButtonSize = 'small' | 'medium';
   template: `
     <button
       class="emr-button"
-      [class.emr-button--secondary]="variant === 'secondary'"
-      [class.emr-button--outline]="variant === 'outline'"
-      [class.emr-button--ghost]="variant === 'ghost'"
-      [class.emr-button--danger]="variant === 'danger'"
-      [class.emr-button--small]="size === 'small'"
-      [class.emr-button--block]="block"
-      [attr.type]="type"
-      [disabled]="disabled || loading"
-      [attr.aria-busy]="loading"
-      (click)="clicked.emit($event)"
+      [attr.id]="controlId() || null"
+      [class.emr-button--secondary]="variant() === 'secondary'"
+      [class.emr-button--outline]="variant() === 'outline'"
+      [class.emr-button--ghost]="variant() === 'ghost'"
+      [class.emr-button--danger]="variant() === 'danger'"
+      [class.emr-button--small]="size() === 'small'"
+      [class.emr-button--block]="block()"
+      [attr.type]="type()"
+      [disabled]="disabled() || loading()"
+      [attr.aria-busy]="loading() || null"
+      [attr.aria-label]="ariaLabel() || null"
+      (click)="onClick($event)"
     >
-      @if (loading) { <span aria-hidden="true">•••</span> }
+      @if (loading()) {
+        <span aria-hidden="true">•••</span>
+      }
       <ng-content />
     </button>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class EmrButtonComponent {
-  @Input() variant: EmrButtonVariant = 'primary';
-  @Input() size: EmrButtonSize = 'medium';
-  @Input() type: 'button' | 'submit' | 'reset' = 'button';
-  @Input() disabled = false;
-  @Input() loading = false;
-  @Input() block = false;
-  @Output() readonly clicked = new EventEmitter<MouseEvent>();
+  readonly controlId = input<string>();
+  readonly variant = input<EmrButtonVariant>('primary');
+  readonly size = input<EmrButtonSize>('medium');
+  readonly type = input<'button' | 'submit' | 'reset'>('button');
+  readonly disabled = input(false, { transform: booleanAttribute });
+  readonly loading = input(false, { transform: booleanAttribute });
+  readonly block = input(false, { transform: booleanAttribute });
+  readonly ariaLabel = input<string>();
+  readonly clicked = output<MouseEvent>();
+
+  protected onClick(event: MouseEvent): void {
+    if (this.disabled() || this.loading()) return;
+    this.clicked.emit(event);
+  }
 }

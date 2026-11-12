@@ -174,13 +174,27 @@
     resize: none !important;
   }
   .emr-print textarea { overflow: visible !important; }
-  /* Checkbox/radio state is clinical data: keep the native glyph in every print context. */
+  /* Checkbox/radio/toggle state is clinical data: keep the native glyph in every print context. */
   .emr-print input[type='checkbox'],
   .emr-print input[type='radio'] {
     appearance: auto !important;
     display: inline-block !important;
+    position: static !important;
+    opacity: 1 !important;
     width: 11px;
     height: 11px;
+  }
+  .emr-print .emr-toggle__track {
+    display: none !important;
+  }
+  .emr-print .emr-dialog-backdrop {
+    display: none !important;
+  }
+  .emr-print .emr-dialog {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
   }
 
   /* Badges keep meaning without ink-heavy fills. This works only because the
@@ -298,13 +312,27 @@
     resize: none !important;
   }
   textarea { overflow: visible !important; }
-  /* Checkbox/radio state is clinical data: keep the native glyph in every print context. */
+  /* Checkbox/radio/toggle state is clinical data: keep the native glyph in every print context. */
   input[type='checkbox'],
   input[type='radio'] {
     appearance: auto !important;
     display: inline-block !important;
+    position: static !important;
+    opacity: 1 !important;
     width: 11px;
     height: 11px;
+  }
+  .emr-toggle__track {
+    display: none !important;
+  }
+  .emr-dialog-backdrop {
+    display: none !important;
+  }
+  .emr-dialog {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
   }
 
   /* Badges keep meaning without ink-heavy fills. This works only because the

@@ -2,11 +2,18 @@
 // L1 primitives
 // ---------------------------------------------------------------------
 export * from './lib/primitives/emr-button.component';
+export * from './lib/primitives/emr-inputs.logic';
 export * from './lib/primitives/emr-inputs.component';
+export * from './lib/primitives/emr-textarea.component';
+export * from './lib/primitives/emr-action-controls.component';
+export * from './lib/primitives/emr-specialized-inputs.component';
 export * from './lib/primitives/emr-search-select.component';
 export * from './lib/primitives/emr-choice.component';
 export * from './lib/primitives/emr-feedback.component';
 export * from './lib/primitives/emr-tabs.component';
+export * from './lib/primitives/emr-pagination.component';
+export * from './lib/primitives/emr-overlays.component';
+export * from './lib/primitives/emr-status-indicators.component';
 export * from './lib/primitives/emr-separator.component';
 export * from './lib/primitives/emr-likert.component';
 export * from './lib/primitives/emr-vas.component';
@@ -14,16 +21,26 @@ export * from './lib/primitives/emr-card-layout.component';
 export * from './lib/primitives/emr-status-cell.component';
 export * from './lib/primitives/emr-stage-stepper.component';
 export * from './lib/primitives/emr-stat-tile.component';
+export * from './lib/primitives/emr-wave2.logic';
+export * from './lib/primitives/emr-tree.component';
+export * from './lib/primitives/emr-image.component';
+export * from './lib/primitives/emr-wave2-inputs.component';
+export * from './lib/primitives/emr-wave2-formatted.component';
+export * from './lib/primitives/emr-wave2-navigation.component';
 
 // ---------------------------------------------------------------------
 // L2 fields
 // ---------------------------------------------------------------------
 export * from './lib/fields/emr-field-frame.component';
+export * from './lib/fields/typed-field.logic';
 export * from './lib/fields/emr-typed-field.component';
 export * from './lib/fields/emr-coded-input.component';
 export * from './lib/fields/emr-attestation.component';
 export * from './lib/fields/emr-schedule-slot-picker.component';
 export * from './lib/fields/emr-identifier-entry.component';
+export * from './lib/fields/emr-contract-fields.component';
+export * from './lib/fields/emr-clinical-fields.component';
+export * from './lib/fields/emr-specialty-fields.component';
 
 // ---------------------------------------------------------------------
 // L3 structures
@@ -114,3 +131,4 @@ export * from './lib/domain/emr-patient-history.component';
 export * from './lib/domain/emr-records-and-charts.component';
 export * from './lib/domain/emr-mobile-and-web-shell.component';
 export * from './lib/domain/emr-encounter-surfaces.component';
+export * from './lib/domain/emr-clinical-note-workspace.component';

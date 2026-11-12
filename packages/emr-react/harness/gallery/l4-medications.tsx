@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
+import { AsyncSearchController, calculateFixedScheduleDispenseQuantity } from '@drguptavivek/emr-controller';
 import type {
   DoseForm,
   DoseScheduleViewModel,
@@ -20,6 +21,7 @@ import type {
 import { EmrDoseSchedule, EmrMedicationReconciliation, EmrScoreResultCard } from '../../src/l4-medications';
 import { EmrPrescribingTable } from '../../src/l4-prescribing-table';
 import { fontFamily, useEmrTheme } from '../../src/theme';
+import { FORMULARY_ITEMS, PRESCRIBING_PRESETS, clearFixturePrescriptionProduct, resolveFixturePrescriptionProduct, syntheticFormularyRepository } from './prescribing-formulary.fixture';
 import type { GallerySection } from './types';
 
 // ---------------------------------------------------------------------------
@@ -374,34 +376,18 @@ const PRESCRIBING_SLOTS = [
   { id: 'n', label: 'Night', shortLabel: 'Night', timeHint: '10 pm' },
 ] as const;
 
-const PRESCRIBING_PRESETS = [
-  { id: 'od', label: 'OD', slotIds: ['m'] },
-  { id: 'bd', label: 'BD', slotIds: ['m', 'n'] },
-  { id: 'tds', label: 'TDS', slotIds: ['m', 'a', 'n'] },
-  { id: 'qid', label: 'QID', slotIds: ['m', 'a', 'e', 'n'] },
-  { id: 'hs', label: 'HS', slotIds: ['n'] },
-  { id: 'sos', label: 'SOS', slotIds: ['m'] },
-] as const;
 
-const FORMULARY_ITEMS: readonly PrescribingFormularyItem[] = [
-  { code: 'RXN-309114', drugName: 'Moxifloxacin', strength: '0.5% w/v', form: 'drop', formLabel: 'Ophthalmic Drops', route: 'eye', site: 'OD', doseAmount: 1, doseStep: 1, unitLabel: 'drop', allowedUnits: ['drop', 'mL', ''], specialtyTag: 'Ophthalmology', stockStatus: 'In Stock', defaultPresetId: 'qid', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: '5 min gap', defaultInstructions: 'Instil 1 drop cleanly; wait 5 min before other drops.' },
-  { code: 'RXN-860975', drugName: 'Prednisolone acetate', strength: '1% w/v', form: 'drop', formLabel: 'Ophthalmic Drops', route: 'eye', site: 'OD', doseAmount: 1, doseStep: 1, unitLabel: 'drop', allowedUnits: ['drop', 'mL', ''], specialtyTag: 'Ophthalmology', stockStatus: 'In Stock', defaultPresetId: 'qid', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: 'Shake well', defaultInstructions: 'Shake well before use. Use ↘ Step-Dn for weekly taper.' },
-  { code: 'RXN-313782', drugName: 'Amoxicillin Suspension', strength: '250 mg/5 mL', form: 'liquid', formLabel: 'Paediatric Suspension', route: 'oral', doseAmount: 7.5, doseStep: 2.5, unitLabel: 'mL', allowedUnits: ['mL', 'tsp', 'mg/kg', 'mg'], specialtyTag: 'Pediatrics', dosingBasisLabel: '15 mg/kg · 12 kg = 180 mg', stockStatus: 'In Stock', defaultPresetId: 'tds', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'Use oral syringe', defaultInstructions: 'Measure 7.5 mL accurately with oral syringe.' },
-  { code: 'RXN-197985', drugName: 'Mometasone Furoate', strength: '0.1% w/w', form: 'ointment', formLabel: 'Topical Cream/Oint', route: 'topical', site: 'Lesions', doseAmount: 1.5, doseStep: 0.5, unitLabel: 'FTU', allowedUnits: ['FTU', 'app', 'ribbon', 'g'], specialtyTag: 'Dermatology', dosingBasisLabel: '1.5 FTU ≈ 0.75 g', stockStatus: 'In Stock', defaultPresetId: 'od', defaultDurationCount: 14, defaultDurationUnit: 'days', defaultFoodRelation: 'Thin layer only', defaultInstructions: 'Apply thin layer to affected plaques once daily.' },
-  { code: 'RXN-402243', drugName: 'Ciprofloxacin + Dexamethasone', strength: '0.3%/0.1%', form: 'drop', formLabel: 'Otic Ear Drops', route: 'ear', site: 'AD', doseAmount: 4, doseStep: 1, unitLabel: 'drop', allowedUnits: ['drop', 'mL'], specialtyTag: 'ENT', stockStatus: 'In Stock', defaultPresetId: 'bd', defaultDurationCount: 7, defaultDurationUnit: 'days', defaultFoodRelation: 'Tilt head 2 min', defaultInstructions: 'Warm bottle in hand; keep ear dry during bath.' },
-  { code: 'RXN-194000', drugName: 'Capecitabine', strength: '500 mg', form: 'tablet', formLabel: 'Oral Tablet', route: 'oral', doseAmount: 3, doseStep: 0.5, unitLabel: 'tab', allowedUnits: ['', 'tab', 'mg'], specialtyTag: 'Oncology', dosingBasisLabel: '1000 mg/m² · BSA 1.5m²', stockStatus: 'In Stock', defaultPresetId: 'bd', defaultDurationCount: 14, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Cycle Days 1–14, then 7 days rest. Swallow whole.' },
-  { code: 'RXN-311474', drugName: 'Mannitol 20%', strength: '20 g/100 mL', form: 'injection', formLabel: 'IV Infusion', route: 'iv-inf', doseAmount: 100, doseStep: 25, unitLabel: 'mL', allowedUnits: ['mL', 'g', 'mg/kg'], specialtyTag: 'Neurosurgery', dosingBasisLabel: '0.5 g/kg IV osmotherapy', stockStatus: 'In Stock (Ward)', defaultPresetId: 'tds', defaultDurationCount: 3, defaultDurationUnit: 'days', defaultFoodRelation: 'Infuse over 20m (Mannitol)', defaultInstructions: 'Hold if serum Na > 155 mmol/L or osmolality > 320.' },
-  { code: 'RXN-310431', drugName: 'Gabapentin', strength: '100 mg', form: 'capsule', formLabel: 'Oral Capsule', route: 'oral', doseAmount: 1, doseStep: 1, unitLabel: 'cap', allowedUnits: ['', 'cap', 'mg'], specialtyTag: 'Neurology', stockStatus: 'In Stock', defaultPresetId: 'hs', defaultDurationCount: 3, defaultDurationUnit: 'days', defaultFoodRelation: 'At bedtime', defaultInstructions: 'Click ↗ Step-Up to titrate HS → BD → TDS.' },
-  { code: 'RXN-745679', drugName: 'Salbutamol MDI', strength: '100 mcg/puff', form: 'inhaler', formLabel: 'MDI Inhaler', route: 'inhalation', doseAmount: 2, doseStep: 1, unitLabel: 'puff', allowedUnits: ['puff', 'spray', 'respule'], specialtyTag: 'Gen Med', stockStatus: 'In Stock', defaultPresetId: 'sos', defaultDurationCount: 30, defaultDurationUnit: 'days', defaultFoodRelation: 'Use spacer', defaultInstructions: '2 puffs SOS for wheeze/breathlessness.' },
-  { code: 'RXN-198440', drugName: 'Paracetamol', strength: '500 mg', form: 'tablet', formLabel: 'Oral Tablet (Scored)', route: 'oral', doseAmount: 1, doseStep: 0.5, unitLabel: 'tab', allowedUnits: ['', 'tab', 'mg'], specialtyTag: 'Gen Med', stockStatus: 'In Stock', defaultPresetId: 'bd', defaultDurationCount: 5, defaultDurationUnit: 'days', defaultFoodRelation: 'After food', defaultInstructions: 'Take after meals for pain or fever.' },
-];
+
+
 
 function computeRowAnnotations(row: PrescribingRow): PrescribingRow {
+  if (row.frequencyCode === 'SOS') return { ...row, patternLabel: undefined };
+
   const amounts = PRESCRIBING_SLOTS.map((d) => row.slots.find((s) => s.id === d.id)?.amount ?? 0);
   const patternLabel = amounts.map((n) => (n === 0.5 ? '½' : String(n))).join(' - ');
   const activeIds = PRESCRIBING_SLOTS.filter((d) => (row.slots.find((s) => s.id === d.id)?.amount ?? 0) > 0).map((d) => d.id);
   const matchedPreset = PRESCRIBING_PRESETS.find(
-    (p) => p.slotIds.length === activeIds.length && p.slotIds.every((id) => activeIds.includes(id)),
+    (p) => p.slotIds.length > 0 && p.slotIds.length === activeIds.length && p.slotIds.every((id) => activeIds.includes(id)),
   );
   return {
     ...row,
@@ -496,26 +482,35 @@ let nextRxSeq = 10;
 export function PrescribingTableDemo() {
   const [rows, setRows] = useState<readonly PrescribingRow[]>(initialPrescribingRows);
   const [signed, setSigned] = useState(false);
+  const searchController = useRef<AsyncSearchController<PrescribingFormularyItem> | null>(null);
+  const searchRow = useRef<string | null>(null);
+  const [formularySearch, setFormularySearch] = useState<PrescribingTableViewModel['formularySearch']>();
+
+  useEffect(() => {
+    const controller = new AsyncSearchController(syntheticFormularyRepository, undefined, { debounceMs: 140, minChars: 1 });
+    searchController.current = controller;
+    const unsubscribe = controller.subscribe((state) => {
+      if (searchRow.current) {
+        setFormularySearch({ rowId: searchRow.current, query: state.query, items: state.options, loading: state.loading, error: state.error });
+      }
+    });
+    return () => {
+      unsubscribe();
+      controller.destroy();
+      searchController.current = null;
+    };
+  }, []);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const handleIntent = (intent: PrescribingTableIntent) => {
     setError(undefined);
     switch (intent.type) {
       case 'rowAddRequested': {
-        const newRow = computeRowAnnotations({
-          id: `rx-${++nextRxSeq}`,
-          drugName: '',
-          strength: '500 mg',
-          form: 'tablet',
-          formLabel: 'Tablet',
-          route: 'oral',
-          slots: makeSlots(1, 0, 0, 1),
-          unitLabel: 'tab',
-          durationCount: 5,
-          durationUnit: 'days',
-          foodRelation: 'After food',
-          instructions: '',
-        });
+        const newRow: PrescribingRow = {
+          id: `rx-${++nextRxSeq}`, drugName: '', strength: '', form: 'other', formLabel: '', route: '',
+          doseAmount: null, slots: PRESCRIBING_SLOTS.map(slot => ({ ...slot, amount: null })),
+          unitLabel: '', durationCount: null, durationUnit: 'days', foodRelation: '', instructions: '',
+        };
         if (!intent.afterRowId) {
           setRows((prev) => [...prev, newRow]);
         } else {
@@ -528,6 +523,11 @@ export function PrescribingTableDemo() {
         break;
       }
       case 'rowRemoveRequested': {
+        if (searchRow.current === intent.rowId && rows.length > 1) {
+          searchRow.current = null;
+          searchController.current?.dispatch({ type: 'queryChanged', query: '' });
+          setFormularySearch(undefined);
+        }
         setRows((prev) => (prev.length <= 1 ? prev : prev.filter((r) => r.id !== intent.rowId)));
         break;
       }
@@ -589,6 +589,7 @@ export function PrescribingTableDemo() {
                 ? `↘ Step-Down Phase ${phaseNum}`
                 : `↗ Step-Up Phase ${phaseNum}`,
             doseAmount: nextDose,
+            frequencyCode: preset.label,
             slots: PRESCRIBING_SLOTS.map((def) => ({
               id: def.id,
               label: def.label,
@@ -606,50 +607,32 @@ export function PrescribingTableDemo() {
         break;
       }
       case 'formularySearchRequested':
+        if (!rows.some((row) => row.id === intent.rowId)) break;
+        searchRow.current = intent.rowId;
+        const search = searchController.current;
+        if (search?.getSnapshot().query === intent.query) search.dispatch({ type: 'searchRequested' });
+        else search?.dispatch({ type: 'queryChanged', query: intent.query });
         break;
       case 'formularySelected': {
+        const state = searchController.current?.getSnapshot();
+        if (searchRow.current !== intent.rowId || !state || state.loading || state.error ||
+            !rows.some((row) => row.id === intent.rowId && row.drugName === state.query) ||
+            !state.options.includes(intent.item)) break;
         const it = intent.item;
-        const dose = it.doseAmount ?? 1;
-        const preset = PRESCRIBING_PRESETS.find((p) => p.id === (it.defaultPresetId ?? 'bd')) ?? PRESCRIBING_PRESETS[1]!;
-        setRows((prev) =>
-          prev.map((r) =>
-            r.id === intent.rowId
-              ? computeRowAnnotations({
-                  ...r,
-                  formularyCode: it.code,
-                  drugName: it.drugName,
-                  strength: it.strength,
-                  form: it.form,
-                  formLabel: it.formLabel,
-                  route: it.route,
-                  allowedRoutes: it.allowedRoutes,
-                  site: it.site,
-                  specialtyTag: it.specialtyTag,
-                  dosingBasisLabel: it.dosingBasisLabel,
-                  stockStatus: it.stockStatus,
-                  doseAmount: dose,
-                  doseStep: it.doseStep,
-                  unitLabel: it.unitLabel,
-                  allowedUnits: it.allowedUnits,
-                  slots: PRESCRIBING_SLOTS.map((s) => ({
-                    id: s.id,
-                    label: s.label,
-                    timeHint: s.timeHint,
-                    amount: preset.slotIds.includes(s.id as never) ? dose : 0,
-                  })),
-                  durationCount: it.defaultDurationCount ?? 5,
-                  durationUnit: it.defaultDurationUnit ?? 'days',
-                  foodRelation: it.defaultFoodRelation ?? 'After food',
-                  instructions: it.defaultInstructions ?? '',
-                  error: undefined,
-                })
-              : r,
-          ),
-        );
+        searchRow.current = null;
+        searchController.current?.dispatch({ type: 'queryChanged', query: '' });
+        setFormularySearch(undefined);
+        setRows(prev => prev.map(row => row.id === intent.rowId
+          ? computeRowAnnotations(resolveFixturePrescriptionProduct(row, it, {
+              presets: PRESCRIBING_PRESETS, slotDefinitions: PRESCRIBING_SLOTS,
+            }))
+          : row));
         break;
       }
       case 'drugNameChanged':
-        setRows((prev) => prev.map((r) => (r.id === intent.rowId ? { ...r, drugName: intent.drugName, error: undefined } : r)));
+        setRows((prev) => prev.map((r) => (r.id === intent.rowId && r.drugName !== intent.drugName
+          ? r.formularyCode ? clearFixturePrescriptionProduct(r, intent.drugName) : { ...r, drugName: intent.drugName, error: undefined }
+          : r)));
         break;
       case 'strengthChanged':
         setRows((prev) => prev.map((r) => (r.id === intent.rowId ? { ...r, strength: intent.strength } : r)));
@@ -725,7 +708,8 @@ export function PrescribingTableDemo() {
         setRows((prev) =>
           prev.map((r) => {
             if (r.id !== intent.rowId) return r;
-            const curDose = r.doseAmount ?? (r.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
+            const curDose = r.doseAmount ?? 0;
+            if (curDose + intent.delta <= 0) return r;
             const nextDose = Math.max(0.25, Math.round((curDose + intent.delta) * 100) / 100);
             const nextSlots = r.slots.map((s) => ({
               ...s,
@@ -739,12 +723,12 @@ export function PrescribingTableDemo() {
         setRows((prev) =>
           prev.map((r) => {
             if (r.id !== intent.rowId) return r;
-            const nextDose = intent.amount ?? 1;
+            const nextDose = intent.amount;
             const nextSlots = r.slots.map((s) => ({
               ...s,
               amount: (s.amount ?? 0) > 0 ? nextDose : 0,
             }));
-            return computeRowAnnotations({ ...r, doseAmount: nextDose, slots: nextSlots });
+            return computeRowAnnotations({ ...r, doseAmount: intent.amount, slots: nextSlots });
           }),
         );
         break;
@@ -754,7 +738,7 @@ export function PrescribingTableDemo() {
       case 'slotStepped':
         setRows((prev) =>
           prev.map((r) => {
-            if (r.id !== intent.rowId) return r;
+            if (r.id !== intent.rowId || r.frequencyCode === 'SOS') return r;
             const nextSlots = PRESCRIBING_SLOTS.map((def) => {
               const cur = r.slots.find((s) => s.id === def.id)?.amount ?? 0;
               if (def.id !== intent.slotId) return { id: def.id, label: def.label, timeHint: def.timeHint, amount: cur };
@@ -768,7 +752,7 @@ export function PrescribingTableDemo() {
       case 'slotAmountChanged':
         setRows((prev) =>
           prev.map((r) => {
-            if (r.id !== intent.rowId) return r;
+            if (r.id !== intent.rowId || r.frequencyCode === 'SOS') return r;
             const nextSlots = PRESCRIBING_SLOTS.map((def) => {
               const cur = r.slots.find((s) => s.id === def.id)?.amount ?? 0;
               return {
@@ -788,10 +772,11 @@ export function PrescribingTableDemo() {
         setRows((prev) =>
           prev.map((r) => {
             if (r.id !== intent.rowId) return r;
-            const dose = r.doseAmount ?? (r.slots.find((s) => (s.amount ?? 0) > 0)?.amount ?? 1);
-            const annotated = computeRowAnnotations({
+            const dose = r.doseAmount ?? null;
+            return computeRowAnnotations({
               ...r,
               doseAmount: dose,
+              frequencyCode: preset.label,
               slots: PRESCRIBING_SLOTS.map((def) => ({
                 id: def.id,
                 label: def.label,
@@ -799,7 +784,6 @@ export function PrescribingTableDemo() {
                 amount: preset.slotIds.includes(def.id as never) ? dose : 0,
               })),
             });
-            return { ...annotated, frequencyCode: preset.label };
           }),
         );
         break;
@@ -1106,10 +1090,15 @@ export function PrescribingTableDemo() {
   };
 
   const hasSteroid = rows.some((r) => r.drugName.toLowerCase().includes('prednisolone'));
+  const titrationParents = new Set(rows.map((row) => row.parentRowId));
   const model: PrescribingTableViewModel = {
     title: 'Multi-Row Clinical Prescribing Table (Rx Composer)',
-    rows,
-    formulary: FORMULARY_ITEMS,
+    rows: rows.map((row) => ({
+      ...row,
+      dispenseQuantity: titrationParents.has(row.id) ? undefined : calculateFixedScheduleDispenseQuantity(row),
+    })),
+    formularySearch,
+    formularyLabel: 'Fixture-backed formulary · synthetic data',
     favourites: [
       { id: 'cataract-postop', label: 'Ophthalmology Cataract Kit' },
       { id: 'multi-specialty', label: 'Multi-Specialty (Peds · Derm · ENT · Onco · Neuro)' },

@@ -1,7 +1,6 @@
 'use client';
 
-import { createElement } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
   EmrPacsStudyEntry,
   EncounterSummaryPrintIntent,
@@ -34,286 +33,20 @@ type PressState = PressableStateCallbackType & { focused?: boolean };
 // 1. EmrPacsViewer — Multi-Viewport PACS / DICOMweb Compare Viewer
 // ===========================================================================
 
-function renderDicomViewportSvg({
-  study,
-  eyeLabel,
-  priorMode,
-}: {
-  study: EmrPacsStudyEntry;
-  eyeLabel?: 'OD (Right Eye)' | 'OS (Left Eye)';
-  priorMode?: boolean;
-}) {
-  const bg = study.inverted ? '#f4f7f9' : '#09111a';
-  const fg = study.inverted ? '#09111a' : '#38bdf8';
-  const accent = study.inverted ? '#b91c1c' : '#f59e0b';
-  const gridStroke = study.inverted ? '#cbd5e1' : '#1e293b';
-  const isNormalContour = eyeLabel === 'OS (Left Eye)' || priorMode;
-
-  if (Platform.OS !== 'web') {
-    return (
-      <View style={{ height: 140, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: bg }}>
-        <Text style={{ color: fg, fontSize: 12 }}>
-          [DICOM {study.modality} {eyeLabel ?? ''} · Slice {study.currentSlice}/{study.sliceCount}]
-        </Text>
-      </View>
-    );
-  }
-
-  return createElement(
-    'svg' as unknown as React.ComponentType<Record<string, unknown>>,
-    {
-      xmlns: 'http://www.w3.org/2000/svg',
-      width: '100%',
-      height: 152,
-      viewBox: '0 0 520 152',
-      style: { display: 'block', borderRadius: 6 },
-    },
-    createElement('rect' as unknown as React.ComponentType<Record<string, unknown>>, {
-      key: 'bg',
-      x: '0',
-      y: '0',
-      width: '520',
-      height: '152',
-      fill: bg,
-    }),
-    createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-      key: 'g1',
-      x1: '0',
-      y1: '38',
-      x2: '520',
-      y2: '38',
-      stroke: gridStroke,
-      strokeDasharray: '3 3',
-      strokeWidth: '1',
-    }),
-    createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-      key: 'g2',
-      x1: '0',
-      y1: '76',
-      x2: '520',
-      y2: '76',
-      stroke: gridStroke,
-      strokeDasharray: '3 3',
-      strokeWidth: '1',
-    }),
-    createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-      key: 'g3',
-      x1: '0',
-      y1: '114',
-      x2: '520',
-      y2: '114',
-      stroke: gridStroke,
-      strokeDasharray: '3 3',
-      strokeWidth: '1',
-    }),
-    ...(study.modality === 'OCT'
-      ? isNormalContour
-        ? [
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'rpe-n',
-              d: 'M 20 120 Q 260 116 500 120',
-              stroke: '#22c55e',
-              strokeWidth: '2.5',
-              fill: 'none',
-            }),
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'ilm-n',
-              d: 'M 20 74 Q 180 72 230 92 Q 260 104 290 92 Q 340 72 500 74',
-              stroke: fg,
-              strokeWidth: '2.5',
-              fill: 'none',
-            }),
-            createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'cal-n',
-              x1: '260',
-              y1: '96',
-              x2: '260',
-              y2: '118',
-              stroke: '#22c55e',
-              strokeWidth: '1.8',
-              strokeDasharray: '3 2',
-            }),
-            createElement(
-              'text' as unknown as React.ComponentType<Record<string, unknown>>,
-              { key: 'txt-n', x: '270', y: '88', fill: '#22c55e', fontSize: '11', fontWeight: 'bold' },
-              priorMode ? 'Prior Baseline CST: 254 µm' : 'OS Normal Foveal Pit · CST: 258 µm',
-            ),
-          ]
-        : [
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'rpe',
-              d: 'M 20 120 Q 260 116 500 120',
-              stroke: '#22c55e',
-              strokeWidth: '2.5',
-              fill: 'none',
-            }),
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'isos',
-              d: 'M 20 110 Q 260 106 500 110',
-              stroke: fg,
-              strokeWidth: '1.5',
-              fill: 'none',
-            }),
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'ilm',
-              d: 'M 20 76 Q 140 74 195 50 Q 260 22 325 50 Q 380 74 500 76',
-              stroke: fg,
-              strokeWidth: '2.5',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'c1',
-              cx: '232',
-              cy: '72',
-              r: '14',
-              stroke: accent,
-              strokeWidth: '1.8',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'c2',
-              cx: '260',
-              cy: '66',
-              r: '18',
-              stroke: accent,
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'c3',
-              cx: '288',
-              cy: '72',
-              r: '13',
-              stroke: accent,
-              strokeWidth: '1.8',
-              fill: 'none',
-            }),
-            createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'cal',
-              x1: '260',
-              y1: '34',
-              x2: '260',
-              y2: '116',
-              stroke: '#ef4444',
-              strokeWidth: '1.8',
-              strokeDasharray: '4 2',
-            }),
-            createElement(
-              'text' as unknown as React.ComponentType<Record<string, unknown>>,
-              { key: 'cal-txt', x: '268', y: '46', fill: '#ef4444', fontSize: '11', fontWeight: 'bold' },
-              'OD Cystoid Oedema · CST 418 µm (↑ +164 µm)',
-            ),
-          ]
-      : study.modality === 'FFA'
-        ? [
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'ffa-ring',
-              cx: '260',
-              cy: '76',
-              r: '62',
-              stroke: fg,
-              strokeWidth: '1.8',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'disc',
-              cx: '165',
-              cy: '76',
-              r: '14',
-              stroke: '#facc15',
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'v1',
-              d: 'M 178 70 Q 240 34 335 46',
-              stroke: fg,
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('path' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'v2',
-              d: 'M 178 82 Q 240 120 335 106',
-              stroke: fg,
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'faz',
-              cx: '268',
-              cy: '76',
-              r: '16',
-              stroke: accent,
-              strokeWidth: '2.2',
-              strokeDasharray: '3 2',
-              fill: 'none',
-            }),
-            createElement(
-              'text' as unknown as React.ComponentType<Record<string, unknown>>,
-              { key: 'faz-txt', x: '290', y: '80', fill: accent, fontSize: '11', fontWeight: 'bold' },
-              'Late Petaloid Hyperfluorescence (OD)',
-            ),
-          ]
-        : [
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'mri-head',
-              cx: '260',
-              cy: '82',
-              r: '60',
-              stroke: fg,
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'orb-r',
-              cx: '222',
-              cy: '34',
-              r: '14',
-              stroke: accent,
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('circle' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'orb-l',
-              cx: '298',
-              cy: '34',
-              r: '14',
-              stroke: accent,
-              strokeWidth: '2',
-              fill: 'none',
-            }),
-            createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'on-r',
-              x1: '222',
-              y1: '48',
-              x2: '252',
-              y2: '72',
-              stroke: fg,
-              strokeWidth: '2.5',
-            }),
-            createElement('line' as unknown as React.ComponentType<Record<string, unknown>>, {
-              key: 'on-l',
-              x1: '298',
-              y1: '48',
-              x2: '268',
-              y2: '72',
-              stroke: fg,
-              strokeWidth: '2.5',
-            }),
-            createElement(
-              'text' as unknown as React.ComponentType<Record<string, unknown>>,
-              { key: 'mri-txt', x: '322', y: '38', fill: accent, fontSize: '10', fontWeight: 'bold' },
-              'ONSD 5.1 mm OD / 5.0 mm OS',
-            ),
-          ]),
+/** Displays the host-rendered frame for the supplied study, or an unavailable state. */
+function renderDicomViewport(study: EmrPacsStudyEntry) {
+  return study.renderedFrameUrl ? (
+    <Image source={{ uri: study.renderedFrameUrl }} accessibilityLabel={`${study.modality} ${study.accessionNumber}, slice ${study.currentSlice} of ${study.sliceCount}`} resizeMode="contain" style={{ width: '100%', height: 152 }} />
+  ) : (
+    <View style={{ height: 152, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ color: '#94a3b8' }}>Rendered frame unavailable</Text>
+    </View>
   );
 }
 
 /**
  * L4. Multi-Viewport PACS / DICOMweb Diagnostic & Compare Viewer (`EmrPacsViewer`).
- * Supports 1-Up single viewport, 2-Up OD vs OS synchronized slab comparison, and 2-Up Active vs Prior
- * baseline comparison with slice scrubbing, Window/Level presets, zoom, LUT inversion, caliper pins,
- * and 1-click impression pull to clinical notes.
+ * Displays host-rendered study frames and emits viewer and clinical-note intents.
  */
 export function EmrPacsViewer({
   model: m,
@@ -324,8 +57,10 @@ export function EmrPacsViewer({
 }) {
   const t = useEmrTheme();
   const ff = fontFamily(t);
-  const activeStudy = m.studies.find((s) => s.id === m.activeStudyId) ?? m.studies[0];
+  const activeStudy = m.studies.find((s) => s.id === m.activeStudyId);
   if (!activeStudy) return null;
+  const compareStudy = m.studies.find((s) => s.id === m.compareStudyId && s.id !== activeStudy.id);
+  const dispatch = (intent: PacsViewerIntent) => { if (!m.readOnly) onIntent(intent); };
 
   return (
     <View style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}>
@@ -353,10 +88,11 @@ export function EmrPacsViewer({
             const sel = m.layoutMode === ly.id;
             return (
               <Pressable
+                disabled={m.readOnly}
                 key={ly.id}
                 role="button"
                 aria-pressed={sel}
-                onPress={() => onIntent({ type: 'layoutModeChanged', layoutMode: ly.id })}
+                onPress={() => dispatch({ type: 'layoutModeChanged', layoutMode: ly.id })}
                 style={({ focused }: PressState) => [
                   styles.chipBtn,
                   {
@@ -373,9 +109,10 @@ export function EmrPacsViewer({
             );
           })}
           <Pressable
+            disabled={m.readOnly}
             role="button"
             aria-pressed={m.syncScroll}
-            onPress={() => onIntent({ type: 'syncScrollToggled' })}
+            onPress={() => dispatch({ type: 'syncScrollToggled' })}
             style={({ focused }: PressState) => [
               styles.chipBtn,
               {
@@ -400,10 +137,11 @@ export function EmrPacsViewer({
               const sel = st.id === activeStudy.id;
               return (
                 <Pressable
+                  disabled={m.readOnly}
                   key={st.id}
                   role="button"
                   aria-pressed={sel}
-                  onPress={() => onIntent({ type: 'studySelected', studyId: st.id })}
+                  onPress={() => dispatch({ type: 'studySelected', studyId: st.id })}
                   style={({ focused }: PressState) => [
                     styles.chipBtn,
                     {
@@ -431,41 +169,33 @@ export function EmrPacsViewer({
           <View style={{ flex: 1, minWidth: 260, backgroundColor: activeStudy.inverted ? '#f4f7f9' : '#09111a', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: t.border, gap: 6 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
               <Text style={{ color: '#38bdf8', fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-                {m.layoutMode === '2-up-od-os' ? 'VIEWPORT A · OD (RIGHT EYE)' : `ACTIVE · [${activeStudy.modality}] ${activeStudy.accessionNumber}`}
+                {`ACTIVE · [${activeStudy.modality}] ${activeStudy.accessionNumber} · ${activeStudy.dateLabel}`}
               </Text>
               <Text style={{ color: '#94a3b8', fontFamily: t.fontMono, fontSize: 11 }}>
                 Slice {activeStudy.currentSlice}/{activeStudy.sliceCount} · {activeStudy.windowPreset} · {activeStudy.zoomPercent}%
               </Text>
             </View>
-            {renderDicomViewportSvg({ study: activeStudy, eyeLabel: 'OD (Right Eye)' })}
-            <Text style={{ color: '#f59e0b', fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-              Caliper: {activeStudy.caliperMeasurementLabel}
-            </Text>
+            {renderDicomViewport(activeStudy)}
+            {activeStudy.caliperMeasurementLabel ? (
+              <Text style={{ color: '#f59e0b', fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                Caliper: {activeStudy.caliperMeasurementLabel}
+              </Text>
+            ) : null}
           </View>
 
-          {/* Secondary Compare Viewport (when in 2-up-od-os or 2-up-compare mode) */}
           {m.layoutMode !== '1-up' ? (
-            <View style={{ flex: 1, minWidth: 260, backgroundColor: activeStudy.inverted ? '#f4f7f9' : '#09111a', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: t.border, gap: 6 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
-                <Text style={{ color: '#22c55e', fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-                  {m.layoutMode === '2-up-od-os'
-                    ? 'VIEWPORT B · OS (LEFT EYE · FELLOW EYE)'
-                    : `PRIOR BASELINE · ${activeStudy.comparePriorDateLabel ?? '14 Oct 2026'}`}
-                </Text>
-                <Text style={{ color: '#94a3b8', fontFamily: t.fontMono, fontSize: 11 }}>
-                  {m.syncScroll ? `Synced Slice ${activeStudy.currentSlice}/${activeStudy.sliceCount}` : `Baseline Reference`}
-                </Text>
-              </View>
-              {renderDicomViewportSvg({
-                study: activeStudy,
-                eyeLabel: m.layoutMode === '2-up-od-os' ? 'OS (Left Eye)' : undefined,
-                priorMode: m.layoutMode === '2-up-compare',
-              })}
-              <Text style={{ color: '#22c55e', fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-                {m.layoutMode === '2-up-od-os'
-                  ? 'OS Fellow Eye CST: 258 µm (Normal Foveal Contour)'
-                  : 'Baseline Pre-Op CST: 254 µm (Delta +164 µm in Active Study)'}
-              </Text>
+            <View style={{ flex: 1, minWidth: 260, backgroundColor: '#09111a', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: t.border, gap: 6 }}>
+              {compareStudy ? (
+                <>
+                  <Text style={{ color: '#22c55e', fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                    {`COMPARE · [${compareStudy.modality}] ${compareStudy.accessionNumber} · ${compareStudy.dateLabel}`}
+                  </Text>
+                  <Text style={{ color: '#94a3b8', fontFamily: t.fontMono, fontSize: 11 }}>
+                    Slice {compareStudy.currentSlice}/{compareStudy.sliceCount} · {compareStudy.windowPreset} · {compareStudy.zoomPercent}%
+                  </Text>
+                  {renderDicomViewport(compareStudy)}
+                </>
+              ) : <Text style={{ color: '#94a3b8' }}>Comparison study unavailable</Text>}
             </View>
           ) : null}
         </View>
@@ -474,9 +204,10 @@ export function EmrPacsViewer({
         <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: 8, borderRadius: 8, backgroundColor: t.surfaceSoft, borderWidth: 1, borderColor: t.border }}>
           <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <Pressable
+              disabled={m.readOnly}
               role="button"
               aria-label="Previous DICOM slice"
-              onPress={() => onIntent({ type: 'sliceStepped', studyId: activeStudy.id, delta: -1 })}
+              onPress={() => dispatch({ type: 'sliceStepped', studyId: activeStudy.id, delta: -1 })}
               style={[styles.chipBtn, { borderColor: t.border, backgroundColor: t.surface }]}
             >
               <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>− Slice</Text>
@@ -485,9 +216,10 @@ export function EmrPacsViewer({
               {activeStudy.currentSlice}/{activeStudy.sliceCount}
             </Text>
             <Pressable
+              disabled={m.readOnly}
               role="button"
               aria-label="Next DICOM slice"
-              onPress={() => onIntent({ type: 'sliceStepped', studyId: activeStudy.id, delta: 1 })}
+              onPress={() => dispatch({ type: 'sliceStepped', studyId: activeStudy.id, delta: 1 })}
               style={[styles.chipBtn, { borderColor: t.border, backgroundColor: t.surface }]}
             >
               <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>+ Slice</Text>
@@ -495,10 +227,11 @@ export function EmrPacsViewer({
 
             {(['Retina/OCT', 'High-Contrast', 'Brain/Orbit', 'Bone'] as const).map((preset) => (
               <Pressable
+                disabled={m.readOnly}
                 key={preset}
                 role="button"
                 aria-pressed={activeStudy.windowPreset === preset}
-                onPress={() => onIntent({ type: 'windowPresetChanged', studyId: activeStudy.id, preset })}
+                onPress={() => dispatch({ type: 'windowPresetChanged', studyId: activeStudy.id, preset })}
                 style={[
                   styles.chipBtn,
                   {
@@ -516,9 +249,10 @@ export function EmrPacsViewer({
 
           <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <Pressable
+              disabled={m.readOnly}
               role="button"
               onPress={() =>
-                onIntent({
+                dispatch({
                   type: 'zoomChanged',
                   studyId: activeStudy.id,
                   zoomPercent: activeStudy.zoomPercent >= 200 ? 100 : activeStudy.zoomPercent + 50,
@@ -529,9 +263,10 @@ export function EmrPacsViewer({
               <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: 10 }}>Zoom {activeStudy.zoomPercent}%</Text>
             </Pressable>
             <Pressable
+              disabled={m.readOnly}
               role="button"
               aria-pressed={!!activeStudy.inverted}
-              onPress={() => onIntent({ type: 'invertToggled', studyId: activeStudy.id })}
+              onPress={() => dispatch({ type: 'invertToggled', studyId: activeStudy.id })}
               style={[
                 styles.chipBtn,
                 {
@@ -545,9 +280,10 @@ export function EmrPacsViewer({
               </Text>
             </Pressable>
             <Pressable
+              disabled={m.readOnly}
               role="button"
               onPress={() =>
-                onIntent({
+                dispatch({
                   type: 'keyImagePinned',
                   studyId: activeStudy.id,
                   slice: activeStudy.currentSlice,
@@ -561,9 +297,10 @@ export function EmrPacsViewer({
               </Text>
             </Pressable>
             <Pressable
+              disabled={m.readOnly}
               role="button"
               onPress={() =>
-                onIntent({
+                dispatch({
                   type: 'impressionPulledToNote',
                   studyId: activeStudy.id,
                   text: `[PACS ${activeStudy.modality} ${activeStudy.accessionNumber}]: ${activeStudy.radiologistImpression}`,
@@ -743,7 +480,7 @@ export function EmrSpecialtyExamMatrix({
                       value={row.odValue}
                       editable={!m.readOnly}
                       accessibilityLabel={`${row.structureLabel} Right Eye OD`}
-                      onChangeText={(val) => onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'od', value: val })}
+                      onChangeText={(val) => { if (!m.readOnly) onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'od', value: val }); }}
                       style={{ minHeight: 34, height: 34, fontSize: 12 }}
                     />
                     <View style={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap' }}>
@@ -751,7 +488,8 @@ export function EmrSpecialtyExamMatrix({
                         <Pressable
                           key={`od-${chip}`}
                           role="button"
-                          onPress={() => onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'od', value: chip })}
+                          disabled={m.readOnly}
+                          onPress={() => { if (!m.readOnly) onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'od', value: chip }); }}
                           style={[styles.microChip, { borderColor: t.border, backgroundColor: t.surface }]}
                         >
                           <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: 10 }}>+ {chip}</Text>
@@ -765,7 +503,7 @@ export function EmrSpecialtyExamMatrix({
                       value={row.osValue}
                       editable={!m.readOnly}
                       accessibilityLabel={`${row.structureLabel} Left Eye OS`}
-                      onChangeText={(val) => onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'os', value: val })}
+                      onChangeText={(val) => { if (!m.readOnly) onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'os', value: val }); }}
                       style={{ minHeight: 34, height: 34, fontSize: 12 }}
                     />
                     <View style={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap' }}>
@@ -773,7 +511,8 @@ export function EmrSpecialtyExamMatrix({
                         <Pressable
                           key={`os-${chip}`}
                           role="button"
-                          onPress={() => onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'os', value: chip })}
+                          disabled={m.readOnly}
+                          onPress={() => { if (!m.readOnly) onIntent({ type: 'ophthalmicCellChanged', rowId: row.id, eye: 'os', value: chip }); }}
                           style={[styles.microChip, { borderColor: t.border, backgroundColor: t.surface }]}
                         >
                           <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: 10 }}>+ {chip}</Text>
@@ -795,13 +534,14 @@ export function EmrSpecialtyExamMatrix({
                   Pediatric Anthropometry & Weight-Based Suspension Dosing Calculator
                 </Text>
                 <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 11 }}>
-                  Weight: {m.pediatrics.weightKg} kg ({m.pediatrics.weightCentileLabel}) · Height: {m.pediatrics.heightCm} cm ({m.pediatrics.heightCentileLabel}) · BSA: {m.pediatrics.bsaM2} m²
+                  Weight: {m.pediatrics.weightKg} kg ({m.pediatrics.weightCentileLabel}) · Height: {m.pediatrics.heightCm} cm ({m.pediatrics.heightCentileLabel}){m.pediatrics.bsaM2 ? ` · BSA: ${m.pediatrics.bsaM2} m²` : ''}
                 </Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                 <Pressable
                   role="button"
-                  onPress={() => onIntent({ type: 'pediatricWeightChanged', weightKg: Math.max(3, m.pediatrics.weightKg - 1) })}
+                  disabled={m.readOnly || !Number.isFinite(m.pediatrics.weightKg - 1) || m.pediatrics.weightKg - 1 <= 0}
+                  onPress={() => { const weightKg = m.pediatrics.weightKg - 1; if (!m.readOnly && m.activeSpecialty === 'pediatrics' && Number.isFinite(weightKg) && weightKg > 0) onIntent({ type: 'pediatricWeightChanged', weightKg }); }}
                   style={[styles.chipBtn, { borderColor: t.border, backgroundColor: t.surface }]}
                 >
                   <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>− 1 kg</Text>
@@ -811,7 +551,8 @@ export function EmrSpecialtyExamMatrix({
                 </Text>
                 <Pressable
                   role="button"
-                  onPress={() => onIntent({ type: 'pediatricWeightChanged', weightKg: m.pediatrics.weightKg + 1 })}
+                  disabled={m.readOnly || !Number.isFinite(m.pediatrics.weightKg + 1) || m.pediatrics.weightKg + 1 <= 0}
+                  onPress={() => { const weightKg = m.pediatrics.weightKg + 1; if (!m.readOnly && m.activeSpecialty === 'pediatrics' && Number.isFinite(weightKg) && weightKg > 0) onIntent({ type: 'pediatricWeightChanged', weightKg }); }}
                   style={[styles.chipBtn, { borderColor: t.border, backgroundColor: t.surface }]}
                 >
                   <Text style={{ color: t.text, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>+ 1 kg</Text>
@@ -836,7 +577,7 @@ export function EmrSpecialtyExamMatrix({
         {m.activeSpecialty === 'dermatology' ? (
           <View style={{ gap: 10, padding: 10, borderRadius: 8, backgroundColor: t.surfaceSoft, borderWidth: 1, borderColor: t.border }}>
             <Text style={{ color: t.text, fontFamily: ff, fontSize: 13, fontWeight: fontWeight(t.weightBold) }}>
-              Dermatology Lesion Morphology & Fingertip Unit (FTU · 1 FTU = 0.5 g ≈ 2% BSA) Body Map
+              Dermatology Lesion Morphology & Fingertip Unit (FTU) Body Map
             </Text>
             <Text style={{ color: t.textMuted, fontFamily: ff, fontSize: 12 }}>
               Morphology: {m.dermatology.morphologyLabel}
@@ -847,7 +588,8 @@ export function EmrSpecialtyExamMatrix({
                   key={reg.id}
                   role="button"
                   aria-pressed={reg.active}
-                  onPress={() => onIntent({ type: 'dermRegionToggled', regionId: reg.id })}
+                  disabled={m.readOnly}
+                  onPress={() => { if (!m.readOnly && m.activeSpecialty === 'dermatology' && m.dermatology.regions.some((region) => region.id === reg.id)) onIntent({ type: 'dermRegionToggled', regionId: reg.id }); }}
                   style={[
                     styles.chipBtn,
                     {
@@ -864,7 +606,7 @@ export function EmrSpecialtyExamMatrix({
             </View>
             <View style={{ padding: 10, borderRadius: 8, backgroundColor: t.surface, borderWidth: 1, borderColor: t.primaryBorder }}>
               <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: 12, fontWeight: fontWeight(t.weightBold) }}>
-                Affected BSA: {m.dermatology.totalBsaPercent}% · Single Application: {m.dermatology.totalFtuPerApp} FTU ({(m.dermatology.totalFtuPerApp * 0.5).toFixed(1)} g) · 14-Day BD Course Estimate: {m.dermatology.totalGramsFor14DaysBd} g
+                Affected BSA: {m.dermatology.totalBsaPercent}% · Single Application: {m.dermatology.totalFtuPerApp} FTU{m.dermatology.totalGramsPerApp != null ? ` (${m.dermatology.totalGramsPerApp} g)` : ''} · 14-Day BD Course Estimate: {m.dermatology.totalGramsFor14DaysBd} g
               </Text>
             </View>
           </View>
@@ -881,12 +623,7 @@ export function EmrSpecialtyExamMatrix({
                   Mosteller BSA: {m.oncology.bsaM2} m² · ECOG: {m.oncology.ecogScore} · ANC: {m.oncology.ancCountLabel} · Platelets: {m.oncology.plateletCountLabel}
                 </Text>
               </View>
-              <EmrBadgeView
-                badge={{
-                  label: m.oncology.safetyGatePassed ? '✓ Haematology Gate Passed' : '! Hold Chemo (Cytopenia)',
-                  tone: m.oncology.safetyGatePassed ? 'success' : 'danger',
-                }}
-              />
+              {m.oncology.safetyGateBadge ? <EmrBadgeView badge={m.oncology.safetyGateBadge} /> : null}
             </View>
 
             <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -896,7 +633,8 @@ export function EmrSpecialtyExamMatrix({
                   key={pct}
                   role="button"
                   aria-pressed={m.oncology.doseReductionPercent === pct}
-                  onPress={() => onIntent({ type: 'oncologyDoseReductionChanged', percent: pct })}
+                  disabled={m.readOnly}
+                  onPress={() => { if (!m.readOnly && m.activeSpecialty === 'oncology') onIntent({ type: 'oncologyDoseReductionChanged', percent: pct }); }}
                   style={[
                     styles.chipBtn,
                     {
@@ -962,20 +700,19 @@ export function EmrInpatientMar({
             <Text style={{ color: t.text, fontFamily: ff, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold) }}>
               {m.title ?? 'Inpatient Electronic Medication Administration Record (eMAR)'}
             </Text>
-            <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 11 }}>
+            <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs }}>
               {m.wardBedLabel} · {m.shiftLabel} · Primary Nurse: {m.nurseLabel}
             </Text>
           </View>
         </View>
-        <EmrBadgeView badge={{ label: 'BCMA Barcode Scanner Ready', tone: 'info' }} />
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator>
         <View style={{ minWidth: 860, width: '100%' }}>
           {/* eMAR Column Header */}
           <View style={{ flexDirection: 'row', backgroundColor: t.surfaceRaised, borderBottomWidth: 1, borderColor: t.border, paddingVertical: 8, paddingHorizontal: 10 }}>
-            <Text style={{ flex: 1.6, minWidth: 240, color: t.textMuted, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
-              ORDERED MEDICATION (BACKEND API FORM & ROUTE)
+            <Text style={{ flex: 1.6, minWidth: 240, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>
+              ORDERED MEDICATION (FORM & ROUTE)
             </Text>
             {m.timeColumns.map((col) => (
               <View key={col.id} style={{ width: 145, alignItems: 'center' }}>
@@ -1018,13 +755,14 @@ export function EmrInpatientMar({
                 <Text style={{ color: t.primaryContrast, fontFamily: t.fontMono, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
                   Dose: {ord.doseLabel} · {ord.frequencyCode} · {ord.routeLabel}{ord.siteLabel ? ` (${ord.siteLabel})` : ''}
                 </Text>
-                <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10 }}>
-                  API Form: {ord.formLabel}{ord.formularyCode ? ` · ${ord.formularyCode}` : ''}
+                <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs }}>
+                  Form: {ord.formLabel}{ord.formularyCode ? ` · ${ord.formularyCode}` : ''}
                 </Text>
                 {ord.highAlert ? (
                   <Pressable
                     role="button"
-                    onPress={() => onIntent({ type: 'dualSignVerified', orderId: ord.id })}
+                    disabled={m.readOnly}
+                    onPress={() => { if (!m.readOnly) onIntent({ type: 'dualSignVerified', orderId: ord.id }); }}
                     style={[
                       styles.microChip,
                       {
@@ -1264,12 +1002,12 @@ export function EmrEncounterSummaryPrint({
           </Text>
           <View style={{ borderWidth: 1, borderColor: t.border, borderRadius: 6, overflow: 'hidden' }}>
             <View style={{ flexDirection: 'row', backgroundColor: t.surfaceRaised, paddingVertical: 6, paddingHorizontal: 8, borderBottomWidth: 1, borderColor: t.border }}>
-              <Text style={{ flex: 1.5, color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>1. DRUG & API FORM</Text>
-              <Text style={{ width: 85, color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>2. DOSE QTY</Text>
-              <Text style={{ width: 120, color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>3. FREQ (M-A-E-N)</Text>
-              <Text style={{ width: 95, color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>4. ROUTE/SITE</Text>
-              <Text style={{ width: 115, color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>5. DURATION</Text>
-              <Text style={{ flex: 1.2, color: t.textMuted, fontFamily: t.fontMono, fontSize: 10, fontWeight: fontWeight(t.weightBold) }}>6. INSTRUCTIONS</Text>
+              <Text style={{ flex: 1.5, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>1. DRUG & FORM</Text>
+              <Text style={{ width: 85, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>2. DOSE QTY</Text>
+              <Text style={{ width: 120, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>3. FREQ (M-A-E-N)</Text>
+              <Text style={{ width: 95, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>4. ROUTE/SITE</Text>
+              <Text style={{ width: 115, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>5. DURATION</Text>
+              <Text style={{ flex: 1.2, color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>6. INSTRUCTIONS</Text>
             </View>
             {m.prescriptions.map((rx, idx) => (
               <View
@@ -1283,11 +1021,11 @@ export function EmrEncounterSummaryPrint({
                 }}
               >
                 <View style={{ flex: 1.5 }}>
-                  <Text style={{ color: t.text, fontFamily: ff, fontSize: 11, fontWeight: fontWeight(t.weightBold) }}>
+                  <Text style={{ color: t.text, fontFamily: ff, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}>
                     {idx + 1}. {rx.drugName} {rx.strength} {rx.stepLabel ? `(${rx.stepLabel})` : ''}
                   </Text>
-                  <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 9 }}>
-                    API Form: {rx.formLabel}{rx.formularyCode ? ` · ${rx.formularyCode}` : ''}
+                  <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs }}>
+                    Form: {rx.formLabel}{rx.formularyCode ? ` · ${rx.formularyCode}` : ''}
                   </Text>
                 </View>
                 <Text style={{ width: 85, color: t.text, fontFamily: t.fontMono, fontSize: 11 }}>{rx.doseQtyUnit}</Text>
@@ -1345,8 +1083,8 @@ export function EmrEncounterSummaryPrint({
             <Text style={{ color: t.text, fontFamily: ff, fontSize: 12, fontWeight: fontWeight(t.weightBold) }}>
               {m.prescriberName}
             </Text>
-            <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: 10 }}>
-              Reg. No: {m.prescriberRegNo} {m.signedAtLabel ? `· Digitally Signed ${m.signedAtLabel}` : ''}
+            <Text style={{ color: t.textMuted, fontFamily: t.fontMono, fontSize: t.text2xs }}>
+              Reg. No: {m.prescriberRegNo} {m.signedAtLabel ? `· Signed ${m.signedAtLabel}` : ''}
             </Text>
           </View>
         </View>

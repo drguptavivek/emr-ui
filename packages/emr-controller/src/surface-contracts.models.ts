@@ -752,6 +752,8 @@ export interface EmrPacsStudyEntry {
   readonly title: string;
   readonly status: 'Final Report' | 'Preliminary' | 'Images Ready';
   readonly pacsEndpointLabel: string;
+  /** Host-rendered image for this study, current slice, and presentation settings. */
+  readonly renderedFrameUrl?: string;
   readonly sliceCount: number;
   readonly currentSlice: number;
   readonly windowPreset: 'Standard' | 'High-Contrast' | 'Bone' | 'Brain/Orbit' | 'Retina/OCT';
@@ -895,6 +897,8 @@ export interface SpecialtyExamMatrixViewModel {
     readonly regions: readonly EmrDermRegionRow[];
     readonly totalBsaPercent: number;
     readonly totalFtuPerApp: number;
+    /** Controller-supplied grams per application. Omit when the conversion is unresolved. */
+    readonly totalGramsPerApp?: number;
     readonly totalGramsFor14DaysBd: number;
   };
   readonly oncology: {
@@ -906,6 +910,8 @@ export interface SpecialtyExamMatrixViewModel {
     readonly ancCountLabel: string;
     readonly plateletCountLabel: string;
     readonly safetyGatePassed: boolean;
+    /** Presentation of the controller’s safety assessment. */
+    readonly safetyGateBadge?: EmrBadge;
     readonly doseReductionPercent: 100 | 80 | 75 | 50;
     readonly agents: readonly EmrOncologyAgentRow[];
   };

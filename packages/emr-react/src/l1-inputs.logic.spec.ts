@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatTime, joinDateTime, parseDateText, parseTimeText, sanitizeDateText, splitDateTime, sameInstant } from './l1-inputs.logic';
+import {
+  buildCalendarMonthGrid,
+  buildYearPage,
+  formatDate,
+  formatTime,
+  joinDateTime,
+  parseDateText,
+  parseIsoParts,
+  parseTimeText,
+  sameInstant,
+  sanitizeDateText,
+  splitDateTime,
+  stepCalendarMonth,
+} from './l1-inputs.logic';
 
 describe('parseDateText', () => {
   it('parses day-first with any separator and pads', () => {
@@ -109,5 +122,43 @@ describe('datetime', () => {
     expect(parseTimeText('09:05', 'second')).toEqual({ status: 'valid', value: '09:05:00' });
     expect(formatTime('08:30:15', 'second')).toBe('08:30:15');
     expect(formatTime('08:30', 'second')).toBe('08:30:00');
+  });
+});
+
+describe('EMR calendar grid mechanics', () => {
+  it('parses ISO day, month, and year strings and rejects malformed values', () => {
+    expect(parseIsoParts('2026-10-14')).toEqual({ year: 2026, month: 10, day: 14 });
+    expect(parseIsoParts('2026-10')).toEqual({ year: 2026, month: 10, day: 1 });
+    expect(parseIsoParts('2026')).toEqual({ year: 2026, month: 1, day: 1 });
+    expect(parseIsoParts('2026-02-29')).toBeNull();
+    expect(parseIsoParts('2028-02-29')).toEqual({ year: 2028, month: 2, day: 29 });
+    expect(parseIsoParts(null)).toBeNull();
+  });
+
+  it('steps months cleanly across year boundaries', () => {
+    expect(stepCalendarMonth(2026, 1, -1)).toEqual({ year: 2025, month: 12 });
+    expect(stepCalendarMonth(2026, 12, 1)).toEqual({ year: 2027, month: 1 });
+  });
+
+  it('builds a 42-cell Monday-first month grid with selected and today flags', () => {
+    // October 2026 starts on Thursday (3 leading September days: Sep 28, 29, 30)
+    const cells = buildCalendarMonthGrid(2026, 10, '2026-10-14', '2026-10-01');
+    expect(cells).toHaveLength(42);
+    expect(cells[0]?.iso).toBe('2026-09-28');
+    expect(cells[0]?.inMonth).toBe(false);
+    expect(cells[3]?.iso).toBe('2026-10-01');
+    expect(cells[3]?.inMonth).toBe(true);
+    expect(cells[3]?.isToday).toBe(true);
+    const oct14 = cells.find(c => c.iso === '2026-10-14');
+    expect(oct14?.isSelected).toBe(true);
+    expect(oct14?.ariaLabel).toBe('14 October 2026');
+  });
+
+  it('builds a stable 12-year block containing the target year', () => {
+    const page = buildYearPage(2026);
+    expect(page.startYear).toBe(2020);
+    expect(page.endYear).toBe(2031);
+    expect(page.years).toHaveLength(12);
+    expect(page.years).toContain(2026);
   });
 });

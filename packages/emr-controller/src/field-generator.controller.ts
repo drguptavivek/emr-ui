@@ -216,6 +216,7 @@ export class FieldGeneratorController extends StateController<FieldGeneratorView
     const sequence = (previous?.sequence ?? 0) + 1;
     this.requests.set(role, { controller, sequence });
     this.setSearchState(role, state => ({ ...state, loading: true, error: undefined }));
+    if (controller.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await this.terminology.search({
         sourceId: searchState.sourceId,
@@ -247,6 +248,7 @@ export class FieldGeneratorController extends StateController<FieldGeneratorView
     const draftReference = this.getSnapshot().draft;
     const draft = cloneDraft(draftReference);
     this.setState(state => ({ ...state, saving: true, error: undefined }));
+    if (controller.signal.aborted || this.isDestroyed()) return;
     try {
       const result = await this.repository!.save(draft, { signal: controller.signal });
       if (controller.signal.aborted) return;

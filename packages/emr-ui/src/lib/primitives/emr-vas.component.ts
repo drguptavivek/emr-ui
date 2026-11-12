@@ -1,21 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  booleanAttribute,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import type { EmrTone } from '@drguptavivek/emr-controller';
-
-/**
- * Controlled visual analogue scale (VAS).
- *
- * A ruler: a continuous track with major markers every `majorInterval` and minor markers
- * every `minorInterval`, which the respondent marks anywhere along its length — by finger,
- * mouse, or keyboard. Horizontal for the usual 0–10 scales, vertical for the EQ-5D-5L style
- * 0–100 health thermometer (min at the bottom, max at the top).
- *
- * This is an L1 primitive: it carries no clinical meaning. It does not know whether a high
- * number is good or bad, does not derive severity, and does not label an unset scale — the
- * controller supplies `anchors`, `tone`, and `valueText`.
- *
- * Geometry is read from the pointer event's own element, never from `window`/`document`, so
- * the component renders identically under SSR (tick positions are pure arithmetic).
- */
 
 export interface EmrVasAnchor {
   /** Value this label is anchored to (typically `min` or `max`). */
@@ -34,6 +26,7 @@ interface EmrVasTick {
 
 /** Pathological interval inputs must not generate an unbounded DOM. */
 const MAX_TICKS = 400;
+let nextVasId = 0;
 
 @Component({
   selector: 'emr-vas',
@@ -41,17 +34,35 @@ const MAX_TICKS = 400;
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="emr-vas" [class.emr-vas--vertical]="orientation() === 'vertical'" [attr.data-tone]="tone() ?? null">
-      <span class="emr-vas__label" [id]="labelId()">
-        {{ label() }}
-        @if (required()) { <span class="emr-vas__required" aria-hidden="true">*</span> }
-        @if (required()) { <span class="emr-sr-only">Required</span> }
-      </span>
+    <div
+      class="emr-vas"
+      [class.emr-vas--vertical]="orientation() === 'vertical'"
+      [attr.data-tone]="tone() ?? null"
+    >
+      <div [class.emr-choice-header]="showClear()">
+        <span class="emr-vas__label" [class.emr-sr-only]="labelHidden()" [id]="labelId()">
+          {{ label() }}
+          @if (required()) {
+            <span class="emr-vas__required" aria-hidden="true">*</span>
+            <span class="emr-sr-only">Required</span>
+          }
+        </span>
+        @if (showClear()) {
+          <button
+            type="button"
+            class="emr-choice-clear"
+            [attr.aria-label]="'Clear ' + (label() || 'selection')"
+            (click)="clearSelection()"
+          >
+            {{ clearLabel() }}
+          </button>
+        }
+      </div>
 
       <div class="emr-vas__frame">
         <div
           class="emr-vas__track"
-          [id]="controlId()"
+          [id]="resolvedId()"
           role="slider"
           [attr.tabindex]="disabled() ? null : 0"
           [attr.aria-orientation]="orientation()"
@@ -80,7 +91,13 @@ const MAX_TICKS = 400;
               aria-hidden="true"
             ></span>
             @if (tick.label !== null) {
-              <span class="emr-vas__tick-label" [style.--emr-vas-pos.%]="tick.percent" aria-hidden="true">{{ tick.label }}</span>
+              <span
+                class="emr-vas__tick-label"
+                [style.--emr-vas-pos.%]="tick.percent"
+                aria-hidden="true"
+              >
+                {{ tick.label }}
+              </span>
             }
           }
 
@@ -98,19 +115,22 @@ const MAX_TICKS = 400;
         }
       </div>
 
-      <div class="emr-vas__messages" aria-live="polite">
-        @if (error()) {
-          <span class="emr-field__error" [id]="controlId() + '-error'">{{ error() }}</span>
-        } @else if (hint()) {
-          <span class="emr-field__hint" [id]="controlId() + '-hint'">{{ hint() }}</span>
-        }
-      </div>
+      @if (!labelHidden()) {
+        <div class="emr-vas__messages" aria-live="polite">
+          @if (error()) {
+            <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
+          } @else if (hint()) {
+            <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
+          }
+        </div>
+      }
     </div>
   `,
 })
 export class EmrVasComponent {
-  readonly controlId = input('emr-vas');
+  readonly controlId = input<string>();
   readonly label = input('');
+  readonly labelHidden = input(false, { transform: booleanAttribute });
   readonly hint = input<string>();
   readonly error = input<string>();
   readonly min = input(0);
@@ -124,25 +144,59 @@ export class EmrVasComponent {
   readonly minorInterval = input(2);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly anchors = input<readonly EmrVasAnchor[]>([]);
-  readonly readOnly = input(false);
-  readonly disabled = input(false);
-  readonly required = input(false);
+  readonly clearable = input(false, { transform: booleanAttribute });
+  readonly clearLabel = input('Clear');
+  readonly readOnly = input(false, { transform: booleanAttribute });
+  readonly disabled = input(false, { transform: booleanAttribute });
+  readonly required = input(false, { transform: booleanAttribute });
   /** Controller-supplied tone for the recorded mark. The primitive derives no severity. */
   readonly tone = input<EmrTone>();
   /** Controller-supplied spoken value (`aria-valuetext`), e.g. "72 out of 100". */
   readonly valueText = input<string>();
 
   readonly valueChange = output<number | null>();
+  readonly cleared = output<void>();
 
-  protected readonly labelId = computed(() => `${this.controlId()}-label`);
+  private readonly fallbackId = `emr-vas-${++nextVasId}`;
+  readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+
+  protected readonly showClear = computed(
+    () =>
+      Boolean(
+        this.clearable() &&
+          this.value() !== null &&
+          this.value() !== undefined &&
+          !this.readOnly() &&
+          !this.disabled(),
+      ),
+  );
+
+  protected clearSelection(): void {
+    if (!this.interactive()) return;
+    this.valueChange.emit(null);
+    this.cleared.emit();
+  }
+
+  protected readonly labelId = computed(() => `${this.resolvedId()}-label`);
+
+  protected readonly describedBy = computed(() => {
+    if (this.labelHidden()) return null;
+    if (this.error()) return `${this.resolvedId()}-error`;
+    if (this.hint()) return `${this.resolvedId()}-hint`;
+    return null;
+  });
 
   protected readonly percent = computed(() => {
     const value = this.value();
     return value === null || value === undefined ? null : this.toPercent(value);
   });
 
-  protected readonly minAnchor = computed(() => this.anchors().find(anchor => anchor.value === this.min()));
-  protected readonly maxAnchor = computed(() => this.anchors().find(anchor => anchor.value === this.max()));
+  protected readonly minAnchor = computed(() =>
+    this.anchors().find((anchor) => anchor.value === this.min()),
+  );
+  protected readonly maxAnchor = computed(() =>
+    this.anchors().find((anchor) => anchor.value === this.max()),
+  );
 
   protected readonly ticks = computed<EmrVasTick[]>(() => {
     const min = this.min();
@@ -153,7 +207,6 @@ export class EmrVasComponent {
     const major = this.majorInterval() > 0 ? this.majorInterval() : span;
     const minor = this.minorInterval() > 0 ? this.minorInterval() : major;
     const smallest = Math.min(major, minor);
-    // Widen the step rather than emit thousands of nodes for a pathological interval.
     const stride = span / smallest > MAX_TICKS ? span / MAX_TICKS : smallest;
 
     const ticks: EmrVasTick[] = [];
@@ -170,17 +223,12 @@ export class EmrVasComponent {
     return ticks;
   });
 
-  protected describedBy(): string | null {
-    if (this.error()) return `${this.controlId()}-error`;
-    if (this.hint()) return `${this.controlId()}-hint`;
-    return null;
-  }
-
   protected onPointerDown(event: PointerEvent): void {
     if (!this.interactive()) return;
     const target = event.currentTarget as HTMLElement;
-    // Capture so a stroke that leaves the track keeps tracking and cannot be resumed on re-entry.
-    target.setPointerCapture(event.pointerId);
+    if (typeof target.setPointerCapture === 'function') {
+      target.setPointerCapture(event.pointerId);
+    }
     target.focus();
     event.preventDefault();
     this.emitFromPointer(event, target);
@@ -189,14 +237,22 @@ export class EmrVasComponent {
   protected onPointerMove(event: PointerEvent): void {
     if (!this.interactive()) return;
     const target = event.currentTarget as HTMLElement;
-    if (!target.hasPointerCapture(event.pointerId)) return;
+    if (typeof target.hasPointerCapture === 'function' && !target.hasPointerCapture(event.pointerId)) {
+      return;
+    }
     event.preventDefault();
     this.emitFromPointer(event, target);
   }
 
   protected onPointerUp(event: PointerEvent): void {
     const target = event.currentTarget as HTMLElement;
-    if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+    if (
+      typeof target.hasPointerCapture === 'function' &&
+      typeof target.releasePointerCapture === 'function' &&
+      target.hasPointerCapture(event.pointerId)
+    ) {
+      target.releasePointerCapture(event.pointerId);
+    }
   }
 
   protected onKeyDown(event: KeyboardEvent): void {
@@ -208,14 +264,27 @@ export class EmrVasComponent {
 
     switch (event.key) {
       case 'ArrowRight':
-      case 'ArrowUp': next = current + stepSize; break;
+      case 'ArrowUp':
+        next = current + stepSize;
+        break;
       case 'ArrowLeft':
-      case 'ArrowDown': next = current - stepSize; break;
-      case 'PageUp': next = current + page; break;
-      case 'PageDown': next = current - page; break;
-      case 'Home': next = this.min(); break;
-      case 'End': next = this.max(); break;
-      default: return;
+      case 'ArrowDown':
+        next = current - stepSize;
+        break;
+      case 'PageUp':
+        next = current + page;
+        break;
+      case 'PageDown':
+        next = current - page;
+        break;
+      case 'Home':
+        next = this.min();
+        break;
+      case 'End':
+        next = this.max();
+        break;
+      default:
+        return;
     }
 
     event.preventDefault();
@@ -228,10 +297,14 @@ export class EmrVasComponent {
 
   private emitFromPointer(event: PointerEvent, target: HTMLElement): void {
     const rect = target.getBoundingClientRect();
-    const ratio = this.orientation() === 'vertical'
-      // Vertical scales read bottom-up: min at the bottom, max at the top.
-      ? rect.height > 0 ? (rect.bottom - event.clientY) / rect.height : 0
-      : rect.width > 0 ? (event.clientX - rect.left) / rect.width : 0;
+    const ratio =
+      this.orientation() === 'vertical'
+        ? rect.height > 0
+          ? (rect.bottom - event.clientY) / rect.height
+          : 0
+        : rect.width > 0
+          ? (event.clientX - rect.left) / rect.width
+          : 0;
     this.emit(this.min() + ratio * (this.max() - this.min()));
   }
 

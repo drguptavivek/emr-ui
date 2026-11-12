@@ -5,6 +5,7 @@ import { Platform, type TextStyle } from 'react-native';
 import type { EmrTone } from '@drguptavivek/emr-controller';
 import { emrDarkTokens, emrLightTokens, type EmrTokens } from './tokens';
 
+export type { EmrTokens, EmrTokens as EmrTheme };
 export type EmrColorScheme = 'light' | 'dark';
 
 const EmrThemeContext = createContext<EmrTokens>(emrLightTokens);

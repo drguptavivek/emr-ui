@@ -33,8 +33,15 @@ export type EmrIconName =
   | 'zoom-out'
   | 'maximize'
   | 'download'
+  | 'upload'
+  | 'camera'
+  | 'paperclip'
+  | 'phone'
+  | 'mic'
   | 'pen'
   | 'sliders';
+
+export type IconName = EmrIconName;
 
 /**
  * Standard 24x24 Lucide / Heroicons 1.75px monochrome stroke SVG paths (`stroke="currentColor"`).
@@ -119,6 +126,14 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
   'zoom-out': ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'm21 21-4.35-4.35', 'M8 11h6'],
   maximize: ['M15 3h6v6', 'M9 21H3v-6', 'M21 3l-7 7', 'M3 21l7-7'],
   download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'],
+  upload: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm17 8-5-5-5 5', 'M12 3v12'],
+  camera: [
+    'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z',
+    'M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  ],
+  paperclip: ['m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48'],
+  phone: ['M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z'],
+  mic: ['M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z', 'M19 10v2a7 7 0 0 1-14 0v-2', 'M12 19v3'],
   pen: ['M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'],
   sliders: ['M4 21v-7', 'M4 10V3', 'M12 21v-9', 'M12 8V3', 'M20 21v-5', 'M20 12V3', 'M2 14h4', 'M10 8h4', 'M18 16h4'],
 };
@@ -153,9 +168,18 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   'zoom-out': '−',
   maximize: '⤢',
   download: '↓',
+  upload: '↑',
+  camera: '◎',
+  paperclip: '◈',
+  phone: '☏',
+  mic: '●',
   pen: '✎',
   sliders: '≡',
 };
+
+export function isEmrIconName(value: string): value is EmrIconName {
+  return Object.prototype.hasOwnProperty.call(ICON_PATHS, value);
+}
 
 /**
  * Lightweight monochrome SVG icon primitive (Lucide 24x24 geometry, 1.75px stroke).

@@ -66,7 +66,7 @@ let nextDeskId = 0;
         [label]="l.purpose"
         [options]="purposeOptions()"
         [value]="m.selectedPurpose ?? null"
-        (valueChange)="intent.emit({ type: 'purposeSelected', id: $event })"
+        (valueChange)="$event !== null && intent.emit({ type: 'purposeSelected', id: $event })"
       />
 
       <div class="emr-desk__group" role="group" [attr.aria-label]="l.referrals">

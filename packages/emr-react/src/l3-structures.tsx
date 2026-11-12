@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, type ComponentType } from 'react';
+import { useRef, useState, type ComponentType } from 'react';
 import { useEmrLabels } from './labels';
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type PressableStateCallbackType } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, type LayoutChangeEvent, type PressableStateCallbackType } from 'react-native';
 import type {
   ClinicalAssessmentStatus,
   ClinicalCellState,
@@ -16,9 +16,13 @@ import type {
   ClinicalQuantityValue,
   ClinicalRow,
   EmrClinicalListModel,
+  TimeAxisIntent,
+  TimeAxisViewModel,
 } from '@drguptavivek/emr-controller';
 import { EmrTypedText, NumberInput, ThemedInput } from './inputs-core';
-import { EmrBadgeView, EmrButton, EmrSelect } from './primitives';
+import { clampedTarget, tabStopTick } from './l1-interactive.logic';
+import { interactiveLabelDefaults, webProps, type InteractiveLabels, type WebKeyEvent } from './l1-interactive-shared';
+import { EmrBadgeView, EmrButton, EmrOptionChip, EmrSelect } from './primitives';
 import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';
 import {
   cellNumberValue, cellSelectValue, formatCellValue, isApplicable, isMatrixStacked, quantityUnit,
@@ -301,6 +305,163 @@ export function EmrClinicalMatrix({ definition, model = {}, onIntent, readOnly =
   );
 }
 
+// ---------------------------------------------------------------------------
+// Time axis (L3)
+// ---------------------------------------------------------------------------
+
+export type { TimeAxisIntent, TimeAxisViewModel };
+
+type FocusRef = ({ focus(): void } | null)[];
+const TICK_WIDTH = 88;
+
+/**
+ * L3 time axis. The controller supplies ticks and moves the window on intent; this never computes
+ * times. The current tick says "Current" in text. On web Left/Right/Home/End move focus; press selects.
+ */
+export function EmrTimeAxis({
+  model,
+  headingId,
+  onIntent,
+  labels,
+}: {
+  model: TimeAxisViewModel;
+  headingId?: string;
+  onIntent: (intent: TimeAxisIntent) => void;
+  labels?: Partial<InteractiveLabels>;
+}) {
+  const t = useEmrTheme();
+  const l = { ...interactiveLabelDefaults, ...labels };
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const refs = useRef<FocusRef>([]);
+  const tabStop = tabStopTick(model.ticks, focusedId, model.selectedTickId);
+  const font = { fontFamily: fontFamily(t) };
+  const onKey = (e: WebKeyEvent, index: number) => {
+    const target = clampedTarget(e.key, index, model.ticks.length);
+    if (target === null) return;
+    e.preventDefault();
+    setFocusedId(model.ticks[target]!.id);
+    refs.current[target]?.focus();
+  };
+  return (
+    <View nativeID={headingId} style={styles.axisStack}>
+      <View style={styles.axisHead}>
+        <Text role="heading" style={[font, { color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold) }]}>
+          {model.title || l.timeAxisTitle}
+        </Text>
+        <View style={styles.axisWrap}>
+          {!model.readOnly && model.steps?.length ? (
+            <View role="radiogroup" aria-label={l.step} style={styles.axisWrap}>
+              {model.steps.map(s => (
+                <EmrOptionChip
+                  key={s.id}
+                  label={s.label}
+                  selected={s.id === model.selectedStepId}
+                  onPress={() => onIntent({ type: 'stepChangeRequested', stepId: s.id })}
+                />
+              ))}
+            </View>
+          ) : model.stepLabel ? (
+            <Text style={[font, { color: t.textMuted, fontSize: t.textSm }]}>{l.stepValue(model.stepLabel)}</Text>
+          ) : null}
+          {model.readOnly ? null : (
+            <>
+              <EmrButton
+                small
+                variant="outline"
+                label={`‹ ${l.earlier}`}
+                accessibilityLabel={l.earlier}
+                disabled={!model.canShiftEarlier}
+                onPress={() => onIntent({ type: 'shiftEarlierRequested' })}
+              />
+              <EmrButton
+                small
+                variant="outline"
+                label={`${l.later} ›`}
+                accessibilityLabel={l.later}
+                disabled={!model.canShiftLater}
+                onPress={() => onIntent({ type: 'shiftLaterRequested' })}
+              />
+            </>
+          )}
+        </View>
+      </View>
+      {!model.ticks.length ? (
+        <Text style={[font, { color: t.textMuted, fontSize: t.textSm, fontStyle: 'italic' }]}>{l.noTimes}</Text>
+      ) : (
+        <ScrollView horizontal style={[styles.axisScroll, { borderColor: t.border, backgroundColor: t.surfaceRaised }]}>
+          <View
+            role="list"
+            {...(model.readOnly ? null : webProps({ role: 'listbox' }))}
+            aria-orientation="horizontal"
+            aria-label={model.title || l.timeAxisTitle}
+            style={styles.strip}
+          >
+            {model.ticks.map((tick, i) => {
+              const sel = tick.id === model.selectedTickId;
+              const body = (
+                <>
+                  <Text style={[font, { color: t.text, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), textAlign: 'center' }]}>
+                    {tick.label}
+                  </Text>
+                  {tick.sublabel ? (
+                    <Text style={[font, { color: t.textMuted, fontSize: t.textXs, textAlign: 'center' }]}>{tick.sublabel}</Text>
+                  ) : null}
+                  {tick.current ? (
+                    <Text
+                      style={[
+                        font,
+                        { color: t.primary, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold), textTransform: 'uppercase' },
+                      ]}
+                    >
+                      {l.current}
+                    </Text>
+                  ) : null}
+                </>
+              );
+              const frame = [
+                styles.tick,
+                {
+                  minHeight: Math.max(44, t.controlHeight),
+                  borderColor: sel ? t.primary : t.border,
+                  borderWidth: sel ? 2 : 0,
+                  borderRightWidth: sel ? 2 : 1,
+                  borderLeftWidth: sel ? 2 : tick.current ? 3 : 0,
+                  backgroundColor: sel || tick.current ? t.primarySoft : 'transparent',
+                },
+              ];
+              const a11y = [tick.label, tick.sublabel, tick.current ? l.current : null, model.readOnly && sel ? l.selected : null]
+                .filter(Boolean)
+                .join(', ');
+              return model.readOnly ? (
+                <View key={tick.id} role="listitem" accessible aria-label={a11y} aria-current={tick.current ? 'time' : undefined} style={frame}>
+                  {body}
+                </View>
+              ) : (
+                <Pressable
+                  key={tick.id}
+                  ref={el => {
+                    refs.current[i] = el;
+                  }}
+                  role="option"
+                  aria-selected={sel}
+                  aria-current={tick.current ? 'time' : undefined}
+                  aria-label={a11y}
+                  onPress={() => onIntent({ type: 'tickSelected', tickId: tick.id })}
+                  onFocus={() => setFocusedId(tick.id)}
+                  {...webProps({ tabIndex: tick.id === tabStop ? 0 : -1, onKeyDown: (e: WebKeyEvent) => onKey(e, i) })}
+                  style={({ focused }: PressState) => [...frame, focusRing(t, focused)]}
+                >
+                  {body}
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   panel: { borderWidth: 1, borderRadius: 8, overflow: 'hidden' },
@@ -317,4 +478,10 @@ const styles = StyleSheet.create({
   cell: { gap: 4, minWidth: 0 },
   card: { borderWidth: 1, borderRadius: 8, padding: 12, gap: 10 },
   cardCell: { gap: 4 },
+  axisStack: { gap: 8 },
+  axisWrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
+  axisHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  axisScroll: { borderWidth: 1, borderRadius: 8 },
+  strip: { flexDirection: 'row' },
+  tick: { width: TICK_WIDTH, alignItems: 'center', justifyContent: 'center', gap: 1, paddingVertical: 4, paddingHorizontal: 6 },
 });

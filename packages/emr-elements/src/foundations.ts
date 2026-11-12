@@ -264,6 +264,63 @@ export function applyEmrCustomTheme(config: EmrCustomThemeConfig, root?: HTMLEle
   target.style.fontVariantNumeric = 'tabular-nums';
 }
 
+const EMR_DEFAULT_ROOT_TOKENS_CSS = `:where(:root) {
+  --emr-background: #f6f8f9;
+  --emr-surface: #fffefa;
+  --emr-surface-soft: #f1f4f5;
+  --emr-surface-raised: #ffffff;
+  --emr-border: #c7d3da;
+  --emr-text: #263847;
+  --emr-text-muted: #5c6c78;
+  --emr-primary: #475f70;
+  --emr-primary-hover: #d4e0e6;
+  --emr-primary-contrast: #344b5a;
+  --emr-primary-soft: #e3ebef;
+  --emr-primary-border: #b2c4ce;
+  --emr-on-primary: #fffefa;
+  --emr-focus: #5f7f92;
+  --emr-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+  --emr-backdrop: rgba(15, 23, 42, 0.45);
+  --emr-neutral-soft: #e8eef1;
+  --emr-info: #486f86;
+  --emr-info-soft: #e8f0f4;
+  --emr-success: #2b7650;
+  --emr-success-soft: #e8f5ec;
+  --emr-warning: #8a651f;
+  --emr-warning-soft: #fbf4de;
+  --emr-danger: #a44949;
+  --emr-danger-soft: #fcecec;
+  --emr-radius: 8px;
+  --emr-radius-sm: 5px;
+  --emr-radius-lg: 12px;
+  --emr-control-height: 44px;
+  --emr-compact-height: 32px;
+  --emr-text-2xs: 0.6875rem;
+  --emr-text-xs: 0.75rem;
+  --emr-text-sm: 0.8125rem;
+  --emr-text-md: 0.875rem;
+  --emr-text-lg: 1rem;
+  --emr-text-xl: 1.25rem;
+  --emr-text-2xl: 1.5rem;
+  --emr-weight-regular: 400;
+  --emr-weight-medium: 500;
+  --emr-weight-semibold: 600;
+  --emr-weight-bold: 700;
+  --emr-leading-normal: 1.45;
+  --emr-leading-tight: 1.2;
+}`;
+
+let rootTokensInjected = false;
+function ensureRootTokens(): void {
+  if (rootTokensInjected || typeof document === 'undefined' || !document.head) return;
+  rootTokensInjected = true;
+  if (document.getElementById('emr-elements-default-tokens')) return;
+  const style = document.createElement('style');
+  style.id = 'emr-elements-default-tokens';
+  style.textContent = EMR_DEFAULT_ROOT_TOKENS_CSS;
+  document.head.prepend(style);
+}
+
 /**
  * Shared Constructable Stylesheet adopted by every `<emr-*>` Lit Web Component.
  * Uses CSS Custom Properties (`--emr-*`) so host themes, dark mode, print context,
@@ -284,6 +341,18 @@ export const emrShadowStyles = css`
     box-sizing: border-box;
   }
 
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .emr-card {
     border: 1px solid var(--emr-border, #c7d3da);
     border-radius: var(--emr-radius-lg, 12px);
@@ -291,6 +360,10 @@ export const emrShadowStyles = css`
     padding: 16px;
     display: grid;
     gap: 12px;
+  }
+
+  .emr-card--flush {
+    padding: 0;
   }
 
   .emr-header {
@@ -328,6 +401,12 @@ export const emrShadowStyles = css`
     width: 100%;
   }
 
+  textarea.emr-control {
+    height: auto;
+    padding: 10px 12px;
+    line-height: var(--emr-leading-normal, 1.45);
+  }
+
   .emr-control:focus-visible,
   .emr-btn:focus-visible,
   .emr-chip:focus-visible {
@@ -337,6 +416,7 @@ export const emrShadowStyles = css`
 
   .emr-btn {
     min-height: var(--emr-control-height, 44px);
+    min-width: 44px;
     height: var(--emr-control-height, 44px);
     padding: 0 16px;
     border: 1px solid var(--emr-primary-border, #b2c4ce);
@@ -375,13 +455,44 @@ export const emrShadowStyles = css`
     border-color: var(--emr-primary-border, #b2c4ce);
   }
 
+  .emr-btn--ghost {
+    background: transparent;
+    color: var(--emr-text, #263847);
+    border-color: transparent;
+  }
+
+  .emr-btn--ghost:hover:not(:disabled) {
+    background: var(--emr-surface-soft, #f1f4f5);
+  }
+
   .emr-btn--danger {
     background: var(--emr-danger-soft, #fcecec);
     color: var(--emr-danger, #a44949);
     border-color: var(--emr-danger, #a44949);
   }
 
-  .emr-badge {
+  .emr-btn--sm,
+  .emr-btn--small {
+    min-height: var(--emr-control-height, 44px);
+    height: var(--emr-control-height, 44px);
+    padding: 0 12px;
+    font-size: var(--emr-text-xs, 0.75rem);
+  }
+
+  .emr-btn--lg {
+    min-height: 48px;
+    height: 48px;
+    padding: 0 22px;
+    font-size: var(--emr-text-md, 0.875rem);
+  }
+
+  .emr-btn--block {
+    width: 100%;
+    display: flex;
+  }
+
+  .emr-badge,
+  .emr-chip {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -394,6 +505,7 @@ export const emrShadowStyles = css`
     font-weight: var(--emr-weight-semibold, 600);
   }
 
+  .emr-badge--neutral { background: var(--emr-neutral-soft, #e8eef1); color: var(--emr-text, #263847); border-color: var(--emr-border, #c7d3da); }
   .emr-badge--info { background: var(--emr-info-soft, #e8f0f4); color: var(--emr-info, #486f86); border-color: var(--emr-info, #486f86); }
   .emr-badge--success { background: var(--emr-success-soft, #e8f5ec); color: var(--emr-success, #2b7650); border-color: var(--emr-success, #2b7650); }
   .emr-badge--warning { background: var(--emr-warning-soft, #fbf4de); color: var(--emr-warning, #8a651f); border-color: var(--emr-warning, #8a651f); }
@@ -416,15 +528,148 @@ export const emrShadowStyles = css`
     color: var(--emr-text-muted, #5c6c78);
   }
 
+  .emr-info {
+    font-size: var(--emr-text-xs, 0.75rem);
+    font-weight: var(--emr-weight-medium, 500);
+    color: var(--emr-info, #486f86);
+  }
+
+  .emr-warning {
+    font-size: var(--emr-text-xs, 0.75rem);
+    font-weight: var(--emr-weight-medium, 500);
+    color: var(--emr-warning, #8a651f);
+  }
+
   .emr-error {
     font-size: var(--emr-text-xs, 0.75rem);
     font-weight: var(--emr-weight-medium, 500);
     color: var(--emr-danger, #a44949);
   }
+
+  :host-context(.emr-print) {
+    --emr-control-height: auto;
+    --emr-compact-height: auto;
+    color: #000;
+  }
+
+  :host-context(.emr-print) [data-emr-print="hide"],
+  :host-context(.emr-print) .stepper-btn,
+  :host-context(.emr-print) .date-icon-btn,
+  :host-context(.emr-print) .date-icon-box {
+    display: none !important;
+  }
+
+  :host-context(.emr-print) [hidden],
+  :host-context(.emr-print) [data-collapsed] {
+    display: revert !important;
+  }
+
+  :host-context(.emr-print) .emr-control,
+  :host-context(.emr-print) input:not([type="checkbox"]):not([type="radio"]),
+  :host-context(.emr-print) select,
+  :host-context(.emr-print) textarea,
+  :host-context(.emr-print) .stepper-wrap,
+  :host-context(.emr-print) .date-wrap,
+  :host-context(.emr-print) .select-trigger {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    color: #000 !important;
+    appearance: none !important;
+    resize: none !important;
+    overflow: visible !important;
+  }
+
+  :host-context(.emr-print) textarea {
+    white-space: pre-wrap !important;
+  }
+
+  :host-context(.emr-print) .emr-badge,
+  :host-context(.emr-print) .emr-chip {
+    height: auto !important;
+    padding: 0 4px !important;
+    border: 1px solid #666 !important;
+    background: transparent !important;
+    color: #000 !important;
+  }
+
+  :host-context(.emr-print) .emr-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  @media print {
+    :host {
+      --emr-control-height: auto;
+      --emr-compact-height: auto;
+      color: #000;
+    }
+
+    [data-emr-print="hide"],
+    .stepper-btn,
+    .date-icon-btn,
+    .date-icon-box {
+      display: none !important;
+    }
+
+    [hidden],
+    [data-collapsed] {
+      display: revert !important;
+    }
+
+    .emr-control,
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea,
+    .stepper-wrap,
+    .date-wrap,
+    .select-trigger {
+      height: auto !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      color: #000 !important;
+      appearance: none !important;
+      resize: none !important;
+      overflow: visible !important;
+    }
+
+    textarea {
+      white-space: pre-wrap !important;
+    }
+
+    .emr-badge,
+    .emr-chip {
+      height: auto !important;
+      padding: 0 4px !important;
+      border: 1px solid #666 !important;
+      background: transparent !important;
+      color: #000 !important;
+    }
+
+    .emr-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      box-shadow: none !important;
+      background: #fff !important;
+    }
+  }
 `;
 
+export const emrBaseStyles = emrShadowStyles;
+
 export class EmrLitElement extends LitElement {
-  static override styles: CSSResultGroup = [emrShadowStyles];
+  static override styles: CSSResultGroup = [emrBaseStyles];
+
+  override connectedCallback(): void {
+    ensureRootTokens();
+    super.connectedCallback();
+  }
 
   public emitIntent<T>(detail: T): void {
     this.dispatchEvent(

@@ -22,6 +22,7 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
   }
 
   dispatch(intent: ClinicalFormIntent): void {
+    if (this.isDestroyed()) return;
     switch (intent.type) {
       case 'fieldEditRequested':
         this.editField(intent.fieldId, intent.value);

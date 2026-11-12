@@ -40,6 +40,7 @@ export class FamilyHistoryController extends StateController<
   }
 
   dispatch(intent: FamilyPedigreeIntent): void {
+    if (this.isDestroyed()) return;
     if (intent.type === 'personSelected') {
       const person = this.getSnapshot().people.find(item => item.id === intent.personId);
       if (person) this.setState(state => ({ ...state, selectedPersonId: person.id }));
