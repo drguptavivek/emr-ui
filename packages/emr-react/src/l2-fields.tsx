@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
   AttestationIntent,
@@ -18,6 +18,7 @@ import type {
   ScheduleSlotSeed,
 } from '@drguptavivek/emr-controller';
 import { NumberInput, ThemedInput } from './inputs-core';
+import { SvgIcon } from './icons';
 import { EmrSearchSelect } from './l1-interactive';
 import { EmrFieldFrame } from './l2-field-frame';
 import {
@@ -72,6 +73,8 @@ export const ATTESTATION_DEFAULTS = {
 export const IDENTIFIER_ENTRY_DEFAULTS = {
   scan: 'Scan',
   identifierType: 'Identifier type',
+  normalised: 'Recognised as',
+  clear: 'Clear identifier',
 } as const;
 
 /**
@@ -81,18 +84,26 @@ export const IDENTIFIER_ENTRY_DEFAULTS = {
  */
 export function EmrCodedInput({
   model,
+  controlId,
   headingId,
+  labelHidden = false,
+  readOnly = false,
   labels,
   onIntent,
 }: {
   model: CodedInputViewModel;
+  controlId?: string;
   headingId?: string;
+  labelHidden?: boolean;
+  readOnly?: boolean;
   labels?: Partial<typeof CODED_INPUT_DEFAULTS>;
   onIntent: (intent: CodedInputIntent) => void;
 }) {
   const t = useEmrTheme();
   const l = { ...CODED_INPUT_DEFAULTS, ...labels };
-  const inputId = useId();
+  const autoId = useId();
+  const inputId = controlId || autoId;
+  const effectiveReadOnly = Boolean(readOnly || model.readOnly || model.definition.contract.readOnly);
 
   const label = model.definition.presentation.label;
   const placeholder = model.definition.presentation.placeholder ?? l.placeholder;
@@ -132,7 +143,7 @@ export function EmrCodedInput({
   };
 
   return (
-    <EmrFieldFrame label={label} controlId={inputId} required={required} hint={model.definition.presentation.hint}>
+    <EmrFieldFrame label={label} labelHidden={labelHidden} readOnly={effectiveReadOnly} controlId={inputId} required={required} hint={model.definition.presentation.hint}>
       <View
         role="group"
         aria-labelledby={headingId}
@@ -156,7 +167,7 @@ export function EmrCodedInput({
                     <Text style={{ fontWeight: fontWeight(t.weightMedium) }}>{chip.system}</Text> {chip.concept.code}
                   </Text>
                 </View>
-                {!model.readOnly ? (
+                {!effectiveReadOnly ? (
                   <Pressable
                     role="button"
                     aria-label={l.removeConcept(chip.concept.display)}
@@ -173,22 +184,20 @@ export function EmrCodedInput({
                     ]}
                   >
                     {({ pressed }: PressState) => (
-                      <Text aria-hidden style={{ color: pressed ? t.danger : t.text, fontSize: t.textLg, fontFamily: fontFamily(t) }}>
-                        ×
-                      </Text>
+                      <SvgIcon name="close" size={16} color={pressed ? t.danger : t.text} />
                     )}
                   </Pressable>
                 ) : null}
               </View>
             ))}
           </View>
-        ) : model.readOnly && !model.status ? (
+        ) : effectiveReadOnly && !model.status ? (
           <View style={[styles.noneRow, { minHeight: Math.max(44, t.controlHeight) }]}>
             <Text style={{ color: t.textMuted, fontSize: t.textMd, fontFamily: fontFamily(t) }}>{l.notSupplied}</Text>
           </View>
         ) : null}
 
-        {!model.readOnly ? (
+        {!effectiveReadOnly ? (
           <EmrSearchSelect
             label={l.searchLabel}
             labelHidden
@@ -210,7 +219,7 @@ export function EmrCodedInput({
           />
         ) : null}
 
-        {model.open && !model.loading && !model.options.length && !model.readOnly ? (
+        {model.open && !model.loading && !model.options.length && !effectiveReadOnly ? (
           <View role="status" style={[styles.emptyBox, { borderColor: t.border }]}>
             <Text style={{ color: t.textMuted, fontSize: t.textMd, fontFamily: fontFamily(t) }}>{model.emptyMessage}</Text>
           </View>
@@ -280,7 +289,6 @@ export function EmrScheduleSlotPicker({
   error,
   required = false,
   readOnly = false,
-  disabled = false,
   value,
   slots,
   unitLabel,
@@ -297,7 +305,6 @@ export function EmrScheduleSlotPicker({
   error?: string;
   required?: boolean;
   readOnly?: boolean;
-  disabled?: boolean;
   value: readonly DoseSlot[] | null;
   slots: readonly ScheduleSlotDefinition[];
   unitLabel?: string;
@@ -312,7 +319,9 @@ export function EmrScheduleSlotPicker({
   const l = { ...SLOT_PICKER_DEFAULTS, ...labels };
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const messageId = `${id}-message`;
+  const hintId = `${id}-hint`;
+  const errorId = `${id}-error`;
+  const describedBy = [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined;
 
   const byId = new Map((value ?? []).map(slot => [slot.id, slot]));
   const rows = slots.map(definition => ({ definition, slot: byId.get(definition.id) }));
@@ -324,7 +333,9 @@ export function EmrScheduleSlotPicker({
       nativeID={id}
       role="group"
       aria-label={required ? `${label}, ${l.required}` : label}
-      aria-describedby={error || hint ? messageId : undefined}
+      aria-invalid={error ? true : undefined}
+      aria-required={required || undefined}
+      aria-describedby={describedBy}
       style={styles.ssp}
     >
       <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
@@ -341,8 +352,6 @@ export function EmrScheduleSlotPicker({
                 key={preset.id}
                 role="button"
                 aria-pressed={active}
-                aria-disabled={disabled}
-                disabled={disabled}
                 onPress={() => onValueChange(applySlotPreset(value, slots, preset, seed))}
                 style={({ pressed, focused }: PressState) => [
                   styles.presetBtn,
@@ -353,27 +362,15 @@ export function EmrScheduleSlotPicker({
                     borderColor: active ? t.primary : t.border,
                     borderWidth: 1,
                     backgroundColor: active ? t.primarySoft : pressed ? t.surfaceRaised : t.surface,
-                    opacity: disabled ? 0.6 : 1,
                   },
                 ]}
               >
-                <View
-                  aria-hidden
-                  style={[
-                    styles.presetDot,
-                    {
-                      borderColor: active ? t.primary : t.border,
-                      backgroundColor: active ? t.primary : t.surface,
-                    },
-                  ]}
-                >
-                  {active ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: t.surface }} /> : null}
-                </View>
+                {active ? <SvgIcon name="check" size={14} color={t.primaryContrast} /> : null}
                 <Text
                   style={{
                     color: active ? t.primaryContrast : t.text,
                     fontSize: t.textXs,
-                    fontWeight: fontWeight(t.weightMedium),
+                    fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
                     fontFamily: fontFamily(t),
                   }}
                 >
@@ -385,8 +382,8 @@ export function EmrScheduleSlotPicker({
         </View>
       ) : null}
 
-      <View role="list" style={[styles.slotsGrid, { borderColor: t.border, backgroundColor: t.surface }]}>
-        {rows.map((row, idx) => {
+      <View role="list" style={styles.slotsGrid}>
+        {rows.map((row) => {
           const ticked = !!row.slot;
           return (
             <View
@@ -395,8 +392,7 @@ export function EmrScheduleSlotPicker({
               style={[
                 styles.slotCard,
                 {
-                  borderColor: t.border,
-                  borderLeftWidth: idx > 0 ? 1 : 0,
+                  borderColor: ticked ? t.primary : t.border,
                   backgroundColor: ticked ? t.surfaceSoft : t.surface,
                 },
               ]}
@@ -419,7 +415,7 @@ export function EmrScheduleSlotPicker({
                       fontFamily: fontFamily(t),
                     }}
                   >
-                    {row.slot ? formatSlotReadout(row.slot, unitLabel, l.selectedNoAmount) : '0'}
+                    {row.slot ? formatSlotReadout(row.slot, unitLabel, l.selectedNoAmount) : l.notSelected}
                   </Text>
                 </View>
               ) : (
@@ -431,13 +427,11 @@ export function EmrScheduleSlotPicker({
                     aria-label={
                       row.definition.timeHint ? `${row.definition.label} (${row.definition.timeHint})` : row.definition.label
                     }
-                    aria-disabled={disabled}
-                    disabled={disabled}
                     onPress={() => onValueChange(toggleSlot(value, slots, row.definition.id, !ticked, seed))}
                     style={({ focused }: PressState) => [
                       styles.slotToggle,
                       focusRing(t, focused),
-                      { minHeight: Math.max(44, t.controlHeight), minWidth: 44, opacity: disabled ? 0.6 : 1 },
+                      { minHeight: Math.max(44, t.controlHeight), minWidth: 44 },
                     ]}
                   >
                     <View
@@ -450,9 +444,7 @@ export function EmrScheduleSlotPicker({
                         },
                       ]}
                     >
-                      {ticked ? (
-                        <Text style={{ color: t.surface, fontSize: t.text2xs, lineHeight: 13, fontWeight: fontWeight(t.weightBold) }}>✓</Text>
-                      ) : null}
+                      {ticked ? <SvgIcon name="check" size={12} color={t.surface} /> : null}
                     </View>
                     <View style={styles.slotNameWrap}>
                       <Text numberOfLines={1} style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
@@ -476,7 +468,6 @@ export function EmrScheduleSlotPicker({
                           step={0.5}
                           value={row.slot.amount}
                           unit={unitLabel}
-                          editable={!disabled}
                           onNumber={amount => onValueChange(setSlotAmount(value, slots, row.definition.id, { amount }))}
                         />
                       ) : (
@@ -484,7 +475,6 @@ export function EmrScheduleSlotPicker({
                           id={`${id}-${row.definition.id}-amount`}
                           aria-label={l.slotAmount(row.definition.label)}
                           value={row.slot.amountLabel ?? ''}
-                          editable={!disabled}
                           style={{ minWidth: 110 }}
                           onChangeText={amountLabel =>
                             onValueChange(setSlotAmount(value, slots, row.definition.id, { amount: null, amountLabel }))
@@ -494,7 +484,7 @@ export function EmrScheduleSlotPicker({
                     ) : (
                       <View style={[styles.untickedDosePill, { borderColor: t.border, backgroundColor: t.surfaceRaised }]}>
                         <Text style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
-                          0 {unitLabel ?? ''}
+                          {unitLabel ? `0 ${unitLabel}` : '0'}
                         </Text>
                       </View>
                     )}
@@ -509,12 +499,12 @@ export function EmrScheduleSlotPicker({
       {error || hint ? (
         <View aria-live="polite" style={styles.sspFooter}>
           {hint ? (
-            <Text nativeID={`${id}-hint`} style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>
+            <Text nativeID={hintId} style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>
               {hint}
             </Text>
           ) : null}
           {error ? (
-            <Text role="alert" nativeID={messageId} style={{ color: t.danger, fontSize: t.textXs, fontWeight: fontWeight(600), fontFamily: fontFamily(t) }}>
+            <Text role="alert" nativeID={errorId} style={{ color: t.danger, fontSize: t.textXs, fontWeight: fontWeight(600), fontFamily: fontFamily(t) }}>
               {l.errorPrefix} {error}
             </Text>
           ) : null}
@@ -531,10 +521,16 @@ export function EmrScheduleSlotPicker({
 /** L2. Sign / witness / co-sign block. The controller decides who may sign; this renders and emits. */
 export function EmrAttestation({
   model: m,
+  controlId,
+  headingId,
+  readOnly = false,
   labels,
   onIntent,
 }: {
   model: AttestationViewModel;
+  controlId?: string;
+  headingId?: string;
+  readOnly?: boolean;
   labels?: Partial<typeof ATTESTATION_DEFAULTS>;
   onIntent: (intent: AttestationIntent) => void;
 }) {
@@ -551,29 +547,42 @@ export function EmrAttestation({
     textTransform: 'uppercase' as const,
   };
   const l = { ...ATTESTATION_DEFAULTS, ...labels };
+  const autoId = useId();
+  const resolvedId = controlId || autoId;
+  const resolvedTitleId = headingId ?? `${resolvedId}-title`;
+  const effectiveReadOnly = Boolean(readOnly || m.readOnly);
+  const isUnsigned = m.signatories.length === 0 || m.signatories.every(s => !s.signedAtLabel);
 
   return (
-    <View role="region" aria-label={m.title || l.signatures} style={styles.attestGroup}>
+    <View nativeID={resolvedId} role="region" aria-labelledby={resolvedTitleId} style={styles.attestGroup}>
       {m.title ? (
-        <Text role="heading" style={key}>
+        <Text nativeID={resolvedTitleId} role="heading" style={key}>
           {m.title}
         </Text>
-      ) : null}
+      ) : (
+        <Text nativeID={resolvedTitleId} role="heading" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden' }}>
+          {l.signatures}
+        </Text>
+      )}
       {m.statement ? <Text style={body}>{m.statement}</Text> : null}
       {m.signatories.length ? (
         <View aria-label={l.signatories} style={styles.attestGroup}>
           {m.signatories.map(s => (
             <View key={s.id} style={styles.attestWrap}>
-              <Pressable
-                role="button"
-                onPress={() => onIntent({ type: 'signatorySelected', signatoryId: s.id })}
-                style={({ focused }: PressState) => [
-                  focusRing(t, focused),
-                  { minHeight: Math.max(44, t.controlHeight), minWidth: 44, justifyContent: 'center' },
-                ]}
-              >
+              {effectiveReadOnly ? (
                 <Text style={bold}>{s.displayName}</Text>
-              </Pressable>
+              ) : (
+                <Pressable
+                  role="button"
+                  onPress={() => onIntent({ type: 'signatorySelected', signatoryId: s.id })}
+                  style={({ focused }: PressState) => [
+                    focusRing(t, focused),
+                    { minHeight: Math.max(44, t.controlHeight), minWidth: 44, justifyContent: 'center' },
+                  ]}
+                >
+                  <Text style={bold}>{s.displayName}</Text>
+                </Pressable>
+              )}
               <Text style={muted}>{s.roleLabel}</Text>
               <EmrBadgeView badge={s.status} />
               <Text style={muted}>
@@ -584,13 +593,15 @@ export function EmrAttestation({
         </View>
       ) : null}
       {m.error ? (
-        <View role="alert" style={[styles.attestAlert, { borderColor: t.danger, backgroundColor: t.dangerSoft }]}>
+        <View nativeID={`${resolvedId}-error`} role="alert" style={[styles.attestAlert, { borderColor: t.danger, backgroundColor: t.dangerSoft }]}>
           <Text style={body}>
             <Text style={bold}>{l.notCompleted}</Text> {m.error}
           </Text>
         </View>
+      ) : effectiveReadOnly && isUnsigned ? (
+        <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: font }}>{l.notCompleted}</Text>
       ) : null}
-      {!m.readOnly && (m.canSign || m.canAmend) ? (
+      {!effectiveReadOnly && (m.canSign || m.canAmend) ? (
         <View style={styles.attestWrap}>
           {m.canSign ? (
             <EmrButton small label={m.signLabel || l.sign} onPress={() => onIntent({ type: 'signRequested' })} />
@@ -610,17 +621,19 @@ export function EmrAttestation({
 
 /**
  * L2 identifier / barcode / national-health-id entry field.
- * Consumes `IdentifierEntryView` and emits `IdentifierEntryIntent` (`valueChanged` | `scanRequested` | `typeSelected`).
+ * Consumes `IdentifierEntryView` and emits `IdentifierEntryIntent`.
  */
 export function EmrIdentifierEntry({
   model,
   controlId,
+  readOnly = false,
   labels,
   onSubmit,
   onIntent,
 }: {
   model: IdentifierEntryView;
   controlId?: string;
+  readOnly?: boolean;
   labels?: Partial<typeof IDENTIFIER_ENTRY_DEFAULTS>;
   onSubmit?: () => void;
   onIntent: (intent: IdentifierEntryIntent) => void;
@@ -629,66 +642,154 @@ export function EmrIdentifierEntry({
   const l = { ...IDENTIFIER_ENTRY_DEFAULTS, ...labels };
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const hasMessage = Boolean(model.error || model.warning || model.hint);
+  const locked = Boolean(readOnly || model.readOnly);
+  const hasError = Boolean(model.error || model.messages?.some(m => m.severity === 'error'));
+  const hasWarning = Boolean(model.warning || model.messages?.some(m => m.severity === 'warning'));
+  const hasMessage = Boolean(model.error || model.warning || model.hint || model.messages?.length);
+  const inputRef = useRef<{ focus?: () => void } | null>(null);
+  const radioGroupRef = useRef<any>(null);
+  const hasSelectedType = Boolean(model.selectedType && model.typeOptions?.some(o => o.id === model.selectedType));
+
+  const onRadioGroupKeyDown = (event: { key?: string; preventDefault?: () => void; target?: unknown }) => {
+    if (Platform.OS !== 'web') return;
+    const opts = model.typeOptions ?? [];
+    if (!opts.length) return;
+    const key = event.key;
+    if (!key || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return;
+    const container = radioGroupRef.current as unknown as HTMLElement | null;
+    if (!container?.querySelectorAll) return;
+    const buttons = Array.from(container.querySelectorAll<HTMLElement>('[role="radio"]'));
+    const cur = buttons.indexOf(event.target as HTMLElement);
+    if (cur < 0) return;
+    event.preventDefault?.();
+    const nextIdx =
+      key === 'Home'
+        ? 0
+        : key === 'End'
+          ? opts.length - 1
+          : (cur + (key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+    buttons[nextIdx]?.focus();
+    if (!locked) {
+      onIntent({ type: 'typeSelected', id: opts[nextIdx]!.id });
+    }
+  };
 
   return (
     <EmrFieldFrame
       label={model.label}
       labelNamesControl
       controlId={id}
+      required={model.required}
+      readOnly={locked}
       hint={model.hint}
       warning={model.warning}
       error={model.error}
+      messages={model.messages}
     >
       {model.typeOptions && model.typeOptions.length > 0 ? (
-        <View role="radiogroup" aria-label={`${model.label}: ${l.identifierType}`}>
-          <EmrRow>
-            {model.typeOptions.map(o => (
+        <View
+          ref={radioGroupRef}
+          role="radiogroup"
+          aria-label={`${model.label}: ${l.identifierType}`}
+          aria-readonly={locked || undefined}
+          style={styles.identTypes}
+          {...(Platform.OS === 'web' ? ({ onKeyDown: onRadioGroupKeyDown } as Record<string, unknown>) : {})}
+        >
+          {model.typeOptions.map((o, idx) => {
+            const selected = o.id === model.selectedType;
+            const tabStop = selected || (!hasSelectedType && idx === 0);
+            return (
               <EmrOptionChip
                 key={o.id}
+                variant="pill"
                 label={o.label}
-                selected={o.id === model.selectedType}
-                readOnly={model.readOnly}
-                onPress={() => onIntent({ type: 'typeSelected', id: o.id })}
+                selected={selected}
+                readOnly={locked}
+                tabIndex={Platform.OS === 'web' ? (tabStop ? 0 : -1) : undefined}
+                onPress={() => {
+                  if (!locked) onIntent({ type: 'typeSelected', id: o.id });
+                }}
               />
-            ))}
-          </EmrRow>
+            );
+          })}
         </View>
       ) : null}
       <View style={styles.identEntry}>
-        <View style={styles.identGrow}>
+        <View style={[styles.identGrow, styles.identInputWrap]}>
           <ThemedInput
+            ref={inputRef as never}
             id={id}
             nativeID={id}
             aria-label={model.label}
             aria-labelledby={Platform.OS === 'web' ? `${id}-label` : undefined}
             aria-describedby={hasMessage ? `${id}-message` : undefined}
+            aria-required={model.required || undefined}
             value={model.value}
-            onChangeText={raw => onIntent({ type: 'valueChanged', raw })}
-            invalid={Boolean(model.error)}
-            readOnly={model.readOnly}
-            editable={!model.readOnly}
+            placeholder={model.placeholder}
+            maxLength={model.maxLength}
+            onChangeText={raw => {
+              if (!locked) onIntent({ type: 'valueChanged', raw });
+            }}
+            invalid={hasError}
+            readOnly={locked}
+            editable={!locked}
             autoCapitalize="characters"
             autoCorrect={false}
             spellCheck={false}
-            returnKeyType={onSubmit ? 'done' : undefined}
+            style={[
+              model.clearable && model.value && !locked ? { paddingRight: 44 } : null,
+              !hasError && hasWarning ? { borderColor: t.warning } : null,
+            ]}
+            returnKeyType="done"
             blurOnSubmit={false}
-            onSubmitEditing={onSubmit ? () => onSubmit() : undefined}
+            onFocus={() => onIntent({ type: 'focused' })}
+            onBlur={() => onIntent({ type: 'blurred' })}
+            onSubmitEditing={() => {
+              if (!locked) {
+                onIntent({ type: 'submitted', raw: model.value });
+                onSubmit?.();
+              }
+            }}
           />
+          {model.clearable && model.value && !locked ? (
+            <Pressable
+              role="button"
+              aria-label={l.clear}
+              onPress={() => {
+                onIntent({ type: 'valueChanged', raw: '' });
+                onIntent({ type: 'cleared' });
+                inputRef.current?.focus?.();
+              }}
+              style={({ focused }: PressState) => [styles.identClearBtn, focusRing(t, focused)]}
+            >
+              <SvgIcon name="close" size={16} color={t.textMuted} />
+            </Pressable>
+          ) : null}
         </View>
-        {model.readOnly ? null : (
+        {locked ? null : (
           <EmrButton
             variant="outline"
-            label={l.scan}
             accessibilityLabel={`${l.scan}: ${model.label}`}
             onPress={() => onIntent({ type: 'scanRequested' })}
-          />
+          >
+            <SvgIcon name="scanner" size={16} color={t.primary} />
+            <Text style={{ color: t.primary, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+              {l.scan}
+            </Text>
+          </EmrButton>
         )}
       </View>
       {model.normalisedValue ? (
-        <Text aria-live="polite" style={{ color: t.success, fontSize: t.textSm, fontFamily: fontFamily(t) }}>
-          ✓ {model.normalisedValue}
-        </Text>
+        <View
+          aria-live="polite"
+          accessibilityLabel={`${l.normalised} ${model.normalisedValue}`}
+          style={styles.identNormalised}
+        >
+          <SvgIcon name="check" size={14} color={t.success} />
+          <Text style={{ color: t.success, fontSize: t.textSm, fontFamily: fontFamily(t), flexShrink: 1 }}>
+            {model.normalisedValue}
+          </Text>
+        </View>
       ) : null}
     </EmrFieldFrame>
   );
@@ -708,21 +809,24 @@ const styles = StyleSheet.create({
   ssp: { gap: 10, minWidth: 0 },
   sspFooter: { gap: 2 },
   presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  presetBtn: { flexDirection: 'row', gap: 6, borderRadius: 999, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
-  presetDot: { width: 14, height: 14, borderRadius: 7, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  slotsGrid: { flexDirection: 'row', flexWrap: 'wrap', borderWidth: 1, borderRadius: 8, overflow: 'hidden' },
-  slotCard: { flexGrow: 1, flexBasis: 210, minWidth: 190, paddingVertical: 6, paddingHorizontal: 10, justifyContent: 'center' },
-  slotInlineRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 44 },
+  presetBtn: { flexDirection: 'row', gap: 6, borderRadius: 8, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  slotsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  slotCard: { flexGrow: 1, flexBasis: 190, minWidth: 180, borderWidth: 1, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 10, justifyContent: 'space-between', overflow: 'hidden' },
+  slotInlineRow: { flexDirection: 'column', alignItems: 'stretch', gap: 6 },
   slotHeaderInline: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   readOnlySlot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingVertical: 6 },
   slotToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 },
   checkBox: { width: 18, height: 18, borderWidth: 1.5, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
-  slotNameWrap: { minWidth: 64 },
-  amountRow: { flex: 1, minWidth: 120, alignItems: 'flex-end' },
+  slotNameWrap: { minWidth: 0, flex: 1 },
+  amountRow: { minWidth: 0, alignItems: 'flex-start' },
   untickedDosePill: { minHeight: 38, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
   attestGroup: { gap: 4 },
   attestWrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, maxWidth: '100%' },
   attestAlert: { borderWidth: 1, borderRadius: 8, padding: 8, gap: 8 },
-  identEntry: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  identGrow: { flex: 1, minWidth: 0 },
+  identTypes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
+  identEntry: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
+  identGrow: { flexGrow: 1, flexShrink: 1, flexBasis: 180, minWidth: 0 },
+  identInputWrap: { position: 'relative', justifyContent: 'center' },
+  identClearBtn: { position: 'absolute', right: 0, width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+  identNormalised: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
 });

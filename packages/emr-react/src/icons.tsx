@@ -35,6 +35,7 @@ export type EmrIconName =
   | 'download'
   | 'upload'
   | 'camera'
+  | 'scanner'
   | 'paperclip'
   | 'phone'
   | 'mic'
@@ -131,6 +132,7 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
     'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z',
     'M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
   ],
+  scanner: ['M4 7V4h3', 'M17 4h3v3', 'M20 17v3h-3', 'M7 20H4v-3', 'M3 12h18'],
   paperclip: ['m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48'],
   phone: ['M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z'],
   mic: ['M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z', 'M19 10v2a7 7 0 0 1-14 0v-2', 'M12 19v3'],
@@ -170,6 +172,7 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   download: '↓',
   upload: '↑',
   camera: '◎',
+  scanner: '⌖',
   paperclip: '◈',
   phone: '☏',
   mic: '●',

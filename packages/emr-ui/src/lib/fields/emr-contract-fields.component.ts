@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  booleanAttribute,
   computed,
   input,
   output,
@@ -17,13 +18,17 @@ import type {
   DurationFieldIntent,
   DurationFieldViewModel,
   EmrDurationUnit,
+  EmrFieldDefinition,
   EmrFileSelectionItem,
   EmrImageCropResult,
   EmrPartialDate,
   EmrSegmentedOption,
   EmrSignaturePoint,
+  EmrTone,
   EmrUploadedImageItem,
   EmrValidationMessage,
+  FieldFrameIntent,
+  FieldFrameLayout,
   ImageFieldIntent,
   ImageFieldViewModel,
   PairedFieldIntent,
@@ -52,6 +57,10 @@ let nextContractFieldId = 0;
 
 function firstErrorMessage(messages?: readonly EmrValidationMessage[]): string {
   return messages?.find((m) => m.severity === 'error')?.message ?? '';
+}
+
+function firstWarningMessage(messages?: readonly EmrValidationMessage[]): string {
+  return messages?.find((m) => m.severity === 'warning')?.message ?? '';
 }
 
 function hasFieldMessages(hint?: string, messages?: readonly EmrValidationMessage[]): boolean {
@@ -121,85 +130,86 @@ const SHARED_FIELD_STYLES = `
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let locked = effectiveReadOnly();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
+      [labelHidden]="labelHidden()"
+      [labelNamesControl]="false"
+      [layout]="layout()"
+      [showMetadata]="showMetadata()"
+      [unit]="m.unit ?? resolvedDefinition()?.presentation?.unitDisplay"
+      [required]="effectiveRequired()"
+      [readOnly]="locked"
       [hint]="m.hint"
       [messages]="m.messages ?? []"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      (intent)="onFrameIntent($event)"
     >
       <div class="cf-stack">
-        @if (m.variant === 'vas') {
+        @if (resolvedVariant() === 'vas') {
           <emr-vas
-            [controlId]="resolvedId()"
-            [label]="m.label"
+            [controlId]="resolvedId() + '-control'"
+            [label]="resolvedLabel()"
             [labelHidden]="true"
+            [ariaLabelledBy]="headingId() || (resolvedId() + '-label')"
+            [ariaDescribedBy]="describedBy()"
             [min]="m.min"
             [max]="m.max"
-            [step]="m.step ?? 1"
+            [step]="m.step"
             [majorInterval]="m.majorInterval ?? 10"
             [minorInterval]="m.minorInterval ?? 2"
             [orientation]="m.orientation ?? 'horizontal'"
             [value]="m.value"
             [anchors]="vasAnchors()"
-            [tone]="m.tone"
-            [readOnly]="!!m.readOnly"
-            [required]="!!m.required"
+            [tone]="resolvedTone()"
+            [readOnly]="locked"
+            [required]="effectiveRequired()"
             [error]="errorText()"
+            [warning]="!errorText() ? warningText() : ''"
             (valueChange)="onValueChange($event)"
+            (focused)="focused.emit()"
+            (blurred)="blurred.emit()"
           />
         } @else {
           <emr-likert
-            [controlId]="resolvedId()"
-            [label]="m.label"
+            [controlId]="resolvedId() + '-control'"
+            [label]="resolvedLabel()"
             [labelHidden]="true"
+            [ariaDescribedBy]="describedBy()"
             [min]="m.min"
             [max]="m.max"
+            [step]="m.step ?? 1"
             [value]="m.value"
             [anchors]="likertAnchors()"
-            [tone]="m.tone"
+            [tone]="resolvedTone()"
             [optionTones]="m.optionTones"
-            [readOnly]="!!m.readOnly"
-            [required]="!!m.required"
+            [readOnly]="locked"
+            [required]="effectiveRequired()"
             [error]="errorText()"
+            [warning]="!errorText() ? warningText() : ''"
             (valueChange)="onValueChange($event)"
+            (focused)="focused.emit()"
+            (blurred)="blurred.emit()"
           />
         }
 
-        @if (m.value !== null && !m.readOnly && !m.required) {
+        @if (m.value !== null && !locked && m.clearable !== false) {
           <div class="cf-inline">
             <button
               type="button"
               class="emr-button emr-button--ghost emr-button--small"
+              style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;gap:6px"
+              [attr.aria-label]="'Clear ' + resolvedLabel()"
               (click)="onValueChange(null)"
             >
-              Clear score
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+              <span>Clear</span>
             </button>
-          </div>
-        }
-
-        @if (m.status || (m.statusOptions?.length && !m.readOnly)) {
-          <div class="cf-status">
-            @if (m.status) {
-              <span [class]="'emr-badge ' + statusTone()" role="status">{{ statusText() }}</span>
-            }
-            @if (m.statusOptions?.length && !m.readOnly) {
-              <select
-                #statusSelect
-                class="emr-select cf-status__select"
-                [attr.aria-label]="m.label + ' assessment status'"
-                [value]="m.status ?? ''"
-                (change)="onStatusChange($event)"
-                (blur)="syncStatus()"
-              >
-                <option value="" [selected]="!m.status">Status not set</option>
-                @for (opt of m.statusOptions; track opt.value) {
-                  <option [value]="opt.value" [selected]="opt.value === m.status">
-                    {{ opt.label }}
-                  </option>
-                }
-              </select>
-            }
           </div>
         }
       </div>
@@ -207,21 +217,46 @@ const SHARED_FIELD_STYLES = `
   `,
   styles: [SHARED_FIELD_STYLES],
 })
-export class EmrScaleFieldComponent implements AfterViewChecked {
+export class EmrScaleFieldComponent {
   readonly model = input.required<ScaleFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>('vertical');
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
   readonly intent = output<ScaleFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly fallbackId = `emr-scale-field-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(() => this.model().label || this.resolvedDefinition()?.presentation?.label || '');
+  protected readonly resolvedVariant = computed<'likert' | 'vas'>(() => {
+    const m = this.model();
+    if (m.variant) return m.variant;
+    return this.resolvedDefinition()?.presentation?.widget === 'vas' ? 'vas' : 'likert';
+  });
+  protected readonly effectiveReadOnly = computed(() =>
+    Boolean(this.readOnly() || this.model().readOnly || this.resolvedDefinition()?.contract?.readOnly),
+  );
+  protected readonly effectiveRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
+  });
+  protected readonly resolvedTone = computed<EmrTone | undefined>(() => {
+    const m = this.model();
+    return (m.value !== null ? m.optionTones?.[m.value] : undefined) ?? m.tone;
+  });
 
   protected readonly errorText = computed(() => firstErrorMessage(this.model().messages));
-  protected readonly statusText = computed(() =>
-    resolveStatusLabel(this.model().status, this.model().statusOptions),
-  );
-  protected readonly statusTone = computed(() =>
-    resolveStatusToneClass(this.model().status, this.model().statusOptions),
-  );
+  protected readonly warningText = computed(() => firstWarningMessage(this.model().messages));
+  protected readonly describedBy = computed(() => {
+    const m = this.model();
+    return m.hint || m.messages?.length ? `${this.resolvedId()}-message` : undefined;
+  });
 
   protected readonly likertAnchors = computed<readonly EmrLikertAnchor[]>(() => {
     const m = this.model();
@@ -234,44 +269,27 @@ export class EmrScaleFieldComponent implements AfterViewChecked {
     return list;
   });
 
-  protected readonly vasAnchors = computed<readonly EmrVasAnchor[]>(() => this.likertAnchors());
-
-  private readonly statusRef = viewChild<ElementRef<HTMLSelectElement>>('statusSelect');
-  private needsStatusSync = false;
-
-  ngAfterViewChecked(): void {
-    if (this.needsStatusSync) {
-      this.needsStatusSync = false;
-      this.syncStatus();
+  protected readonly vasAnchors = computed<readonly EmrVasAnchor[]>(() => {
+    const m = this.model();
+    const list: EmrVasAnchor[] = [];
+    if (m.anchors?.minLabel) list.push({ value: m.min, label: m.anchors.minLabel });
+    if (m.anchors?.midLabel) {
+      list.push({ value: (m.min + m.max) / 2, label: m.anchors.midLabel });
     }
-  }
+    if (m.anchors?.maxLabel) list.push({ value: m.max, label: m.anchors.maxLabel });
+    return list;
+  });
 
   protected onValueChange(value: number | null): void {
-    if (this.model().readOnly) return;
+    if (this.effectiveReadOnly()) return;
     this.intent.emit({ type: 'valueChangeRequested', value });
   }
 
-  protected onStatusChange(event: Event): void {
-    if (this.model().readOnly) {
-      this.syncStatus();
-      return;
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.effectiveReadOnly()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
     }
-    const raw = (event.target as HTMLSelectElement).value as ClinicalAssessmentStatus | '';
-    this.needsStatusSync = true;
-    queueMicrotask(() => {
-      if (this.needsStatusSync) {
-        this.needsStatusSync = false;
-        this.syncStatus();
-      }
-    });
-    this.intent.emit({ type: 'statusChangeRequested', status: raw ? raw : undefined });
-  }
-
-  protected syncStatus(): void {
-    const el = this.statusRef()?.nativeElement;
-    if (!el) return;
-    const expected = this.model().status ?? '';
-    if (el.value !== expected) el.value = expected;
   }
 }
 
@@ -280,9 +298,24 @@ export class EmrScaleFieldComponent implements AfterViewChecked {
 // ─────────────────────────────────────────────────────────────
 const PARTIAL_DATE_PRECISION_OPTIONS: readonly EmrSegmentedOption<EmrPartialDate['precision']>[] = [
   { value: 'year', label: 'Year' },
-  { value: 'month', label: 'Year & Month' },
-  { value: 'day', label: 'Full Date' },
+  { value: 'month', label: 'Year & month' },
+  { value: 'day', label: 'Full date' },
 ];
+
+function adaptPartialDateLocal(
+  current: EmrPartialDate | null,
+  nextPrecision: EmrPartialDate['precision'],
+): EmrPartialDate | null {
+  if (!current || !current.value) return null;
+  const parts = current.value.split('-');
+  const y = parts[0];
+  if (!y || !/^\d{4}$/.test(y)) return null;
+  if (nextPrecision === 'year') return { value: y, precision: 'year' };
+  const m = parts[1] && /^\d{2}$/.test(parts[1]) ? parts[1] : undefined;
+  if (nextPrecision === 'month') return m ? { value: `${y}-${m}`, precision: 'month' } : null;
+  const d = parts[2] && /^\d{2}$/.test(parts[2]) ? parts[2] : undefined;
+  return m && d ? { value: `${y}-${m}-${d}`, precision: 'day' } : null;
+}
 
 @Component({
   selector: 'emr-partial-date-field',
@@ -291,134 +324,130 @@ const PARTIAL_DATE_PRECISION_OPTIONS: readonly EmrSegmentedOption<EmrPartialDate
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let locked = effectiveReadOnly();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
+      [labelHidden]="labelHidden()"
+      [labelNamesControl]="false"
+      [layout]="layout()"
+      [showMetadata]="showMetadata()"
+      [required]="effectiveRequired()"
+      [readOnly]="locked"
       [hint]="m.hint"
       [messages]="m.messages ?? []"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      (intent)="onFrameIntent($event)"
     >
-      <div class="cf-stack">
+      <div class="cf-stack" (focusin)="focused.emit()" (focusout)="blurred.emit()">
         <emr-segmented-control
           [controlId]="resolvedId() + '-precision'"
-          [ariaLabel]="m.label + ' precision'"
+          [ariaLabel]="resolvedLabel() + ' precision'"
           [labelHidden]="true"
           [options]="precisionOptions"
           [value]="activePrecision()"
-          [readOnly]="!!m.readOnly"
+          [readOnly]="locked"
           (valueChange)="onPrecisionChange($event)"
         />
-        <emr-date-input
-          [controlId]="resolvedId()"
-          [label]="m.label"
-          [labelHidden]="true"
-          [precision]="activePrecision()"
-          [value]="m.value?.value ?? null"
-          [min]="m.min"
-          [max]="m.max"
-          [required]="!!m.required"
-          [readOnly]="!!m.readOnly"
-          [error]="errorText()"
-          (valueChange)="onDateChange($event)"
-        />
-
-        @if (m.status || (m.statusOptions?.length && !m.readOnly)) {
-          <div class="cf-status">
-            @if (m.status) {
-              <span [class]="'emr-badge ' + statusTone()" role="status">{{ statusText() }}</span>
-            }
-            @if (m.statusOptions?.length && !m.readOnly) {
-              <select
-                #statusSelect
-                class="emr-select cf-status__select"
-                [attr.aria-label]="m.label + ' assessment status'"
-                [value]="m.status ?? ''"
-                (change)="onStatusChange($event)"
-                (blur)="syncStatus()"
-              >
-                <option value="" [selected]="!m.status">Status not set</option>
-                @for (opt of m.statusOptions; track opt.value) {
-                  <option [value]="opt.value" [selected]="opt.value === m.status">
-                    {{ opt.label }}
-                  </option>
-                }
-              </select>
-            }
-          </div>
-        }
+        <div class="cf-inline">
+          <emr-date-input
+            [controlId]="resolvedId() + '-control'"
+            [label]="resolvedLabel()"
+            [labelHidden]="true"
+            [precision]="activePrecision()"
+            [value]="m.value?.value ?? null"
+            [min]="m.min"
+            [max]="m.max"
+            [required]="effectiveRequired()"
+            [readOnly]="locked"
+            [error]="errorText()"
+            (valueChange)="onDateChange($event)"
+          />
+          @if (m.value !== null && !locked && resolvedClearable()) {
+            <button
+              type="button"
+              class="emr-button emr-button--ghost emr-button--small"
+              style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;gap:6px"
+              [attr.aria-label]="'Clear ' + resolvedLabel()"
+              (click)="onDateChange(null)"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+              <span>Clear</span>
+            </button>
+          }
+        </div>
       </div>
     </emr-field-frame>
   `,
   styles: [SHARED_FIELD_STYLES],
 })
-export class EmrPartialDateFieldComponent implements AfterViewChecked {
+export class EmrPartialDateFieldComponent {
   readonly model = input.required<PartialDateFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>('vertical');
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
   readonly defaultPrecision = input<EmrPartialDate['precision']>('day');
+  readonly clearable = input(true, { transform: booleanAttribute });
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
   readonly intent = output<PartialDateFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   protected readonly precisionOptions = PARTIAL_DATE_PRECISION_OPTIONS;
 
   private readonly fallbackId = `emr-partial-date-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  private readonly draftPrecision = signal<EmrPartialDate['precision'] | null>(null);
+
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(() => this.model().label || this.resolvedDefinition()?.presentation?.label || '');
+  protected readonly effectiveReadOnly = computed(() =>
+    Boolean(this.readOnly() || this.model().readOnly || this.resolvedDefinition()?.contract?.readOnly),
+  );
+  protected readonly effectiveRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
+  });
+  protected readonly resolvedClearable = computed(() => this.model().clearable ?? this.clearable());
 
   protected readonly activePrecision = computed<EmrPartialDate['precision']>(
-    () => this.model().value?.precision ?? this.defaultPrecision(),
+    () => this.model().value?.precision ?? this.draftPrecision() ?? this.model().defaultPrecision ?? this.defaultPrecision(),
   );
   protected readonly errorText = computed(() => firstErrorMessage(this.model().messages));
-  protected readonly statusText = computed(() =>
-    resolveStatusLabel(this.model().status, this.model().statusOptions),
-  );
-  protected readonly statusTone = computed(() =>
-    resolveStatusToneClass(this.model().status, this.model().statusOptions),
-  );
-
-  private readonly statusRef = viewChild<ElementRef<HTMLSelectElement>>('statusSelect');
-  private needsStatusSync = false;
-
-  ngAfterViewChecked(): void {
-    if (this.needsStatusSync) {
-      this.needsStatusSync = false;
-      this.syncStatus();
-    }
-  }
 
   protected onPrecisionChange(next: string | null): void {
-    if (this.model().readOnly || !next) return;
+    if (this.effectiveReadOnly() || !next) return;
     if (next === 'year' || next === 'month' || next === 'day') {
+      this.draftPrecision.set(next);
       this.intent.emit({ type: 'precisionChangeRequested', precision: next });
+      const cur = this.model().value;
+      if (cur) {
+        this.intent.emit({ type: 'valueChangeRequested', value: adaptPartialDateLocal(cur, next) });
+      }
     }
   }
 
   protected onDateChange(raw: string | null): void {
-    if (this.model().readOnly) return;
+    if (this.effectiveReadOnly()) return;
     this.intent.emit({
       type: 'valueChangeRequested',
       value: raw === null ? null : { value: raw, precision: this.activePrecision() },
     });
   }
 
-  protected onStatusChange(event: Event): void {
-    if (this.model().readOnly) {
-      this.syncStatus();
-      return;
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.effectiveReadOnly()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
     }
-    const raw = (event.target as HTMLSelectElement).value as ClinicalAssessmentStatus | '';
-    this.needsStatusSync = true;
-    queueMicrotask(() => {
-      if (this.needsStatusSync) {
-        this.needsStatusSync = false;
-        this.syncStatus();
-      }
-    });
-    this.intent.emit({ type: 'statusChangeRequested', status: raw ? raw : undefined });
-  }
-
-  protected syncStatus(): void {
-    const el = this.statusRef()?.nativeElement;
-    if (!el) return;
-    const expected = this.model().status ?? '';
-    if (el.value !== expected) el.value = expected;
   }
 }
 
@@ -432,106 +461,121 @@ export class EmrPartialDateFieldComponent implements AfterViewChecked {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let locked = effectiveReadOnly();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
+      [labelHidden]="labelHidden()"
+      [labelNamesControl]="false"
+      [layout]="resolvedLayout()"
+      [showMetadata]="resolvedShowMetadata()"
+      [required]="effectiveRequired()"
+      [readOnly]="locked"
       [hint]="m.hint"
       [messages]="m.messages ?? []"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      (intent)="onFrameIntent($event)"
     >
-      <div class="cf-stack">
-        @if (!m.readOnly && canAddMore()) {
-          <emr-file-trigger
-            [controlId]="resolvedId()"
-            [label]="m.label"
-            [labelHidden]="true"
-            [accept]="m.accept"
-            [multiple]="!!m.multiple"
-            [error]="errorText()"
-            (filesSelected)="intent.emit({ type: 'filesSelected', files: $event })"
-            (nativeFilesSelected)="nativeFilesSelected.emit($event)"
-          />
-          @if (m.allowCamera) {
-            <div class="cf-inline">
-              <button
-                type="button"
-                class="emr-button emr-button--outline emr-button--small"
-                (click)="intent.emit({ type: 'captureRequested', mode: 'camera' })"
-              >
-                Capture from camera
-              </button>
-              <button
-                type="button"
-                class="emr-button emr-button--outline emr-button--small"
-                (click)="intent.emit({ type: 'captureRequested', mode: 'scanner' })"
-              >
-                Scan document
-              </button>
-            </div>
-          }
-        }
-
+      <div class="cf-stack" (focusin)="focused.emit()" (focusout)="blurred.emit()">
         @if (m.items.length > 0) {
-          <ul class="af-list" [attr.aria-label]="m.label + ' attachments'">
+          <ul class="af-list" [attr.aria-label]="resolvedLabel() + ' attachments'">
             @for (item of m.items; track item.id) {
               <li class="af-item">
                 <button
                   type="button"
                   class="af-item__select"
+                  [attr.aria-label]="'Open ' + item.title"
                   (click)="intent.emit({ type: 'itemSelected', id: item.id })"
                 >
-                  <span class="af-item__title">{{ item.title }}</span>
-                  <span class="af-item__meta">
-                    {{ item.contentType }}
-                    @if (formatBytes(item.sizeBytes); as sizeText) {
-                      · {{ sizeText }}
-                    }
-                    @if (item.uploadedAt) {
-                      · {{ item.uploadedAt }}
-                    }
+                  <svg class="af-item__icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                  <span class="af-item__copy">
+                    <span class="af-item__title">{{ item.title }}</span>
+                    <span class="af-item__meta">
+                      {{ item.contentType }}
+                      @if (formatBytes(item.sizeBytes); as sizeText) {
+                        · {{ sizeText }}
+                      }
+                      @if (item.uploadedAt) {
+                        · {{ item.uploadedAt }}
+                      }
+                    </span>
                   </span>
                 </button>
                 @if (item.statusBadge; as badge) {
                   <emr-badge [tone]="badge.tone">{{ badge.label }}</emr-badge>
                 }
-                @if (!m.readOnly) {
+                @if (!locked) {
                   <button
                     type="button"
-                    class="emr-button emr-button--ghost emr-button--small"
+                    data-emr-print="hide"
+                    class="emr-button emr-button--ghost emr-button--small af-item__remove"
                     [attr.aria-label]="'Remove ' + item.title"
-                    (click)="intent.emit({ type: 'itemRemoveRequested', id: item.id })"
+                    (click)="onRemoveItem(item.id)"
                   >
-                    Remove
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    </svg>
+                    <span>Remove</span>
                   </button>
                 }
               </li>
             }
           </ul>
-        } @else if (m.readOnly && !m.status) {
+        } @else if (locked && !m.status) {
           <p class="af-empty">No attachments recorded.</p>
         }
 
-        @if (m.status || (m.statusOptions?.length && !m.readOnly)) {
-          <div class="cf-status">
-            @if (m.status) {
-              <span [class]="'emr-badge ' + statusTone()" role="status">{{ statusText() }}</span>
-            }
-            @if (m.statusOptions?.length && !m.readOnly) {
-              <select
-                #statusSelect
-                class="emr-select cf-status__select"
-                [attr.aria-label]="m.label + ' assessment status'"
-                [value]="m.status ?? ''"
-                (change)="onStatusChange($event)"
-                (blur)="syncStatus()"
-              >
-                <option value="" [selected]="!m.status">Status not set</option>
-                @for (opt of m.statusOptions; track opt.value) {
-                  <option [value]="opt.value" [selected]="opt.value === m.status">
-                    {{ opt.label }}
-                  </option>
-                }
-              </select>
+        @if (!locked) {
+          <div class="cf-stack" data-emr-print="hide">
+            <emr-file-trigger
+              [controlId]="resolvedId() + '-trigger'"
+              [label]="resolvedLabel()"
+              [labelHidden]="true"
+              [accept]="m.accept"
+              [multiple]="effectiveMultiple()"
+              [disabled]="!canAddMore()"
+              [dropHint]="capacityHint() || 'or drag and drop files here'"
+              [error]="errorText()"
+              (filesSelected)="onFiles($event)"
+              (nativeFilesSelected)="onNativeFiles($event)"
+            />
+            @if (m.allowCamera) {
+              <div class="cf-inline">
+                <button
+                  type="button"
+                  class="emr-button emr-button--outline emr-button--small af-capture-btn"
+                  [disabled]="!canAddMore()"
+                  [attr.aria-label]="'Capture photo for ' + resolvedLabel()"
+                  (click)="onCapture('camera')"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  <span>Camera</span>
+                </button>
+                <button
+                  type="button"
+                  class="emr-button emr-button--outline emr-button--small af-capture-btn"
+                  [disabled]="!canAddMore()"
+                  [attr.aria-label]="'Scan document for ' + resolvedLabel()"
+                  (click)="onCapture('scanner')"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="4 7 4 4 7 4" />
+                    <polyline points="17 4 20 4 20 7" />
+                    <polyline points="20 17 20 20 17 20" />
+                    <polyline points="7 20 4 20 4 17" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                  </svg>
+                  <span>Scanner</span>
+                </button>
+              </div>
             }
           </div>
         }
@@ -559,7 +603,7 @@ export class EmrPartialDateFieldComponent implements AfterViewChecked {
         background: var(--emr-surface-soft);
       }
       .af-item__select {
-        flex: 1;
+        flex: 1 1 200px;
         min-width: 0;
         min-height: 44px;
         border: 0;
@@ -568,9 +612,19 @@ export class EmrPartialDateFieldComponent implements AfterViewChecked {
         text-align: left;
         font: inherit;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .af-item__icon {
+        flex: 0 0 auto;
+        color: var(--emr-primary);
+      }
+      .af-item__copy {
         display: grid;
         align-content: center;
         gap: 2px;
+        min-width: 0;
       }
       .af-item__title {
         font-weight: var(--emr-weight-bold);
@@ -580,6 +634,22 @@ export class EmrPartialDateFieldComponent implements AfterViewChecked {
         font-size: var(--emr-text-xs);
         color: var(--emr-text-muted);
       }
+      .af-item__remove,
+      .af-capture-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .af-capture-btn {
+        background: var(--emr-surface);
+        color: var(--emr-primary);
+        border: 1px solid var(--emr-primary-border);
+      }
+      .af-capture-btn:hover:not(:disabled) {
+        background: var(--emr-surface-soft);
+      }
       .af-empty {
         margin: 0;
         color: var(--emr-text-muted);
@@ -588,62 +658,77 @@ export class EmrPartialDateFieldComponent implements AfterViewChecked {
     `,
   ],
 })
-export class EmrAttachmentFieldComponent implements AfterViewChecked {
+export class EmrAttachmentFieldComponent {
   readonly model = input.required<AttachmentFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
   readonly intent = output<AttachmentFieldIntent>();
   readonly nativeFilesSelected = output<readonly File[]>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly fallbackId = `emr-attachment-field-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
-
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(() => this.model().label || this.resolvedDefinition()?.presentation?.label || '');
+  protected readonly resolvedLayout = computed<FieldFrameLayout>(() => this.layout() ?? this.model().layout ?? 'vertical');
+  protected readonly resolvedShowMetadata = computed(() => this.showMetadata() || Boolean(this.model().showMetadata));
+  protected readonly effectiveReadOnly = computed(() =>
+    Boolean(this.readOnly() || this.model().readOnly || this.resolvedDefinition()?.contract?.readOnly),
+  );
+  protected readonly effectiveRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
+  });
+  protected readonly effectiveMaxItems = computed(() => {
+    const max = this.resolvedDefinition()?.contract?.cardinality?.max;
+    return this.model().maxItems ?? (typeof max === 'number' ? max : undefined);
+  });
+  protected readonly effectiveMultiple = computed(() => this.model().multiple ?? this.effectiveMaxItems() !== 1);
   protected readonly canAddMore = computed(() => {
-    const m = this.model();
-    return m.maxItems === undefined || m.items.length < m.maxItems;
+    const max = this.effectiveMaxItems();
+    return max === undefined || this.model().items.length < max;
+  });
+  protected readonly capacityHint = computed(() => {
+    const max = this.effectiveMaxItems();
+    return max !== undefined ? `${this.model().items.length} of ${max} attached` : '';
   });
   protected readonly errorText = computed(() => firstErrorMessage(this.model().messages));
-  protected readonly statusText = computed(() =>
-    resolveStatusLabel(this.model().status, this.model().statusOptions),
-  );
-  protected readonly statusTone = computed(() =>
-    resolveStatusToneClass(this.model().status, this.model().statusOptions),
-  );
-
-  private readonly statusRef = viewChild<ElementRef<HTMLSelectElement>>('statusSelect');
-  private needsStatusSync = false;
-
-  ngAfterViewChecked(): void {
-    if (this.needsStatusSync) {
-      this.needsStatusSync = false;
-      this.syncStatus();
-    }
-  }
 
   protected formatBytes(bytes?: number): string {
     return formatByteSize(bytes);
   }
 
-  protected onStatusChange(event: Event): void {
-    if (this.model().readOnly) {
-      this.syncStatus();
-      return;
-    }
-    const raw = (event.target as HTMLSelectElement).value as ClinicalAssessmentStatus | '';
-    this.needsStatusSync = true;
-    queueMicrotask(() => {
-      if (this.needsStatusSync) {
-        this.needsStatusSync = false;
-        this.syncStatus();
-      }
-    });
-    this.intent.emit({ type: 'statusChangeRequested', status: raw ? raw : undefined });
+  protected onFiles(files: readonly EmrFileSelectionItem[]): void {
+    if (this.effectiveReadOnly() || !this.canAddMore()) return;
+    this.intent.emit({ type: 'filesSelected', files });
   }
 
-  protected syncStatus(): void {
-    const el = this.statusRef()?.nativeElement;
-    if (!el) return;
-    const expected = this.model().status ?? '';
-    if (el.value !== expected) el.value = expected;
+  protected onNativeFiles(files: readonly File[]): void {
+    if (this.effectiveReadOnly() || !this.canAddMore()) return;
+    this.nativeFilesSelected.emit(files);
+  }
+
+  protected onCapture(mode: 'camera' | 'scanner'): void {
+    if (this.effectiveReadOnly() || !this.canAddMore()) return;
+    this.intent.emit({ type: 'captureRequested', mode });
+  }
+
+  protected onRemoveItem(id: string): void {
+    if (this.effectiveReadOnly()) return;
+    this.intent.emit({ type: 'itemRemoveRequested', id });
+  }
+
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.effectiveReadOnly()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
+    }
   }
 }
 

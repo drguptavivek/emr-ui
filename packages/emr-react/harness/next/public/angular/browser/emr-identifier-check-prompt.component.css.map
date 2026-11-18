@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;39692245e549b0b93e6a0a3ce8b255ff62d5911974fbb923a12803f1002f3af1;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/domain/emr-identifier-check-prompt.component.ts"],
+  "sourcesContent": ["\n    :host{display:block;min-width:0;color:var(--emr-text);font-family:var(--emr-font-family)}\n    .icp{display:grid;gap:12px;min-width:0}\n    .icp__card{display:grid;gap:8px;padding:12px;border:1px solid var(--emr-border);border-radius:8px;background:var(--emr-surface);min-width:0}\n    .icp__row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}\n    .icp__muted{font-size:var(--emr-text-sm);color:var(--emr-text-muted)}\n    .icp__value{overflow-wrap:anywhere;min-width:0}\n  "],
+  "mappings": ";AACI;AAAM,WAAQ;AAAM,aAAU;AAAE,SAAM,IAAI;AAAY,eAAY,IAAI;AAAkB;AACxF,CAAC;AAAI,WAAQ;AAAK,OAAI;AAAK,aAAU;AAAC;AACtC,CAAC;AAAU,WAAQ;AAAK,OAAI;AAAI,WAAQ;AAAK,UAAO,IAAI,MAAM,IAAI;AAAc,iBAAc;AAAI,cAAW,IAAI;AAAe,aAAU;AAAC;AAC3I,CAAC;AAAS,WAAQ;AAAK,aAAU;AAAK,eAAY;AAAO,OAAI;AAAI,aAAU;AAAC;AAC5E,CAAC;AAAW,aAAU,IAAI;AAAe,SAAM,IAAI;AAAiB;AACpE,CAAC;AAAW,iBAAc;AAAS,aAAU;AAAC;",
+  "names": []
+}

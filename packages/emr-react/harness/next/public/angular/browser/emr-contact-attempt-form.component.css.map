@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;3465692585c7225e07df3468fc9fb3a8cf022191667c0296345d2dcf12483114;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/domain/emr-contact-attempt-form.component.ts"],
+  "sourcesContent": ["\n    :host{display:block;color:var(--emr-text)}\n    .caf{display:grid;gap:16px;max-width:640px}\n    .caf__title{margin:0;font-size:var(--emr-text-lg)}\n    .caf__number{display:grid;gap:8px;justify-items:start}\n    .caf__note{resize:vertical;min-height:88px}\n    .caf__actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}\n  "],
+  "mappings": ";AACI;AAAM,WAAQ;AAAM,SAAM,IAAI;AAAW;AACzC,CAAC;AAAI,WAAQ;AAAK,OAAI;AAAK,aAAU;AAAK;AAC1C,CAAC;AAAW,UAAO;AAAE,aAAU,IAAI;AAAc;AACjD,CAAC;AAAY,WAAQ;AAAK,OAAI;AAAI,iBAAc;AAAK;AACrD,CAAC;AAAU,UAAO;AAAS,cAAW;AAAI;AAC1C,CAAC;AAAa,WAAQ;AAAK,aAAU;AAAK,mBAAgB;AAAS,OAAI;AAAG;",
+  "names": []
+}

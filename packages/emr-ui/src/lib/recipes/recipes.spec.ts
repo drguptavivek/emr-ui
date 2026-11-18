@@ -7,8 +7,8 @@ import type { AnatomyTemplateRecipe } from '@drguptavivek/emr-controller';
  * L5 anatomy recipes: the drawing standard every outline set must meet.
  * Run one group while drawing: `pnpm vitest run packages/emr-ui/src/lib/recipes -t <group>`.
  */
-const anatomyRoot = join(process.cwd(), 'packages/emr-ui/src/lib/recipes/anatomy');
-const assetRoot = join(anatomyRoot, 'assets');
+const anatomyRoot = join(process.cwd(), 'packages/emr-controller/src/recipes/anatomy');
+const assetRoot = join(process.cwd(), 'packages/emr-controller/assets/anatomy');
 const docFile = join(process.cwd(), 'docs/catalog/L5-recipes.md');
 
 /** The outline palette. SVGs render through <img>, so they cannot read CSS tokens; this fixed set stands in. */

@@ -198,18 +198,26 @@ Note: unlike its sibling inputs, `EmrDateInput` does not emit a `blurred` output
 
 **API**
 ```ts
-controlId = input('emr-field');
+controlId = input<string>();
 label = input('');
+ariaLabel = input<string>();
+labelHidden = input(false);
 hint = input('');
+warning = input('');
 error = input('');
+invalid = input(false);
 required = input(false);
 disabled = input(false);
 readOnly = input(false);
-value = input<string | null>(null);   // 'HH:mm', or 'HH:mm:ss' when step < 60
-min = input<string>();                 // forwarded as HTML min
-max = input<string>();                 // forwarded as HTML max
-step = input<number>();                // seconds, forwarded as HTML step (browser default 60)
-valueChange = output<string | null>(); // [(value)] partner; empty input emits null, never ''
+value = input<string | null>(null);          // canonical 'HH:mm' or 'HH:mm:ss'
+precision = input<'minute' | 'second'>('minute');
+hourCycle = input<'24' | '12'>('24');        // display format; wire value stays 24h
+min = input<string>();
+max = input<string>();
+step = input<number>();                      // seconds (default 60 or 1 for 'second')
+size = input<'sm' | 'md' | 'lg'>('md');
+clearable = input(false);
+// outputs: valueChange, cleared, focused, blurred, submitted
 ```
 
 **Example**
@@ -231,17 +239,29 @@ valueChange = output<string | null>(); // [(value)] partner; empty input emits n
 
 **API**
 ```ts
-controlId = input('emr-field');
+controlId = input<string>();
 label = input('');
+ariaLabel = input<string>();
+labelHidden = input(false);
 hint = input('');
+warning = input('');
 error = input('');
+invalid = input(false);
 required = input(false);
 disabled = input(false);
 readOnly = input(false);
-value = input<string | null>(null);   // 'YYYY-MM-DDTHH:mm', no zone
-min = input<string>();                 // forwarded as HTML min
-max = input<string>();                 // forwarded as HTML max
-valueChange = output<string | null>(); // [(value)] partner; empty input emits null, never ''
+value = input<string | null>(null);            // UTC ISO-8601 or local YYYY-MM-DDTHH:mm(:ss)
+displayFormat = input<'dd-mm-yyyy' | 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'mm/dd/yyyy'>('dd-mm-yyyy');
+timePrecision = input<'minute' | 'second'>('minute');
+hourCycle = input<'24' | '12'>('24');
+wireFormat = input<'utc' | 'local'>('utc');
+min = input<string>();
+max = input<string>();
+size = input<'sm' | 'md' | 'lg'>('md');
+clearable = input(false);
+dateLabel = input('Date');
+timeLabel = input('Time');
+// outputs: valueChange, cleared, focused, blurred, submitted
 ```
 
 **Example**
@@ -265,27 +285,30 @@ valueChange = output<string | null>(); // [(value)] partner; empty input emits n
 ```ts
 // signal input()/output()
 status: EmrBadge (required); valueLabel?: string;
-attribution?: { nameLabel: string; roleLabel?: string; timeLabel?: string };
-action?: { label: string; icon?: string };
-secondaryNote?: string; readOnly = false; compact = false; selectable = false; controlId?: string;
-actionClicked: output<void>(); selected: output<void>();
+attribution?: string | { nameLabel?: string; roleLabel?: string; timeLabel?: string; author?: string; timestamp?: string };
+action?: { label: string; icon?: EmrIconName; ariaLabel?: string };
+secondaryNote?: string; readOnly = false; disabled = false; compact = false;
+selectable = false; interactive = false; isSelected = false; // React/Lit: selected
+size: 'sm' | 'md' = 'md'; ariaLabel?: string; controlId?: string;
+actionClicked: output<void>(); selected: output<void>(); intent: output<'action' | 'selected'>();
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| status | `EmrBadge` | required | tone class `emr-tone-<tone>`; `assistiveText` rendered sr-only |
+| status | `EmrBadge` | required | full badge styling (`tone`, `variant`, `shape`, `size`, `dot`); `assistiveText` rendered sr-only |
 | valueLabel | `string` | — | shown beside the badge |
-| attribution | object | — | joined `name · role · time` |
-| action | `{label, icon?}` | — | renders one button; hidden when `readOnly` or `compact` |
+| attribution | `string \| object` | — | joined `name · role · time` |
+| action | `{label, icon?, ariaLabel?}` | — | renders one sibling button with monochrome SVG icon; hidden when `readOnly`, `disabled`, or `compact` |
 | secondaryNote | `string` | — | muted line |
-| readOnly | `boolean` | `false` | hides the action |
-| compact | `boolean` | `false` | badge only; full content in an sr-only span |
-| selectable | `boolean` | `false` | body becomes role="button", tabindex 0, Enter/Space emit `selected` |
-| controlId | `string` | — | id on the cell body |
-| actionClicked (output) | `OutputEmitterRef<void>` | — | past-tense pass-through |
-| selected (output) | `OutputEmitterRef<void>` | — | click or Enter/Space on a selectable body |
+| readOnly / disabled | `boolean` | `false` | hides the action and blocks `selected`/`intent` emission (`disabled` sets `aria-disabled="true"` and dims opacity) |
+| compact | `boolean` | `false` | badge only; full content preserved in `aria-label` / sr-only |
+| selectable / interactive | `boolean` | `false` | body becomes `role="button"`, `tabindex="0"`, `aria-pressed`, Enter/Space emit `selected` & `intent` |
+| isSelected (`selected`) | `boolean` | `false` | selected border/surface highlight and `aria-pressed="true"` |
+| size | `'sm' \| 'md'` | `'md'` | compact/standard text density (`>=44px` interactive targets maintained) |
+| controlId / ariaLabel | `string` | — | id / accessible name on the cell body |
+| intent (output) | `'action' \| 'selected'` | — | canonical unified event across Angular, React, and Lit |
 
 **Example**
 ```html
@@ -302,34 +325,43 @@ actionClicked: output<void>(); selected: output<void>();
 
 **Need** — Multi-phase records (admission-to-discharge journey, OT patient flow, staged checklists) need the same accessible numbered stage navigation without each re-implementing `aria-current`, status badges and keyboard movement.
 
-**Purpose** — Renders a `<nav>` containing an `<ol>` of numbered stages, each a `<button>` (or a static `<span>` when `readOnly`) with label, optional description and optional caller-supplied status badge. It does not decide which stage is active, complete or reachable; it only emits the selected stage id.
+**Purpose** — Renders a `<nav>` containing an `<ol>` of numbered stages, each a focusable `<button>` (even when `readOnly`, with `aria-readonly="true"`) with label, optional description, optional completed checkmark icon, and optional caller-supplied status badge. It does not decide which stage is active, complete or reachable; it only emits the selected stage id / `intent`.
 
 **API**
 ```ts
-export interface EmrStage { id: string; label: string; status?: EmrBadge; description?: string }
+export interface EmrStage { id: string; label: string; status?: EmrBadge; description?: string; disabled?: boolean }
 // signal input()/output()
 stages: readonly EmrStage[]            // required
 activeId?: string
+completedIds: readonly string[] = []
 ariaLabel = 'Stages'
 orientation: 'horizontal' | 'vertical' = 'horizontal'
+size: 'sm' | 'md' = 'md'
+clickable = true
+linear = false
 readOnly = false
+disabled = false
+controlId?: string
 idPrefix?: string
-// stageSelected: OutputEmitterRef<string>
+// outputs: stageSelected: string; intent: { type: 'stageSelected'; stageId: string }
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| stages | `readonly EmrStage[]` | required | status is an `EmrBadge`; label and tone come from the caller |
-| activeId | `string` | — | gets `aria-current="step"` and active styling |
+| stages | `readonly EmrStage[]` | required | status is an `EmrBadge`; label, tone, and per-stage `disabled` come from caller |
+| activeId | `string` | — | gets `aria-current="step"` and active underline styling |
+| completedIds | `readonly string[]` | `[]` | renders monochrome SVG check icon in the step circle |
 | ariaLabel | `string` | `'Stages'` | accessible name of the `<nav>` |
-| orientation | `'horizontal' \| 'vertical'` | `'horizontal'` | horizontal wraps; stacks at 640px and below |
-| readOnly | `boolean` | `false` | stages become non-interactive list items |
-| idPrefix | `string` | auto | prefix for stage element ids |
-| stageSelected (output) | `string` | — | stage id on click / Enter / Space |
+| orientation | `'horizontal' \| 'vertical'` | `'horizontal'` | horizontal wraps; stacks cleanly at 640px and below |
+| size | `'sm' \| 'md'` | `'md'` | compact or standard density (`>= 44px` target maintained) |
+| clickable / linear | `boolean` | `true` / `false` | `clickable=false` makes display-only steps; `linear=true` restricts selection to completed/active/next enabled stage |
+| readOnly / disabled | `boolean` | `false` | `readOnly` keeps buttons focusable with `aria-readonly="true"` and suppresses selection; `disabled` dims and removes from tab order |
+| controlId / idPrefix | `string` | auto | host id / prefix for stage element ids |
+| stageSelected / intent | `string` / `EmrStageStepperIntent` | — | emitted on click / Enter / Space when selectable |
 
-Keyboard: roving tabindex (one tab stop: last focused, else active, else first); Arrow keys move focus, Home/End jump to first/last; Enter/Space select. Status is always text, never colour alone.
+Keyboard: roving tabindex (one tab stop: last focused enabled stage, else active enabled, else first enabled); Arrow keys move focus skipping disabled stages, Home/End jump to first/last enabled; Enter/Space select. Status is always text, never colour alone.
 
 **Example**
 ```html
@@ -344,32 +376,48 @@ Keyboard: roving tabindex (one tab stop: last focused, else active, else first);
 ### EmrSelect
 **Layer** L1 · **Selector** `emr-select` · **Status** stable · **Story** `foundations-primitives--controls`
 
-**Need** — Controlled enumerations (status, urgency, order category) need a labelled `<select>` bound to a caller-owned option list, with a nullable "no selection" state.
+**Need** — Controlled enumerations (status, urgency, order category, multi-tag clinical attributes) need an accessible custom combobox + listbox bound to a caller-owned `EmrOption[]` list, supporting both single-select and multi-select with chips, grouped options, badges, descriptions, and nullable/clearable states.
 
-**Purpose** — Renders a native `<select>` from `EmrOption[]`, with an optional blank placeholder option. It does not fetch or filter its own option list, and does not interpret option semantics beyond `value`/`label`/`disabled`.
+**Purpose** — Renders a custom `button[role="combobox"]` + `role="listbox"` (with sibling chips and inline clear button) from `EmrOption[]`. It does not fetch or filter its own option list, and does not interpret option semantics beyond `value`/`label`/`description`/`badge`/`tone`/`group`/`readOnly`/`disabled`.
 
 **API**
 ```ts
 interface EmrSelectProps extends EmrFieldProps {
-  value: string | null;
+  value: string | readonly string[] | null;
   options: readonly EmrOption[]; // default []
+  multiple?: boolean; // default false
+  size?: 'md' | 'sm'; // default 'md'
+  variant?: 'outline' | 'filled' | 'subtle'; // default 'outline'
+  clearable?: boolean; // default false
+  closeOnSelect?: boolean; // default !multiple
+  maxSelections?: number;
+  maxTagCount?: number;
+  loading?: boolean;
+  emptyMessage?: string;
 }
-// @Output() valueChange: EventEmitter<string | null>
+// @Output() valueChange: EventEmitter<string | readonly string[] | null>
+// @Output() cleared: EventEmitter<void>
+// @Output() openChange: EventEmitter<boolean>
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| value | `string \| null` | `null` | |
-| options | `readonly EmrOption[]` | `[]` | `EmrOption = { value, label, description?, disabled? }` |
-| valueChange (output) | `EventEmitter<string \| null>` | — | empty native selection emits `null` |
-| *(inherited)* placeholder | `string` | `''` | when set, rendered as a blank first `<option>` |
+| value | `string \| readonly string[] \| null` | `null` | single code or array of codes when `multiple` |
+| options | `readonly EmrOption[]` | `[]` | supports `description`, `group`, `badge`, `tone`, `readOnly`, `disabled` |
+| multiple | `boolean` | `false` | renders removable chips + `+N` overflow badge |
+| size | `'md' \| 'sm'` | `'md'` | `44px` minimum hit target preserved |
+| variant | `'outline' \| 'filled' \| 'subtle'` | `'outline'` | visual surface variant |
+| clearable | `boolean` | `false` | inline clear button preserves `readOnly` selections |
+| valueChange (output) | `EventEmitter<EmrSelectValue>` | — | emits updated value or `null` / `[]` |
+| cleared (output) | `EventEmitter<void>` | — | emitted on inline clear |
+| openChange (output) | `EventEmitter<boolean>` | — | emitted when listbox opens or closes |
 
 **Example**
 ```html
-<emr-select inputId="demo-status" label="Encounter status" [value]="status" [options]="statusOptions"
-  (valueChange)="status = $event" />
+<emr-select controlId="demo-status" label="Encounter status" [value]="status" [options]="statusOptions"
+  [clearable]="true" (valueChange)="status = $event" />
 ```
 
 **Depends on** — L0 tokens only
@@ -389,10 +437,21 @@ interface EmrSelectProps extends EmrFieldProps {
 interface EmrQuantityInputProps extends EmrFieldProps {
   value: number | null; // default null
   unit: string | null;  // default null
-  units: readonly EmrOption[]; // default []
+  units: readonly EmrOption[]; // default [] (supports group, description, disabled)
+  mode?: 'decimal' | 'integer'; // default 'decimal'
+  precision?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  showSteppers?: boolean; // default true
+  size?: 'sm' | 'md' | 'lg'; // default 'md'
+  clearable?: boolean; // default false
+  unitReadOnly?: boolean; // default false
+  warning?: string;
+  valueError?: string;
+  unitError?: string;
 }
-// @Output() valueChange: EventEmitter<number | null>
-// @Output() unitChange: EventEmitter<string | null>
+// Outputs: valueChange, unitChange, cleared, focused, blurred, submitted
 ```
 
 **Attributes**
@@ -400,15 +459,21 @@ interface EmrQuantityInputProps extends EmrFieldProps {
 | name | type | default | notes |
 |---|---|---|---|
 | value | `number \| null` | `null` | empty numeric input emits `null` |
-| unit | `string \| null` | `null` | |
-| units | `readonly EmrOption[]` | `[]` | |
-| valueChange (output) | `EventEmitter<number \| null>` | — | |
-| unitChange (output) | `EventEmitter<string \| null>` | — | empty unit selection emits `null`, not `''` |
+| unit | `string \| null` | `null` | empty unit selection emits `null`, not `''` |
+| units | `readonly EmrOption[]` | `[]` | supports `group`, `description`, `disabled` |
+| mode | `'decimal' \| 'integer'` | `'decimal'` | sets `inputmode`, normalizes comma/space drafts |
+| precision | `number \| undefined` | `undefined` | decimal rounding & default step (`10 ** -precision`) |
+| showSteppers | `boolean` | `true` | `>=44px` `-` / `+` monochrome SVG buttons |
+| size | `'sm' \| 'md' \| 'lg'` | `'md'` | `'lg'` uses `48px` touch targets |
+| clearable | `boolean` | `false` | clears value + editable unit and emits `cleared` |
+| unitReadOnly | `boolean` | `false` | locks unit while keeping numeric value editable |
+| valueError / unitError / warning | `string` | `''` | per-side `aria-invalid` + `role="alert"` / `role="status"` |
+| valueChange / unitChange / cleared / focused / blurred / submitted | outputs | — | |
 
 **Example**
 ```html
-<emr-quantity-input inputId="demo-weight" label="Weight" [value]="weight" unit="kg" [units]="unitOptions"
-  (valueChange)="weight = $event" (unitChange)="unit = $event" />
+<emr-quantity-input controlId="demo-iop" label="Applanation IOP" [value]="iop" unit="mmHg" [units]="unitOptions"
+  [min]="0" [max]="80" [step]="0.5" (valueChange)="iop = $event" (unitChange)="unit = $event" />
 ```
 
 **Depends on** — L0 tokens only
@@ -463,24 +528,44 @@ Note: unlike the other five `EmrFieldBase` subclasses, `EmrPairedInput` does not
 
 **Need** — Boolean flags (fasting required, consent obtained) need a labelled checkbox with a controlled boolean value.
 
-**Purpose** — Renders a native `<input type="checkbox">` inside a label. It carries no tri-state/indeterminate support and no grouping logic.
+**Purpose** — Renders a controlled checkbox with tile (`variant="tile"`) or compact inline (`variant="inline"`) layout, tri-state (`mixed`) support, optional `description` sub-copy, `labelPlacement`, and simultaneous `hint`/`warning`/`error` messaging.
 
 **API**
 ```ts
-// Decorator-based (@Input/@Output)
 interface EmrCheckboxProps {
-  label: string;    // default ''
-  checked: boolean; // default false
-  disabled: boolean; // default false
+  controlId?: string;
+  label?: string;
+  description?: string;
+  labelHidden?: boolean;
+  ariaLabel?: string;
+  variant?: 'tile' | 'inline'; // default 'tile'
+  size?: 'md' | 'sm'; // default 'md'
+  labelPlacement?: 'end' | 'start' | 'space-between'; // default 'end'
+  value?: boolean | null;
+  checked?: boolean;
+  mixed?: boolean; // default false (aria-checked="mixed")
+  required?: boolean;
+  readOnly?: boolean;
+  disabled?: boolean;
+  hint?: string;
+  warning?: string;
+  error?: string;
 }
-// @Output() checkedChange: EventEmitter<boolean>
+// Outputs: valueChange, checkedChange, focused, blurred
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| label | `string` | `''` | rendered as sibling text, not `aria-label` |
+| label | `string` | `''` | wraps cleanly across lines |
+| description | `string` | `''` | optional muted sub-copy below label |
+| variant / size | `'tile' \| 'inline'` / `'md' \| 'sm'` | `'tile'` / `'md'` | `>=44px` hit target on all variants |
+| value / checked | `boolean \| null` | `false` | `value` takes precedence over `checked` |
+| mixed | `boolean` | `false` | sets `aria-checked="mixed"`; clicking emits `true` |
+| labelPlacement | `'end' \| 'start' \| 'space-between'` | `'end'` | |
+| valueChange / checkedChange | `boolean` | — | |
+| focused / blurred | `void` | — | |
 | checked | `boolean` | `false` | |
 | disabled | `boolean` | `false` | |
 | checkedChange (output) | `EventEmitter<boolean>` | — | |
@@ -500,30 +585,50 @@ interface EmrCheckboxProps {
 
 **Need** — On/off preferences (show only active orders) read more clearly as a switch than a checkbox in list-toolbar contexts.
 
-**Purpose** — Renders a `role="switch"` checkbox styled as a track/thumb toggle. Functionally identical to `EmrCheckbox` — a distinct visual affordance for the same boolean contract, nothing more.
+**Purpose** — Renders a `role="switch"` control with tile (`variant="tile"`) or compact inline (`variant="inline"`) layout, `md`/`sm` sizing, `onLabel`/`offLabel` state labels, `description`, `labelPlacement`, `loading` (spinner in thumb + `aria-busy`), `invalid`, and simultaneous `hint`/`warning`/`error` messaging.
 
 **API**
 ```ts
 interface EmrToggleProps {
-  label: string;     // default ''
-  checked: boolean;  // default false
-  disabled: boolean; // default false
+  controlId?: string;
+  label?: string;
+  description?: string;
+  labelHidden?: boolean;
+  ariaLabel?: string;
+  variant?: 'tile' | 'inline'; // default 'tile'
+  size?: 'md' | 'sm'; // default 'md'
+  labelPlacement?: 'end' | 'start' | 'space-between'; // default 'end'
+  onLabel?: string;
+  offLabel?: string;
+  value?: boolean | null;
+  checked?: boolean;
+  required?: boolean;
+  readOnly?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
+  invalid?: boolean;
+  hint?: string;
+  warning?: string;
+  error?: string;
 }
-// @Output() checkedChange: EventEmitter<boolean>
+// Outputs: checkedChange, valueChange, focused, blurred
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| label | `string` | `''` | |
-| checked | `boolean` | `false` | |
-| disabled | `boolean` | `false` | |
-| checkedChange (output) | `EventEmitter<boolean>` | — | |
+| label / description | `string` | `''` | wraps cleanly across lines; hidden with messages when `labelHidden` |
+| variant / size | `'tile' \| 'inline'` / `'md' \| 'sm'` | `'tile'` / `'md'` | `42×24` (`md`) / `38×22` (`sm`) track; `>=44px` hit target |
+| onLabel / offLabel | `string` | `''` | rendered adjacent to the track |
+| value / checked | `boolean \| null` | `false` | `value` takes precedence over `checked` |
+| loading / invalid | `boolean` | `false` | `loading` gates mutation + shows thumb spinner; `invalid` forces danger styling |
+| checkedChange / valueChange | `boolean` | — | |
+| focused / blurred | `void` | — | |
 
 **Example**
 ```html
-<emr-toggle label="Show only active orders" [checked]="activeOnly" (checkedChange)="activeOnly = $event" />
+<emr-toggle label="One-eyed precaution active" [checked]="precaution" (checkedChange)="precaution = $event" />
 ```
 
 **Depends on** — L0 tokens only
@@ -541,30 +646,47 @@ interface EmrToggleProps {
 **API**
 ```ts
 interface EmrRadioGroupProps {
-  name: string;   // default 'emr-radio'
-  label: string;  // default ''
+  controlId?: string;
+  name?: string;
+  label: string;
+  ariaLabel?: string;
+  labelHidden?: boolean;
   value: string | null; // default null
-  options: readonly EmrOption[]; // default []
-  disabled: boolean; // default false
+  options: readonly EmrOption[]; // supports description, disabled, readOnly, badge, tone, group
+  orientation?: 'vertical' | 'horizontal' | 'grid'; // default 'vertical'
+  columns?: number; // default 2 (when orientation='grid')
+  variant?: 'tile' | 'inline' | 'card' | 'pill' | 'segmented'; // default 'tile'
+  size?: 'md' | 'sm'; // default 'md'
+  labelPlacement?: 'end' | 'start' | 'space-between'; // default 'end'
+  clearable?: boolean; // default false
+  clearLabel?: string; // default 'Clear'
+  allowDeselect?: boolean; // default false
+  required?: boolean;
+  readOnly?: boolean;
+  disabled?: boolean;
+  invalid?: boolean;
+  hint?: string;
+  warning?: string;
+  error?: string;
 }
-// @Output() valueChange: EventEmitter<string>
+// Outputs: valueChange, cleared, focused, blurred
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| name | `string` | `'emr-radio'` | native radio grouping name |
-| label | `string` | `''` | rendered as `<legend>` |
-| value | `string \| null` | `null` | |
-| options | `readonly EmrOption[]` | `[]` | per-option `disabled` respected |
-| disabled | `boolean` | `false` | disables the whole `<fieldset>` |
-| valueChange (output) | `EventEmitter<string>` | — | emits the selected option's `value` |
+| value | `string \| null` | `null` | `null` when unselected or cleared |
+| options | `readonly EmrOption[]` | `[]` | supports `description`, `disabled`, `readOnly`, `badge`, `tone`, `group` |
+| orientation / columns | `'vertical' \| 'horizontal' \| 'grid'` / `number` | `'vertical'` / `2` | grid collapses to 1 col on mobile |
+| variant / size | `'tile' \| 'inline' \| 'card' \| 'pill' \| 'segmented'` / `'md' \| 'sm'` | `'tile'` / `'md'` | `>=44px` hit target on all options |
+| clearable / allowDeselect | `boolean` | `false` | optional reset to `null` |
+| valueChange / cleared / focused / blurred | outputs | — | |
 
 **Example**
 ```html
-<emr-radio-group name="urgency" label="Urgency" [value]="urgency" [options]="urgencyOptions"
-  (valueChange)="urgency = $event" />
+<emr-radio-group controlId="triage" label="Referral triage priority" [value]="priority" [options]="priorityOptions"
+  (valueChange)="priority = $event" />
 ```
 
 **Depends on** — L0 tokens only
@@ -581,12 +703,23 @@ interface EmrRadioGroupProps {
 
 **API**
 ```ts
-// tone type imported from @drguptavivek/emr-controller
-import { EmrTone } from '@drguptavivek/emr-controller';
+import { EmrBadge, EmrTone } from '@drguptavivek/emr-controller';
 interface EmrBadgeProps {
-  tone: EmrTone; // 'neutral' | 'info' | 'success' | 'warning' | 'danger'; default 'neutral'
+  badge?: EmrBadge;
+  tone?: EmrTone;        // 'neutral' | 'info' | 'success' | 'warning' | 'danger'; default 'neutral'
+  label?: string;
+  variant?: 'soft' | 'solid' | 'outline'; // default 'soft'
+  size?: 'sm' | 'md';    // default 'md' (20px / 24px)
+  shape?: 'pill' | 'rounded'; // default 'pill'
+  icon?: string;         // optional leading monochrome SVG icon
+  dot?: boolean;         // leading tonal status dot (or dot-only when empty)
+  count?: number;        // numeric counter formatted with maxCount / showZero
+  maxCount?: number;     // default 99
+  showZero?: boolean;    // default false
+  assistiveText?: string;
+  controlId?: string;
 }
-// content via <ng-content />, no outputs
+// content via label, count, or <ng-content />, no outputs
 ```
 
 **Attributes**
@@ -615,9 +748,22 @@ interface EmrBadgeProps {
 **API**
 ```ts
 interface EmrChipProps {
-  tone: EmrTone; // default 'neutral'
+  controlId?: string;
+  label?: string;
+  ariaLabel?: string;
+  tone: EmrTone;                           // default 'neutral'
+  variant: 'soft' | 'solid' | 'outline';   // default 'soft'
+  size: 'sm' | 'md';                       // default 'md'
+  leadingIcon?: string;
+  avatar?: string;
+  selectable: boolean;                     // default false
+  selected: boolean;                       // default false
+  removable: boolean;                      // default false
+  removeLabel?: string;
+  disabled: boolean;                       // default false
+  readOnly: boolean;                       // default false
 }
-// content via <ng-content />, no outputs
+// outputs: selectedChange (boolean), removeRequested (void)
 ```
 
 **Attributes**
@@ -681,11 +827,17 @@ Note: template always sets `role="status"` regardless of tone — even `tone="da
 **API**
 ```ts
 interface EmrStateMessageProps {
+  controlId?: string;
   kind: 'empty' | 'loading' | 'error'; // default 'empty'
-  title: string;   // default ''
-  message: string; // default ''
+  title: string;                       // falls back to EMR_STATE_MESSAGE_DEFAULTS
+  message: string;                     // default ''
+  size: 'sm' | 'md';                   // default 'md'
+  compact: boolean;                    // default false
+  icon?: string;                       // monochrome SVG icon override, or 'none'
+  actionLabel: string;                 // default ''
+  actionDisabled: boolean;             // default false
 }
-// content via <ng-content />, no outputs
+// output: actionTriggered (void), optional projected content
 ```
 
 **Attributes**
@@ -715,27 +867,47 @@ interface EmrStateMessageProps {
 
 **API**
 ```ts
-// Decorator-based (@Input/@Output)
+// Signal inputs/outputs (input()/output())
 interface EmrSearchSelectProps {
-  inputId: string;    // default 'emr-search'
-  label: string;      // default 'Search'
-  placeholder: string; // default 'Type to search'
-  query: string;       // default ''
-  options: readonly EmrOption[];  // default []
-  selected: readonly EmrOption[]; // default []
-  multiple: boolean;  // default false
-  open: boolean;       // default false
-  loading: boolean;    // default false
-  disabled: boolean;   // default false
-  error: string;        // default ''
-  emptyMessage: string; // default 'No matching options'
+  controlId?: string;
+  label: string;                            // default 'Search'
+  ariaLabel?: string;
+  labelHidden: boolean;                     // default false
+  placeholder: string;                      // default 'Type to search'
+  variant: 'outline' | 'filled' | 'subtle'; // default 'outline'
+  size: 'md' | 'sm' | 'lg';                 // default 'md' ('lg' fallback)
+  multiple: boolean;                        // default false
+  value?: string | readonly string[] | null;
+  selected: readonly EmrOption[];           // default []
+  options: readonly EmrOption[];            // default []
+  maxSelections?: number;
+  maxTagCount?: number;
+  closeOnSelect?: boolean;                  // defaults to !multiple
+  clearable: boolean;                       // default false
+  clearLabel: string;                       // default 'Clear'
+  query: string;                            // default '' (alias: searchQuery)
+  filterMode: 'remote' | 'local' | 'none';  // default 'remote'
+  highlightMatch: boolean;                  // default true
+  autoHighlight: boolean;                   // default true
+  debounceMs: number;                       // default 200
+  minQueryLength: number;                   // default 0
+  open?: boolean;                           // controlled when provided; uncontrolled otherwise
+  creatable: boolean;                       // default false (aliases: allowCreate, allowCustomValue)
+  createLabel: string;                      // default 'Create "{query}"'
+  loading: boolean;                         // default false
+  loadingMessage: string;                   // default 'Searching…'
+  emptyMessage: string;                     // default 'No matching options'
+  required: boolean;                        // default false
+  readOnly: boolean;                        // default false
+  disabled: boolean;                        // default false
+  invalid: boolean;                         // default false
+  hint: string;                             // default ''
+  warning: string;                          // default ''
+  error: string;                            // default ''
 }
-// @Output() queryChanged: EventEmitter<string>
-// @Output() searchRequested: EventEmitter<void>
-// @Output() openRequested: EventEmitter<void>
-// @Output() closeRequested: EventEmitter<void>
-// @Output() optionSelected: EventEmitter<string>   // emits option.value
-// @Output() removeRequested: EventEmitter<string>  // emits option.value
+// outputs: valueChange, queryChange, queryChanged, searchRequested, openChange,
+// openRequested, closeRequested, optionSelected, removeRequested, selectionRemoved,
+// createRequested, customValueCommitted, cleared, focused, blurred, submitted
 ```
 
 **Attributes**
@@ -779,11 +951,23 @@ Keyboard support: ArrowDown/ArrowUp move option focus, Home/End jump to first/la
 **API**
 ```ts
 interface EmrTabsProps {
-  ariaLabel: string; // default 'Sections'
-  tabs: readonly EmrOption[]; // default []
-  active: string; // default ''
+  controlId?: string;
+  ariaLabel?: string; // default 'Sections'
+  ariaLabelledBy?: string;
+  tabs: readonly EmrTabOption[]; // default [] (supports icon, badge, badgeTone, panelId, disabled)
+  value?: string;
+  active?: string; // deprecated alias for value
+  variant?: 'underline' | 'pill' | 'soft'; // default 'underline'
+  size?: 'sm' | 'md' | 'lg'; // default 'md' (all sizes >=44px)
+  orientation?: 'horizontal' | 'vertical'; // default 'horizontal'
+  fitted?: boolean; // default false
+  activationMode?: 'automatic' | 'manual'; // default 'automatic'
+  loop?: boolean; // default true
+  iconPosition?: 'start' | 'end'; // default 'start'
+  readOnly?: boolean;
+  disabled?: boolean;
 }
-// @Output() tabChanged: EventEmitter<string>
+// Outputs: valueChange, tabChange, focused, blurred (tabChanged deprecated)
 ```
 
 **Attributes**
@@ -791,13 +975,15 @@ interface EmrTabsProps {
 | name | type | default | notes |
 |---|---|---|---|
 | ariaLabel | `string` | `'Sections'` | sets `aria-label` on the tablist |
-| tabs | `readonly EmrOption[]` | `[]` | per-tab `disabled` respected and skipped in arrow navigation |
-| active | `string` | `''` | matched against each tab's `value` for `aria-selected`/`tabindex` |
-| tabChanged (output) | `EventEmitter<string>` | — | emitted on click or arrow/home/end keyboard selection |
+| tabs | `readonly EmrTabOption[]` | `[]` | per-tab `disabled`, `icon`, `badge`, `panelId` |
+| value / active | `string` | `''` | matched against each tab's `value` for `aria-selected`/`tabindex` |
+| variant / size | `'underline' \| 'pill' \| 'soft'` / `'sm' \| 'md' \| 'lg'` | `'underline'` / `'md'` | |
+| valueChange / tabChange | `string` | — | emitted on click or keyboard activation |
+| focused / blurred | `void` | — | |
 
 **Example**
 ```html
-<emr-tabs ariaLabel="Patient sections" [active]="section" [tabs]="tabOptions" (tabChanged)="section = $event" />
+<emr-tabs ariaLabel="Encounter sections" [value]="section" [tabs]="tabOptions" (valueChange)="section = $event" />
 ```
 
 **Depends on** — L0 tokens only
@@ -814,11 +1000,16 @@ interface EmrTabsProps {
 
 **API**
 ```ts
-// Signal-based input() (NOT @Input decorators) — part of the known L1 signal/decorator split
 export type EmrSeparatorOrientation = 'horizontal' | 'vertical';
+export type EmrSeparatorLabelAlign = 'start' | 'center' | 'end';
+export type EmrSeparatorVariant = 'solid' | 'dashed' | 'subtle';
 interface EmrSeparatorProps {
-  orientation: EmrSeparatorOrientation; // input(), default 'horizontal'
-  label?: string; // input(), optional — presence switches to the labelled-rule template branch
+  controlId?: string;
+  orientation: EmrSeparatorOrientation; // default 'horizontal'
+  label?: string;                       // horizontal only
+  labelAlign: EmrSeparatorLabelAlign;   // default 'center'
+  variant: EmrSeparatorVariant;         // default 'solid'
+  decorative: boolean;                  // default false
 }
 // no outputs
 ```
@@ -856,22 +1047,33 @@ export interface EmrLikertAnchor {
   assistiveLabel?: string;
 }
 
-// Decorator-based (@Input/@Output)
+// Signal-based inputs
 interface EmrLikertProps {
-  name: string;   // default '' → per-instance generated group id
-  label: string;  // default ''
+  controlId?: string;
+  name?: string;
+  label?: string;
+  ariaLabel?: string;
+  labelHidden?: boolean;
   hint?: string;
+  warning?: string;
   error?: string;
-  min: number; // default 0
-  max: number; // default 10
+  invalid?: boolean;
+  min?: number; // default 0
+  max?: number; // default 10
+  step?: number; // default 1
+  size?: 'sm' | 'md' | 'lg'; // default 'md'
+  fullWidth?: boolean; // default false
   value: number | null; // default null
-  anchors: readonly EmrLikertAnchor[]; // default []
-  disabled: boolean;  // default false
-  readOnly: boolean;  // default false
-  required: boolean;  // default false
-  tone?: EmrTone;     // controller-supplied colour for the selected pip
+  anchors?: readonly EmrLikertAnchor[];
+  clearable?: boolean; // default false
+  clearLabel?: string; // default 'Clear'
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  tone?: EmrTone;
+  optionTones?: Readonly<Record<number, EmrTone>>;
 }
-// @Output() valueChange: EventEmitter<number>
+// Outputs: valueChange, cleared, focused, blurred
 ```
 
 **Attributes**
@@ -920,25 +1122,34 @@ export interface EmrVasAnchor {
 
 // Signal inputs/outputs (input()/output())
 interface EmrVasProps {
-  controlId: string;      // default 'emr-vas'
+  controlId?: string;
   label: string;          // default ''
+  ariaLabel?: string;
+  labelHidden: boolean;   // default false
   hint?: string;
+  warning?: string;
   error?: string;
+  invalid: boolean;       // default false
   min: number;            // default 0
   max: number;            // default 100
   value: number | null;   // default null
-  step: number;           // default 1; 0 records the raw continuous position
+  step?: number;          // default resolves to 0.1 when span <= 20, else 1; 0 records continuous
   majorInterval: number;  // default 10 — labelled markers
   minorInterval: number;  // default 2  — unlabelled markers
   orientation: 'horizontal' | 'vertical';  // default 'horizontal'
-  anchors: readonly EmrVasAnchor[];        // default []
+  size: 'sm' | 'md' | 'lg';                // default 'md'
+  anchors: readonly EmrVasAnchor[] | { minLabel?: string; midLabel?: string; maxLabel?: string };
+  showValue: boolean;     // default true
+  unmarkedLabel: string;  // default 'Unmarked'
+  clearable: boolean;     // default false
+  clearLabel: string;     // default 'Clear'
   readOnly: boolean;      // default false
   disabled: boolean;      // default false
   required: boolean;      // default false
   tone?: EmrTone;         // controller-supplied colour for the recorded mark
   valueText?: string;     // controller-supplied aria-valuetext
 }
-// valueChange: OutputEmitterRef<number | null>
+// outputs: valueChange, committed, cleared, focused, blurred
 ```
 
 **Attributes**
@@ -988,12 +1199,22 @@ interface EmrVasProps {
 
 **API**
 ```ts
-// Signal-based input() (NOT @Input decorators) — part of the known L1 signal/decorator split
 interface EmrCardProps {
-  label?: string;  // input(), optional card title
-  padded: boolean; // input(), default true — false removes body padding (.emr-card--flush)
+  controlId?: string;
+  label?: string;                              // optional card title (aliases: title, cardTitle)
+  subtitle?: string;                           // optional muted header line
+  headingId?: string;
+  ariaLabel?: string;
+  variant: 'outlined' | 'elevated' | 'filled' | 'subtle'; // default 'outlined'
+  padding: 'none' | 'sm' | 'md' | 'lg';       // default 'md'
+  padded: boolean;                             // default true (false forces padding='none')
+  tone: EmrTone;                               // default 'neutral'
+  interactive: boolean;                        // default false
+  selected: boolean;                           // default false
+  disabled: boolean;                           // default false
+  readOnly: boolean;                           // default false
 }
-// content via <ng-content />, no outputs
+// output: activated (void), slots: default body, [emrCardHeader] / header, [emrCardFooter] / footer
 ```
 
 **Attributes**
@@ -1024,11 +1245,14 @@ interface EmrCardProps {
 
 **API**
 ```ts
-// Signal-based input() (NOT @Input decorators) — part of the known L1 signal/decorator split
+export type EmrColumnsAlign = 'stretch' | 'start' | 'center' | 'end';
 interface EmrColumnsProps {
-  count: number;                 // input(), default 2 — used when widths is not set
-  widths?: readonly string[];    // input(), optional explicit CSS track sizes, e.g. ['2fr','1fr']
-  gap: string;                   // input(), default '16px'
+  controlId?: string;
+  count: number;                            // default 2 (clamped 1..6; alias: columns)
+  widths?: readonly (number | string)[];    // explicit track sizes, overrides count
+  gap: number | string;                     // default 16 / '16px'
+  align: EmrColumnsAlign;                   // default 'stretch'
+  collapseBelow: number;                    // default 640 (0 disables stacking)
 }
 // content via <ng-content />, no outputs
 ```
@@ -1060,31 +1284,41 @@ interface EmrColumnsProps {
 
 **Need** — Tabular clinical findings (field / value / remarks / notes) recur across assessments and need one aligned four-column row primitive that also degrades gracefully to a stacked, labelled layout on narrow screens.
 
-**Purpose** — Renders one `role="row"` of four `role="cell"` divs (field, value, remarks, notes) as plain strings. It performs no computation, formatting, or clinical value interpretation — `value`/`remarks`/`notes` are opaque display strings supplied by the caller.
+**Purpose** — Renders one `role="row"` with four semantic cells (`role="columnheader"` on heading rows; `role="rowheader"` for `field` and `role="cell"` for `value`, `remarks`, `notes` on data rows). It performs no computation, formatting, or clinical value interpretation — `value`/`remarks`/`notes` and `tone` are caller-supplied.
 
 **API**
 ```ts
-// Signal-based input() (NOT @Input decorators) — part of the known L1 signal/decorator split
 interface EmrFieldValueRowProps {
-  field: string;       // input(), default ''
-  value: string;        // input(), default ''
-  remarks: string;      // input(), default ''
-  notes: string;        // input(), default ''
-  heading: boolean;      // input(), default false
-  placeholder: string;   // input(), default '—'
+  controlId?: string;
+  field: string;                         // default ''
+  value: string | number | null;         // default '' (empty/null/undefined falls back to placeholder when !heading)
+  remarks?: string | null;               // default ''
+  notes?: string | null;                 // default ''
+  heading?: boolean;                     // default false
+  placeholder?: string;                  // default '—'
+  tone?: EmrTone;                        // default 'neutral'
+  size?: 'sm' | 'md' | 'lg';             // default 'md'
+  truncate?: boolean;                    // default false
+  interactive?: boolean;                 // default false
+  readOnly?: boolean;                    // default false
+  ariaLabel?: string;
 }
-// no outputs
+// outputs: activated / intent ({ type: 'rowActivated', id?: string }) when interactive && !readOnly
 ```
 
 **Attributes**
 
 | name | type | default | notes |
 |---|---|---|---|
-| field | `string` | `''` | rendered in the styled "field" cell (`.emr-fvr__field`) |
-| value | `string` | `''` | when empty and not a heading row, falls back to `placeholder` |
-| remarks / notes | `string` | `''` | |
-| heading | `boolean` | `false` | renders the styled column-title row and suppresses the placeholder fallback for `value` |
-| placeholder | `string` | `'—'` | shown in place of an empty `value` on non-heading rows |
+| field | `string` | `''` | rendered in the styled "field" cell (`.emr-fvr__field`, `rowheader` on data rows) |
+| value | `string \| number \| null` | `''` | numeric `0` renders `'0'`; empty/whitespace/null falls back to `placeholder` when `!heading` |
+| remarks / notes | `string \| null` | `''` | secondary/tertiary metadata columns |
+| heading | `boolean` | `false` | renders the styled column-title row (`columnheader`) and suppresses `placeholder` fallback |
+| placeholder | `string` | `'—'` | shown in muted text in place of an empty `value` on non-heading rows |
+| tone | `EmrTone` | `'neutral'` | caller-supplied semantic tint on non-placeholder `value` text (`info \| success \| warning \| danger \| neutral`) |
+| size | `'sm' \| 'md' \| 'lg'` | `'md'` | row density (`36px` / `44px` / `48px` minimum cell height) |
+| truncate | `boolean` | `false` | single-line ellipsis truncation instead of wrapping |
+| interactive / readOnly | `boolean` | `false` | enables click/Enter/Space `activated` & `intent` emission (`readOnly` suppresses emission with `aria-readonly="true"`) |
 
 On narrow screens (`max-width: 767px`) each cell renders its `data-label` (Field/Value/Remarks/Notes) as an inline prefix via `::before`, and the dedicated heading row is hidden.
 
@@ -1107,15 +1341,21 @@ On narrow screens (`max-width: 767px`) each cell renders its `data-label` (Field
 
 **Need** — Dashboards, desk headers, and privacy centres need a compact count/KPI card that opens the backing list when tapped without the UI ever counting, rounding, or picking a severity tone.
 
-**Purpose** — Renders an `EmrStatTileModel` (`key`, `label`, `value`, optional `sub` and `status` badge). When `interactive` is true and not `readOnly`, it renders a `<button type="button">` emitting `{ type: 'statSelected', key }`; otherwise it renders a static `<div role="group">`.
+**Purpose** — Renders an `EmrStatTileModel` (`key`, `label`, `value`, optional `trend`, `sub`, and `status` badge). When `interactive` is true and not `readOnly`/`disabled`/`loading`, it renders a `<button type="button">` emitting `{ type: 'statSelected', key }`; otherwise it renders a static `<div role="group">`.
 
 **API**
 ```ts
 export class EmrStatTileComponent {
   readonly model = input.required<EmrStatTileModel>();
+  readonly tone = input<EmrTone | undefined>(undefined);
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
   readonly interactive = input(true);
+  readonly selected = input(false);
+  readonly loading = input(false);
   readonly readOnly = input(false);
+  readonly disabled = input(false);
   readonly controlId = input<string>();
+  readonly ariaLabel = input<string>();
   readonly intent = output<EmrStatTileIntent>();
 }
 ```
@@ -1124,10 +1364,14 @@ export class EmrStatTileComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `EmrStatTileModel` (required) | — | key, label, value, sub, status, accessibilityLabel |
-| `interactive` | `boolean` | `true` | renders as a button when true and not readOnly |
-| `readOnly` | `boolean` | `false` | renders static group when true |
-| `controlId` | `string \| undefined` | `undefined` | optional DOM id |
+| `model` | `EmrStatTileModel` (required) | — | key, label, value, trend, sub, status, tone, accessibilityLabel |
+| `tone` | `EmrTone` | `model.tone ?? 'neutral'` | surface border accent (`neutral \| info \| success \| warning \| danger`) |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | tile density (`72px` / `88px` / `104px` min-height) |
+| `interactive` | `boolean` | `true` | renders as `<button>` when true and enabled (`aria-pressed` synced to `selected`) |
+| `selected` | `boolean` | `false` | primary highlight border/surface and `aria-pressed` |
+| `loading` | `boolean` | `false` | renders skeleton placeholders with `aria-busy="true"` |
+| `readOnly` / `disabled` | `boolean` | `false` | `readOnly` renders dashed border static group; `disabled` dims and blocks interaction |
+| `controlId` / `ariaLabel` | `string \| undefined` | `undefined` | optional DOM id and accessible name override |
 | `intent` (output) | `OutputEmitterRef<EmrStatTileIntent>` | — | `{ type: 'statSelected', key }` |
 
 **Example**
@@ -1179,9 +1423,9 @@ export class EmrStatTileComponent {
 ### EmrSegmentedControl
 **Layer** L1 · **Selector** `emr-segmented-control` · **Status** stable · **Story** `foundations-building-blocks--choice-and-selection`
 
-**Need** — High-speed 2–5 option clinical toggles (OD/OS/OU, Inpatient/Outpatient/ED, Snellen/LogMAR) need a compact inline segmented control with keyboard navigation.
+**Need** — High-speed 2–5 option clinical toggles (OD/OS/OU, Inpatient/Outpatient/ED, Snellen/LogMAR) need a compact segmented control with full parity, rich option metadata, validation, and keyboard navigation.
 
-**Purpose** — Renders a segmented `radiogroup` over `EmrSegmentedOption[]` (`value`, `label`, optional `disabled`, optional `tone`), supporting ArrowLeft/ArrowRight/Home/End keyboard selection, `readOnly`, and `disabled`, emitting `valueChange`.
+**Purpose** — Renders a segmented `radiogroup` over `EmrSegmentedOption[]` (`value`, `label`, optional `description`, `icon`, `badge`, `tone`, `disabled`, `readOnly`, `ariaLabel`). Supports `size` (`md` | `sm`), `variant` (`default` | `outline` | `soft`), `shape` (`default` | `pill`), `orientation` (`horizontal` | `vertical`), `fullWidth`, `clearable` (`clearLabel`), `allowDeselect`, `required`, `invalid`, `warning`, `error`, `hint`, `labelHidden`, `readOnly`, and `disabled`. Supports `ArrowLeft`/`ArrowRight`/`ArrowUp`/`ArrowDown`/`Home`/`End` roving focus (keeping `readOnly` options arrow-navigable without mutation) and `Space`/`Enter` selection/deselection, emitting `valueChange`, `cleared`, `focused`, and `blurred`.
 
 **Depends on** — L0 tokens only
 **Used by** — `EmrLateralityField` (L2), `EmrVisualAcuityField` (L2), `EmrTypedField` (L2)
@@ -1229,7 +1473,7 @@ export class EmrStatTileComponent {
 
 **Need** — Multi-select checklists (review-of-systems symptoms, surgical prep checks, patient education topics) need a `<fieldset>`/`<legend>` checkbox group rather than a `<select multiple>` list.
 
-**Purpose** — Renders a `<fieldset>` of checkboxes from `EmrOption[]` and `value: readonly string[]`, supporting `orientation`, `hint`, `error`, `required`, `readOnly`, and `disabled`, emitting `valueChange` (`string[]`).
+**Purpose** — Renders a `<fieldset role="group">` of checkboxes from `EmrOption[]` (with optional `group`, `readOnly`, `disabled`, `badge`, `tone`, and `description`) and `value: readonly string[]`, supporting `variant` (`tile` | `inline` | `card` | `chip`), `orientation` (`vertical` | `horizontal` | `grid`), `size` (`md` | `sm`), `labelPlacement`, `showSelectAll`, `exclusiveValues`, `minSelections`, `maxSelections`, `showSelectionCount`, `clearable`, `hint`, `warning`, `error`, `invalid`, `required`, `readOnly`, and `disabled`, emitting `valueChange`, `cleared`, `focused`, and `blurred`.
 
 **Depends on** — L0 tokens only
 **Used by** — `EmrTypedField` (L2 `multiselect` widget)
@@ -1426,7 +1670,7 @@ export class EmrStatTileComponent {
 
 **Need** — Chief complaints, referring clinicians, external facilities, and custom sig phrases need typeahead suggestions from a known list while allowing free-text entry when unlisted.
 
-**Purpose** — Renders a WAI-ARIA `role="combobox"` text input with live local option filtering, grouped option headers, keyboard navigation, free-solo custom value support, and a Clear button.
+**Purpose** — Renders a WAI-ARIA `role="combobox"` text input with `aria-activedescendant` keyboard navigation, ranked/local/remote/none option filtering, `<mark class="emr-match-highlight">` match highlighting, "Best match" cue, grouped option headers, `code`/`badge`/`tone`/`readOnly` metadata, `outline`/`filled`/`subtle` variants, `md`/`sm` sizes, loading/empty/warning/invalid states, free-solo custom value support, and monochrome SVG clear/chevron actions.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` option helpers
 
@@ -1437,7 +1681,7 @@ export class EmrStatTileComponent {
 
 **Need** — Aliases, batch/lot numbers, specimen labels, keywords, and recipient lists need inline multi-chip free-text entry.
 
-**Purpose** — Renders removable tag chips alongside an inline text input supporting Enter/delimiter tokenization, Backspace removal, duplicate prevention, `maxTags`, optional suggestions, and Clear all.
+**Purpose** — Renders removable tag chips alongside an inline text input supporting unified `value`/`tags` binding, Enter/delimiter/paste CSV tokenization, `ArrowLeft`/`ArrowRight`/`Backspace` chip navigation, `lockedTags` protection with monochrome lock icon, `maxTags`/`maxTagLength`, `variant` (`outline`/`filled`/`subtle`), `size` (`md`/`sm`), `chipTone`, ranked & highlighted ARIA suggestion listbox (`Best match` + `<mark>`), `44x44px` hit targets, and Clear all.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` tag helpers
 

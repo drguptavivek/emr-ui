@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { registerL4PrivacyIdentityElements, type EmrConsentCaptureElement, type EmrSharingGrantsElement, type EmrLinkCardsElement, type EmrDraftRecordListElement, type EmrMergeCompareElement, type EmrContactAttemptFormElement, type EmrRightsRequestsElement, type EmrAccessLogElement, type EmrIdentifierCheckPromptElement, type EmrConsentReviewElement } from './l4-privacy-identity.js';
+import { registerL4PrivacyIdentityElements, type EmrConsentCaptureElement, type EmrSharingGrantsElement, type EmrLinkCardsElement, type EmrDraftRecordListElement, type EmrMergeCompareElement, type EmrContactAttemptFormElement, type EmrRightsRequestsElement, type EmrAccessLogElement, type EmrIdentifierCheckPromptElement, type EmrConsentReviewElement, type EmrPrivacyCentreElement } from './l4-privacy-identity.js';
 
 registerL4PrivacyIdentityElements();
 const patient = { name: 'Example', ageLabel: '30 years', sexLabel: 'X', identifiers: [] };
@@ -82,6 +82,62 @@ describe('Lit privacy and identity surfaces', () => {
       yes.click();
       expect(intents).toEqual([]);
     } finally { el.remove(); }
+  });
+
+  it('projects slotted child panels inside emr-privacy-centre and emits section/tile intents', async () => {
+    const el = document.createElement('emr-privacy-centre') as EmrPrivacyCentreElement;
+    el.model = {
+      title: 'Privacy Centre',
+      patient,
+      sections: [
+        { id: 'consent', label: 'Consent' },
+        { id: 'sharing', label: 'Sharing' },
+      ],
+      activeSection: 'consent',
+      tiles: [
+        { key: 'consent', label: 'Consent status', value: 'Active', sub: '2 purposes', status: { label: 'OK', tone: 'success' } },
+      ],
+      contactText: 'Contact DPO',
+    };
+    const slottedPanel = document.createElement('div');
+    slottedPanel.id = 'active-privacy-panel';
+    slottedPanel.textContent = 'Slotted consent review panel';
+    el.append(slottedPanel);
+    const intents = events(el);
+    document.body.append(el);
+    try {
+      await el.updateComplete;
+      const tabpanel = el.shadowRoot!.querySelector('[role="tabpanel"]');
+      expect(tabpanel).not.toBeNull();
+      const slot = tabpanel!.querySelector('slot') as HTMLSlotElement | null;
+      expect(slot).not.toBeNull();
+      expect(slot!.assignedElements()).toEqual([slottedPanel]);
+      button(el, 'Sharing').click();
+      expect(intents).toEqual([{ type: 'sectionSelected', id: 'sharing' }]);
+    } finally {
+      el.remove();
+    }
+  });
+
+  it('guards Log attempt button on canLog in emr-contact-attempt-summary', async () => {
+    const el = document.createElement('emr-contact-attempt-summary') as HTMLElement & {
+      model?: { text: string; canLog?: boolean };
+      canLog: boolean;
+      updateComplete: Promise<boolean>;
+    };
+    el.model = { text: 'Last call 12-10-2026 · 2 attempts' };
+    const intents = events(el);
+    document.body.append(el);
+    try {
+      await el.updateComplete;
+      expect(button(el, 'Log attempt')).toBeUndefined();
+      el.canLog = true;
+      await el.updateComplete;
+      button(el, 'Log attempt').click();
+      expect(intents).toEqual([{ type: 'logAttemptRequested' }]);
+    } finally {
+      el.remove();
+    }
   });
 
 });

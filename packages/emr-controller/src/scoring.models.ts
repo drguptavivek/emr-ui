@@ -27,8 +27,19 @@ export interface EmrScoreResult {
     label: string;
     value: number;
   }[];
+  readonly subscales?: readonly {
+    id?: string;
+    label: string;
+    value: number | string;
+    bandLabel?: string;
+    max?: number;
+  }[];
+  readonly missingItems?: readonly string[];
+  readonly completenessLabel?: string;
   readonly interpretation?: string;
   readonly computedAt?: string; // ISO-8601
+  readonly computedAtLabel?: string;
+  readonly provenance?: string;
 }
 
 export interface EmrScoringPort {

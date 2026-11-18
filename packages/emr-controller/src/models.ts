@@ -5,10 +5,22 @@ export type EmrTone =
   | 'warning'
   | 'danger';
 
+export type EmrBadgeVariant = 'soft' | 'solid' | 'outline';
+export type EmrBadgeSize = 'sm' | 'md';
+export type EmrBadgeShape = 'pill' | 'rounded';
+
 export interface EmrBadge {
   label: string;
   tone: EmrTone;
   assistiveText?: string;
+  variant?: EmrBadgeVariant;
+  size?: EmrBadgeSize;
+  shape?: EmrBadgeShape;
+  icon?: string;
+  dot?: boolean;
+  count?: number;
+  maxCount?: number;
+  showZero?: boolean;
 }
 
 export type ClinicalAssessmentStatus =
@@ -28,8 +40,13 @@ export interface ClinicalAssessmentPresentation {
 export interface EmrOption<Value extends string = string> {
   value: Value;
   label: string;
+  code?: string;
+  keywords?: readonly string[];
   description?: string;
   disabled?: boolean;
+  readOnly?: boolean;
+  badge?: EmrBadge | string;
+  tone?: EmrTone;
   group?: string;
 }
 

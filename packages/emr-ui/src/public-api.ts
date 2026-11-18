@@ -55,6 +55,7 @@ export * from './lib/structures/emr-annotation-list.component';
 export * from './lib/structures/emr-image-template-picker.component';
 export * from './lib/structures/emr-time-axis.component';
 export * from './lib/structures/emr-data-table.component';
+export * from './lib/structures/emr-workstation-containers.component';
 
 // ---------------------------------------------------------------------
 // L4 domain
@@ -95,6 +96,7 @@ export * from './lib/domain/emr-work-queue.component';
 // L5 recipes (data only)
 // ---------------------------------------------------------------------
 export * from './lib/recipes/anatomy/index';
+export * from './lib/recipes/clinical-schemas/index';
 
 // ---------------------------------------------------------------------
 // L6 authoring
@@ -105,6 +107,7 @@ export * from './lib/authoring/emr-validation-rule-editor.component';
 export * from './lib/authoring/emr-field-library-picker.component';
 export * from './lib/authoring/emr-template-composer.component';
 export * from './lib/authoring/emr-template-preview.component';
+export * from './lib/authoring/emr-visual-builders.component';
 
 // L4 consent and privacy (shared contracts: emr-controller consent.models / privacy.models)
 export * from './lib/domain/emr-consent-capture.component';
@@ -132,3 +135,9 @@ export * from './lib/domain/emr-records-and-charts.component';
 export * from './lib/domain/emr-mobile-and-web-shell.component';
 export * from './lib/domain/emr-encounter-surfaces.component';
 export * from './lib/domain/emr-clinical-note-workspace.component';
+export * from './lib/domain/emr-ophthalmology-glaucoma-motility.component';
+export * from './lib/domain/emr-ophthalmology-cataract-retina-cornea.component';
+export * from './lib/domain/emr-hospital-operations.component';
+export * from './lib/domain/emr-acute-lab-perioperative.component';
+export * from './lib/domain/emr-maternal-peds-specialty-abdm.component';
+

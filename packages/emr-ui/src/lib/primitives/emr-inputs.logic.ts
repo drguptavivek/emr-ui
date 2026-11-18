@@ -150,6 +150,57 @@ export interface StepNumberOptions {
   readonly precision?: number;
 }
 
+export function resolveQuantityStep(options: {
+  readonly mode?: 'decimal' | 'integer';
+  readonly precision?: number;
+  readonly step?: number;
+} = {}): number {
+  const { mode = 'decimal', precision, step } = options;
+  if (typeof step === 'number' && Number.isFinite(step) && step > 0) {
+    return mode === 'integer' ? Math.max(1, Math.round(step)) : step;
+  }
+  if (mode === 'integer' || precision === 0) return 1;
+  if (typeof precision === 'number' && Number.isFinite(precision) && precision > 0) {
+    return Number((10 ** -Math.min(10, Math.floor(precision))).toFixed(Math.min(10, Math.floor(precision))));
+  }
+  return 1;
+}
+
+export function sanitizeQuantityText(raw: string, mode: 'decimal' | 'integer'): string {
+  const noSpaces = raw.replace(/[\s\u00A0\u202F]+/g, '');
+  const normalized =
+    mode === 'decimal' && !noSpaces.includes('.') && noSpaces.includes(',')
+      ? noSpaces.replace(',', '.')
+      : noSpaces;
+  let out = '';
+  let seenDot = false;
+  for (let i = 0; i < normalized.length; i += 1) {
+    const ch = normalized[i];
+    if (ch >= '0' && ch <= '9') {
+      out += ch;
+    } else if (ch === '-' && out.length === 0) {
+      out += ch;
+    } else if (ch === '.' && mode === 'decimal' && !seenDot) {
+      out += ch;
+      seenDot = true;
+    }
+  }
+  return out;
+}
+
+export function parseQuantityDraft(
+  raw: string,
+  mode: 'decimal' | 'integer',
+): number | null | 'incomplete' {
+  const clean = sanitizeQuantityText(raw.trim(), mode);
+  if (clean === '') return null;
+  if (clean === '-' || clean === '.' || clean === '-.') return 'incomplete';
+  if (mode === 'decimal' && clean.endsWith('.')) return 'incomplete';
+  const n = Number(clean);
+  if (!Number.isFinite(n)) return 'incomplete';
+  return mode === 'integer' ? Math.trunc(n) : n;
+}
+
 /**
  * Computes the next stepped numeric value with floating-point drift protection and min/max clamping.
  */
@@ -159,8 +210,7 @@ export function stepNumberValue(
   options: StepNumberOptions = {},
 ): number {
   const isInteger = options.mode === 'integer' || options.precision === 0;
-  const rawStep = options.step !== undefined && options.step > 0 ? options.step : isInteger ? 1 : 1;
-  const effectiveStep = isInteger ? Math.max(1, Math.round(rawStep)) : rawStep;
+  const effectiveStep = resolveQuantityStep(options);
   const base =
     current !== null && current !== undefined && Number.isFinite(current)
       ? current
@@ -203,4 +253,213 @@ export function deriveAvatarInitials(name: string, explicitInitials?: string): s
   if (parts.length === 0) return '?';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0] ?? ''}${parts[parts.length - 1][0] ?? ''}`.toUpperCase();
+}
+
+export function sanitizeTimeText(raw: string, hourCycle: '24' | '12' = '24'): string {
+  return hourCycle === '12' ? raw.replace(/[^\d:. aApPmM]/g, '') : raw.replace(/[^\d:. ]/g, '');
+}
+
+export function parseTimeText(
+  raw: string,
+  options: { readonly precision?: 'minute' | 'second'; readonly hourCycle?: '24' | '12' } = {},
+): { readonly kind: 'empty' } | { readonly kind: 'valid'; readonly value: string } | { readonly kind: 'draft' } {
+  const { precision = 'minute', hourCycle = '24' } = options;
+  const trimmed = raw.trim();
+  if (!trimmed) return { kind: 'empty' };
+
+  const m12 = trimmed.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?\s*([aApP]\.?[mM]\.?)$/);
+  if (m12) {
+    let hh = Number(m12[1]);
+    const mm = Number(m12[2]);
+    const ss = m12[3] !== undefined ? Number(m12[3]) : 0;
+    const isPm = m12[4]!.toLowerCase().startsWith('p');
+    if (hh < 1 || hh > 12 || mm > 59 || ss > 59) return { kind: 'draft' };
+    if (hh === 12) hh = isPm ? 12 : 0;
+    else if (isPm) hh += 12;
+    const base = `${pad2(hh)}:${pad2(mm)}`;
+    return { kind: 'valid', value: precision === 'second' ? `${base}:${pad2(ss)}` : base };
+  }
+
+  if (hourCycle === '12') return { kind: 'draft' };
+
+  const m24 = trimmed.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?$/);
+  if (!m24) return { kind: 'draft' };
+  const hh = Number(m24[1]);
+  const mm = Number(m24[2]);
+  const ss = m24[3] !== undefined ? Number(m24[3]) : 0;
+  if (hh > 23 || mm > 59 || ss > 59) return { kind: 'draft' };
+  if (precision === 'second' && m24[3] === undefined) {
+    return { kind: 'valid', value: `${pad2(hh)}:${pad2(mm)}:00` };
+  }
+  const base = `${pad2(hh)}:${pad2(mm)}`;
+  return { kind: 'valid', value: precision === 'second' ? `${base}:${pad2(ss)}` : base };
+}
+
+export function formatTimeDisplay(
+  value: string | null | undefined,
+  options: { readonly precision?: 'minute' | 'second'; readonly hourCycle?: '24' | '12' } = {},
+): string {
+  const { precision = 'minute', hourCycle = '24' } = options;
+  if (!value) return '';
+  const m = value.trim().match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if (!m) return value;
+  const hh24 = Number(m[1]);
+  const mm = m[2]!;
+  const ss = m[3] ?? '00';
+  if (hourCycle === '12') {
+    const period = hh24 >= 12 ? 'PM' : 'AM';
+    const hh12 = hh24 % 12 === 0 ? 12 : hh24 % 12;
+    const base = `${pad2(hh12)}:${mm}`;
+    return precision === 'second' ? `${base}:${ss} ${period}` : `${base} ${period}`;
+  }
+  const base = `${pad2(hh24)}:${mm}`;
+  return precision === 'second' ? `${base}:${ss}` : base;
+}
+
+export function isTimeOutOfBounds(value: string | null | undefined, min?: string, max?: string): boolean {
+  const norm = (v?: string | null) => {
+    if (!v) return null;
+    const m = v.trim().match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    return m ? `${m[1]}:${m[2]}:${m[3] ?? '00'}` : null;
+  };
+  const nVal = norm(value);
+  if (!nVal) return false;
+  const nMin = norm(min);
+  const nMax = norm(max);
+  if (nMin && nVal < nMin) return true;
+  if (nMax && nVal > nMax) return true;
+  return false;
+}
+
+export function resolveTimePlaceholder(
+  precision: 'minute' | 'second' = 'minute',
+  hourCycle: '24' | '12' = '24',
+  explicit?: string,
+): string {
+  if (explicit && explicit.trim()) return explicit;
+  if (hourCycle === '12') return precision === 'second' ? 'hh:mm:ss AM' : 'hh:mm AM';
+  return precision === 'second' ? 'hh:mm:ss' : 'hh:mm';
+}
+
+function isValidYmdUi(y: number, m: number, d: number): boolean {
+  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) return false;
+  if (y < 1 || y > 9999 || m < 1 || m > 12 || d < 1 || d > 31) return false;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+
+export function sanitizeDateDisplayText(
+  raw: string,
+  format: 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'mm/dd/yyyy' = 'dd-mm-yyyy',
+): string {
+  const sep = format.includes('/') ? '/' : '-';
+  return raw.replace(/[^\d/-]/g, '').replace(/[/-]/g, sep);
+}
+
+export function formatIsoDateDisplay(
+  isoDate: string | null | undefined,
+  format: 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'mm/dd/yyyy' = 'dd-mm-yyyy',
+): string {
+  if (!isoDate) return '';
+  const m = isoDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return '';
+  const [, yyyy, mm, dd] = m;
+  if (format === 'dd/mm/yyyy') return `${dd}/${mm}/${yyyy}`;
+  if (format === 'mm/dd/yyyy') return `${mm}/${dd}/${yyyy}`;
+  if (format === 'yyyy-mm-dd') return `${yyyy}-${mm}-${dd}`;
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+export function parseDateDisplayText(
+  raw: string,
+  format: 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'mm/dd/yyyy' = 'dd-mm-yyyy',
+): { readonly kind: 'empty' } | { readonly kind: 'valid'; readonly value: string } | { readonly kind: 'draft' } {
+  const trimmed = raw.trim();
+  if (!trimmed) return { kind: 'empty' };
+  const parts = trimmed.split(/[/-]/);
+  if (parts.length !== 3 || parts.some((p) => !/^\d+$/.test(p))) return { kind: 'draft' };
+  let y: number;
+  let m: number;
+  let d: number;
+  if (format === 'yyyy-mm-dd') {
+    if (parts[0]!.length !== 4) return { kind: 'draft' };
+    y = Number(parts[0]);
+    m = Number(parts[1]);
+    d = Number(parts[2]);
+  } else if (format === 'mm/dd/yyyy') {
+    if (parts[2]!.length !== 4) return { kind: 'draft' };
+    m = Number(parts[0]);
+    d = Number(parts[1]);
+    y = Number(parts[2]);
+  } else {
+    if (parts[2]!.length !== 4) return { kind: 'draft' };
+    d = Number(parts[0]);
+    m = Number(parts[1]);
+    y = Number(parts[2]);
+  }
+  if (!isValidYmdUi(y, m, d)) return { kind: 'draft' };
+  return { kind: 'valid', value: `${pad4(y)}-${pad2(m)}-${pad2(d)}` };
+}
+
+export function splitDateTimeParts(
+  value: string | null | undefined,
+  timePrecision: 'minute' | 'second' = 'minute',
+): { readonly date: string | null; readonly time: string | null } {
+  if (!value) return { date: null, time: null };
+  const local = toLocalDateTimeInputValue(value, timePrecision);
+  if (!local) return { date: null, time: null };
+  const [date, time] = local.split('T');
+  return { date: date ?? null, time: time ?? null };
+}
+
+export function joinDateTimeParts(
+  dateIso: string | null | undefined,
+  time24: string | null | undefined,
+  wireFormat: 'utc' | 'local' = 'utc',
+  timePrecision: 'minute' | 'second' = 'minute',
+): string | null {
+  if (!dateIso || !time24) return null;
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateIso.trim());
+  const tm = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(time24.trim());
+  if (!dm || !tm) return null;
+  const sec = tm[3] ?? '00';
+  const local =
+    timePrecision === 'second'
+      ? `${dm[1]}-${dm[2]}-${dm[3]}T${tm[1]}:${tm[2]}:${sec}`
+      : `${dm[1]}-${dm[2]}-${dm[3]}T${tm[1]}:${tm[2]}`;
+  return wireFormat === 'local' ? local : localDateTimeToUtcIso(local);
+}
+
+export function isDateTimeOutOfBounds(
+  value: string | null | undefined,
+  min?: string,
+  max?: string,
+  wireFormat: 'utc' | 'local' = 'utc',
+): boolean {
+  if (!value || (!min && !max)) return false;
+  if (wireFormat === 'utc') {
+    const t = Date.parse(value);
+    if (Number.isNaN(t)) return false;
+    if (min) {
+      const tMin = Date.parse(min);
+      if (!Number.isNaN(tMin) && t < tMin) return true;
+    }
+    if (max) {
+      const tMax = Date.parse(max);
+      if (!Number.isNaN(tMax) && t > tMax) return true;
+    }
+    return false;
+  }
+  const norm = (v?: string) => {
+    if (!v) return null;
+    const m = v.trim().match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+    return m ? `${m[1]}T${m[2]}:${m[3]}:${m[4] ?? '00'}` : null;
+  };
+  const nVal = norm(value);
+  if (!nVal) return false;
+  const nMin = norm(min);
+  const nMax = norm(max);
+  if (nMin && nVal < nMin) return true;
+  if (nMax && nVal > nMax) return true;
+  return false;
 }

@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  booleanAttribute,
   computed,
   input,
   output,
@@ -40,8 +41,10 @@ const keyOf = (c: EmrCodedValue): string => `${c.system}|${c.code}`;
     @let m = model();
     <emr-field-frame
       [label]="label()"
+      [labelHidden]="labelHidden()"
       [controlId]="resolvedId()"
       [required]="required()"
+      [readOnly]="effectiveReadOnly()"
       [hint]="m.definition.presentation.hint"
       [messages]="m.messages"
     >
@@ -62,7 +65,7 @@ const keyOf = (c: EmrCodedValue): string => `${c.system}|${c.code}`;
                     <span class="ci__system">{{ chip.system }}</span> {{ chip.concept.code }}
                   </span>
                 </span>
-                @if (!m.readOnly) {
+                @if (!effectiveReadOnly()) {
                   <button
                     class="ci__remove"
                     type="button"
@@ -81,11 +84,11 @@ const keyOf = (c: EmrCodedValue): string => `${c.system}|${c.code}`;
               </li>
             }
           </ul>
-        } @else if (m.readOnly && !m.status) {
+        } @else if (effectiveReadOnly() && !m.status) {
           <p class="ci__none">Not supplied</p>
         }
 
-        @if (!m.readOnly) {
+        @if (!effectiveReadOnly()) {
           <emr-search-select
             class="ci__search"
             [controlId]="resolvedId()"
@@ -97,6 +100,7 @@ const keyOf = (c: EmrCodedValue): string => `${c.system}|${c.code}`;
             [selected]="selectedOptions()"
             [open]="m.open && (m.options.length > 0 || m.loading)"
             [loading]="m.loading"
+            [invalid]="hasError()"
             (queryChanged)="intent.emit({ type: 'queryChangeRequested', query: $event })"
             (searchRequested)="search()"
             (openRequested)="intent.emit({ type: 'openRequested' })"
@@ -105,16 +109,16 @@ const keyOf = (c: EmrCodedValue): string => `${c.system}|${c.code}`;
           />
         }
 
-        @if (m.open && !m.loading && !m.options.length && !m.readOnly) {
+        @if (m.open && !m.loading && !m.options.length && !effectiveReadOnly()) {
           <p class="ci__empty" role="status">{{ m.emptyMessage }}</p>
         }
 
-        @if (m.status || (statusOptions().length && !m.readOnly)) {
+        @if (m.status || (statusOptions().length && !effectiveReadOnly())) {
           <div class="ci__status">
             @if (m.status) {
               <span [class]="'emr-badge ' + statusTone()" role="status">{{ statusLabel() }}</span>
             }
-            @if (statusOptions().length && !m.readOnly) {
+            @if (statusOptions().length && !effectiveReadOnly()) {
               <select
                 #statusSelect
                 class="emr-select ci__status-select"
@@ -130,6 +134,16 @@ const keyOf = (c: EmrCodedValue): string => `${c.system}|${c.code}`;
                   </option>
                 }
               </select>
+            }
+            @if (m.status && !effectiveReadOnly()) {
+              <button
+                type="button"
+                class="emr-button emr-button--ghost ci__clear-status"
+                [attr.aria-label]="'Clear status: ' + label()"
+                (click)="intent.emit({ type: 'statusChangeRequested', status: undefined })"
+              >
+                Clear status
+              </button>
             }
           </div>
         }
@@ -242,10 +256,21 @@ export class EmrCodedInputComponent implements AfterViewChecked {
   readonly model = input.required<CodedInputViewModel>();
   readonly headingId = input<string>();
   readonly controlId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
   readonly intent = output<CodedInputIntent>();
 
   private readonly fallbackId = `emr-coded-input-${++nextCodedInputId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  readonly effectiveReadOnly = computed(
+    () =>
+      this.readOnly() ||
+      Boolean(this.model().readOnly) ||
+      Boolean(this.model().definition.contract.readOnly),
+  );
+  readonly hasError = computed(() =>
+    this.model().messages.some((m) => m.severity === 'error'),
+  );
 
   readonly chips = computed<readonly CodedChip[]>(() => {
     const m = this.model();
@@ -330,7 +355,7 @@ export class EmrCodedInputComponent implements AfterViewChecked {
 
   statusChanged(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    if (this.model().readOnly) {
+    if (this.effectiveReadOnly()) {
       this.syncStatusSelect();
       return;
     }

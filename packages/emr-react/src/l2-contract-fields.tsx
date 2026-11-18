@@ -10,6 +10,7 @@ import type {
   EmrAttachmentRef,
   EmrDurationUnit,
   EmrDurationValue,
+  EmrFieldDefinition,
   EmrPairedFieldValue,
   EmrPartialDate,
   EmrRangeValue,
@@ -54,6 +55,7 @@ export type {
   EmrAttachmentRef,
   EmrDurationUnit,
   EmrDurationValue,
+  EmrFieldDefinition,
   EmrPairedFieldValue,
   EmrRangeValue,
   EmrSignaturePoint,
@@ -84,32 +86,70 @@ function hasErrorMessage(messages?: readonly { readonly severity: string }[]): b
 
 export function EmrScaleField({
   model,
+  definition,
   controlId,
+  headingId,
+  labelHidden = false,
+  layout = 'vertical',
+  showMetadata = true,
+  readOnly = false,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: ScaleFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: 'vertical' | 'horizontal' | 'inline';
+  showMetadata?: boolean;
+  readOnly?: boolean;
   onIntent: (intent: ScaleFieldIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
+  const t = useEmrTheme();
   const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const anchors = buildScaleAnchors(model.min, model.max, model.anchors);
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const resolvedVariant = model.variant ?? (resolvedDef?.presentation?.widget === 'vas' ? 'vas' : 'likert');
+  const locked = Boolean(readOnly || model.readOnly || resolvedDef?.contract?.readOnly);
+  const resolvedRequired = Boolean(
+    model.required || (resolvedDef?.contract?.cardinality?.min !== undefined && resolvedDef.contract.cardinality.min >= 1),
+  );
+  const anchors = buildScaleAnchors(model.min, model.max, model.anchors, resolvedVariant);
   const resolvedTone = (model.value !== null ? model.optionTones?.[model.value] : undefined) ?? model.tone;
+  const firstError = model.messages?.find(m => m.severity === 'error')?.message;
+  const firstWarning = model.messages?.find(m => m.severity === 'warning')?.message;
+  const hasFooter = Boolean(model.hint || model.messages?.length);
+  const controlDescribedBy = hasFooter ? `${id}-message` : undefined;
+  const controlLabelledBy = headingId || `${id}-label`;
 
   return (
     <EmrFieldFrame
-      label={model.label}
-      labelHidden
+      label={resolvedLabel}
+      labelHidden={labelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
+      layout={layout}
+      showMetadata={showMetadata}
+      unit={model.unit ?? resolvedDef?.presentation?.unitDisplay}
+      required={resolvedRequired}
+      readOnly={locked}
       hint={model.hint}
       messages={model.messages}
     >
-      <View nativeID={id} style={styles.fieldStack}>
-        {model.variant === 'vas' ? (
+      <View nativeID={`${id}-control`} style={styles.fieldStack}>
+        {resolvedVariant === 'vas' ? (
           <EmrVas
-            label={model.label}
+            controlId={`${id}-vas`}
+            label={resolvedLabel}
+            labelHidden
+            ariaLabelledBy={controlLabelledBy}
+            ariaDescribedBy={controlDescribedBy}
             min={model.min}
             max={model.max}
             step={model.step}
@@ -119,40 +159,63 @@ export function EmrScaleField({
             anchors={anchors}
             value={model.value}
             tone={resolvedTone}
-            required={model.required}
-            readOnly={model.readOnly}
-            onValueChange={v => onIntent({ type: 'valueChangeRequested', value: v })}
+            required={resolvedRequired}
+            readOnly={locked}
+            error={firstError}
+            warning={!firstError ? firstWarning : undefined}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onValueChange={v => {
+              if (!locked) onIntent({ type: 'valueChangeRequested', value: v });
+            }}
           />
         ) : (
           <EmrLikert
-            label={model.label}
+            controlId={`${id}-likert`}
+            label={resolvedLabel}
+            labelHidden
+            ariaLabelledBy={controlLabelledBy}
+            ariaDescribedBy={controlDescribedBy}
             min={model.min}
             max={model.max}
+            step={model.step}
             anchors={anchors}
             value={model.value}
             tone={resolvedTone}
-            required={model.required}
-            readOnly={model.readOnly}
-            onValueChange={v => onIntent({ type: 'valueChangeRequested', value: v })}
+            optionTones={model.optionTones}
+            required={resolvedRequired}
+            readOnly={locked}
+            error={firstError}
+            warning={!firstError ? firstWarning : undefined}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onValueChange={v => {
+              if (!locked) onIntent({ type: 'valueChangeRequested', value: v });
+            }}
           />
         )}
-        {model.value !== null && !model.readOnly ? (
+        {model.value !== null && !locked && model.clearable !== false ? (
           <View style={styles.inlineActions}>
             <EmrButton
-              small
               variant="ghost"
-              label={labels.clear}
-              accessibilityLabel={`${labels.clear} ${model.label}`}
+              accessibilityLabel={`${labels.clear} ${resolvedLabel}`}
               onPress={() => onIntent({ type: 'valueChangeRequested', value: null })}
-            />
+            >
+              <SvgIcon name="close" size={14} color={t.text} />
+              <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                {labels.clear}
+              </Text>
+            </EmrButton>
           </View>
         ) : null}
         <AssessmentStatusStrip
-          fieldLabel={model.label}
+          fieldLabel={resolvedLabel}
           status={model.status}
           statusOptions={model.statusOptions}
-          readOnly={model.readOnly}
-          onStatusChange={status => onIntent({ type: 'statusChangeRequested', status })}
+          readOnly={locked}
+          onStatusChange={status => {
+            if (!locked) onIntent({ type: 'statusChangeRequested', status });
+          }}
         />
       </View>
     </EmrFieldFrame>
@@ -164,37 +227,71 @@ export function EmrScaleField({
 // ---------------------------------------------------------------------------
 
 const PARTIAL_PRECISION_OPTIONS = [
+  { value: 'year', label: 'Year' },
+  { value: 'month', label: 'Year & month' },
   { value: 'day', label: 'Full date' },
-  { value: 'month', label: 'Month & year' },
-  { value: 'year', label: 'Year only' },
 ] as const;
 
 export function EmrPartialDateField({
   model,
+  definition,
   controlId,
+  headingId,
+  labelHidden = false,
+  layout = 'vertical',
+  showMetadata = true,
+  readOnly = false,
+  defaultPrecision = 'day',
+  displayFormat,
+  clearable = true,
+  size = 'md',
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: PartialDateFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: 'vertical' | 'horizontal' | 'inline';
+  showMetadata?: boolean;
+  readOnly?: boolean;
+  defaultPrecision?: EmrPartialDate['precision'];
+  displayFormat?: 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'mm/dd/yyyy';
+  clearable?: boolean;
+  size?: 'sm' | 'md' | 'lg';
   onIntent: (intent: PartialDateFieldIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
+  const t = useEmrTheme();
   const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const [draftPrecision, setDraftPrecision] = useState<EmrPartialDate['precision']>(model.value?.precision ?? 'day');
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const locked = Boolean(readOnly || model.readOnly || resolvedDef?.contract?.readOnly);
+  const resolvedRequired = Boolean(
+    model.required || (resolvedDef?.contract?.cardinality?.min !== undefined && resolvedDef.contract.cardinality.min >= 1),
+  );
+  const initialPrecision = model.value?.precision ?? model.defaultPrecision ?? defaultPrecision;
+  const [draftPrecision, setDraftPrecision] = useState<EmrPartialDate['precision']>(initialPrecision);
 
   useEffect(() => {
-    if (model.value?.precision) {
-      setDraftPrecision(model.value.precision);
-    }
-  }, [model.value?.precision]);
+    setDraftPrecision(model.value?.precision ?? model.defaultPrecision ?? defaultPrecision);
+  }, [model.value?.precision, model.defaultPrecision, defaultPrecision]);
 
   const activePrecision = model.value?.precision ?? draftPrecision;
-  const format = resolveDateFormat(labels.dateFormat, activePrecision);
+  const baseFormat = displayFormat ?? model.displayFormat ?? labels.dateFormat;
+  const format = resolveDateFormat(baseFormat, activePrecision);
   const invalid = hasErrorMessage(model.messages);
+  const firstWarning = model.messages?.find(m => m.severity === 'warning')?.message;
+  const hasFooter = Boolean(model.hint || model.messages?.length);
+  const resolvedClearable = model.clearable ?? clearable;
 
   const handlePrecisionChange = (nextRaw: string | null) => {
-    if (!nextRaw) return;
+    if (locked || !nextRaw) return;
     const next = nextRaw as EmrPartialDate['precision'];
     setDraftPrecision(next);
     onIntent({ type: 'precisionChangeRequested', precision: next });
@@ -206,47 +303,74 @@ export function EmrPartialDateField({
 
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={resolvedLabel}
+      labelHidden={labelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
+      layout={layout}
+      showMetadata={showMetadata}
+      required={resolvedRequired}
+      readOnly={locked}
       hint={model.hint}
       messages={model.messages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={i => {
+        if (!locked && i.type === 'statusChangeRequested') {
+          onIntent({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
       <View style={styles.fieldStack}>
         <EmrSegmentedControl
-          ariaLabel={`${model.label} precision`}
+          ariaLabel={`${resolvedLabel} precision`}
           options={PARTIAL_PRECISION_OPTIONS}
           value={activePrecision}
-          readOnly={model.readOnly}
+          readOnly={locked}
           onValueChange={handlePrecisionChange}
         />
-        <EmrTypedText
-          key={format}
-          id={id}
-          aria-labelledby={`${id}-label`}
-          aria-label={model.label}
-          mode={format}
-          placeholder={format}
-          min={model.min}
-          max={model.max}
-          value={model.value?.value ?? null}
-          invalid={invalid}
-          readOnly={Boolean(model.readOnly)}
-          editable={!model.readOnly}
-          onValueChange={iso =>
-            onIntent({
-              type: 'valueChangeRequested',
-              value: iso ? { value: iso, precision: activePrecision } : null,
-            })
-          }
-        />
-        <AssessmentStatusStrip
-          fieldLabel={model.label}
-          status={model.status}
-          statusOptions={model.statusOptions}
-          readOnly={model.readOnly}
-          onStatusChange={status => onIntent({ type: 'statusChangeRequested', status })}
-        />
+        <View style={styles.inlineActions}>
+          <EmrTypedText
+            key={format}
+            id={`${id}-control`}
+            aria-labelledby={headingId || `${id}-label`}
+            aria-describedby={hasFooter ? `${id}-message` : undefined}
+            aria-required={resolvedRequired || undefined}
+            mode={format}
+            placeholder={format}
+            min={model.min}
+            max={model.max}
+            value={model.value?.value ?? null}
+            invalid={invalid}
+            clearable={resolvedClearable}
+            size={model.size ?? size}
+            readOnly={locked}
+            editable={!locked}
+            style={!invalid && firstWarning ? { borderColor: undefined } : undefined}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onValueChange={iso => {
+              if (!locked) {
+                onIntent({
+                  type: 'valueChangeRequested',
+                  value: iso ? { value: iso, precision: activePrecision } : null,
+                });
+              }
+            }}
+          />
+          {model.value !== null && !locked && resolvedClearable ? (
+            <EmrButton
+              variant="ghost"
+              accessibilityLabel={`${labels.clear} ${resolvedLabel}`}
+              onPress={() => onIntent({ type: 'valueChangeRequested', value: null })}
+            >
+              <SvgIcon name="close" size={14} color={t.text} />
+              <Text style={{ color: t.text, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                {labels.clear}
+              </Text>
+            </EmrButton>
+          ) : null}
+        </View>
       </View>
     </EmrFieldFrame>
   );
@@ -258,32 +382,78 @@ export function EmrPartialDateField({
 
 export function EmrAttachmentField({
   model,
+  definition,
   controlId,
+  headingId: _headingId,
+  labelHidden = false,
+  layout,
+  showMetadata = true,
+  readOnly = false,
   onIntent,
   onNativeFilesSelected,
+  onFocus,
+  onBlur,
 }: {
   model: AttachmentFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: 'vertical' | 'horizontal' | 'inline';
+  showMetadata?: boolean;
+  readOnly?: boolean;
   onIntent: (intent: AttachmentFieldIntent) => void;
   onNativeFilesSelected?: (files: readonly File[]) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const atCapacity = model.maxItems !== undefined && model.items.length >= model.maxItems;
-  const invalid = hasErrorMessage(model.messages);
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const locked = Boolean(readOnly || model.readOnly || resolvedDef?.contract?.readOnly);
+  const resolvedRequired = Boolean(
+    model.required || (resolvedDef?.contract?.cardinality?.min !== undefined && resolvedDef.contract.cardinality.min >= 1),
+  );
+  const maxCard = resolvedDef?.contract?.cardinality?.max;
+  const effectiveMaxItems = model.maxItems ?? (typeof maxCard === 'number' ? maxCard : undefined);
+  const effectiveMultiple = model.multiple ?? effectiveMaxItems !== 1;
+  const atCapacity = effectiveMaxItems !== undefined && model.items.length >= effectiveMaxItems;
+  const primaryError = model.messages?.find(m => m.severity === 'error')?.message;
+  const invalid = Boolean(primaryError);
 
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={resolvedLabel}
+      labelHidden={labelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
+      layout={layout ?? model.layout ?? 'vertical'}
+      showMetadata={showMetadata || Boolean(model.showMetadata)}
+      required={resolvedRequired}
+      readOnly={locked}
       hint={model.hint}
       messages={model.messages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={i => {
+        if (!locked && i.type === 'statusChangeRequested') {
+          onIntent({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
-      <View style={styles.fieldStack}>
+      <View
+        style={styles.fieldStack}
+        {...(Platform.OS === 'web'
+          ? ({
+              onFocus: () => onFocus?.(),
+              onBlur: () => onBlur?.(),
+            } as Record<string, unknown>)
+          : {})}
+      >
         {model.items.length > 0 ? (
-          <View role="list" aria-label={`${model.label} attachments`} style={styles.attachmentList}>
+          <View role="list" aria-label={`${resolvedLabel} attachments`} style={styles.attachmentList}>
             {model.items.map(item => {
               const metaParts = [item.contentType, formatByteSize(item.sizeBytes), item.uploadedAt].filter(Boolean);
               return (
@@ -294,7 +464,7 @@ export function EmrAttachmentField({
                 >
                   <Pressable
                     role="button"
-                    aria-label={item.title}
+                    aria-label={`Open ${item.title}`}
                     onPress={() => onIntent({ type: 'itemSelected', id: item.id })}
                     style={({ pressed, focused }: PressState) => [
                       styles.attachmentBody,
@@ -308,76 +478,88 @@ export function EmrAttachmentField({
                     <SvgIcon name="paperclip" size={16} color={t.primary} />
                     <View style={styles.flex}>
                       <Text
-                        numberOfLines={1}
                         style={{
                           color: t.text,
                           fontSize: t.textSm,
                           fontWeight: fontWeight(t.weightBold),
                           fontFamily: fontFamily(t),
+                          flexShrink: 1,
                         }}
                       >
                         {item.title}
                       </Text>
                       {metaParts.length > 0 ? (
-                        <Text numberOfLines={1} style={{ color: t.textMuted, fontSize: t.text2xs, fontFamily: fontFamily(t) }}>
+                        <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontFamily: fontFamily(t) }}>
                           {metaParts.join(' · ')}
                         </Text>
                       ) : null}
                     </View>
                     {item.statusBadge ? <EmrBadgeView badge={item.statusBadge} /> : null}
                   </Pressable>
-                  {!model.readOnly ? (
+                  {!locked ? (
                     <Pressable
                       role="button"
                       aria-label={`Remove ${item.title}`}
-                      onPress={() => onIntent({ type: 'itemRemoveRequested', id: item.id })}
+                      onPress={() => {
+                        if (!locked) onIntent({ type: 'itemRemoveRequested', id: item.id });
+                      }}
                       style={({ pressed, focused }: PressState) => [
                         styles.attachmentRemove,
                         focusRing(t, focused),
                         {
                           minWidth: 44,
                           minHeight: Math.max(44, t.controlHeight),
+                          paddingHorizontal: 10,
+                          gap: 6,
+                          flexDirection: 'row',
                           borderLeftColor: t.border,
                           backgroundColor: pressed ? t.dangerSoft : 'transparent',
                         },
                       ]}
                     >
-                      <SvgIcon name="close" size={16} color={t.danger} />
+                      <SvgIcon name="trash" size={14} color={t.danger} />
+                      <Text style={{ color: t.danger, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                        Remove
+                      </Text>
                     </Pressable>
                   ) : null}
                 </View>
               );
             })}
           </View>
-        ) : model.readOnly && !model.status ? (
-          <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: fontFamily(t) }}>No attachments recorded</Text>
+        ) : locked && !model.status ? (
+          <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: fontFamily(t) }}>No attachments recorded.</Text>
         ) : null}
 
-        {!model.readOnly ? (
-          <View style={styles.captureRow}>
-            <View style={styles.flex}>
-              <EmrFileTrigger
-                controlId={id}
-                accept={model.accept}
-                multiple={model.multiple}
-                disabled={atCapacity}
-                error={invalid ? undefined : undefined}
-                dropHint={
-                  model.maxItems !== undefined
-                    ? `${model.items.length} / ${model.maxItems} attached`
-                    : 'Drag & drop or choose file'
-                }
-                onFilesSelected={files => onIntent({ type: 'filesSelected', files })}
-                onNativeFilesSelected={onNativeFilesSelected}
-              />
-            </View>
+        {!locked ? (
+          <View style={styles.fieldStack}>
+            <EmrFileTrigger
+              controlId={`${id}-trigger`}
+              accept={model.accept}
+              multiple={effectiveMultiple}
+              disabled={atCapacity}
+              error={invalid ? primaryError : undefined}
+              dropHint={
+                effectiveMaxItems !== undefined
+                  ? `${model.items.length} of ${effectiveMaxItems} attached`
+                  : 'Drag & drop or choose files'
+              }
+              onFilesSelected={files => {
+                if (!locked && !atCapacity) onIntent({ type: 'filesSelected', files });
+              }}
+              onNativeFilesSelected={files => {
+                if (!locked && !atCapacity) onNativeFilesSelected?.(files);
+              }}
+            />
             {model.allowCamera ? (
               <View style={styles.inlineActions}>
                 <EmrButton
                   variant="outline"
                   disabled={atCapacity}
-                  accessibilityLabel={`Capture photo for ${model.label}`}
-                  onPress={() => onIntent({ type: 'captureRequested', mode: 'camera' })}
+                  accessibilityLabel={`Capture photo for ${resolvedLabel}`}
+                  onPress={() => {
+                    if (!locked && !atCapacity) onIntent({ type: 'captureRequested', mode: 'camera' });
+                  }}
                 >
                   <SvgIcon name="camera" size={16} color={t.primary} />
                   <Text style={{ color: t.primary, fontSize: t.textSm, fontWeight: fontWeight(650), fontFamily: fontFamily(t) }}>
@@ -386,23 +568,21 @@ export function EmrAttachmentField({
                 </EmrButton>
                 <EmrButton
                   variant="outline"
-                  label="Scanner"
                   disabled={atCapacity}
-                  accessibilityLabel={`Scan document for ${model.label}`}
-                  onPress={() => onIntent({ type: 'captureRequested', mode: 'scanner' })}
-                />
+                  accessibilityLabel={`Scan document for ${resolvedLabel}`}
+                  onPress={() => {
+                    if (!locked && !atCapacity) onIntent({ type: 'captureRequested', mode: 'scanner' });
+                  }}
+                >
+                  <SvgIcon name="scanner" size={16} color={t.primary} />
+                  <Text style={{ color: t.primary, fontSize: t.textSm, fontWeight: fontWeight(650), fontFamily: fontFamily(t) }}>
+                    Scanner
+                  </Text>
+                </EmrButton>
               </View>
             ) : null}
           </View>
         ) : null}
-
-        <AssessmentStatusStrip
-          fieldLabel={model.label}
-          status={model.status}
-          statusOptions={model.statusOptions}
-          readOnly={model.readOnly}
-          onStatusChange={status => onIntent({ type: 'statusChangeRequested', status })}
-        />
       </View>
     </EmrFieldFrame>
   );

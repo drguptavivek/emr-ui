@@ -1,59 +1,113 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import type {
-  ClinicalAssessmentStatus,
-  ClinicalAssessmentStatusOption,
-  EmrValidationMessage,
+import {
+  mergeFieldFrameMessages,
+  normalizeFieldFrameLayout,
+  type ClinicalAssessmentStatus,
+  type ClinicalAssessmentStatusOption,
+  type ClinicalFieldDefinition,
+  type ClinicalFieldState,
+  type EmrValidationMessage,
+  type FieldFrameIntent,
+  type FieldFrameLayout,
 } from '@drguptavivek/emr-controller';
 import { FieldChrome } from './l1-field-chrome';
 import { useEmrLabels } from './labels';
 import { EmrBadgeView, EmrButton, EmrOptionChip, EmrRow } from './primitives';
 
 /**
- * L2 field frame: wraps L1 `FieldChrome` and accepts structured `EmrValidationMessage[]`
- * (`error` | `warning` | `info`) while keeping `hint` persistently visible alongside validation messages.
+ * L2 field frame: wraps L1 `FieldChrome` and accepts structured `EmrValidationMessage[]`,
+ * `definition`/`model`, `unit`, `note`, `layout`, and six-state `ClinicalAssessmentStatus`.
  */
 export function EmrFieldFrame({
   label,
   labelHidden,
   labelNamesControl,
-  controlId,
+  controlId: controlIdProp,
+  definition,
+  model,
   required,
+  unit,
+  note,
+  showMetadata = true,
+  readOnly,
+  layout,
+  assessmentStatus,
+  assessmentStatusOptions,
   hint,
   info,
   warning,
   error,
   messages,
+  onIntent,
   children,
 }: {
-  label: string;
+  label?: string;
   labelNamesControl?: boolean;
   labelHidden?: boolean;
-  controlId: string;
+  controlId?: string;
+  definition?: ClinicalFieldDefinition;
+  model?: ClinicalFieldState;
   required?: boolean;
+  unit?: string;
+  note?: string;
+  showMetadata?: boolean;
+  readOnly?: boolean;
+  layout?: FieldFrameLayout;
+  assessmentStatus?: ClinicalAssessmentStatus;
+  assessmentStatusOptions?: readonly ClinicalAssessmentStatusOption[];
   hint?: string;
   info?: string;
   warning?: string;
   error?: string;
   messages?: readonly EmrValidationMessage[];
+  onIntent?: (intent: FieldFrameIntent) => void;
   children: ReactNode;
 }) {
+  const autoId = useId();
+  const controlId = controlIdProp || autoId;
+  const resolvedLabel = label ?? definition?.label ?? '';
+  const resolvedRequired = required ?? Boolean(definition?.required);
+  const resolvedReadOnly = readOnly ?? false;
+  const resolvedHint = hint ?? definition?.hint;
+  const resolvedUnit = showMetadata ? (unit ?? definition?.unit) : undefined;
+  const resolvedStatus = assessmentStatus ?? model?.assessmentStatus;
+  const resolvedStatusOptions =
+    assessmentStatusOptions ?? definition?.assessmentStatusOptions ?? [];
+  const mergedMessages = mergeFieldFrameMessages(
+    error ?? model?.error,
+    warning ?? model?.warning,
+    info,
+    messages,
+  );
+  const showStrip =
+    showMetadata && (Boolean(resolvedStatus) || (!resolvedReadOnly && resolvedStatusOptions.length > 0));
+
   return (
     <FieldChrome
-      label={label}
+      label={resolvedLabel}
       labelHidden={labelHidden}
       labelNamesControl={labelNamesControl}
       controlId={controlId}
-      required={required}
-      hint={hint}
-      info={info}
-      warning={warning}
-      error={error}
-      messages={messages?.map(m => ({ severity: m.severity, message: m.message }))}
+      required={resolvedRequired}
+      unit={resolvedUnit}
+      note={note}
+      layout={normalizeFieldFrameLayout(layout)}
+      hint={resolvedHint}
+      messages={mergedMessages.map(m => ({ severity: m.severity, message: m.message }))}
     >
       {children}
+      {showStrip ? (
+        <AssessmentStatusStrip
+          fieldLabel={resolvedLabel}
+          status={resolvedStatus}
+          statusOptions={resolvedStatusOptions}
+          readOnly={resolvedReadOnly}
+          onStatusChange={status => onIntent?.({ type: 'statusChangeRequested', status })}
+        />
+      ) : null}
     </FieldChrome>
   );
 }

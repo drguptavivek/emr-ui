@@ -1,6 +1,6 @@
-import { GalleryPage } from '../../gallery/gallery-page';
+import { ComponentsDocsPage } from '../../gallery/components-docs';
 
-// Server component rendering the full browsable EMR Component Catalog & Shadcn Registry.
+// Primary component documentation & multi-framework showcase (Ionic-style fixed menu + live previews).
 export default function Page() {
-  return <GalleryPage />;
+  return <ComponentsDocsPage />;
 }

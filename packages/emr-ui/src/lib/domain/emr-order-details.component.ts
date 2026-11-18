@@ -65,5 +65,8 @@ export class EmrOrderDetailsComponent {
   stringDetail(field: string): string | null { const value = this.model.details?.[field]; return typeof value === 'string' ? value : null; }
   booleanDetail(field: string): boolean { return this.model.details?.[field] === true; }
   errorFor(field: string): string { return this.model.errors?.[field] ?? ''; }
-  changed(field: string, value: string | boolean | null): void { this.detailChanged.emit({ orderId: this.model.id, field, value }); }
+  changed(field: string, value: string | readonly string[] | boolean | null): void {
+    const normalized = Array.isArray(value) ? (value[0] ?? null) : (value as string | boolean | null);
+    this.detailChanged.emit({ orderId: this.model.id, field, value: normalized });
+  }
 }

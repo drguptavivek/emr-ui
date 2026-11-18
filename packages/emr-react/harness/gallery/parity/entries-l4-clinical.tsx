@@ -55,47 +55,140 @@ import type {
   SpectaclePrescriptionViewModel,
   StagedChecklistIntent,
   StagedChecklistViewModel,
+  EmrGonioscopyChartIntent,
+  EmrGonioscopyChartViewModel,
+  EmrVisualFieldSummaryIntent,
+  EmrVisualFieldSummaryViewModel,
+  EmrHessScreenChartIntent,
+  EmrHessScreenChartViewModel,
+  EmrIolBiometryPlannerIntent,
+  EmrIolBiometryPlannerViewModel,
+  EmrIntravitrealCourseTrackerIntent,
+  EmrIntravitrealCourseTrackerViewModel,
+  EmrCornealTopographySummaryIntent,
+  EmrCornealTopographySummaryViewModel,
+  EmrOphthalmicOperativeRecordIntent,
+  EmrOphthalmicOperativeRecordViewModel,
+  EmrContactLensPrescriptionIntent,
+  EmrContactLensPrescriptionViewModel,
+  EmrAppointmentCalendarIntent,
+  EmrAppointmentCalendarViewModel,
+  EmrWaitlistQueueIntent,
+  EmrWaitlistQueueViewModel,
+  EmrWardBedBoardIntent,
+  EmrWardBedBoardViewModel,
+  EmrSbarHandoverIntent,
+  EmrSbarHandoverViewModel,
+  EmrEdTrackBoardIntent,
+  EmrEdTrackBoardViewModel,
+  EmrTriageAssessmentCardIntent,
+  EmrTriageAssessmentCardViewModel,
+  EmrResuscitationEventLogIntent,
+  EmrResuscitationEventLogViewModel,
+  EmrSpecimenCollectionBarIntent,
+  EmrSpecimenCollectionBarViewModel,
+  EmrLabCumulativeGridIntent,
+  EmrLabCumulativeGridViewModel,
+  EmrMicrobiologyAntibiogramIntent,
+  EmrMicrobiologyAntibiogramViewModel,
+  EmrAnaesthesiaRecordIntent,
+  EmrAnaesthesiaRecordViewModel,
+  EmrFluidBalanceChartIntent,
+  EmrFluidBalanceChartViewModel,
+  EmrSurgicalImplantLogIntent,
+  EmrSurgicalImplantLogViewModel,
+  EmrPartogramIntent,
+  EmrPartogramViewModel,
+  EmrGrowthChartIntent,
+  EmrGrowthChartViewModel,
+  EmrImmunizationLedgerIntent,
+  EmrImmunizationLedgerViewModel,
+  EmrWaveformStripViewerIntent,
+  EmrWaveformStripViewerViewModel,
+  EmrOdontogramIntent,
+  EmrOdontogramViewModel,
+  EmrAudiogramIntent,
+  EmrAudiogramViewModel,
+  EmrChemoRegimenRoadmapIntent,
+  EmrChemoRegimenRoadmapViewModel,
+  EmrReferralTrackerIntent,
+  EmrReferralTrackerViewModel,
+  EmrEncounterChargeSheetIntent,
+  EmrEncounterChargeSheetViewModel,
+  EmrAbdmHealthLockerPanelIntent,
+  EmrAbdmHealthLockerPanelViewModel,
 } from '@drguptavivek/emr-controller';
 import { createClinicalNoteDemo } from '../../../../../examples/clinical-notes/clinical-note.fixture';
 import {
+  EmrAbdmHealthLockerPanel,
   EmrAllergyList,
+  EmrAnaesthesiaRecord,
+  EmrAppointmentCalendar,
   EmrAppShell,
+  EmrAudiogram,
   EmrBottomTabBar,
   EmrButton,
   EmrCaptureStatusBar,
   EmrCard,
+  EmrChemoRegimenRoadmap,
   EmrChronicDiseaseList,
   EmrClinicalAnnotationCanvas,
   EmrClinicalNoteWorkspace,
   EmrClinicalTranscript,
+  EmrContactLensPrescription,
+  EmrCornealTopographySummary,
   EmrDiagnosticResultSummary,
   EmrDoseSchedule,
+  EmrEdTrackBoard,
+  EmrEncounterChargeSheet,
   EmrEncounterSummaryPrint,
   EmrEvidenceSuggestionList,
   EmrFamilyPedigree,
   EmrFieldValueRow,
+  EmrFluidBalanceChart,
+  EmrGonioscopyChart,
+  EmrGrowthChart,
+  EmrHessScreenChart,
+  EmrImmunizationLedger,
   EmrInpatientMar,
+  EmrIntravitrealCourseTracker,
+  EmrIolBiometryPlanner,
+  EmrLabCumulativeGrid,
   EmrLeftNav,
   EmrMedicationList,
   EmrMedicationReconciliation,
   EmrMeridianCross,
+  EmrMicrobiologyAntibiogram,
   EmrObservationFlowsheet,
   EmrObservationTrend,
   EmrOctFindingRecord,
   EmrOcularMotilityChart,
+  EmrOdontogram,
+  EmrOphthalmicOperativeRecord,
   EmrPacChecklist,
   EmrPacsViewer,
+  EmrPartogram,
   EmrPatientBanner,
   EmrPersonalHistoryList,
   EmrPrescribingTable,
+  EmrReferralTracker,
+  EmrResuscitationEventLog,
   EmrRightFlyout,
+  EmrSbarHandover,
   EmrScoreResultCard,
   EmrSheet,
   EmrSpecialtyExamMatrix,
+  EmrSpecimenCollectionBar,
   EmrSpectaclePrescription,
   EmrStagedChecklist,
+  EmrSurgicalImplantLog,
   EmrTopBar,
   EmrTopBarSearch,
+  EmrTriageAssessmentCard,
+  EmrVisualFieldSummary,
+  EmrWaitlistQueue,
+  EmrWardBedBoard,
+  EmrWaveformStripViewer,
   reduceFamilyPedigreeIntent,
   reduceStagedChecklistIntent,
   useEmrTheme,
@@ -2318,6 +2411,1131 @@ export const PARITY_ENTRIES_L4_CLINICAL: readonly ParityEntry[] = [
             update('lit', i.type, i, (m) => (i.type === 'cellSelected' ? { ...m, selected: { eyeId: i.eyeId, position: i.position } } : m));
           },
         }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrGonioscopyChartViewModel>({
+    selector: 'emr-gonioscopy-chart',
+    createInitialState: () => ({
+      id: 'gonio-parity',
+      title: 'Bilateral 4-Quadrant Gonioscopy Chart',
+      viewMode: 'both',
+      selectedEye: 'OD',
+      selectedQuadrant: 'superior',
+      od: {
+        eye: 'OD',
+        gradingSystem: 'shaffer',
+        lensUsed: 'Posner 4-Mirror',
+        vanHerickGrade: '1',
+        pasClockHours: [11, 12, 1],
+        quadrants: {
+          superior: { quadrant: 'superior', staticGrade: '0', dynamicGrade: '2', pigmentation: 3, pasPresent: true },
+          nasal: { quadrant: 'nasal', staticGrade: '1', dynamicGrade: '3', pigmentation: 2 },
+          inferior: { quadrant: 'inferior', staticGrade: '2', dynamicGrade: '3', pigmentation: 2 },
+          temporal: { quadrant: 'temporal', staticGrade: '1', dynamicGrade: '3', pigmentation: 1 },
+        },
+      },
+      os: {
+        eye: 'OS',
+        gradingSystem: 'shaffer',
+        lensUsed: 'Posner 4-Mirror',
+        vanHerickGrade: '3',
+        pasClockHours: [],
+        quadrants: {
+          superior: { quadrant: 'superior', staticGrade: '3', dynamicGrade: '4', pigmentation: 1 },
+          nasal: { quadrant: 'nasal', staticGrade: '3', dynamicGrade: '4', pigmentation: 1 },
+          inferior: { quadrant: 'inferior', staticGrade: '4', dynamicGrade: '4', pigmentation: 2 },
+          temporal: { quadrant: 'temporal', staticGrade: '3', dynamicGrade: '4', pigmentation: 1 },
+        },
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrGonioscopyChart
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrGonioscopyChartIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-gonioscopy-chart"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrGonioscopyChartIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrVisualFieldSummaryViewModel>({
+    selector: 'emr-visual-field-summary',
+    createInitialState: () => ({
+      id: 'vf-parity',
+      title: 'Humphrey 24-2 Perimetry Summary',
+      activeMapType: 'pattern-deviation',
+      od: {
+        eye: 'OD',
+        strategy: '24-2 SITA-Standard',
+        testDate: '2026-11-12',
+        fixationLosses: '1/14',
+        falsePositivesPct: 2,
+        falseNegativesPct: 4,
+        vfiPct: 82,
+        mdDb: -6.4,
+        psdDb: 7.2,
+        ght: 'Outside Normal Limits',
+        defectPatternLabel: 'Superior Arcuate',
+        points: [
+          { id: 'od-p1', xDeg: -9, yDeg: 15, totalDeviationDb: -18, patternDeviationDb: -16, probability: 'p<0.5%' },
+          { id: 'od-p2', xDeg: -3, yDeg: 15, totalDeviationDb: -14, patternDeviationDb: -12, probability: 'p<1%' },
+        ],
+      },
+      os: {
+        eye: 'OS',
+        strategy: '24-2 SITA-Standard',
+        testDate: '2026-11-12',
+        fixationLosses: '0/13',
+        falsePositivesPct: 1,
+        falseNegativesPct: 2,
+        vfiPct: 98,
+        mdDb: -0.8,
+        psdDb: 1.5,
+        ght: 'Within Normal Limits',
+        defectPatternLabel: 'Full Field',
+        points: [
+          { id: 'os-p1', xDeg: -9, yDeg: 15, totalDeviationDb: -1, patternDeviationDb: 0, probability: 'normal' },
+        ],
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrVisualFieldSummary
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrVisualFieldSummaryIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-visual-field-summary"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrVisualFieldSummaryIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrHessScreenChartViewModel>({
+    selector: 'emr-hess-screen-chart',
+    createInitialState: () => ({
+      id: 'hess-parity',
+      title: 'Hess Tangent Screen & 9-Gaze PBCT Matrix',
+      activeDistanceMode: 'distance-6m',
+      leftChartOsFixing: {
+        fixingEye: 'OS',
+        plottedEye: 'OD',
+        innerFieldPoints: [
+          { gazeId: 'NW', expectedXDeg: -15, expectedYDeg: 15, plottedXDeg: -15, plottedYDeg: 15 },
+          { gazeId: 'N', expectedXDeg: 0, expectedYDeg: 15, plottedXDeg: 0, plottedYDeg: 15 },
+          { gazeId: 'NE', expectedXDeg: 15, expectedYDeg: 15, plottedXDeg: 8, plottedYDeg: 14 },
+          { gazeId: 'E', expectedXDeg: 15, expectedYDeg: 0, plottedXDeg: 6, plottedYDeg: 0 },
+          { gazeId: 'SE', expectedXDeg: 15, expectedYDeg: -15, plottedXDeg: 8, plottedYDeg: -14 },
+          { gazeId: 'S', expectedXDeg: 0, expectedYDeg: -15, plottedXDeg: 0, plottedYDeg: -15 },
+          { gazeId: 'SW', expectedXDeg: -15, expectedYDeg: -15, plottedXDeg: -15, plottedYDeg: -15 },
+          { gazeId: 'W', expectedXDeg: -15, expectedYDeg: 0, plottedXDeg: -15, plottedYDeg: 0 },
+          { gazeId: 'C', expectedXDeg: 0, expectedYDeg: 0, plottedXDeg: -4, plottedYDeg: 0 },
+        ],
+        outerFieldPoints: [],
+      },
+      rightChartOdFixing: {
+        fixingEye: 'OD',
+        plottedEye: 'OS',
+        innerFieldPoints: [
+          { gazeId: 'NW', expectedXDeg: -15, expectedYDeg: 15, plottedXDeg: -22, plottedYDeg: 15 },
+          { gazeId: 'N', expectedXDeg: 0, expectedYDeg: 15, plottedXDeg: 0, plottedYDeg: 15 },
+          { gazeId: 'NE', expectedXDeg: 15, expectedYDeg: 15, plottedXDeg: 15, plottedYDeg: 15 },
+          { gazeId: 'E', expectedXDeg: 15, expectedYDeg: 0, plottedXDeg: 15, plottedYDeg: 0 },
+          { gazeId: 'SE', expectedXDeg: 15, expectedYDeg: -15, plottedXDeg: 15, plottedYDeg: -15 },
+          { gazeId: 'S', expectedXDeg: 0, expectedYDeg: -15, plottedXDeg: 0, plottedYDeg: -15 },
+          { gazeId: 'SW', expectedXDeg: -15, expectedYDeg: -15, plottedXDeg: -22, plottedYDeg: -15 },
+          { gazeId: 'W', expectedXDeg: -15, expectedYDeg: 0, plottedXDeg: -24, plottedYDeg: 0 },
+          { gazeId: 'C', expectedXDeg: 0, expectedYDeg: 0, plottedXDeg: -6, plottedYDeg: 0 },
+        ],
+        outerFieldPoints: [],
+      },
+      pbctDistanceCells: {
+        NW: { gazeId: 'NW', horizontalDelta: '8Δ ET' },
+        N: { gazeId: 'N', horizontalDelta: '12Δ ET' },
+        NE: { gazeId: 'NE', horizontalDelta: '25Δ ET' },
+        W: { gazeId: 'W', horizontalDelta: '6Δ ET' },
+        C: { gazeId: 'C', horizontalDelta: '16Δ ET' },
+        E: { gazeId: 'E', horizontalDelta: '30Δ ET' },
+        SW: { gazeId: 'SW', horizontalDelta: '8Δ ET' },
+        S: { gazeId: 'S', horizontalDelta: '14Δ ET' },
+        SE: { gazeId: 'SE', horizontalDelta: '26Δ ET' },
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrHessScreenChart
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrHessScreenChartIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-hess-screen-chart"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrHessScreenChartIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrIolBiometryPlannerViewModel>({
+    selector: 'emr-iol-biometry-planner',
+    createInitialState: () => ({
+      id: 'iol-parity',
+      title: 'Optical Biometry & Toric IOL Planner',
+      od: {
+        eye: 'OD',
+        axialLengthMm: 23.85,
+        acdMm: 3.18,
+        k1Diopters: 43.25,
+        k1AxisDeg: 180,
+        k2Diopters: 45.0,
+        k2AxisDeg: 90,
+        cornealDeltaKD: '1.75 D @ 90°',
+        targetRefractionD: '-0.25',
+        activeFormula: 'Barrett Universal II',
+        availableFormulas: ['Barrett Universal II', 'Kane', 'Haigis'],
+        lensModelLabel: 'Alcon AcrySof IQ Toric SN6AT4',
+        aConstant: '119.2',
+        candidates: [
+          { id: 'c1', powerDiopters: '+20.5 D', predictedRefractionD: '-0.22 D', isEmmetropiaTarget: true, isSelected: true, recommendedAxisDeg: 90 },
+          { id: 'c2', powerDiopters: '+20.0 D', predictedRefractionD: '+0.12 D' },
+        ],
+      },
+      os: {
+        eye: 'OS',
+        axialLengthMm: 23.78,
+        acdMm: 3.15,
+        k1Diopters: 43.5,
+        k1AxisDeg: 175,
+        k2Diopters: 44.25,
+        k2AxisDeg: 85,
+        cornealDeltaKD: '0.75 D @ 85°',
+        targetRefractionD: '0.00',
+        activeFormula: 'Barrett Universal II',
+        availableFormulas: ['Barrett Universal II', 'Kane', 'Haigis'],
+        lensModelLabel: 'Alcon AcrySof IQ SN60WF',
+        aConstant: '119.0',
+        candidates: [
+          { id: 'c3', powerDiopters: '+21.0 D', predictedRefractionD: '-0.06 D', isEmmetropiaTarget: true, isSelected: true },
+        ],
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrIolBiometryPlanner
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrIolBiometryPlannerIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-iol-biometry-planner"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrIolBiometryPlannerIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrIntravitrealCourseTrackerViewModel>({
+    selector: 'emr-intravitreal-course-tracker',
+    createInitialState: () => ({
+      id: 'ivt-parity',
+      title: 'Intravitreal Anti-VEGF Treat-and-Extend Tracker',
+      activeEye: 'OD',
+      od: {
+        eye: 'OD',
+        indication: 'Neovascular AMD',
+        currentRegimen: 'treat-and-extend',
+        currentAgent: 'Faricimab 6 mg',
+        totalInjectionsCount: 4,
+        currentIntervalWeeks: 8,
+        baselineCstUm: 442,
+        latestCstUm: 274,
+        visits: [
+          { id: 'v1', visitNumber: 1, date: '2026-08-01', eye: 'OD', cstUm: 442, bcvaLabel: '6/24', fluidFlags: { irf: true, srf: true, ped: true }, decision: 'inject-maintain' },
+          { id: 'v2', visitNumber: 2, date: '2026-09-01', eye: 'OD', cstUm: 274, bcvaLabel: '6/9', fluidFlags: { irf: false, srf: false, ped: true }, decision: 'inject-extend' },
+        ],
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrIntravitrealCourseTracker
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrIntravitrealCourseTrackerIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-intravitreal-course-tracker"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrIntravitrealCourseTrackerIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrCornealTopographySummaryViewModel>({
+    selector: 'emr-corneal-topography-summary',
+    createInitialState: () => ({
+      id: 'topo-parity',
+      title: 'Scheimpflug Corneal Tomography & Ectasia Summary',
+      activeMap: 'axial-curvature',
+      od: {
+        eye: 'OD',
+        deviceLabel: 'Pentacam HR',
+        qualityScore: 'OK',
+        k1FlatD: 44.2,
+        k1AxisDeg: 15,
+        k2SteepD: 48.6,
+        k2AxisDeg: 105,
+        kMaxD: 52.4,
+        astigmatismD: 4.4,
+        centralPachymetryUm: 468,
+        thinnestPachymetryUm: 452,
+        badDIndex: 3.4,
+        ectasiaRisk: 'ectasia-suspect',
+      },
+      os: {
+        eye: 'OS',
+        deviceLabel: 'Pentacam HR',
+        qualityScore: 'OK',
+        k1FlatD: 43.1,
+        k1AxisDeg: 175,
+        k2SteepD: 44.3,
+        k2AxisDeg: 85,
+        kMaxD: 45.1,
+        astigmatismD: 1.2,
+        centralPachymetryUm: 524,
+        thinnestPachymetryUm: 518,
+        badDIndex: 0.9,
+        ectasiaRisk: 'normal',
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrCornealTopographySummary
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrCornealTopographySummaryIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-corneal-topography-summary"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrCornealTopographySummaryIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrOphthalmicOperativeRecordViewModel>({
+    selector: 'emr-ophthalmic-operative-record',
+    createInitialState: () => ({
+      id: 'opnote-parity',
+      title: 'Ophthalmic Operative Record',
+      procedureName: 'Right Eye Phacoemulsification with Toric IOL Implantation',
+      operatedEye: 'OD',
+      timeoutVerified: true,
+      surgeonName: 'Dr. S. Iyer',
+      anesthesiaType: 'Topical',
+      mainIncisionMeridianDeg: 180,
+      mainIncisionWidthMm: 2.2,
+      capsulorhexisStatus: 'Continuous Curvilinear (Intact)',
+      posteriorCapsuleStatus: 'Intact',
+      iolImplant: {
+        modelName: 'Alcon AcrySof IQ Toric SN6AT4',
+        powerDiopters: '+20.5 D',
+        serialNumber: 'SN-2026-99412',
+        placement: 'In-the-Bag',
+        toricAlignedAxisDeg: 90,
+      },
+      prophylaxis: {
+        intracameralAntibiotic: 'Moxifloxacin 0.5 mg / 0.1 mL',
+      },
+      postOpRegimenSummary: 'Prednisolone 1% QID tapering + Moxifloxacin 0.5% QID x 2 weeks',
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrOphthalmicOperativeRecord
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrOphthalmicOperativeRecordIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-ophthalmic-operative-record"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrOphthalmicOperativeRecordIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrContactLensPrescriptionViewModel>({
+    selector: 'emr-contact-lens-prescription',
+    createInitialState: () => ({
+      id: 'cl-parity',
+      title: 'Contact Lens Fitting & Prescription',
+      issueDate: '2026-11-12',
+      expiryDate: '2027-11-12',
+      replacementSchedule: 'Monthly',
+      wearingScheduleHoursPerDay: 12,
+      careRegimenSolution: 'Hydrogen Peroxide 3% Neutralizing System',
+      trialFinalized: true,
+      od: {
+        eye: 'OD',
+        modality: 'Soft Toric',
+        brandAndMaterial: 'Biofinity Toric (Comfilcon A)',
+        baseCurveMm: '8.7',
+        diameterMm: '14.5',
+        sphereD: '-2.50',
+        cylinderD: '-1.25',
+        axisDeg: 180,
+        centration: 'Optimal',
+        movementMm: '0.3 mm',
+        pushUpTest: 'Smooth / Adequate',
+        visualAcuityAchieved: '6/6',
+      },
+      os: {
+        eye: 'OS',
+        modality: 'Soft Spherical',
+        brandAndMaterial: 'Biofinity (Comfilcon A)',
+        baseCurveMm: '8.6',
+        diameterMm: '14.0',
+        sphereD: '-2.25',
+        centration: 'Optimal',
+        movementMm: '0.3 mm',
+        pushUpTest: 'Smooth / Adequate',
+        visualAcuityAchieved: '6/6',
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrContactLensPrescription
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrContactLensPrescriptionIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-contact-lens-prescription"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrContactLensPrescriptionIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrAppointmentCalendarViewModel>({
+    selector: 'emr-appointment-calendar',
+    createInitialState: () => ({
+      id: 'cal-parity',
+      title: 'Multi-Resource Outpatient Clinic & OT Calendar',
+      activeDate: '2026-11-12',
+      viewMode: 'resource-grid',
+      resources: [
+        { id: 'r1', name: 'Dr. S. Iyer', roleOrLocation: 'Ophthalmology Suite 1', utilizationPct: 88 },
+        { id: 'r2', name: 'Minor OT 1', roleOrLocation: 'Procedure Room', utilizationPct: 75 },
+      ],
+      slots: ['09:00', '09:30', '10:00'],
+      appointments: [
+        { id: 'a1', resourceId: 'r1', startTime: '09:00', durationMinutes: 30, patientName: 'Aarav Sharma', visitType: 'Comprehensive Eye Exam', status: 'checked-in' },
+        { id: 'a2', resourceId: 'r2', startTime: '09:30', durationMinutes: 30, patientName: 'Meera Patel', visitType: 'Intravitreal Injection', status: 'booked' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrAppointmentCalendar
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrAppointmentCalendarIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-appointment-calendar"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrAppointmentCalendarIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrWaitlistQueueViewModel>({
+    selector: 'emr-waitlist-queue',
+    createInitialState: () => ({
+      id: 'wq-parity',
+      title: 'Live Clinic & Diagnostics Token Queue',
+      activeFilter: 'all',
+      entries: [
+        { id: 'w1', tokenNumber: 'T-104', patientName: 'Devika Krishnan', priority: 'stat', departmentOrRoom: 'OCT Room 1', waitMinutes: 28, slaTargetMinutes: 15, status: 'waiting' },
+        { id: 'w2', tokenNumber: 'T-105', patientName: 'Rohan Malhotra', priority: 'routine', departmentOrRoom: 'Refraction 2', waitMinutes: 10, slaTargetMinutes: 20, status: 'called' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrWaitlistQueue
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrWaitlistQueueIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-waitlist-queue"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrWaitlistQueueIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrWardBedBoardViewModel>({
+    selector: 'emr-ward-bed-board',
+    createInitialState: () => ({
+      id: 'ward-parity',
+      title: 'Inpatient Ward Bed Census Board',
+      wardName: 'Surgical Ward 3B',
+      activeStatusFilter: 'all',
+      beds: [
+        { id: 'b1', bedNumber: '3B-01', status: 'occupied', patientName: 'Vikramaditya Joshi', losDays: 3, ewsScore: 1 },
+        { id: 'b2', bedNumber: '3B-02', status: 'available' },
+        { id: 'b3', bedNumber: '3B-03', status: 'isolation', isolationType: 'contact', patientName: 'Kavita Deshmukh', losDays: 5, ewsScore: 4 },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrWardBedBoard
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrWardBedBoardIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-ward-bed-board"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrWardBedBoardIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrSbarHandoverViewModel>({
+    selector: 'emr-sbar-handover',
+    createInitialState: () => ({
+      id: 'sbar-parity',
+      title: 'SBAR Clinical Shift Handover',
+      shiftLabel: 'Night → Day Handover',
+      patientName: 'Vikramaditya Joshi',
+      bedLabel: '3B-01',
+      illnessSeverity: 'watcher',
+      situation: 'Day 2 post-op complicated cataract extraction with elevated IOP.',
+      background: 'Pseudoexfoliation glaucoma; baseline IOP 26 mmHg.',
+      assessment: 'Cornea clearing, IOP 20 mmHg on topical dorzolamide-timolol.',
+      recommendation: 'Recheck IOP at 14:00 and review anterior chamber reaction.',
+      actionItems: [
+        { id: 'act1', label: 'Recheck applanation IOP at 14:00', completed: false, priority: 'urgent' },
+      ],
+      outgoingClinician: 'Dr. N. Kulkarni',
+      incomingClinician: 'Dr. R. Nair',
+      acknowledged: false,
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrSbarHandover
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrSbarHandoverIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-sbar-handover"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrSbarHandoverIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrEdTrackBoardViewModel>({
+    selector: 'emr-ed-track-board',
+    createInitialState: () => ({
+      id: 'ed-parity',
+      title: 'Emergency Department Bay Track Board',
+      activeAcuityFilter: 'all',
+      patients: [
+        { id: 'p1', bayLabel: 'Resus-1', patientName: 'Arjun Singhania', ageSexLabel: '64M', esiLevel: 1, chiefComplaint: 'Anterior STEMI', losMinutes: 42, pendingLabsCount: 1, pendingImagingCount: 0, disposition: 'in-assessment' },
+        { id: 'p2', bayLabel: 'Acute-2', patientName: 'Kavita Deshmukh', ageSexLabel: '52F', esiLevel: 2, chiefComplaint: 'Urosepsis', losMinutes: 255, pendingLabsCount: 2, pendingImagingCount: 1, disposition: 'boarding-admit' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrEdTrackBoard
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrEdTrackBoardIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-ed-track-board"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrEdTrackBoardIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrTriageAssessmentCardViewModel>({
+    selector: 'emr-triage-assessment-card',
+    createInitialState: () => ({
+      id: 'triage-parity',
+      title: 'Emergency Triage Assessment Card',
+      arrivalMode: 'ALS Ambulance',
+      chiefComplaint: 'Acute substernal chest pain',
+      esiLevel: 2,
+      painScore: 8,
+      redFlags: ['Diaphoresis', 'Radiation to left arm'],
+      vitalsSummary: [
+        { label: 'HR', value: '108 bpm', abnormal: true },
+        { label: 'BP', value: '162/98 mmHg', abnormal: true },
+      ],
+      isolationRequired: false,
+      finalized: true,
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrTriageAssessmentCard
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrTriageAssessmentCardIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-triage-assessment-card"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrTriageAssessmentCardIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrResuscitationEventLogViewModel>({
+    selector: 'emr-resuscitation-event-log',
+    createInitialState: () => ({
+      id: 'resus-parity',
+      title: 'ACLS Code Blue Event Recorder',
+      codeStatus: 'active',
+      elapsedSeconds: 360,
+      currentRhythm: 'VF/pVT',
+      cprCycles: 3,
+      shockCount: 2,
+      epinephrineDoses: 1,
+      events: [
+        { id: 'e1', timestampLabel: '00:02:00', category: 'shock', description: 'Biphasic shock 200J delivered' },
+        { id: 'e2', timestampLabel: '00:04:00', category: 'medication', description: 'Epinephrine 1 mg IV push' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrResuscitationEventLog
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrResuscitationEventLogIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-resuscitation-event-log"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrResuscitationEventLogIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrSpecimenCollectionBarViewModel>({
+    selector: 'emr-specimen-collection-bar',
+    createInitialState: () => ({
+      id: 'spec-parity',
+      title: 'Specimen Barcode Verification Bar',
+      orderAccession: 'ACC-2026-88412',
+      patientVerified: true,
+      containers: [
+        { id: 'c1', barcode: 'BC-9901', tubeType: 'EDTA Lavender', testsSummary: 'CBC + Differential', volumeMl: 3, stat: true, status: 'scanned-collected' },
+        { id: 'c2', barcode: 'BC-9902', tubeType: 'SST Gold', testsSummary: 'Comprehensive Metabolic Panel', volumeMl: 5, status: 'pending' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrSpecimenCollectionBar
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrSpecimenCollectionBarIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-specimen-collection-bar"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrSpecimenCollectionBarIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrLabCumulativeGridViewModel>({
+    selector: 'emr-lab-cumulative-grid',
+    createInitialState: () => ({
+      id: 'lab-parity',
+      title: 'Cumulative Laboratory Flowsheet',
+      panelName: 'Renal & Electrolytes',
+      columns: [
+        { id: 'col1', dateLabel: '11 Nov 08:00' },
+        { id: 'col2', dateLabel: '12 Nov 08:00' },
+      ],
+      rows: [
+        {
+          id: 'k',
+          analyteName: 'Serum Potassium',
+          unit: 'mmol/L',
+          referenceRange: '3.5–5.1',
+          values: {
+            col1: { value: '5.4', flag: 'high' },
+            col2: { value: '6.2', flag: 'critical-high' },
+          },
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrLabCumulativeGrid
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrLabCumulativeGridIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-lab-cumulative-grid"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrLabCumulativeGridIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrMicrobiologyAntibiogramViewModel>({
+    selector: 'emr-microbiology-antibiogram',
+    createInitialState: () => ({
+      id: 'micro-parity',
+      title: 'Culture & Sensitivity Antibiogram',
+      specimenSource: 'Clean-Catch Midstream Urine',
+      collectionDate: '2026-11-10',
+      isolates: [
+        { id: 'iso1', organismName: 'Escherichia coli', colonyCount: '>10^5 CFU/mL', resistanceMechanism: 'ESBL Positive' },
+      ],
+      rows: [
+        { antibioticId: 'mero', antibioticName: 'Meropenem', resultsByIsolate: { iso1: { interpretation: 'S', micLabel: '<=0.25' } }, stewardshipPreferred: true },
+        { antibioticId: 'ctx', antibioticName: 'Ceftriaxone', resultsByIsolate: { iso1: { interpretation: 'R', micLabel: '>=64' } } },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrMicrobiologyAntibiogram
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrMicrobiologyAntibiogramIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-microbiology-antibiogram"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrMicrobiologyAntibiogramIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrAnaesthesiaRecordViewModel>({
+    selector: 'emr-anaesthesia-record',
+    createInitialState: () => ({
+      id: 'anaes-parity',
+      title: 'Intra-Operative Anaesthesia Record',
+      asaClass: 'II',
+      mallampatiClass: 2,
+      technique: 'General Balanced Anaesthesia',
+      airwayDevice: 'Cuffed ETT 7.5 mm',
+      activePhase: 'maintenance',
+      checkpoints: [
+        { id: 'cp1', timeLabel: '09:00', hrBpm: 72, bpLabel: '118/74', spo2Pct: 99, etco2MmHg: 36, macPct: 1.0 },
+      ],
+      medications: [
+        { id: 'm1', drugName: 'Propofol', doseLabel: '150 mg IV', timeLabel: '08:50' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrAnaesthesiaRecord
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrAnaesthesiaRecordIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-anaesthesia-record"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrAnaesthesiaRecordIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrFluidBalanceChartViewModel>({
+    selector: 'emr-fluid-balance-chart',
+    createInitialState: () => ({
+      id: 'fluid-parity',
+      title: '24-Hour Intake & Output Fluid Balance Chart',
+      periodLabel: '24h Shift (08:00–08:00)',
+      patientWeightKg: 70,
+      intakes: [
+        { id: 'in1', category: 'IV Crystalloid', routeOrSite: 'Ringer Lactate', volumeMl: 1500 },
+      ],
+      outputs: [
+        { id: 'out1', category: 'Urine Output', routeOrSite: 'Foley Catheter', volumeMl: 1350 },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrFluidBalanceChart
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrFluidBalanceChartIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-fluid-balance-chart"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrFluidBalanceChartIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrSurgicalImplantLogViewModel>({
+    selector: 'emr-surgical-implant-log',
+    createInitialState: () => ({
+      id: 'implant-parity',
+      title: 'Perioperative Implant UDI Traceability Log',
+      procedureName: 'Right Total Hip Arthroplasty',
+      countsReconciled: true,
+      implants: [
+        {
+          id: 'imp1',
+          deviceName: 'Acetabular Shell 52mm',
+          manufacturer: 'Stryker',
+          lotNumber: 'LOT-88412',
+          serialNumber: 'SN-99104',
+          udiCode: '(01)00884400123456',
+          expiryDate: '2030-12-31',
+          anatomicalSite: 'Right Acetabulum',
+          sterileVerified: true,
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrSurgicalImplantLog
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrSurgicalImplantLogIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-surgical-implant-log"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrSurgicalImplantLogIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrPartogramViewModel>({
+    selector: 'emr-partogram',
+    createInitialState: () => ({
+      id: 'parto-parity',
+      title: 'WHO Labour Care Guide Partogram',
+      gravidaParaLabel: 'G2P1L1 · 39w 4d',
+      membraneStatus: 'Clear Liquor',
+      alertStatus: 'normal',
+      observations: [
+        { hour: 1, timeLabel: '08:00', cervicalDilationCm: 5, descentStation: -1, fhrBpm: 140, contractionsPer10Min: 3 },
+        { hour: 2, timeLabel: '09:00', cervicalDilationCm: 7, descentStation: 0, fhrBpm: 144, contractionsPer10Min: 4 },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrPartogram
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrPartogramIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-partogram"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrPartogramIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrGrowthChartViewModel>({
+    selector: 'emr-growth-chart',
+    createInitialState: () => ({
+      id: 'growth-parity',
+      title: 'WHO Child Growth Standards Chart',
+      standardLabel: 'WHO 0-5y',
+      activeMetric: 'weight-for-age',
+      points: [
+        { id: 'gp1', ageLabel: 'Birth', ageMonths: 0, value: 3.2, unit: 'kg', centile: 48, zScore: -0.1, flag: 'normal' },
+        { id: 'gp2', ageLabel: '6m', ageMonths: 6, value: 7.6, unit: 'kg', centile: 45, zScore: -0.15, flag: 'normal' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrGrowthChart
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrGrowthChartIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-growth-chart"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrGrowthChartIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrImmunizationLedgerViewModel>({
+    selector: 'emr-immunization-ledger',
+    createInitialState: () => ({
+      id: 'imm-parity',
+      title: 'Longitudinal Immunization Schedule Ledger',
+      scheduleStandard: 'UIP / IAP 2026',
+      activeFilter: 'all',
+      doses: [
+        { id: 'd1', vaccineName: 'BCG', doseNumberLabel: 'Dose 1', ageGroupLabel: 'Birth', status: 'administered', dateLabel: '2026-05-01', batchLotNumber: 'BCG-2026-09' },
+        { id: 'd2', vaccineName: 'Pentavalent-1', doseNumberLabel: 'Dose 1', ageGroupLabel: '6 Weeks', status: 'due' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrImmunizationLedger
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrImmunizationLedgerIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-immunization-ledger"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrImmunizationLedgerIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrWaveformStripViewerViewModel>({
+    selector: 'emr-waveform-strip-viewer',
+    createInitialState: () => ({
+      id: 'ecg-parity',
+      title: '12-Lead ECG Waveform Strip Viewer',
+      modality: '12-Lead ECG',
+      paperSpeed: '25 mm/s',
+      gain: '10 mm/mV',
+      intervals: { hrBpm: 74, prMs: 162, qrsMs: 88, qtcMs: 412 },
+      leads: [
+        { id: 'II', label: 'Lead II', samplePoints: [0, 0.1, 0, -0.1, 1.0, -0.2, 0, 0.25, 0] },
+      ],
+      activeLeadId: 'II',
+      interpretation: 'Normal sinus rhythm, normal QTc.',
+      signed: true,
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrWaveformStripViewer
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrWaveformStripViewerIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-waveform-strip-viewer"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrWaveformStripViewerIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrOdontogramViewModel>({
+    selector: 'emr-odontogram',
+    createInitialState: () => ({
+      id: 'odonto-parity',
+      title: 'FDI Dental Arch Odontogram',
+      dentitionMode: 'permanent-fdi',
+      teeth: [
+        { toothNumber: '16', arch: 'upper', status: 'caries', pocketDepthMm: 4 },
+        { toothNumber: '36', arch: 'lower', status: 'restored-filling', pocketDepthMm: 2 },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrOdontogram
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrOdontogramIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-odontogram"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrOdontogramIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrAudiogramViewModel>({
+    selector: 'emr-audiogram',
+    createInitialState: () => ({
+      id: 'audio-parity',
+      title: 'Bilateral Pure-Tone Audiogram',
+      activeConductionView: 'both',
+      rightEar: {
+        ear: 'Right',
+        ptaDbHl: 18,
+        sdsPct: 96,
+        tympanogramType: 'Type A',
+        degreeClassification: 'Normal Hearing',
+        thresholds: [
+          { frequencyHz: 500, airDbHl: 15, boneDbHl: 10 },
+          { frequencyHz: 1000, airDbHl: 20, boneDbHl: 15 },
+        ],
+      },
+      leftEar: {
+        ear: 'Left',
+        ptaDbHl: 42,
+        sdsPct: 84,
+        tympanogramType: 'Type A',
+        degreeClassification: 'Moderate SNHL',
+        thresholds: [
+          { frequencyHz: 500, airDbHl: 35, boneDbHl: 30 },
+          { frequencyHz: 1000, airDbHl: 45, boneDbHl: 40 },
+        ],
+      },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrAudiogram
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrAudiogramIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-audiogram"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrAudiogramIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrChemoRegimenRoadmapViewModel>({
+    selector: 'emr-chemo-regimen-roadmap',
+    createInitialState: () => ({
+      id: 'chemo-parity',
+      title: 'Oncology Systemic Chemotherapy Roadmap',
+      protocolName: 'FOLFOX-6 Adjuvant',
+      diagnosisLabel: 'Stage IIIB Colon Adenocarcinoma',
+      bsaM2: 1.78,
+      ecogStatus: 1,
+      labClearancePassed: true,
+      ancCountLabel: '2,400 /µL',
+      plateletCountLabel: '168,000 /µL',
+      cycles: [
+        { cycleNumber: 1, plannedDate: '2026-10-15', status: 'completed', dosePct: 100, agentsSummary: 'Oxaliplatin + Leucovorin + 5-FU' },
+        { cycleNumber: 2, plannedDate: '2026-10-29', status: 'active-cycle', dosePct: 100, agentsSummary: 'Oxaliplatin + Leucovorin + 5-FU' },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrChemoRegimenRoadmap
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrChemoRegimenRoadmapIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-chemo-regimen-roadmap"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrChemoRegimenRoadmapIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrReferralTrackerViewModel>({
+    selector: 'emr-referral-tracker',
+    createInitialState: () => ({
+      id: 'ref-parity',
+      title: 'Closed-Loop Specialty Referral Tracker',
+      activeFilter: 'all',
+      referrals: [
+        {
+          id: 'ref1',
+          targetSpecialty: 'Vitreoretinal Surgery',
+          receivingFacilityOrDoctor: 'Dr. A. Sen',
+          urgency: 'urgent',
+          status: 'accepted',
+          clinicalQuestion: 'Evaluate tractional retinal detachment OS.',
+          createdAtLabel: '2026-11-11',
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrReferralTracker
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrReferralTrackerIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-referral-tracker"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrReferralTrackerIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrEncounterChargeSheetViewModel>({
+    selector: 'emr-encounter-charge-sheet',
+    createInitialState: () => ({
+      id: 'charge-parity',
+      title: 'Encounter Coding & Pre-Auth Charge Sheet',
+      payerScheme: 'PM-JAY / Ayushman Bharat',
+      preAuthStatus: 'preauth-approved',
+      preAuthNumber: 'PA-2026-8841',
+      currencySymbol: '₹',
+      primaryDiagnosisCode: 'H25.11 — Age-related nuclear cataract, right eye',
+      lineItems: [
+        { id: 'li1', code: 'OPH-CAT-01', description: 'Phacoemulsification with foldable IOL package', category: 'procedure', quantity: 1, unitPrice: 12500, coveredByPayer: true },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrEncounterChargeSheet
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrEncounterChargeSheetIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-encounter-charge-sheet"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrEncounterChargeSheetIntent).type, i) }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrAbdmHealthLockerPanelViewModel>({
+    selector: 'emr-abdm-health-locker-panel',
+    createInitialState: () => ({
+      id: 'abdm-parity',
+      title: 'ABDM Health Locker & Consent Panel',
+      abhaNumber: '91-4821-7734-9902',
+      abhaAddress: 'priya.sharma@abdm',
+      kycVerified: true,
+      scanAndShareToken: 'OPD-108',
+      linkedCareContextsCount: 5,
+      consents: [
+        {
+          id: 'con1',
+          requesterHiuName: 'AIIMS Perinatal Center (HIU)',
+          purpose: 'Care Management (CAREMGT)',
+          status: 'GRANTED',
+          hiTypes: ['OPConsultation', 'Prescription', 'DiagnosticReport'],
+          validUntilLabel: '30 Jun 2027',
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrAbdmHealthLockerPanel
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrAbdmHealthLockerPanelIntent) => update('react', i.type, i)}
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-abdm-health-locker-panel"
+        props={{ model: { ...state, readOnly } }}
+        events={{ intent: (i) => update('lit', (i as EmrAbdmHealthLockerPanelIntent).type, i) }}
       />
     ),
   }),

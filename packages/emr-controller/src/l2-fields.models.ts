@@ -1,18 +1,14 @@
 import type { ClinicalAssessmentStatus, ClinicalOption, EmrBadge, EmrTone } from './models.js';
 import type { ClinicalAssessmentStatusOption } from './clinical-form.models.js';
 import type { EmrFieldDefinition, EmrPartialDate } from './field-contract.models.js';
+import type { EmrDateTimeDisplayFormat, EmrSegmentedOption } from './l1-primitives.models.js';
 import type { EmrValidationMessage } from './validation.models.js';
 
 // ─────────────────────────────────────────────────────────────
 // Shared L1 mechanical data structures (serializable, no DOM handles)
 // ─────────────────────────────────────────────────────────────
 
-export interface EmrSegmentedOption<T extends string = string> {
-  readonly value: T;
-  readonly label: string;
-  readonly disabled?: boolean;
-  readonly badge?: string;
-}
+export type { EmrSegmentedOption };
 
 export interface EmrFileSelectionItem {
   readonly name: string;
@@ -110,6 +106,63 @@ export interface ScaleFieldViewModel {
   readonly messages?: readonly EmrValidationMessage[];
   readonly required?: boolean;
   readonly readOnly?: boolean;
+  readonly unit?: string;
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly valueText?: string;
+  readonly clearable?: boolean;
+}
+
+export type FieldFrameLayout = 'vertical' | 'horizontal' | 'inline';
+
+export type FieldFrameIntent = {
+  readonly type: 'statusChangeRequested';
+  readonly status: ClinicalAssessmentStatus | undefined;
+};
+
+export function normalizeFieldFrameLayout(layout: unknown): FieldFrameLayout {
+  return layout === 'horizontal' || layout === 'inline' ? layout : 'vertical';
+}
+
+export function mergeFieldFrameMessages(
+  error?: string,
+  warning?: string,
+  info?: string,
+  messages?: readonly EmrValidationMessage[],
+): readonly EmrValidationMessage[] {
+  const out: EmrValidationMessage[] = [];
+  const seen = new Set<string>();
+  const push = (severity: EmrValidationMessage['severity'], message?: string) => {
+    const trimmed = message?.trim();
+    if (!trimmed) return;
+    const key = `${severity}:${trimmed}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ path: [], severity, message: trimmed });
+  };
+  push('error', error);
+  push('warning', warning);
+  push('info', info);
+  for (const m of messages ?? []) push(m.severity, m.message);
+  return out;
+}
+
+export function resolveScaleMidValue(min: number, max: number, variant: 'likert' | 'vas' = 'likert'): number {
+  const raw = (min + max) / 2;
+  return variant === 'likert' ? Math.round(raw) : raw;
+}
+
+export function buildScaleAnchors(
+  min: number,
+  max: number,
+  variant: 'likert' | 'vas' = 'likert',
+  anchors?: ScaleFieldViewModel['anchors'],
+): readonly { readonly value: number; readonly label: string }[] {
+  if (!anchors) return [];
+  const out: { readonly value: number; readonly label: string }[] = [];
+  if (anchors.minLabel) out.push({ value: min, label: anchors.minLabel });
+  if (anchors.midLabel) out.push({ value: resolveScaleMidValue(min, max, variant), label: anchors.midLabel });
+  if (anchors.maxLabel) out.push({ value: max, label: anchors.maxLabel });
+  return out;
 }
 
 export type ScaleFieldIntent =
@@ -118,16 +171,51 @@ export type ScaleFieldIntent =
 
 // 2. EmrPartialDateField (Year / Year-Month / Full-Date + status)
 export interface PartialDateFieldViewModel {
+  readonly definition?: EmrFieldDefinition;
   readonly label: string;
   readonly value: EmrPartialDate | null;
   readonly min?: string;
   readonly max?: string;
+  readonly displayFormat?: EmrDateTimeDisplayFormat;
+  readonly defaultPrecision?: EmrPartialDate['precision'];
+  readonly clearable?: boolean;
+  readonly size?: 'sm' | 'md' | 'lg';
   readonly status?: ClinicalAssessmentStatus;
   readonly statusOptions?: readonly ClinicalAssessmentStatusOption[];
   readonly hint?: string;
   readonly messages?: readonly EmrValidationMessage[];
   readonly required?: boolean;
   readonly readOnly?: boolean;
+}
+
+export const DEFAULT_PARTIAL_DATE_PRECISION_OPTIONS: readonly EmrSegmentedOption<EmrPartialDate['precision']>[] = [
+  { value: 'year', label: 'Year' },
+  { value: 'month', label: 'Year & month' },
+  { value: 'day', label: 'Full date' },
+];
+
+/**
+ * Adapts an existing `EmrPartialDate` when switching precision.
+ * Truncates finer -> coarser (`day` -> `month` -> `year`), and returns `null` when going
+ * coarser -> finer so unrecorded `-01` / `-01-01` segments are NEVER fabricated.
+ */
+export function adaptPartialDateForPrecision(
+  current: EmrPartialDate | null,
+  nextPrecision: EmrPartialDate['precision'],
+): EmrPartialDate | null {
+  if (!current || !current.value) return null;
+  const parts = current.value.split('-');
+  const y = parts[0];
+  if (!y || !/^\d{4}$/.test(y)) return null;
+  if (nextPrecision === 'year') {
+    return { value: y, precision: 'year' };
+  }
+  const m = parts[1] && /^\d{2}$/.test(parts[1]) ? parts[1] : undefined;
+  if (nextPrecision === 'month') {
+    return m ? { value: `${y}-${m}`, precision: 'month' } : null;
+  }
+  const d = parts[2] && /^\d{2}$/.test(parts[2]) ? parts[2] : undefined;
+  return m && d ? { value: `${y}-${m}-${d}`, precision: 'day' } : null;
 }
 
 export type PartialDateFieldIntent =
@@ -147,6 +235,7 @@ export interface EmrAttachmentRef {
 }
 
 export interface AttachmentFieldViewModel {
+  readonly definition?: EmrFieldDefinition;
   readonly label: string;
   readonly items: readonly EmrAttachmentRef[];
   readonly accept?: string;
@@ -159,6 +248,15 @@ export interface AttachmentFieldViewModel {
   readonly messages?: readonly EmrValidationMessage[];
   readonly required?: boolean;
   readonly readOnly?: boolean;
+  readonly layout?: FieldFrameLayout;
+  readonly showMetadata?: boolean;
+}
+
+export function formatByteSize(bytes?: number): string {
+  if (bytes === undefined || !Number.isFinite(bytes) || bytes < 0) return '';
+  if (bytes < 1024) return `${Math.round(bytes)} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export type AttachmentFieldIntent =

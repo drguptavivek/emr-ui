@@ -222,18 +222,20 @@ describe('Wave 2 L1 & L2 component contracts & upgrades', () => {
   it('completes all 4 upgrades on existing L1 primitives', () => {
     // 1. EmrSelectComponent
     const inputsSrc = readLib('primitives/emr-inputs.component.ts');
-    expect(inputsSrc).toMatch(/<optgroup\s+\[label\]="grp\.label">/);
+    expect(inputsSrc).toMatch(/role="group"/);
     expect(inputsSrc).toMatch(/readonly\s+clearable\s*=\s*input\(false/);
     expect(inputsSrc).toMatch(/readonly\s+cleared\s*=\s*output<void>\(\)/);
+    expect(inputsSrc).toMatch(/readonly\s+multiple\s*=\s*input\(false/);
 
     // 2. EmrSearchSelectComponent
     const searchSelectSrc = readLib('primitives/emr-search-select.component.ts');
-    expect(searchSelectSrc).toMatch(/readonly\s+filterMode\s*=\s*input<'remote'\s*\|\s*'local'>\('remote'\)/);
-    expect(searchSelectSrc).toMatch(/readonly\s+value\s*=\s*input<string\s*\|\s*null\s*\|\s*undefined>/);
-    expect(searchSelectSrc).toMatch(/readonly\s+valueChange\s*=\s*output<string\s*\|\s*null>\(\)/);
-    expect(searchSelectSrc).toMatch(/readonly\s+clearable\s*=\s*input\(false/);
+    expect(searchSelectSrc).toMatch(/readonly\s+filterMode\s*=\s*input<EmrSearchSelectFilterMode>\('remote'\)/);
+    expect(searchSelectSrc).toMatch(/readonly\s+value\s*=\s*input<string\s*\|\s*readonly\s+string\[\]\s*\|\s*null\s*\|\s*undefined>/);
+    expect(searchSelectSrc).toMatch(/readonly\s+valueChange\s*=\s*output<string\s*\|\s*readonly\s+string\[\]\s*\|\s*null>\(\)/);
+    expect(searchSelectSrc).toMatch(/readonly\s+clearable\s*=\s*input<boolean,\s*unknown>\(false/);
     expect(searchSelectSrc).toMatch(/readonly\s+cleared\s*=\s*output<void>\(\)/);
-    expect(searchSelectSrc).toMatch(/readonly\s+allowCustomValue\s*=\s*input\(false/);
+    expect(searchSelectSrc).toMatch(/readonly\s+creatable\s*=\s*input<boolean,\s*unknown>\(false/);
+    expect(searchSelectSrc).toMatch(/readonly\s+allowCustomValue\s*=\s*input<boolean,\s*unknown>\(false/);
     expect(searchSelectSrc).toMatch(/readonly\s+customValueCommitted\s*=\s*output<string>\(\)/);
 
     // 3. EmrRadioGroupComponent, EmrLikertComponent, EmrVasComponent, EmrSegmentedControlComponent
@@ -242,7 +244,7 @@ describe('Wave 2 L1 & L2 component contracts & upgrades', () => {
     expect(choiceSrc).toMatch(/readonly\s+clearable\s*=\s*input\(false/);
     expect(choiceSrc).toMatch(/readonly\s+allowDeselect\s*=\s*input\(false/);
     expect(choiceSrc).toMatch(/readonly\s+orientation\s*=\s*input<'vertical'\s*\|\s*'horizontal'\s*\|\s*'grid'>\('vertical'\)/);
-    expect(choiceSrc).toMatch(/readonly\s+variant\s*=\s*input<'standard'\s*\|\s*'card'\s*\|\s*'pill'>\('standard'\)/);
+    expect(choiceSrc).toMatch(/readonly\s+variant\s*=\s*input<EmrRadioGroupVariant\s*\|\s*'standard'>\('tile'\)/);
     expect(choiceSrc).toMatch(/readonly\s+labelPlacement\s*=\s*input<'end'\s*\|\s*'start'\s*\|\s*'space-between'>\('end'\)/);
     expect(choiceSrc).toMatch(/readonly\s+onLabel\s*=\s*input\(''\)/);
     expect(choiceSrc).toMatch(/readonly\s+offLabel\s*=\s*input\(''\)/);

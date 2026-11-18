@@ -5,19 +5,54 @@
 import type {
   EmrAccordionItem,
   EmrAspectPreset,
+  EmrBadge,
+  EmrBadgeVariant,
   EmrBreadcrumbItem,
+  EmrCheckboxGroupLabelPlacement,
+  EmrCheckboxGroupOrientation,
+  EmrCheckboxGroupSelectionValidation,
+  EmrCheckboxGroupSize,
+  EmrCheckboxGroupToggleOptions,
+  EmrCheckboxGroupVariant,
   EmrCollapsedBreadcrumbs,
   EmrColorSwatch,
+  EmrControlVariant,
   EmrDateRangeValue,
   EmrFlatTreeRow,
   EmrImageCropRect,
   EmrImageCropTransform,
   EmrImageViewportState,
   EmrMaskResult,
+  EmrMatchHighlightSegment,
   EmrOption,
   EmrOptionGroup,
   EmrOtpEditResult,
+  EmrRadioGroupLabelPlacement,
+  EmrRadioGroupOrientation,
+  EmrRadioGroupSize,
+  EmrRadioGroupVariant,
+  EmrScoredOption,
+  EmrSearchSelectFilterMode,
+  EmrTagInputSize,
+  EmrTagInputVariant,
+  EmrTagSuggestionItem,
+  EmrSearchSelectSize,
+  EmrSegmentedBadgePresentation,
+  EmrSegmentedOption,
+  EmrSegmentedOrientation,
+  EmrSegmentedShape,
+  EmrSegmentedSize,
+  EmrSegmentedValidationState,
+  EmrSegmentedVariant,
   EmrSelectAllState,
+  EmrSelectSize,
+  EmrSelectTriggerSummary,
+  EmrSelectValue,
+  EmrSelectVariant,
+  EmrToggleLabelPlacement,
+  EmrToggleSize,
+  EmrToggleVariant,
+  EmrTone,
   EmrTreeCheckState,
   EmrTreeCheckStrategy,
   EmrTreeNode,
@@ -67,6 +102,214 @@ export function filterOptionsLocally<Value extends string = string>(
   );
 }
 
+export type {
+  EmrCheckboxGroupLabelPlacement,
+  EmrCheckboxGroupOrientation,
+  EmrCheckboxGroupSelectionValidation,
+  EmrCheckboxGroupSize,
+  EmrCheckboxGroupToggleOptions,
+  EmrCheckboxGroupVariant,
+  EmrRadioGroupLabelPlacement,
+  EmrRadioGroupOrientation,
+  EmrRadioGroupSize,
+  EmrRadioGroupVariant,
+  EmrToggleLabelPlacement,
+  EmrToggleSize,
+  EmrToggleVariant,
+};
+
+export function resolveEmrToggleChecked(value?: boolean | null, checked?: boolean): boolean {
+  return value !== undefined ? Boolean(value) : Boolean(checked);
+}
+
+export function resolveEmrToggleNext(checked: boolean): boolean {
+  return !checked;
+}
+
+export function normalizeEmrToggleVariant(variant?: unknown): EmrToggleVariant {
+  return variant === 'inline' ? 'inline' : 'tile';
+}
+
+export function normalizeEmrToggleSize(size?: unknown): EmrToggleSize {
+  return size === 'sm' ? 'sm' : 'md';
+}
+
+export function normalizeEmrToggleLabelPlacement(placement?: unknown): EmrToggleLabelPlacement {
+  return placement === 'start' || placement === 'space-between' ? placement : 'end';
+}
+
+export function canMutateEmrToggle(readOnly?: boolean, disabled?: boolean, loading?: boolean): boolean {
+  return !readOnly && !disabled && !loading;
+}
+
+export function resolveEmrToggleAriaChecked(checked: boolean): 'true' | 'false' {
+  return checked ? 'true' : 'false';
+}
+
+export function resolveEmrToggleStateLabel(checked: boolean, onLabel = 'On', offLabel = 'Off'): string {
+  return checked ? (onLabel || 'On') : (offLabel || 'Off');
+}
+
+export function resolveEmrToggleValidationState(params: {
+  error?: string;
+  warning?: string;
+  invalid?: boolean;
+}): { isInvalid: boolean; hasWarning: boolean } {
+  const isInvalid = Boolean(params.invalid) || Boolean(params.error);
+  const hasWarning = !isInvalid && Boolean(params.warning);
+  return { isInvalid, hasWarning };
+}
+
+export function normalizeRadioGroupVariant(variant?: unknown): EmrRadioGroupVariant {
+  if (variant === 'inline' || variant === 'card' || variant === 'pill' || variant === 'segmented') {
+    return variant;
+  }
+  return 'tile';
+}
+
+export function isRadioOptionLocked(option: EmrOption): boolean {
+  return Boolean(option.disabled || option.readOnly);
+}
+
+export function resolveRadioGroupTabStopValue(
+  options: readonly EmrOption[],
+  value: string | null | undefined,
+  groupDisabled = false,
+): string | null {
+  if (groupDisabled) return null;
+  const enabled = options.filter((o) => !o.disabled);
+  if (enabled.length === 0) return null;
+  if (value !== null && value !== undefined && enabled.some((o) => o.value === value)) {
+    return value;
+  }
+  return enabled[0]!.value;
+}
+
+export function moveRadioGroupFocusIndex(
+  options: readonly EmrOption[],
+  currentIndex: number,
+  direction: 1 | -1,
+  groupDisabled = false,
+): number {
+  const len = options.length;
+  if (groupDisabled || len === 0) return -1;
+  let idx = currentIndex >= 0 && currentIndex < len ? currentIndex : direction === 1 ? -1 : 0;
+  for (let step = 0; step < len; step += 1) {
+    idx = (idx + direction + len) % len;
+    if (!options[idx]!.disabled) {
+      return idx;
+    }
+  }
+  return -1;
+}
+
+export function canClearRadioGroupValue(
+  value: string | null | undefined,
+  options: readonly EmrOption[],
+  clearable = false,
+  groupReadOnly = false,
+  groupDisabled = false,
+): boolean {
+  if (!clearable || groupReadOnly || groupDisabled) return false;
+  if (value === null || value === undefined || value === '') return false;
+  const selectedOpt = options.find((o) => o.value === value);
+  if (selectedOpt && isRadioOptionLocked(selectedOpt)) return false;
+  return true;
+}
+
+export function normalizeCheckboxGroupVariant(variant?: unknown): EmrCheckboxGroupVariant {
+  if (variant === 'inline' || variant === 'card' || variant === 'chip') {
+    return variant;
+  }
+  return 'tile';
+}
+
+export function isCheckboxOptionLocked(option: EmrOption): boolean {
+  return Boolean(option.disabled || option.readOnly);
+}
+
+export function isCheckboxOptionBlockedByMax(
+  optionValue: string,
+  current: readonly string[],
+  maxSelections?: number,
+): boolean {
+  if (typeof maxSelections !== 'number' || !Number.isFinite(maxSelections) || maxSelections < 1) {
+    return false;
+  }
+  if (current.includes(optionValue)) {
+    return false;
+  }
+  return current.length >= Math.trunc(maxSelections);
+}
+
+export function clearCheckboxGroupValue(
+  current: readonly string[],
+  options: readonly EmrOption[],
+): readonly string[] {
+  const currentSet = new Set(current);
+  return options
+    .filter((o) => isCheckboxOptionLocked(o) && currentSet.has(o.value))
+    .map((o) => o.value);
+}
+
+export function validateCheckboxGroupSelection(
+  current: readonly string[],
+  minSelections?: number,
+  maxSelections?: number,
+): EmrCheckboxGroupSelectionValidation {
+  const count = current.length;
+  const min =
+    typeof minSelections === 'number' && Number.isFinite(minSelections) && minSelections > 0
+      ? Math.trunc(minSelections)
+      : null;
+  const max =
+    typeof maxSelections === 'number' && Number.isFinite(maxSelections) && maxSelections > 0
+      ? Math.trunc(maxSelections)
+      : null;
+  const minViolated = min !== null && count < min;
+  const maxViolated = max !== null && count > max;
+  let message: string | null = null;
+  if (minViolated) {
+    message = min === 1 ? 'Select at least 1 option.' : `Select at least ${min} options.`;
+  } else if (maxViolated) {
+    message = max === 1 ? 'Select at most 1 option.' : `Select at most ${max} options.`;
+  }
+  return {
+    valid: !minViolated && !maxViolated,
+    count,
+    minViolated,
+    maxViolated,
+    message,
+  };
+}
+
+export function formatCheckboxSelectionCount(
+  current: readonly string[],
+  maxSelections?: number,
+): string {
+  const count = current.length;
+  if (typeof maxSelections === 'number' && Number.isFinite(maxSelections) && maxSelections >= 1) {
+    return `${count} of ${Math.trunc(maxSelections)} selected`;
+  }
+  return `${count} selected`;
+}
+
+function resolveCheckboxToggleOptions(
+  exclusiveOrOptions?: readonly string[] | EmrCheckboxGroupToggleOptions,
+): { exclusiveSet: Set<string>; maxSelections?: number } {
+  if (Array.isArray(exclusiveOrOptions)) {
+    return { exclusiveSet: new Set(exclusiveOrOptions) };
+  }
+  if (exclusiveOrOptions && typeof exclusiveOrOptions === 'object') {
+    const opts = exclusiveOrOptions as EmrCheckboxGroupToggleOptions;
+    return {
+      exclusiveSet: new Set(opts.exclusiveValues ?? []),
+      maxSelections: opts.maxSelections,
+    };
+  }
+  return { exclusiveSet: new Set() };
+}
+
 export function computeSelectAllState(
   current: readonly string[],
   options: readonly EmrOption[],
@@ -74,7 +317,7 @@ export function computeSelectAllState(
 ): EmrSelectAllState {
   const exclusiveSet = new Set(exclusiveValues);
   const selectable = options
-    .filter((o) => !o.disabled && !exclusiveSet.has(o.value))
+    .filter((o) => !isCheckboxOptionLocked(o) && !exclusiveSet.has(o.value))
     .map((o) => o.value);
   if (selectable.length === 0) return 'none';
   const currentSet = new Set(current);
@@ -90,20 +333,33 @@ export function computeSelectAllState(
 export function toggleSelectAllValues(
   current: readonly string[],
   options: readonly EmrOption[],
-  exclusiveValues: readonly string[] = [],
+  exclusiveOrOptions: readonly string[] | EmrCheckboxGroupToggleOptions = [],
 ): readonly string[] {
-  const state = computeSelectAllState(current, options, exclusiveValues);
-  const exclusiveSet = new Set(exclusiveValues);
+  const { exclusiveSet, maxSelections } = resolveCheckboxToggleOptions(exclusiveOrOptions);
+  const state = computeSelectAllState(current, options, [...exclusiveSet]);
+  const currentSet = new Set(current);
   if (state === 'all') {
     return options
-      .filter((o) => o.disabled && current.includes(o.value))
+      .filter((o) => isCheckboxOptionLocked(o) && currentSet.has(o.value))
       .map((o) => o.value);
   }
+  const max =
+    typeof maxSelections === 'number' && Number.isFinite(maxSelections) && maxSelections >= 1
+      ? Math.trunc(maxSelections)
+      : null;
+  const lockedSelected = new Set(
+    options.filter((o) => isCheckboxOptionLocked(o) && currentSet.has(o.value)).map((o) => o.value),
+  );
+  let remaining = max !== null ? Math.max(0, max - lockedSelected.size) : Number.POSITIVE_INFINITY;
   const next: string[] = [];
   for (const o of options) {
-    if (exclusiveSet.has(o.value)) continue;
-    if (!o.disabled || current.includes(o.value)) {
+    if (lockedSelected.has(o.value)) {
       next.push(o.value);
+    } else if (!isCheckboxOptionLocked(o) && !exclusiveSet.has(o.value)) {
+      if (remaining > 0) {
+        next.push(o.value);
+        remaining -= 1;
+      }
     }
   }
   return next;
@@ -113,19 +369,42 @@ export function toggleCheckboxGroupValue(
   current: readonly string[],
   toggledValue: string,
   options: readonly EmrOption[],
-  exclusiveValues: readonly string[] = [],
+  exclusiveOrOptions: readonly string[] | EmrCheckboxGroupToggleOptions = [],
 ): readonly string[] {
-  const exclusiveSet = new Set(exclusiveValues);
+  const targetOption = options.find((o) => o.value === toggledValue);
+  if (targetOption && isCheckboxOptionLocked(targetOption)) {
+    return current;
+  }
+  const { exclusiveSet, maxSelections } = resolveCheckboxToggleOptions(exclusiveOrOptions);
+  const lockedValues = new Set(
+    options.filter((o) => isCheckboxOptionLocked(o)).map((o) => o.value),
+  );
+  const max =
+    typeof maxSelections === 'number' && Number.isFinite(maxSelections) && maxSelections >= 1
+      ? Math.trunc(maxSelections)
+      : null;
   const nextSet = new Set(current);
   const wasChecked = nextSet.has(toggledValue);
   if (wasChecked) {
     nextSet.delete(toggledValue);
   } else if (exclusiveSet.has(toggledValue)) {
-    nextSet.clear();
+    for (const val of [...nextSet]) {
+      if (!lockedValues.has(val)) {
+        nextSet.delete(val);
+      }
+    }
+    if (max !== null && nextSet.size >= max) {
+      return current;
+    }
     nextSet.add(toggledValue);
   } else {
     for (const ex of exclusiveSet) {
-      nextSet.delete(ex);
+      if (!lockedValues.has(ex)) {
+        nextSet.delete(ex);
+      }
+    }
+    if (max !== null && nextSet.size >= max) {
+      return current;
     }
     nextSet.add(toggledValue);
   }
@@ -586,6 +865,153 @@ export function addTagValues(
   return next;
 }
 
+export function resolveEmrTagsValue(
+  tags?: readonly string[] | null,
+  value?: readonly string[] | null,
+  values?: readonly string[] | null,
+): readonly string[] {
+  const hasTags = Array.isArray(tags);
+  const hasValue = Array.isArray(value);
+  const hasValues = Array.isArray(values);
+  if (
+    hasTags &&
+    (tags.length > 0 || ((!hasValue || value.length === 0) && (!hasValues || values.length === 0)))
+  ) {
+    return tags;
+  }
+  if (hasValue && (value.length > 0 || !hasValues || values.length === 0)) {
+    return value;
+  }
+  if (hasValues) {
+    return values;
+  }
+  return [];
+}
+
+export function normalizeTagInputDraft(raw: string, maxTagLength?: number): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (maxTagLength !== undefined && maxTagLength >= 0) {
+    return trimmed.slice(0, maxTagLength).trim();
+  }
+  return trimmed;
+}
+
+export function commitTagInputValues(
+  current: readonly string[],
+  rawCandidates: string | readonly string[],
+  options: {
+    readonly separators?: readonly string[];
+    readonly delimiters?: readonly string[];
+    readonly allowDuplicates?: boolean;
+    readonly maxTags?: number;
+    readonly maxTagLength?: number;
+  } = {},
+): { readonly next: readonly string[]; readonly added: readonly string[] } {
+  const seps = options.separators ?? options.delimiters ?? [',', ';'];
+  const rawList = typeof rawCandidates === 'string'
+    ? splitTagTokens(rawCandidates, seps)
+    : rawCandidates.flatMap((item) => splitTagTokens(item, seps));
+  const normalized = rawList
+    .map((item) => normalizeTagInputDraft(item, options.maxTagLength))
+    .filter((item) => item.length > 0);
+  if (normalized.length === 0) {
+    return { next: current, added: [] };
+  }
+  const next = addTagValues(current, normalized, {
+    allowDuplicates: options.allowDuplicates,
+    maxTags: options.maxTags,
+  });
+  return {
+    next,
+    added: next.slice(current.length),
+  };
+}
+
+export function isTagLocked(tag: string, lockedTags?: readonly string[]): boolean {
+  if (!lockedTags || lockedTags.length === 0) return false;
+  const target = tag.toLowerCase();
+  return lockedTags.some((locked) => locked.toLowerCase() === target);
+}
+
+export function removeTagInputAtIndex(
+  current: readonly string[],
+  index: number,
+  lockedTags?: readonly string[],
+): { readonly next: readonly string[]; readonly removed: string | null } {
+  if (index < 0 || index >= current.length) {
+    return { next: current, removed: null };
+  }
+  const tag = current[index]!;
+  if (isTagLocked(tag, lockedTags)) {
+    return { next: current, removed: null };
+  }
+  return {
+    next: current.filter((_, i) => i !== index),
+    removed: tag,
+  };
+}
+
+export function popLastUnlockedTag(
+  current: readonly string[],
+  lockedTags?: readonly string[],
+): { readonly next: readonly string[]; readonly removed: string | null; readonly index: number } {
+  for (let i = current.length - 1; i >= 0; i -= 1) {
+    const tag = current[i]!;
+    if (!isTagLocked(tag, lockedTags)) {
+      return {
+        next: current.filter((_, idx) => idx !== i),
+        removed: tag,
+        index: i,
+      };
+    }
+  }
+  return { next: current, removed: null, index: -1 };
+}
+
+export function clearUnlockedTags(
+  current: readonly string[],
+  lockedTags?: readonly string[],
+): { readonly next: readonly string[]; readonly removed: readonly string[] } {
+  if (current.length === 0) {
+    return { next: current, removed: [] };
+  }
+  const next: string[] = [];
+  const removed: string[] = [];
+  for (const tag of current) {
+    if (isTagLocked(tag, lockedTags)) {
+      next.push(tag);
+    } else {
+      removed.push(tag);
+    }
+  }
+  if (removed.length === 0) {
+    return { next: current, removed: [] };
+  }
+  return { next, removed };
+}
+
+export function rankTagSuggestions(
+  suggestions: readonly string[],
+  currentTags: readonly string[],
+  query: string,
+  options: { readonly allowDuplicates?: boolean; readonly filterSuggestions?: boolean } = {},
+): readonly EmrTagSuggestionItem[] {
+  const existing = new Set(currentTags.map((t) => t.toLowerCase()));
+  const available = suggestions.filter(
+    (s) => options.allowDuplicates || !existing.has(s.toLowerCase()),
+  );
+  if (options.filterSuggestions === false) {
+    return available.map((value) => ({ value, isBestMatch: false }));
+  }
+  const asOptions: readonly EmrOption[] = available.map((s) => ({ value: s, label: s }));
+  const ranked = rankAndFilterOptions(asOptions, query, 'local');
+  return ranked.map((entry) => ({
+    value: entry.option.value,
+    isBestMatch: entry.isBestMatch,
+  }));
+}
+
 export function clampSliderValue(
   value: number,
   min = 0,
@@ -780,4 +1206,661 @@ export const DEFAULT_CLINICAL_COLOR_SWATCHES: readonly EmrColorSwatch[] = [
   { value: '#334155', label: 'Slate Ink' },
 ];
 
-export type { EmrAccordionItem };
+export type {
+  EmrAccordionItem,
+  EmrControlVariant,
+  EmrMatchHighlightSegment,
+  EmrScoredOption,
+  EmrSearchSelectFilterMode,
+  EmrTagInputSize,
+  EmrTagInputVariant,
+  EmrTagSuggestionItem,
+  EmrSearchSelectSize,
+};
+
+function escapeSearchRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function rankAndFilterOptions<Value extends string = string>(
+  options: readonly EmrOption<Value>[],
+  query: string,
+  filterMode: EmrSearchSelectFilterMode = 'local',
+): readonly EmrScoredOption<Value>[] {
+  const trimmed = query.trim();
+  if (!trimmed || filterMode === 'none' || filterMode === 'remote') {
+    return options.map((option) => ({ option, score: 0, isBestMatch: false }));
+  }
+
+  const q = trimmed.toLowerCase();
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const wordBoundaryRe = new RegExp(`(?:^|[\\s\\-_/:(.,])${escapeSearchRegExp(q)}`);
+
+  const scored: { option: EmrOption<Value>; score: number }[] = [];
+  for (const option of options) {
+    const label = option.label.toLowerCase();
+    const value = option.value.toLowerCase();
+    const code = (option.code ?? '').toLowerCase();
+    const desc = (option.description ?? '').toLowerCase();
+    const group = (option.group ?? '').toLowerCase();
+    const keywords = (option.keywords ?? []).map((k) => k.toLowerCase());
+
+    let tier = 0;
+    if (label === q) {
+      tier = 1000;
+    } else if (code === q || value === q) {
+      tier = 950;
+    } else if (label.startsWith(q)) {
+      tier = 800;
+    } else if (wordBoundaryRe.test(label)) {
+      tier = 650;
+    } else if (code.startsWith(q) || value.startsWith(q)) {
+      tier = 600;
+    } else if (keywords.some((k) => k === q || k.startsWith(q))) {
+      tier = 500;
+    } else {
+      const labelIdx = label.indexOf(q);
+      if (labelIdx >= 0) {
+        tier = Math.max(1, 400 - labelIdx);
+      } else if (code.includes(q) || value.includes(q)) {
+        tier = 320;
+      } else if (desc.includes(q) || group.includes(q) || keywords.some((k) => k.includes(q))) {
+        tier = 180;
+      }
+    }
+
+    let multiTokenBonus = 0;
+    if (tokens.length > 1) {
+      const haystack = [label, code, value, desc, group, ...keywords].join(' ');
+      if (tokens.every((t) => haystack.includes(t))) {
+        multiTokenBonus = 100;
+      }
+    }
+
+    const total = tier + multiTokenBonus;
+    if (total > 0) {
+      scored.push({ option, score: total });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+
+  let assignedBest = false;
+  return scored.map((entry) => {
+    if (!assignedBest && !entry.option.disabled) {
+      assignedBest = true;
+      return { option: entry.option, score: entry.score, isBestMatch: true };
+    }
+    return { option: entry.option, score: entry.score, isBestMatch: false };
+  });
+}
+
+export function splitMatchHighlightSegments(
+  text: string,
+  query: string,
+): readonly EmrMatchHighlightSegment[] {
+  if (!text) return [];
+  const trimmed = query.trim();
+  if (!trimmed) return [{ text, matched: false }];
+
+  const buildSegments = (pattern: RegExp): readonly EmrMatchHighlightSegment[] => {
+    const segments: EmrMatchHighlightSegment[] = [];
+    let lastIndex = 0;
+    for (const match of text.matchAll(pattern)) {
+      const idx = match.index ?? 0;
+      const val = match[0];
+      if (!val) continue;
+      if (idx > lastIndex) {
+        segments.push({ text: text.slice(lastIndex, idx), matched: false });
+      }
+      segments.push({ text: val, matched: true });
+      lastIndex = idx + val.length;
+    }
+    if (lastIndex === 0) return [];
+    if (lastIndex < text.length) {
+      segments.push({ text: text.slice(lastIndex), matched: false });
+    }
+    return segments;
+  };
+
+  const fullPattern = new RegExp(escapeSearchRegExp(trimmed), 'gi');
+  const fullSegments = buildSegments(fullPattern);
+  if (fullSegments.length > 0) return fullSegments;
+
+  const tokens = Array.from(new Set(trimmed.split(/\s+/).filter(Boolean))).sort(
+    (a, b) => b.length - a.length,
+  );
+  if (tokens.length > 1) {
+    const tokenPattern = new RegExp(tokens.map(escapeSearchRegExp).join('|'), 'gi');
+    const tokenSegments = buildSegments(tokenPattern);
+    if (tokenSegments.length > 0) return tokenSegments;
+  }
+
+  return [{ text, matched: false }];
+}
+
+export function resolveSearchSelectValues<Value extends string = string>(
+  multiple: boolean,
+  value?: Value | readonly Value[] | null,
+  selected: readonly EmrOption<Value>[] = [],
+): readonly Value[] {
+  if (Array.isArray(value)) {
+    return multiple ? [...value] : value.length > 0 ? [value[0]] : [];
+  }
+  if (typeof value === 'string' && value !== '') {
+    return [value as Value];
+  }
+  if (selected.length > 0) {
+    return multiple ? selected.map((o) => o.value) : [selected[0].value];
+  }
+  return [];
+}
+
+export function resolveDefaultActiveOptionIndex<Value extends string = string>(
+  options: readonly EmrOption<Value>[],
+  selectedValues: readonly string[],
+  query: string,
+  autoHighlight = true,
+): number {
+  if (options.length === 0) return -1;
+  if (query.trim().length > 0 && autoHighlight) {
+    return options.findIndex((o) => !o.disabled);
+  }
+  if (selectedValues.length > 0) {
+    const selectedSet = new Set(selectedValues);
+    const idx = options.findIndex((o) => !o.disabled && selectedSet.has(o.value));
+    if (idx >= 0) return idx;
+  }
+  return -1;
+}
+
+export function findNextEnabledSearchOptionIndex<Value extends string = string>(
+  options: readonly EmrOption<Value>[],
+  currentIndex: number,
+  key: string,
+): number | null {
+  const len = options.length;
+  if (len === 0) return null;
+  const hasEnabled = options.some((o) => !o.disabled);
+  if (!hasEnabled) return null;
+
+  if (key === 'Home') {
+    return options.findIndex((o) => !o.disabled);
+  }
+  if (key === 'End') {
+    for (let i = len - 1; i >= 0; i -= 1) {
+      if (!options[i].disabled) return i;
+    }
+    return null;
+  }
+  if (key === 'ArrowDown') {
+    const start = currentIndex < 0 ? 0 : (currentIndex + 1) % len;
+    for (let step = 0; step < len; step += 1) {
+      const idx = (start + step) % len;
+      if (!options[idx].disabled) return idx;
+    }
+    return null;
+  }
+  if (key === 'ArrowUp') {
+    const start = currentIndex < 0 ? len - 1 : (currentIndex - 1 + len) % len;
+    for (let step = 0; step < len; step += 1) {
+      const idx = (start - step + len) % len;
+      if (!options[idx].disabled) return idx;
+    }
+    return null;
+  }
+  return null;
+}
+
+export function formatCreatableLabel(template: string, query: string): string {
+  const base = template && template.trim().length > 0 ? template : 'Create "{query}"';
+  return base.replace(/\{query\}/g, query.trim());
+}
+
+export function resolveSearchSelectDisplayValue<Value extends string = string>(params: {
+  readonly filterMode: EmrSearchSelectFilterMode;
+  readonly isActivelyTyping: boolean;
+  readonly query: string;
+  readonly value?: Value | readonly Value[] | null;
+  readonly selected?: readonly EmrOption<Value>[];
+  readonly options?: readonly EmrOption<Value>[];
+  readonly multiple?: boolean;
+}): string {
+  const { filterMode, isActivelyTyping, query, value, selected = [], options = [], multiple = false } = params;
+  if (multiple || isActivelyTyping) return query;
+  if (query.length > 0) return query;
+  const singleValue = Array.isArray(value) ? (value[0] ?? null) : value;
+  if (singleValue !== null && singleValue !== undefined && singleValue !== '') {
+    const match = options.find((o) => o.value === singleValue) ?? selected.find((o) => o.value === singleValue);
+    return match?.label ?? String(singleValue);
+  }
+  if ((filterMode === 'local' || filterMode === 'none') && selected.length === 1) {
+    return selected[0].label;
+  }
+  return '';
+}
+
+export function resolveComboboxDisplayValue<Value extends string = string>(params: {
+  readonly isActivelyTyping: boolean;
+  readonly query: string;
+  readonly value?: Value | null;
+  readonly options?: readonly EmrOption<Value>[];
+}): string {
+  const { isActivelyTyping, query, value, options = [] } = params;
+  if (isActivelyTyping) return query;
+  if (value !== null && value !== undefined && value !== '') {
+    const match = options.find((o) => o.value === value);
+    return match?.label ?? String(value);
+  }
+  return '';
+}
+
+export function resolveCustomSearchCandidate<Value extends string = string>(
+  query: string,
+  options: readonly EmrOption<Value>[],
+  allowCustomValue: boolean,
+  minQueryLength = 0,
+): string | null {
+  if (!allowCustomValue) return null;
+  const trimmed = query.trim();
+  if (!trimmed || trimmed.length < Math.max(0, minQueryLength)) return null;
+  const lower = trimmed.toLowerCase();
+  const exactMatch = options.some(
+    (o) =>
+      o.value.toLowerCase() === lower ||
+      o.label.toLowerCase() === lower ||
+      (o.code ? o.code.toLowerCase() === lower : false),
+  );
+  return exactMatch ? null : trimmed;
+}
+
+export function isSearchOptionSelected<Value extends string = string>(
+  optionValue: Value,
+  value?: Value | readonly Value[] | null,
+  selected: readonly EmrOption<Value>[] = [],
+): boolean {
+  if (Array.isArray(value)) {
+    if (value.includes(optionValue)) return true;
+  } else if (value !== null && value !== undefined && value !== '' && value === optionValue) {
+    return true;
+  }
+  return selected.some((o) => o.value === optionValue);
+}
+
+export function hasSearchSelectClearableValue<Value extends string = string>(params: {
+  readonly clearable: boolean;
+  readonly disabled: boolean;
+  readonly readOnly: boolean;
+  readonly value?: Value | readonly Value[] | null;
+  readonly selected?: readonly EmrOption<Value>[];
+  readonly query?: string;
+}): boolean {
+  const { clearable, disabled, readOnly, value, selected = [], query = '' } = params;
+  if (!clearable || disabled || readOnly) return false;
+  const hasVal = Array.isArray(value)
+    ? value.length > 0
+    : value !== null && value !== undefined && value !== '';
+  return Boolean(hasVal || selected.length > 0 || query.length > 0);
+}
+
+// ─────────────────────────────────────────────────────────────
+// EmrSelect Pure Helpers (mirrored from @drguptavivek/emr-controller)
+// ─────────────────────────────────────────────────────────────
+
+export type { EmrSelectSize, EmrSelectTriggerSummary, EmrSelectValue, EmrSelectVariant };
+
+export function normalizeEmrSelectSingleValue(value: EmrSelectValue | undefined): string | null {
+  if (typeof value === 'string') {
+    return value === '' ? null : value;
+  }
+  if (Array.isArray(value)) {
+    const first = value.find((v): v is string => typeof v === 'string' && v !== '');
+    return first ?? null;
+  }
+  return null;
+}
+
+export function normalizeEmrSelectMultiValue(value: EmrSelectValue | undefined): readonly string[] {
+  if (Array.isArray(value)) {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const item of value) {
+      if (typeof item === 'string' && item !== '' && !seen.has(item)) {
+        seen.add(item);
+        out.push(item);
+      }
+    }
+    return out;
+  }
+  if (typeof value === 'string' && value !== '') {
+    return [value];
+  }
+  return [];
+}
+
+export function resolveEmrSelectCloseOnSelect(
+  multiple: boolean,
+  closeOnSelect?: boolean,
+): boolean {
+  if (typeof closeOnSelect === 'boolean') return closeOnSelect;
+  return !multiple;
+}
+
+export function isEmrSelectOptionBlockedByMax(
+  optionValue: string,
+  selectedValues: readonly string[],
+  maxSelections?: number,
+): boolean {
+  if (typeof maxSelections !== 'number' || !Number.isFinite(maxSelections) || maxSelections < 1) {
+    return false;
+  }
+  if (selectedValues.includes(optionValue)) return false;
+  return selectedValues.length >= Math.trunc(maxSelections);
+}
+
+export function isEmrSelectClearable(params: {
+  readonly clearable: boolean;
+  readonly disabled: boolean;
+  readonly readOnly: boolean;
+  readonly multiple: boolean;
+  readonly value: EmrSelectValue | undefined;
+  readonly options?: readonly EmrOption[];
+}): boolean {
+  const { clearable, disabled, readOnly, multiple, value, options = [] } = params;
+  if (!clearable || disabled || readOnly) return false;
+  if (multiple) {
+    const current = normalizeEmrSelectMultiValue(value);
+    if (current.length === 0) return false;
+    return current.some((val) => {
+      const opt = options.find((o) => o.value === val);
+      return !(opt?.readOnly || opt?.disabled);
+    });
+  }
+  const single = normalizeEmrSelectSingleValue(value);
+  if (single === null) return false;
+  const opt = options.find((o) => o.value === single);
+  if (opt?.readOnly || opt?.disabled) return false;
+  return true;
+}
+
+export function toggleEmrSelectOption(params: {
+  readonly optionValue: string;
+  readonly current: readonly string[];
+  readonly options: readonly EmrOption[];
+  readonly maxSelections?: number;
+}): readonly string[] {
+  const { optionValue, current, options, maxSelections } = params;
+  const opt = options.find((o) => o.value === optionValue);
+  if (opt?.disabled || opt?.readOnly) return current;
+  if (current.includes(optionValue)) {
+    return current.filter((v) => v !== optionValue);
+  }
+  if (isEmrSelectOptionBlockedByMax(optionValue, current, maxSelections)) {
+    return current;
+  }
+  return [...current, optionValue];
+}
+
+export function clearEmrSelectValue(params: {
+  readonly multiple: boolean;
+  readonly value: EmrSelectValue | undefined;
+  readonly options: readonly EmrOption[];
+}): string | readonly string[] | null {
+  const { multiple, value, options } = params;
+  if (!multiple) {
+    const single = normalizeEmrSelectSingleValue(value);
+    if (single !== null) {
+      const opt = options.find((o) => o.value === single);
+      if (opt?.readOnly || opt?.disabled) return single;
+    }
+    return null;
+  }
+  const current = normalizeEmrSelectMultiValue(value);
+  return current.filter((val) => {
+    const opt = options.find((o) => o.value === val);
+    return Boolean(opt?.readOnly || opt?.disabled);
+  });
+}
+
+export function removeEmrSelectChip(params: {
+  readonly optionValue: string;
+  readonly current: readonly string[];
+  readonly options: readonly EmrOption[];
+}): readonly string[] {
+  const { optionValue, current, options } = params;
+  const opt = options.find((o) => o.value === optionValue);
+  if (opt?.disabled || opt?.readOnly) return current;
+  return current.filter((v) => v !== optionValue);
+}
+
+export function buildEmrSelectTriggerSummary(params: {
+  readonly multiple: boolean;
+  readonly value: EmrSelectValue | undefined;
+  readonly options: readonly EmrOption[];
+  readonly placeholder: string;
+  readonly maxTagCount?: number;
+}): EmrSelectTriggerSummary {
+  const { multiple, value, options, placeholder, maxTagCount } = params;
+  if (!multiple) {
+    const single = normalizeEmrSelectSingleValue(value);
+    if (single === null) {
+      return { hasSelection: false, text: placeholder, visibleChips: [], overflowCount: 0 };
+    }
+    const matched = options.find((o) => o.value === single);
+    return {
+      hasSelection: true,
+      text: matched?.label ?? single,
+      visibleChips: [],
+      overflowCount: 0,
+    };
+  }
+  const selected = normalizeEmrSelectMultiValue(value);
+  if (selected.length === 0) {
+    return { hasSelection: false, text: placeholder, visibleChips: [], overflowCount: 0 };
+  }
+  const resolved: EmrOption[] = selected.map((val) => {
+    const found = options.find((o) => o.value === val);
+    return found ?? { value: val, label: val };
+  });
+  const cap =
+    typeof maxTagCount === 'number' && Number.isFinite(maxTagCount) && maxTagCount >= 0
+      ? Math.trunc(maxTagCount)
+      : resolved.length;
+  const visibleChips = resolved.slice(0, cap);
+  const overflowCount = Math.max(0, resolved.length - visibleChips.length);
+  const text = resolved.map((o) => o.label).join(', ');
+  return {
+    hasSelection: true,
+    text,
+    visibleChips,
+    overflowCount,
+  };
+}
+
+export function findNextEnabledEmrSelectOptionIndex(
+  options: readonly EmrOption[],
+  currentIndex: number,
+  key: 'ArrowDown' | 'ArrowUp' | 'Home' | 'End',
+): number {
+  const enabledIndices: number[] = [];
+  for (let i = 0; i < options.length; i++) {
+    if (!options[i]!.disabled) enabledIndices.push(i);
+  }
+  if (enabledIndices.length === 0) return -1;
+  if (key === 'Home') return enabledIndices[0]!;
+  if (key === 'End') return enabledIndices[enabledIndices.length - 1]!;
+  const step = key === 'ArrowDown' ? 1 : -1;
+  const pos = enabledIndices.indexOf(currentIndex);
+  if (pos < 0) {
+    return step > 0 ? enabledIndices[0]! : enabledIndices[enabledIndices.length - 1]!;
+  }
+  const nextPos = (pos + step + enabledIndices.length) % enabledIndices.length;
+  return enabledIndices[nextPos]!;
+}
+
+export function findTypeaheadEmrSelectOptionIndex(
+  options: readonly EmrOption[],
+  query: string,
+  startIndex = -1,
+): number {
+  const q = query.trim().toLowerCase();
+  if (!q || options.length === 0) return -1;
+  const len = options.length;
+  const start = startIndex >= 0 && startIndex < len ? (startIndex + 1) % len : 0;
+  for (let offset = 0; offset < len; offset++) {
+    const idx = (start + offset) % len;
+    const opt = options[idx]!;
+    if (opt.disabled) continue;
+    if (opt.label.toLowerCase().startsWith(q)) return idx;
+  }
+  return -1;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Segmented Control Helpers (mirrored from controller, zero runtime import)
+// ─────────────────────────────────────────────────────────────
+
+const VALID_SEG_BADGE_TONES = new Set<EmrTone>(['neutral', 'info', 'success', 'warning', 'danger']);
+const VALID_SEG_BADGE_VARIANTS = new Set<EmrBadgeVariant>(['soft', 'solid', 'outline']);
+
+export function normalizeEmrSegmentedSize(size?: unknown): EmrSegmentedSize {
+  return size === 'sm' ? 'sm' : 'md';
+}
+
+export function normalizeEmrSegmentedVariant(variant?: unknown): EmrSegmentedVariant {
+  if (variant === 'outline' || variant === 'soft') return variant;
+  return 'default';
+}
+
+export function normalizeEmrSegmentedShape(shape?: unknown): EmrSegmentedShape {
+  return shape === 'pill' ? 'pill' : 'default';
+}
+
+export function normalizeEmrSegmentedOrientation(orientation?: unknown): EmrSegmentedOrientation {
+  return orientation === 'vertical' ? 'vertical' : 'horizontal';
+}
+
+export function resolveEmrSegmentedValidationState(params: {
+  error?: string;
+  warning?: string;
+  invalid?: boolean;
+}): EmrSegmentedValidationState {
+  const isInvalid = Boolean(params.invalid) || Boolean(params.error);
+  const hasWarning = !isInvalid && Boolean(params.warning);
+  return { isInvalid, hasWarning };
+}
+
+export function isEmrSegmentedOptionDisabled(
+  option: Pick<EmrSegmentedOption, 'disabled'>,
+  groupDisabled = false,
+): boolean {
+  return Boolean(groupDisabled || option.disabled);
+}
+
+export function isEmrSegmentedOptionLocked(
+  option: Pick<EmrSegmentedOption, 'disabled' | 'readOnly'>,
+  groupDisabled = false,
+  groupReadOnly = false,
+): boolean {
+  return Boolean(groupDisabled || groupReadOnly || option.disabled || option.readOnly);
+}
+
+export function resolveEmrSegmentedTabStopValue(
+  options: readonly EmrSegmentedOption[],
+  value: string | null | undefined,
+  groupDisabled = false,
+): string | null {
+  if (groupDisabled) return null;
+  const enabled = options.filter((o) => !o.disabled);
+  if (enabled.length === 0) return null;
+  if (value !== null && value !== undefined && value !== '' && enabled.some((o) => o.value === value)) {
+    return value;
+  }
+  return enabled[0]!.value;
+}
+
+export function moveEmrSegmentedFocusIndex(
+  options: readonly EmrSegmentedOption[],
+  currentIndex: number,
+  key: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown' | 'Home' | 'End',
+  groupDisabled = false,
+): number {
+  if (groupDisabled || options.length === 0) return -1;
+  const enabledIndices: number[] = [];
+  for (let i = 0; i < options.length; i += 1) {
+    if (!options[i]!.disabled) enabledIndices.push(i);
+  }
+  if (enabledIndices.length === 0) return -1;
+  if (key === 'Home') return enabledIndices[0]!;
+  if (key === 'End') return enabledIndices[enabledIndices.length - 1]!;
+  const direction = key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1;
+  const pos = enabledIndices.indexOf(currentIndex);
+  if (pos < 0) {
+    return direction > 0 ? enabledIndices[0]! : enabledIndices[enabledIndices.length - 1]!;
+  }
+  const nextPos = (pos + direction + enabledIndices.length) % enabledIndices.length;
+  return enabledIndices[nextPos]!;
+}
+
+export function canClearEmrSegmentedControl(params: {
+  clearable?: boolean;
+  value: string | null | undefined;
+  disabled?: boolean;
+  readOnly?: boolean;
+}): boolean {
+  return Boolean(
+    params.clearable &&
+      params.value !== null &&
+      params.value !== undefined &&
+      params.value !== '' &&
+      !params.disabled &&
+      !params.readOnly,
+  );
+}
+
+export function resolveEmrSegmentedSelectAction(params: {
+  option: EmrSegmentedOption;
+  currentValue: string | null | undefined;
+  allowDeselect?: boolean;
+  groupDisabled?: boolean;
+  groupReadOnly?: boolean;
+}): { readonly kind: 'noop' } | { readonly kind: 'select'; readonly value: string } | { readonly kind: 'clear' } {
+  if (isEmrSegmentedOptionLocked(params.option, params.groupDisabled, params.groupReadOnly)) {
+    return { kind: 'noop' };
+  }
+  if (params.currentValue === params.option.value) {
+    return params.allowDeselect ? { kind: 'clear' } : { kind: 'noop' };
+  }
+  return { kind: 'select', value: params.option.value };
+}
+
+export function formatEmrSegmentedBadge(
+  badge: EmrBadge | string | number | null | undefined,
+  fallbackTone?: EmrTone,
+): EmrSegmentedBadgePresentation | null {
+  if (badge === null || badge === undefined) return null;
+  const defaultTone: EmrTone = fallbackTone && VALID_SEG_BADGE_TONES.has(fallbackTone) ? fallbackTone : 'neutral';
+  if (typeof badge === 'number') {
+    if (!Number.isFinite(badge)) return null;
+    return { text: String(badge), tone: defaultTone, variant: 'soft' };
+  }
+  if (typeof badge === 'string') {
+    if (!badge.trim()) return null;
+    return { text: badge, tone: defaultTone, variant: 'soft' };
+  }
+  const countText = (() => {
+    if (typeof badge.count !== 'number' || !Number.isFinite(badge.count)) return null;
+    const intCount = Math.max(0, Math.trunc(badge.count));
+    if (intCount === 0 && !badge.showZero) return null;
+    const max = typeof badge.maxCount === 'number' && Number.isFinite(badge.maxCount) && badge.maxCount >= 1
+      ? Math.trunc(badge.maxCount)
+      : 99;
+    return intCount > max ? `${max}+` : String(intCount);
+  })();
+  const label = badge.label?.trim() ?? '';
+  const text = label && countText ? `${label} ${countText}` : label || countText || '';
+  if (!text) return null;
+  const tone = badge.tone && VALID_SEG_BADGE_TONES.has(badge.tone) ? badge.tone : defaultTone;
+  const variant = badge.variant && VALID_SEG_BADGE_VARIANTS.has(badge.variant) ? badge.variant : 'soft';
+  return { text, tone, variant };
+}

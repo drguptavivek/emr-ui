@@ -3,7 +3,7 @@ export const EMR_REGISTRY_MANIFEST = {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "@drguptavivek/emr",
   "homepage": "https://github.com/drguptavivek/emr-ui",
-  "totalItems": 172,
+  "totalItems": 210,
   "layers": {
     "0": "foundations",
     "1": "primitives",
@@ -50,13 +50,17 @@ export const EMR_REGISTRY_MANIFEST = {
       "status": "stable",
       "description": "L0 design tokens, light/dark themes, print context stylesheet, and React Native token/theme provider.",
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [],
       "angular": {
         "files": [
           "foundations/emr.css",
           "foundations/emr-print.css"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "@import '@drguptavivek/emr-ui/styles/emr.css';"
       },
@@ -68,6 +72,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "tokens.ts",
           "use-controller.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -78,16 +86,26 @@ export const EMR_REGISTRY_MANIFEST = {
           "tokens.ts",
           "use-controller.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "files": [
+          "foundations/emr.css",
+          "foundations/emr-print.css",
           "foundations.ts",
           "icons.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrLitElement, applyEmrCustomTheme, EMR_PALETTE_PRESETS, EMR_FONT_STACKS } from '@drguptavivek/emr-elements';"
       },
-      "fileCount": 9
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -109,7 +127,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -130,6 +149,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-button.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrButtonComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -143,6 +165,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrButton } from '@drguptavivek/emr-react';"
       },
@@ -158,6 +184,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrButton } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -170,6 +200,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrButtonElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -197,7 +231,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -220,6 +255,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTextInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -235,6 +273,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTextInput } from '@drguptavivek/emr-react';"
       },
@@ -252,6 +294,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTextInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -264,6 +310,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTextInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -291,7 +341,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -314,6 +365,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrNumberInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -329,6 +383,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrNumberInput } from '@drguptavivek/emr-react';"
       },
@@ -346,6 +404,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrNumberInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -358,6 +420,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrNumberInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -385,7 +451,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -408,6 +475,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrDateInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -423,6 +493,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrDateInput } from '@drguptavivek/emr-react';"
       },
@@ -440,6 +514,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDateInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -452,6 +530,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDateInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -474,13 +556,14 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Single-select dropdown driven by an EmrOption list with an optional placeholder, emitting the chosen value or null.",
+      "description": "Single- and multi-select combobox/listbox driven by an EmrOption list with grouped options, badges, descriptions, chips, and inline clear.",
       "stories": [
         "foundations-primitives--controls",
         "emr-medications-order-composer--tablet-bd"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -503,6 +586,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSelectComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -516,6 +602,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSelect } from '@drguptavivek/emr-react';"
       },
@@ -531,6 +621,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSelect } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -543,6 +637,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSelectElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -571,7 +669,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-order-composer--tablet-bd"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -594,6 +693,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrQuantityInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -609,6 +711,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrQuantityInput } from '@drguptavivek/emr-react';"
       },
@@ -626,6 +732,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrQuantityInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -638,6 +748,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrQuantityInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -665,7 +779,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -688,6 +803,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrPairedInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -703,6 +821,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrPairedInput } from '@drguptavivek/emr-react';"
       },
@@ -720,6 +842,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPairedInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -732,6 +858,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPairedInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -759,7 +889,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -778,7 +909,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCheckboxComponent",
         "selector": "emr-checkbox",
         "files": [
-          "primitives/emr-choice.component.ts"
+          "primitives/emr-choice.component.ts",
+          "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrCheckboxComponent } from '@drguptavivek/emr-ui';"
       },
@@ -796,6 +931,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrCheckbox } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -812,6 +951,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCheckbox } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -825,11 +968,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrCheckboxElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -846,12 +993,13 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Switch-styled boolean toggle control sharing the checkbox's checkedChange contract.",
+      "description": "Accessible switch-styled boolean toggle with tile/inline variants, sm/md sizes, labelPlacement, on/off state labels, loading, invalid/warning/error states, and checkedChange/valueChange.",
       "stories": [
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -870,7 +1018,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrToggleComponent",
         "selector": "emr-toggle",
         "files": [
-          "primitives/emr-choice.component.ts"
+          "primitives/emr-choice.component.ts",
+          "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrToggleComponent } from '@drguptavivek/emr-ui';"
       },
@@ -888,6 +1040,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrToggle } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -904,6 +1060,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrToggle } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -917,11 +1077,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrToggleElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -943,7 +1107,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -962,7 +1127,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrRadioGroupComponent",
         "selector": "emr-radio-group",
         "files": [
-          "primitives/emr-choice.component.ts"
+          "primitives/emr-choice.component.ts",
+          "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRadioGroupComponent } from '@drguptavivek/emr-ui';"
       },
@@ -980,6 +1149,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrRadioGroup } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -996,6 +1169,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRadioGroup } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1009,11 +1186,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrRadioGroupElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1035,7 +1216,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1054,7 +1236,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrBadgeComponent",
         "selector": "emr-badge",
         "files": [
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrBadgeComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1065,10 +1251,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrBadge } from '@drguptavivek/emr-react';"
       },
@@ -1079,10 +1273,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrBadge } from '@drguptavivek/emr-react';"
       },
@@ -1097,11 +1299,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrBadgeElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1123,7 +1329,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1142,7 +1349,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrChipComponent",
         "selector": "emr-chip",
         "files": [
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrChipComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1159,6 +1370,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrChip } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -1174,6 +1389,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrChip } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1187,11 +1406,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrChipElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1213,7 +1436,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--feedback-states"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1232,7 +1456,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAlertComponent",
         "selector": "emr-alert",
         "files": [
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAlertComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1249,6 +1477,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrAlert } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -1264,6 +1496,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAlert } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1277,11 +1513,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrAlertElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1303,7 +1543,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--feedback-states"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1322,7 +1563,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStateMessageComponent",
         "selector": "emr-state-message",
         "files": [
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrStateMessageComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1339,6 +1584,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrStateMessage } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -1354,6 +1603,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrStateMessage } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1367,11 +1620,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrStateMessageElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1394,7 +1651,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--search-multi-select"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1416,6 +1674,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-search-select.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSearchSelectComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -1434,6 +1695,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSearchSelect } from '@drguptavivek/emr-react';"
       },
@@ -1454,6 +1719,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSearchSelect } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1466,6 +1735,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSearchSelectElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -1493,7 +1766,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-primitives--controls"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1512,7 +1786,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTabsComponent",
         "selector": "emr-tabs",
         "files": [
-          "primitives/emr-tabs.component.ts"
+          "primitives/emr-tabs.component.ts",
+          "primitives/emr-tabs.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTabsComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1533,6 +1811,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTabs } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -1552,6 +1834,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTabs } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1565,11 +1851,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrTabsElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1591,7 +1881,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-layout-primitives--separators"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1612,6 +1903,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-separator.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSeparatorComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -1626,6 +1920,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSeparator } from '@drguptavivek/emr-react';"
       },
@@ -1642,6 +1940,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSeparator } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1654,6 +1956,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSeparatorElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -1687,7 +1993,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-likert-scale--disabled"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1706,7 +2013,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrLikertComponent",
         "selector": "emr-likert",
         "files": [
-          "primitives/emr-likert.component.ts"
+          "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrLikertComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1727,6 +2038,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrLikert } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -1746,6 +2061,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrLikert } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1759,11 +2078,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrLikertElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1791,7 +2114,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-vas-scale--disabled-vas"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1810,7 +2134,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrVasComponent",
         "selector": "emr-vas",
         "files": [
-          "primitives/emr-vas.component.ts"
+          "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrVasComponent } from '@drguptavivek/emr-ui';"
       },
@@ -1831,6 +2159,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrVas } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -1850,6 +2182,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrVas } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1863,11 +2199,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrVasElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1891,7 +2231,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-layout-primitives--three-column-weighted"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -1912,6 +2253,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-card-layout.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrCardComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -1926,6 +2270,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrCard } from '@drguptavivek/emr-react';"
       },
@@ -1942,6 +2290,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCard } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -1954,6 +2306,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrCardElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -1982,7 +2338,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-layout-primitives--three-column-weighted"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -2003,6 +2360,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-card-layout.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrColumnsComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -2017,6 +2377,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrColumns } from '@drguptavivek/emr-react';"
       },
@@ -2033,6 +2397,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrColumns } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2045,6 +2413,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrColumnsElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -2072,7 +2444,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-layout-primitives--field-value-remarks-notes"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -2093,6 +2466,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-card-layout.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrFieldValueRowComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -2107,6 +2483,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrFieldValueRow } from '@drguptavivek/emr-react';"
       },
@@ -2123,6 +2503,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFieldValueRow } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2135,6 +2519,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFieldValueRowElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -2162,7 +2550,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-frame-and-typed-field--field-frame-states"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -2182,6 +2571,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-field-frame",
         "files": [
           "fields/emr-field-frame.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrFieldFrameComponent } from '@drguptavivek/emr-ui';"
       },
@@ -2214,6 +2606,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrFieldFrame } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -2245,6 +2641,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFieldFrame } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2259,6 +2659,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFieldFrameElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
@@ -2287,7 +2691,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-order-composer--tablet-bd"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -2354,18 +2759,24 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTypedFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -2398,6 +2809,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTypedField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -2429,6 +2844,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTypedField } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2444,11 +2863,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrTypedFieldElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 51
+      "fileCount": 54
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2470,7 +2893,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-structures-section-card-and-repeatable-group--section-card-collapsible"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -2492,7 +2916,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-section-card",
         "files": [
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "structures/emr-section-card.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrSectionCardComponent } from '@drguptavivek/emr-ui';"
       },
@@ -2528,6 +2956,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrSectionCard } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -2562,6 +2994,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSectionCard } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2569,6 +3005,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-section-card",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -2576,13 +3013,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSectionCardElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 42
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2605,7 +3047,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-structures-section-card-and-repeatable-group--repeatable-group-empty"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -2653,19 +3096,25 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-repeatable-group.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRepeatableGroupComponent } from '@drguptavivek/emr-ui';"
       },
@@ -2700,6 +3149,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrRepeatableGroup } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -2733,6 +3186,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRepeatableGroup } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2740,6 +3197,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-repeatable-group",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -2747,13 +3205,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrRepeatableGroupElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 55
+      "fileCount": 60
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2787,7 +3250,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-workflow--read-only-form-with-correction"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -2838,20 +3302,26 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
           "structures/emr-section-card.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrClinicalFormComponent } from '@drguptavivek/emr-ui';"
       },
@@ -2887,6 +3357,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrClinicalForm } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -2921,6 +3395,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrClinicalForm } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -2928,6 +3406,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-clinical-form",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -2935,13 +3414,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalFormElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 57
+      "fileCount": 62
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2963,7 +3447,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--clinical-list-empty-read-only"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -2984,6 +3469,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-list.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrClinicalListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -3002,6 +3490,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrClinicalList } from '@drguptavivek/emr-react';"
       },
@@ -3022,6 +3514,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrClinicalList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3029,6 +3525,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-clinical-list",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -3036,13 +3533,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalListElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3073,7 +3575,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-assessment-ophthalmology--refraction"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -3094,6 +3597,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-matrix.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrClinicalMatrixComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -3112,6 +3618,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrClinicalMatrix } from '@drguptavivek/emr-react';"
       },
@@ -3132,6 +3642,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrClinicalMatrix } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3139,6 +3653,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-clinical-matrix",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -3146,19 +3661,24 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalMatrixElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "emr-clinical-cell-renderer",
       "id": "EmrClinicalCellRendererDirective",
-      "reactName": "EmrCustomRenderers",
+      "reactName": "EmrMatrixCellRenderers",
       "litName": "EmrClinicalCellRendererElement",
       "selector": "",
       "type": "registry:ui",
@@ -3172,7 +3692,8 @@ export const EMR_REGISTRY_MANIFEST = {
       "description": "Structural template directive (ng-template[emrClinicalCellRenderer]) that registers a custom per-row cell renderer for emr-clinical-matrix.",
       "stories": [],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -3193,75 +3714,63 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-matrix.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrClinicalCellRendererDirective } from '@drguptavivek/emr-ui';"
       },
       "react": {
-        "component": "EmrCustomRenderers",
+        "component": "EmrMatrixCellRenderers",
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
           "l1-field-chrome.tsx",
-          "l1-image.tsx",
           "l1-inputs.logic.ts",
-          "l1-inputs.tsx",
-          "l1-interactive-scales.tsx",
           "l1-interactive-shared.ts",
           "l1-interactive.logic.ts",
-          "l1-interactive.tsx",
-          "l1-new-inputs.tsx",
-          "l1-tree.tsx",
-          "l1-wave2-formatted.tsx",
-          "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
-          "l2-contract-fields.tsx",
-          "l2-field-frame.tsx",
-          "l2-fields.logic.ts",
-          "l2-fields.tsx",
+          "l3-structures.logic.ts",
+          "l3-structures.tsx",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
-          "tokens.ts",
-          "typed-field.logic.ts",
-          "typed-field.tsx"
+          "tokens.ts"
         ],
-        "import": "import { EmrCustomRenderers } from '@drguptavivek/emr-react';"
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrMatrixCellRenderers } from '@drguptavivek/emr-react';"
       },
       "expo": {
-        "component": "EmrCustomRenderers",
+        "component": "EmrMatrixCellRenderers",
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
           "l1-field-chrome.tsx",
-          "l1-image.tsx",
           "l1-inputs.logic.ts",
-          "l1-inputs.tsx",
-          "l1-interactive-scales.tsx",
           "l1-interactive-shared.ts",
           "l1-interactive.logic.ts",
-          "l1-interactive.tsx",
-          "l1-new-inputs.tsx",
-          "l1-tree.tsx",
-          "l1-wave2-formatted.tsx",
-          "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
-          "l2-contract-fields.tsx",
-          "l2-field-frame.tsx",
-          "l2-fields.logic.ts",
-          "l2-fields.tsx",
+          "l3-structures.logic.ts",
+          "l3-structures.tsx",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
-          "tokens.ts",
-          "typed-field.logic.ts",
-          "typed-field.tsx"
+          "tokens.ts"
         ],
-        "import": "import { EmrCustomRenderers } from '@drguptavivek/emr-react';"
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrMatrixCellRenderers } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrClinicalCellRendererElement",
         "selector": "emr-clinical-cell-renderer",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -3269,13 +3778,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalCellRendererElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3298,7 +3812,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--clinical-lists"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -3321,6 +3836,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-list.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrMedicationListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -3339,6 +3857,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrMedicationList } from '@drguptavivek/emr-react';"
       },
@@ -3359,6 +3881,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMedicationList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3375,19 +3901,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrMedicationListElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3410,7 +3946,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--clinical-lists"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -3433,6 +3970,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-list.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrAllergyListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -3451,6 +3991,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrAllergyList } from '@drguptavivek/emr-react';"
       },
@@ -3471,6 +4015,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAllergyList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3487,19 +4035,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAllergyListElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3521,7 +4079,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--clinical-lists"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -3544,6 +4103,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-list.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrChronicDiseaseListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -3562,6 +4124,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrChronicDiseaseList } from '@drguptavivek/emr-react';"
       },
@@ -3582,6 +4148,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrChronicDiseaseList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3598,19 +4168,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrChronicDiseaseListElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3632,7 +4212,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--clinical-lists"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -3655,6 +4236,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-clinical-list.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrPersonalHistoryListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -3673,6 +4257,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrPersonalHistoryList } from '@drguptavivek/emr-react';"
       },
@@ -3693,6 +4281,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPersonalHistoryList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3709,19 +4301,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPersonalHistoryListElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3748,7 +4350,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--inpatient-icu-isolation"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -3768,6 +4371,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-patient-banner",
         "files": [
           "domain/emr-patient-banner.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPatientBannerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -3794,6 +4400,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPatientBanner } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -3819,6 +4429,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPatientBanner } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -3835,19 +4449,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPatientBannerElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 43
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3872,7 +4496,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--patient-list-empty"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -3892,6 +4517,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-patient-list",
         "files": [
           "domain/emr-patient-list.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPatientListComponent } from '@drguptavivek/emr-ui';"
       },
@@ -3918,6 +4546,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPatientList } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -3943,35 +4575,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPatientList } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPatientListElement",
         "selector": "emr-patient-list",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPatientListElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3996,7 +4622,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-assessment--encounter-timeline-empty"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -4016,6 +4643,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-timeline",
         "files": [
           "domain/emr-timeline.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTimelineComponent } from '@drguptavivek/emr-ui';"
       },
@@ -4042,6 +4672,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTimeline } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -4067,35 +4701,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTimeline } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrTimelineElement",
         "selector": "emr-timeline",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTimelineElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4118,7 +4746,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--application-shell-dark"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -4138,6 +4767,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-app-shell",
         "files": [
           "domain/emr-app-shell.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAppShellComponent } from '@drguptavivek/emr-ui';"
       },
@@ -4162,6 +4794,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrAppShell } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -4185,35 +4821,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAppShell } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrAppShellElement",
         "selector": "emr-app-shell",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAppShellElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4238,7 +4868,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-patient-and-navigation--application-shell-dark"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -4259,6 +4890,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-left-nav.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrLeftNavComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -4275,6 +4909,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrLeftNav } from '@drguptavivek/emr-react';"
       },
@@ -4293,35 +4931,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrLeftNav } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrLeftNavElement",
         "selector": "emr-left-nav",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrLeftNavElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4344,7 +4976,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-orders-and-favourites--favourites-in-flyout"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -4364,6 +4997,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-right-flyout",
         "files": [
           "domain/emr-right-flyout.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRightFlyoutComponent } from '@drguptavivek/emr-ui';"
       },
@@ -4401,6 +5037,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrRightFlyout } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -4437,35 +5077,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRightFlyout } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrRightFlyoutElement",
         "selector": "emr-right-flyout",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrRightFlyoutElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 48
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4492,7 +5126,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-safety-staged-checklist--two-instances"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -4515,6 +5150,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-staged-checklist.component.ts",
           "primitives/emr-stage-stepper.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrStagedChecklistComponent } from '@drguptavivek/emr-ui';"
       },
@@ -4552,6 +5190,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrStagedChecklist } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -4588,35 +5230,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrStagedChecklist } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrStagedChecklistElement",
         "selector": "emr-staged-checklist",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrStagedChecklistElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 49
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4642,7 +5278,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-safety-pac-checklist--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -4694,20 +5331,26 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
           "structures/emr-section-card.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPacChecklistComponent } from '@drguptavivek/emr-ui';"
       },
@@ -4745,6 +5388,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPacChecklist } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -4781,35 +5428,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPacChecklist } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPacChecklistElement",
         "selector": "emr-pac-checklist",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPacChecklistElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 68
+      "fileCount": 57
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4834,7 +5475,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-history-family-history--mobile-dense"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -4854,6 +5496,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-family-pedigree",
         "files": [
           "domain/emr-family-pedigree.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrFamilyPedigreeComponent } from '@drguptavivek/emr-ui';"
       },
@@ -4891,6 +5536,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrFamilyPedigree } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -4927,35 +5576,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFamilyPedigree } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrFamilyPedigreeElement",
         "selector": "emr-family-pedigree",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFamilyPedigreeElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 48
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4977,7 +5620,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-documents--upload-queue"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -4997,6 +5641,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-document-upload-queue",
         "files": [
           "domain/emr-document-upload-queue.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrDocumentUploadQueueComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5034,6 +5681,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrDocumentUploadQueue } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5070,35 +5721,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDocumentUploadQueue } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrDocumentUploadQueueElement",
         "selector": "emr-document-upload-queue",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDocumentUploadQueueElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 48
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5124,7 +5769,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-documents--documents-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -5144,6 +5790,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-patient-documents",
         "files": [
           "domain/emr-patient-documents.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPatientDocumentsComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5181,6 +5830,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPatientDocuments } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5217,35 +5870,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPatientDocuments } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPatientDocumentsElement",
         "selector": "emr-patient-documents",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPatientDocumentsElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 48
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5271,7 +5918,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-documents--unauthorized-preview"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -5291,6 +5939,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-document-viewer",
         "files": [
           "domain/emr-document-viewer.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrDocumentViewerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5328,6 +5979,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrDocumentViewer } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5364,35 +6019,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDocumentViewer } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrDocumentViewerElement",
         "selector": "emr-document-viewer",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDocumentViewerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 48
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5417,7 +6066,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-orders-and-favourites--catalogue-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -5447,6 +6097,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrHierarchyOrderPickerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5484,6 +6137,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrHierarchyOrderPicker } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5520,35 +6177,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrHierarchyOrderPicker } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrHierarchyOrderPickerElement",
         "selector": "emr-hierarchy-order-picker",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrHierarchyOrderPickerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 53
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5570,7 +6221,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-orders-and-favourites--order-details-standalone"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -5600,6 +6252,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrOrderDetailsComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5637,6 +6292,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrOrderDetails } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5673,35 +6332,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrOrderDetails } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrOrderDetailsElement",
         "selector": "emr-order-details",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrOrderDetailsElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 52
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5728,7 +6381,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-orders-and-favourites--favourites-in-flyout"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -5755,7 +6409,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-tabs.component.ts",
+          "primitives/emr-tabs.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrFavouritesPanelComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5793,6 +6451,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrFavouritesPanel } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5829,35 +6491,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFavouritesPanel } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrFavouritesPanelElement",
         "selector": "emr-favourites-panel",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFavouritesPanelElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 52
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5887,7 +6543,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-photo-annotation--dermatology-readonly"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -5913,6 +6570,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-clinical-annotation-canvas.component.ts",
           "structures/emr-annotation-list.component.ts",
           "structures/emr-annotation-toolbar.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrClinicalAnnotationCanvasComponent } from '@drguptavivek/emr-ui';"
       },
@@ -5949,6 +6609,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrClinicalAnnotationCanvas } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -5984,35 +6648,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrClinicalAnnotationCanvas } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrClinicalAnnotationCanvasElement",
         "selector": "emr-clinical-annotation-canvas",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalAnnotationCanvasElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 49
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6038,7 +6696,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-assessment-ophthalmology--perimetry-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -6059,6 +6718,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-diagnostic-result-summary.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrDiagnosticResultSummaryComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -6075,6 +6737,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrDiagnosticResultSummary } from '@drguptavivek/emr-react';"
       },
@@ -6093,35 +6759,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDiagnosticResultSummary } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrDiagnosticResultSummaryElement",
         "selector": "emr-diagnostic-result-summary",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDiagnosticResultSummaryElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6146,7 +6806,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-assessment-ophthalmology--spectacle-prescription-errors"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -6167,6 +6828,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-spectacle-prescription.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSpectaclePrescriptionComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -6183,6 +6847,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSpectaclePrescription } from '@drguptavivek/emr-react';"
       },
@@ -6201,35 +6869,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSpectaclePrescription } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSpectaclePrescriptionElement",
         "selector": "emr-spectacle-prescription",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSpectaclePrescriptionElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6276,7 +6938,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-order-composer--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -6301,7 +6964,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-dose-schedule.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrDoseScheduleComponent } from '@drguptavivek/emr-ui';"
       },
@@ -6322,6 +6989,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrDoseSchedule } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -6341,6 +7012,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDoseSchedule } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -6357,19 +7032,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDoseScheduleElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 33
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6401,7 +7086,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-authoring-field-generator--two-instances"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -6456,18 +7142,24 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrFieldGeneratorComponent } from '@drguptavivek/emr-ui';"
       },
@@ -6506,6 +7198,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrFieldGenerator } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -6543,37 +7239,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFieldGenerator } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrFieldGeneratorElement",
         "selector": "emr-field-generator",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts",
-          "l6-authoring-surfaces.ts",
-          "l6-authoring.ts"
+          "l6-authoring-surfaces.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFieldGeneratorElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL6Elements } from './components/emr/l6-authoring.js';\nregisterL6Elements();",
+        "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 71
+      "fileCount": 58
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6595,7 +7283,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-authoring-field-generator--terminology-search-standalone"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -6615,6 +7304,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-terminology-search",
         "files": [
           "authoring/emr-terminology-search.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTerminologySearchComponent } from '@drguptavivek/emr-ui';"
       },
@@ -6653,6 +7345,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTerminologySearch } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -6690,37 +7386,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTerminologySearch } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrTerminologySearchElement",
         "selector": "emr-terminology-search",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts",
-          "l6-authoring-surfaces.ts",
-          "l6-authoring.ts"
+          "l6-authoring-surfaces.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTerminologySearchElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL6Elements } from './components/emr/l6-authoring.js';\nregisterL6Elements();",
+        "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 51
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6742,7 +7430,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-authoring-field-generator--validation-rule-editor-standalone"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -6762,6 +7451,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-validation-rule-editor",
         "files": [
           "authoring/emr-validation-rule-editor.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrValidationRuleEditorComponent } from '@drguptavivek/emr-ui';"
       },
@@ -6800,6 +7492,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrValidationRuleEditor } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -6837,37 +7533,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrValidationRuleEditor } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrValidationRuleEditorElement",
         "selector": "emr-validation-rule-editor",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts",
-          "l6-authoring-surfaces.ts",
-          "l6-authoring.ts"
+          "l6-authoring-surfaces.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrValidationRuleEditorElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL6Elements } from './components/emr/l6-authoring.js';\nregisterL6Elements();",
+        "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 51
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6889,7 +7577,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-templates-composer--field-library-picker-standalone"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -6909,6 +7598,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-field-library-picker",
         "files": [
           "authoring/emr-field-library-picker.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrFieldLibraryPickerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -6947,6 +7639,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrFieldLibraryPicker } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -6984,37 +7680,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFieldLibraryPicker } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrFieldLibraryPickerElement",
         "selector": "emr-field-library-picker",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts",
-          "l6-authoring-surfaces.ts",
-          "l6-authoring.ts"
+          "l6-authoring-surfaces.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFieldLibraryPickerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL6Elements } from './components/emr/l6-authoring.js';\nregisterL6Elements();",
+        "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 51
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7041,7 +7729,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-templates-composer--two-instances"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -7098,20 +7787,26 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
           "structures/emr-section-card.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTemplateComposerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -7150,6 +7845,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTemplateComposer } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -7187,37 +7886,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTemplateComposer } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrTemplateComposerElement",
         "selector": "emr-template-composer",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts",
-          "l6-authoring-surfaces.ts",
-          "l6-authoring.ts"
+          "l6-authoring-surfaces.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTemplateComposerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL6Elements } from './components/emr/l6-authoring.js';\nregisterL6Elements();",
+        "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 73
+      "fileCount": 60
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7243,7 +7934,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-templates-composer--exported-artifact"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -7295,20 +7987,26 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-search-select.component.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-textarea.component.ts",
           "primitives/emr-tree.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
           "structures/emr-section-card.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTemplatePreviewComponent } from '@drguptavivek/emr-ui';"
       },
@@ -7347,6 +8045,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTemplatePreview } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -7384,37 +8086,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTemplatePreview } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrTemplatePreviewElement",
         "selector": "emr-template-preview",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts",
-          "l6-authoring-surfaces.ts",
-          "l6-authoring.ts"
+          "l6-authoring-surfaces.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTemplatePreviewElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL6Elements } from './components/emr/l6-authoring.js';\nregisterL6Elements();",
+        "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 71
+      "fileCount": 58
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7447,7 +8141,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-ophthalmology-oct-record--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -7468,6 +8163,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-oct-finding-record.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrOctFindingRecordComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -7484,6 +8182,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrOctFindingRecord } from '@drguptavivek/emr-react';"
       },
@@ -7502,35 +8204,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrOctFindingRecord } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrOctFindingRecordElement",
         "selector": "emr-oct-finding-record",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrOctFindingRecordElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7558,7 +8254,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-annotation-toolbar--pen-panel-open"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -7578,6 +8275,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-annotation-toolbar",
         "files": [
           "structures/emr-annotation-toolbar.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAnnotationToolbarComponent } from '@drguptavivek/emr-ui';"
       },
@@ -7612,6 +8312,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrAnnotationToolbar } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -7645,6 +8349,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAnnotationToolbar } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -7652,6 +8360,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-annotation-toolbar",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -7659,13 +8368,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAnnotationToolbarElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7693,7 +8407,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-annotation-list--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -7713,6 +8428,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-annotation-list",
         "files": [
           "structures/emr-annotation-list.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAnnotationListComponent } from '@drguptavivek/emr-ui';"
       },
@@ -7747,6 +8465,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrAnnotationList } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -7780,6 +8502,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAnnotationList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -7787,6 +8513,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-annotation-list",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -7794,13 +8521,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAnnotationListElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7831,7 +8563,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-ophthalmology-meridian-cross--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -7853,7 +8586,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-meridian-cross",
         "files": [
           "domain/emr-meridian-cross.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrMeridianCrossComponent } from '@drguptavivek/emr-ui';"
       },
@@ -7872,6 +8609,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrMeridianCross } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -7889,35 +8630,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMeridianCross } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrMeridianCrossElement",
         "selector": "emr-meridian-cross",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrMeridianCrossElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7946,7 +8681,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-ophthalmology-motility-chart--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -7967,6 +8703,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-ocular-motility-chart.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrOcularMotilityChartComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -7983,6 +8722,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrOcularMotilityChart } from '@drguptavivek/emr-react';"
       },
@@ -8001,35 +8744,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrOcularMotilityChart } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrOcularMotilityChartElement",
         "selector": "emr-ocular-motility-chart",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrOcularMotilityChartElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8063,7 +8800,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-observations-flowsheet--with-time-axis"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -8085,7 +8823,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-observation-flowsheet",
         "files": [
           "domain/emr-observation-flowsheet.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrObservationFlowsheetComponent } from '@drguptavivek/emr-ui';"
       },
@@ -8106,6 +8848,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrObservationFlowsheet } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -8125,35 +8871,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrObservationFlowsheet } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrObservationFlowsheetElement",
         "selector": "emr-observation-flowsheet",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-observations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrObservationFlowsheetElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8194,7 +8934,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-observations-trend--long-legend"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -8216,6 +8957,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-observation-trend.component.ts",
           "domain/observation-trend.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrObservationTrendComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -8234,6 +8978,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrObservationTrend } from '@drguptavivek/emr-react';"
       },
@@ -8254,35 +9002,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrObservationTrend } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrObservationTrendElement",
         "selector": "emr-observation-trend",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-observations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrObservationTrendElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8314,7 +9056,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-notes-evidence-linked-capture--evidence-linked-journey"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -8335,6 +9078,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-clinical-transcript.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrClinicalTranscriptComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -8353,6 +9099,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrClinicalTranscript } from '@drguptavivek/emr-react';"
       },
@@ -8373,35 +9123,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrClinicalTranscript } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrClinicalTranscriptElement",
         "selector": "emr-clinical-transcript",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-observations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalTranscriptElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8433,7 +9177,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-notes-evidence-linked-capture--evidence-linked-journey"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -8454,6 +9199,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-evidence-suggestion-list.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrEvidenceSuggestionListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -8472,6 +9220,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrEvidenceSuggestionList } from '@drguptavivek/emr-react';"
       },
@@ -8492,35 +9244,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrEvidenceSuggestionList } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrEvidenceSuggestionListElement",
         "selector": "emr-evidence-suggestion-list",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-observations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrEvidenceSuggestionListElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8553,7 +9299,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-order-composer--tablet-bd"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -8581,6 +9328,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-search-select.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrCodedInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -8602,6 +9352,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrCodedInput } from '@drguptavivek/emr-react';"
       },
@@ -8625,6 +9379,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCodedInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -8639,6 +9397,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrCodedInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
@@ -8676,7 +9438,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-capture-status-bar--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -8696,6 +9459,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-capture-status-bar",
         "files": [
           "domain/emr-capture-status-bar.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrCaptureStatusBarComponent } from '@drguptavivek/emr-ui';"
       },
@@ -8722,6 +9488,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrCaptureStatusBar } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -8747,35 +9517,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCaptureStatusBar } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrCaptureStatusBarElement",
         "selector": "emr-capture-status-bar",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-observations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrCaptureStatusBarElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8806,7 +9570,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-scores-result-card--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -8827,6 +9592,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-score-result-card.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrScoreResultCardComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -8845,6 +9613,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrScoreResultCard } from '@drguptavivek/emr-react';"
       },
@@ -8865,6 +9637,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrScoreResultCard } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -8881,19 +9657,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrScoreResultCardElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8925,7 +9711,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-reconciliation--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -8952,7 +9739,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-medication-reconciliation.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrMedicationReconciliationComponent } from '@drguptavivek/emr-ui';"
       },
@@ -8973,6 +9764,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrMedicationReconciliation } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -8992,35 +9787,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMedicationReconciliation } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrMedicationReconciliationElement",
         "selector": "emr-medication-reconciliation",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrMedicationReconciliationElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 33
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9050,7 +9839,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-scheduling-work-queue--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -9078,7 +9868,12 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-work-queue.component.ts",
           "primitives/emr-button.component.ts",
           "primitives/emr-feedback.component.ts",
-          "primitives/emr-tabs.component.ts"
+          "primitives/emr-feedback.logic.ts",
+          "primitives/emr-tabs.component.ts",
+          "primitives/emr-tabs.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrWorkQueueComponent } from '@drguptavivek/emr-ui';"
       },
@@ -9105,6 +9900,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrWorkQueue } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -9130,35 +9929,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrWorkQueue } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrWorkQueueElement",
         "selector": "emr-work-queue",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrWorkQueueElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 40
+      "fileCount": 28
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9188,7 +9981,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-annotation-template-gallery--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -9208,6 +10002,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-image-template-picker",
         "files": [
           "structures/emr-image-template-picker.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrImageTemplatePickerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -9242,6 +10039,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrImageTemplatePicker } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -9275,6 +10076,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrImageTemplatePicker } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9282,6 +10087,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-image-template-picker",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -9289,13 +10095,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrImageTemplatePickerElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9322,7 +10133,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-time-and-datetime--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -9345,6 +10157,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTimeInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -9360,6 +10175,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTimeInput } from '@drguptavivek/emr-react';"
       },
@@ -9377,6 +10196,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTimeInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9389,6 +10212,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTimeInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -9420,7 +10247,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-time-and-datetime--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -9443,6 +10271,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrDateTimeInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -9458,6 +10289,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrDateTimeInput } from '@drguptavivek/emr-react';"
       },
@@ -9475,6 +10310,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDateTimeInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9487,6 +10326,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDateTimeInputElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -9524,7 +10367,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-administration-record--overview"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -9545,6 +10389,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-status-cell.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrStatusCellComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -9559,6 +10406,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrStatusCell } from '@drguptavivek/emr-react';"
       },
@@ -9575,6 +10426,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrStatusCell } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9587,6 +10442,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrStatusCellElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -9625,7 +10484,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-administration-record--overview"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -9645,6 +10505,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-attestation",
         "files": [
           "fields/emr-attestation.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAttestationComponent } from '@drguptavivek/emr-ui';"
       },
@@ -9671,6 +10534,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrAttestation } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -9696,6 +10563,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAttestation } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9710,6 +10581,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAttestationElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
@@ -9748,7 +10623,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-order-composer--tablet-bd"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -9769,6 +10645,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-schedule-slot-picker.component.ts",
           "fields/schedule-slot.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrScheduleSlotPickerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -9792,6 +10671,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrScheduleSlotPicker } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -9814,6 +10697,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrScheduleSlotPicker } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9828,6 +10715,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrScheduleSlotPickerElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
@@ -9860,7 +10751,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-identity--entry-read-only"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -9883,6 +10775,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-field-frame.component.ts",
           "fields/emr-identifier-entry.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrIdentifierEntryComponent } from '@drguptavivek/emr-ui';"
       },
@@ -9909,6 +10804,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrIdentifierEntry } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -9934,6 +10833,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrIdentifierEntry } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -9948,6 +10851,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrIdentifierEntryElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
@@ -9981,7 +10888,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-medications-administration-record--overview"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -10002,6 +10910,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "structures/emr-time-axis.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTimeAxisComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -10020,6 +10931,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTimeAxis } from '@drguptavivek/emr-react';"
       },
@@ -10040,6 +10955,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTimeAxis } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10047,6 +10966,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-time-axis",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -10054,13 +10974,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTimeAxisElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10087,7 +11012,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-structures-data-table--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -10107,6 +11033,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-data-table",
         "files": [
           "structures/emr-data-table.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrDataTableComponent } from '@drguptavivek/emr-ui';"
       },
@@ -10129,6 +11058,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrDataTable } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -10149,6 +11082,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDataTable } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10156,6 +11093,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-data-table",
         "files": [
           "calendar.logic.ts",
+          "controlled-rendering.ts",
           "foundations.ts",
           "icons.ts",
           "l1-primitives-extra.ts",
@@ -10163,13 +11101,18 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts"
+          "l3-structures.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDataTableElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 27
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10197,7 +11140,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-primitives-stage-stepper--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -10218,6 +11162,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-stage-stepper.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrStageStepperComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -10236,6 +11183,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrStageStepper } from '@drguptavivek/emr-react';"
       },
@@ -10256,6 +11207,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrStageStepper } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10268,6 +11223,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrStageStepperElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -10298,7 +11257,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-primitives-stat-tile--mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -10319,6 +11279,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-stat-tile.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrStatTileComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -10333,6 +11296,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "stat-tile.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrStatTile } from '@drguptavivek/emr-react';"
       },
@@ -10349,6 +11316,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrStatTile } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10361,6 +11332,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrStatTileElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
@@ -10392,7 +11367,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-consent--capture-print-context"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -10421,6 +11397,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrConsentCaptureComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -10447,6 +11426,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrConsentCapture } from '@drguptavivek/emr-react';"
       },
@@ -10475,6 +11458,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrConsentCapture } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10490,20 +11477,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrConsentCaptureElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 43
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10526,7 +11510,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-consent--review-withdraw-sheet-open"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -10551,7 +11536,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-consent-review.component.ts",
           "domain/emr-right-flyout.component.ts",
-          "primitives/emr-choice.component.ts"
+          "primitives/emr-choice.component.ts",
+          "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrConsentReviewComponent } from '@drguptavivek/emr-ui';"
       },
@@ -10591,6 +11580,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrConsentReview } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -10628,6 +11621,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrConsentReview } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10643,20 +11640,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrConsentReviewElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 52
+      "fileCount": 46
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10679,7 +11673,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-consent--receipt-print-context"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -10700,6 +11695,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-consent-receipt.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrConsentReceiptComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -10717,6 +11715,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrConsentReceipt } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -10733,6 +11735,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrConsentReceipt } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10748,20 +11754,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrConsentReceiptElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10783,7 +11786,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-consent--status-badges"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -10803,6 +11807,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-consent-status-badge",
         "files": [
           "domain/emr-consent-status-badge.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrConsentStatusBadgeComponent } from '@drguptavivek/emr-ui';"
       },
@@ -10831,6 +11838,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrConsentStatusBadge } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -10858,6 +11869,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrConsentStatusBadge } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10873,20 +11888,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrConsentStatusBadgeElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 32
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10913,7 +11925,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-privacy-centre--grants-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -10937,6 +11950,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-right-flyout.component.ts",
           "domain/emr-sharing-grants.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSharingGrantsComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -10954,6 +11970,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSharingGrants } from '@drguptavivek/emr-react';"
       },
@@ -10973,6 +11993,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSharingGrants } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -10988,20 +12012,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrSharingGrantsElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 24
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11027,7 +12048,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-privacy-centre--access-log-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -11048,6 +12070,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-access-log.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrAccessLogComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -11065,6 +12090,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrAccessLog } from '@drguptavivek/emr-react';"
       },
@@ -11084,6 +12113,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAccessLog } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11099,20 +12132,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrAccessLogElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11140,7 +12170,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-privacy-centre--requests-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -11168,6 +12199,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRightsRequestsComponent } from '@drguptavivek/emr-ui';"
       },
@@ -11204,6 +12238,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrRightsRequests } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -11239,6 +12277,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRightsRequests } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11254,20 +12296,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrRightsRequestsElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 51
+      "fileCount": 44
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11290,7 +12329,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-privacy-centre--centre-mobile"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -11312,7 +12352,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-privacy-centre",
         "files": [
           "domain/emr-privacy-centre.component.ts",
-          "primitives/emr-tabs.component.ts"
+          "primitives/emr-tabs.component.ts",
+          "primitives/emr-tabs.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPrivacyCentreComponent } from '@drguptavivek/emr-ui';"
       },
@@ -11353,6 +12397,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPrivacyCentre } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -11392,6 +12440,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPrivacyCentre } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11407,20 +12459,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrPrivacyCentreElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 52
+      "fileCount": 46
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11446,7 +12495,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-identity--card-compact-with-alerts"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -11466,6 +12516,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-patient-identity-card",
         "files": [
           "domain/emr-patient-identity-card.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPatientIdentityCardComponent } from '@drguptavivek/emr-ui';"
       },
@@ -11492,6 +12545,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPatientIdentityCard } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -11517,6 +12574,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPatientIdentityCard } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11532,20 +12593,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrPatientIdentityCardElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 30
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11571,7 +12629,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-identity--check-ok"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -11596,7 +12655,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-identifier-check-prompt.component.ts",
           "domain/emr-patient-identity-card.component.ts",
-          "primitives/emr-choice.component.ts"
+          "primitives/emr-choice.component.ts",
+          "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrIdentifierCheckPromptComponent } from '@drguptavivek/emr-ui';"
       },
@@ -11623,6 +12686,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrIdentifierCheckPrompt } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -11648,6 +12715,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrIdentifierCheckPrompt } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11663,20 +12734,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrIdentifierCheckPromptElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 33
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11700,7 +12768,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-identity--link-cards-ready"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -11729,6 +12798,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "fields/emr-identifier-entry.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrLinkCardsComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -11754,6 +12826,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrLinkCards } from '@drguptavivek/emr-react';"
       },
@@ -11781,6 +12857,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrLinkCards } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11796,20 +12876,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrLinkCardsElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 41
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11834,7 +12911,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-workflow--contact-date-error-and-submit-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -11864,6 +12942,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrContactAttemptFormComponent } from '@drguptavivek/emr-ui';"
       },
@@ -11898,6 +12979,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrContactAttemptForm } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -11931,6 +13016,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrContactAttemptForm } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -11946,20 +13035,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrContactAttemptFormElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 49
+      "fileCount": 42
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11982,7 +13068,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-workflow--contact-summary-read-only"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -12002,6 +13089,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-contact-attempt-summary",
         "files": [
           "domain/emr-contact-attempt-summary.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrContactAttemptSummaryComponent } from '@drguptavivek/emr-ui';"
       },
@@ -12036,6 +13126,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrContactAttemptSummary } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -12069,6 +13163,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrContactAttemptSummary } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -12084,20 +13182,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrContactAttemptSummaryElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 45
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12122,7 +13217,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-workflow--merge-narrow"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -12142,6 +13238,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-merge-compare",
         "files": [
           "domain/emr-merge-compare.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrMergeCompareComponent } from '@drguptavivek/emr-ui';"
       },
@@ -12170,6 +13269,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrMergeCompare } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -12197,6 +13300,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMergeCompare } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -12212,20 +13319,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrMergeCompareElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 32
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12252,7 +13356,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-workflow--drafts-error"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -12276,6 +13381,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-draft-record-list.component.ts",
           "domain/emr-right-flyout.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrDraftRecordListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -12293,6 +13401,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrDraftRecordList } from '@drguptavivek/emr-react';"
       },
@@ -12312,6 +13424,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDraftRecordList } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -12327,20 +13443,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives.ts",
           "l2-fields-extra.ts",
           "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
           "l4-privacy-identity.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrDraftRecordListElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 24
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12362,7 +13475,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-desk-and-spectacles--arrival-linker-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -12397,6 +13511,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrArrivalLinkerComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -12423,6 +13540,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrArrivalLinker } from '@drguptavivek/emr-react';"
       },
@@ -12451,35 +13572,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrArrivalLinker } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrArrivalLinkerElement",
         "selector": "emr-arrival-linker",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrArrivalLinkerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 46
+      "fileCount": 32
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12503,7 +13618,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-desk-and-spectacles--spectacle-delivery-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -12535,6 +13651,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSpectacleDeliveryComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -12561,6 +13680,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSpectacleDelivery } from '@drguptavivek/emr-react';"
       },
@@ -12589,35 +13712,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSpectacleDelivery } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSpectacleDeliveryElement",
         "selector": "emr-spectacle-delivery",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSpectacleDeliveryElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 46
+      "fileCount": 32
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12641,7 +13758,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-desk-and-spectacles--booked-not-delivered-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -12673,6 +13791,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrBookedNotDeliveredListComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -12700,6 +13821,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrBookedNotDeliveredList } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -12727,35 +13852,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrBookedNotDeliveredList } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrBookedNotDeliveredListElement",
         "selector": "emr-booked-not-delivered-list",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrBookedNotDeliveredListElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 46
+      "fileCount": 32
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12779,7 +13898,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-history-patient-history-and-cataract-episode--cataract-episode-operated"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -12804,6 +13924,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-patient-identity-card.component.ts",
           "primitives/emr-stage-stepper.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrCataractEpisodeCardComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -12824,6 +13947,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrCataractEpisodeCard } from '@drguptavivek/emr-react';"
       },
@@ -12846,35 +13973,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCataractEpisodeCard } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrCataractEpisodeCardElement",
         "selector": "emr-cataract-episode-card",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrCataractEpisodeCardElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12898,7 +14019,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-history-patient-history-and-cataract-episode--patient-history-new-patient"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -12925,6 +14047,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "domain/emr-patient-history.component.ts",
           "domain/emr-patient-identity-card.component.ts",
           "primitives/emr-stage-stepper.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPatientHistoryTimelineComponent } from '@drguptavivek/emr-ui';"
       },
@@ -12955,6 +14080,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPatientHistoryTimeline } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -12984,35 +14113,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPatientHistoryTimeline } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPatientHistoryTimelineElement",
         "selector": "emr-patient-history-timeline",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPatientHistoryTimelineElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 43
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13035,7 +14158,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-analytics-and-records--record-diff-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13055,6 +14179,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-record-diff",
         "files": [
           "domain/emr-records-and-charts.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRecordDiffComponent } from '@drguptavivek/emr-ui';"
       },
@@ -13077,6 +14204,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "upload-queue.types.ts",
           "upload-queue.web.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrRecordDiff } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13097,35 +14228,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "upload-queue.tsx",
           "upload-queue.types.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRecordDiff } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrRecordDiffElement",
         "selector": "emr-record-diff",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrRecordDiffElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 33
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13147,7 +14272,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-analytics-and-records--upload-queue-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13168,6 +14294,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-records-and-charts.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrUploadQueueComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -13186,6 +14315,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "upload-queue.types.ts",
           "upload-queue.web.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrUploadQueue } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13203,35 +14336,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "upload-queue.tsx",
           "upload-queue.types.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrUploadQueue } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrUploadQueueElement",
         "selector": "emr-upload-queue",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrUploadQueueElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13253,7 +14380,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-analytics-and-records--bar-chart-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13274,6 +14402,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-records-and-charts.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrBarChartComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -13293,6 +14424,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrBarChart } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13311,6 +14446,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrBarChart } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -13324,22 +14463,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrBarChartElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13361,7 +14495,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-analytics-and-records--funnel-chart-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13382,6 +14517,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-records-and-charts.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrFunnelChartComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -13401,6 +14539,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrFunnelChart } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13419,6 +14561,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFunnelChart } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -13432,22 +14578,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFunnelChartElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 31
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13469,7 +14610,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--pin-pad-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13490,7 +14632,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPinPadComponent } from '@drguptavivek/emr-ui';"
       },
@@ -13525,6 +14671,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPinPad } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13558,6 +14708,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPinPad } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -13571,22 +14725,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPinPadElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 47
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13608,7 +14757,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--login-form-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -13631,7 +14781,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrLoginFormComponent } from '@drguptavivek/emr-ui';"
       },
@@ -13666,6 +14820,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrLoginForm } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13699,6 +14857,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrLoginForm } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -13712,22 +14874,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrLoginFormElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 47
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13749,7 +14906,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--bottom-tab-bar-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13770,7 +14928,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrBottomTabBarComponent } from '@drguptavivek/emr-ui';"
       },
@@ -13805,6 +14967,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrBottomTabBar } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13838,6 +15004,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrBottomTabBar } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -13851,22 +15021,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrBottomTabBarElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 47
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13888,7 +15053,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--sync-pill-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -13909,7 +15075,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrSyncPillComponent } from '@drguptavivek/emr-ui';"
       },
@@ -13944,6 +15114,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrSyncPill } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -13977,6 +15151,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSyncPill } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -13990,22 +15168,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSyncPillElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 47
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14029,7 +15202,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--feedback-and-overlays"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -14048,7 +15222,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrToastComponent",
         "selector": "emr-toast",
         "files": [
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrToastComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14083,6 +15261,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrToast } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14116,6 +15298,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "typed-field.logic.ts",
           "typed-field.tsx"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrToast } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -14129,11 +15315,15 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-wave2.ts",
           "l1-primitives.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
         "import": "import { EmrToastElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14155,7 +15345,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--sheet-open"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -14176,7 +15367,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrSheetComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14193,6 +15388,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrSheet } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14208,6 +15407,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSheet } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -14221,22 +15424,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSheetElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14258,7 +15456,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--top-bar-search-open"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -14279,7 +15478,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTopBarSearchComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14304,6 +15507,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTopBarSearch } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14327,6 +15534,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTopBarSearch } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -14340,22 +15551,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTopBarSearchElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14377,7 +15583,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-shell-and-auth--top-bar-default"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -14400,7 +15607,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-mobile-and-web-shell.component.ts",
           "fields/emr-field-frame.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrTopBarComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14425,6 +15636,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrTopBar } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14448,6 +15663,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTopBar } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -14461,22 +15680,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-primitives-extra.ts",
           "l1-primitives-wave2.ts",
           "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-mobile-charts.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTopBarElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14495,10 +15709,13 @@ export const EMR_REGISTRY_MANIFEST = {
       "status": "stable",
       "description": "Multi-row clinical prescribing table with per-row move up/down, insert below, remove, inline Morning/Afternoon/Evening/Night dose steppers, duration stepper, and expandable taper schedule.",
       "stories": [
-        "emr-medications-order-composer--tablet-bd"
+        "emr-medications-prescribing-table--dense-grid",
+        "emr-medications-prescribing-table--ophthalmic-taper",
+        "emr-medications-prescribing-table--read-only"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -14523,7 +15740,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-prescribing-table.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPrescribingTableComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14541,6 +15762,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPrescribingTable } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14556,6 +15781,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrPrescribingTable } from '@drguptavivek/emr-react';"
       },
@@ -14573,19 +15802,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPrescribingTableElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14604,10 +15843,13 @@ export const EMR_REGISTRY_MANIFEST = {
       "status": "stable",
       "description": "Multi-viewport PACS & DICOMweb diagnostic compare viewer with 1-Up, 2-Up OD vs OS, and 2-Up Active vs Prior baseline modes, slice scrubbing, W/L presets, caliper pins, and impression pull.",
       "stories": [
-        "emr-shell-and-auth--top-bar-default"
+        "emr-diagnostics-pacs-viewer--two-up-od-os",
+        "emr-diagnostics-pacs-viewer--single-viewport-inverted",
+        "emr-diagnostics-pacs-viewer--read-only"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -14630,7 +15872,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-encounter-surfaces.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPacsViewerComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14648,6 +15894,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPacsViewer } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14663,6 +15913,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrPacsViewer } from '@drguptavivek/emr-react';"
       },
@@ -14680,19 +15934,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPacsViewerElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14717,10 +15981,14 @@ export const EMR_REGISTRY_MANIFEST = {
       "status": "stable",
       "description": "Multi-specialty structured clinical examination & dosing calculator matrix across Ophthalmology (OD/OS slit-lamp & fundus), Pediatrics (mg/kg suspension), Dermatology (BSA% & FTU), and Oncology (BSA mg/m² chemo cycles).",
       "stories": [
-        "emr-shell-and-auth--top-bar-default"
+        "emr-clinical-assessment-specialty-exam-matrix--ophthalmology",
+        "emr-clinical-assessment-specialty-exam-matrix--pediatrics",
+        "emr-clinical-assessment-specialty-exam-matrix--dermatology",
+        "emr-clinical-assessment-specialty-exam-matrix--oncology"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -14743,7 +16011,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-encounter-surfaces.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrSpecialtyExamMatrixComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14761,6 +16033,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrSpecialtyExamMatrix } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14776,6 +16052,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrSpecialtyExamMatrix } from '@drguptavivek/emr-react';"
       },
@@ -14793,19 +16073,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSpecialtyExamMatrixElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14825,10 +16115,13 @@ export const EMR_REGISTRY_MANIFEST = {
       "status": "stable",
       "description": "Inpatient Electronic Medication Administration Record (eMAR) & nursing Kardex grid linked to 7-column prescription orders with BCMA verification and dual-sign high-alert checks.",
       "stories": [
-        "emr-medications-order-composer--tablet-bd"
+        "emr-inpatient-inpatient-emar--active-shift",
+        "emr-inpatient-inpatient-emar--dual-sign-verified",
+        "emr-inpatient-inpatient-emar--read-only"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -14851,7 +16144,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-encounter-surfaces.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrInpatientMarComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14869,6 +16166,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrInpatientMar } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14884,6 +16185,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrInpatientMar } from '@drguptavivek/emr-react';"
       },
@@ -14901,19 +16206,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrInpatientMarElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14934,10 +16249,12 @@ export const EMR_REGISTRY_MANIFEST = {
       "status": "stable",
       "description": "Print-ready (.emr-print) OPD prescription & IPD discharge summary surface compiling demographics, allergies, diagnoses, history, exam, PACS findings, and 7-column Rx schedule.",
       "stories": [
-        "emr-medications-order-composer--tablet-bd"
+        "emr-encounter-summary-print--opd-prescription",
+        "emr-encounter-summary-print--ipd-discharge-summary"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -14960,7 +16277,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-encounter-surfaces.component.ts",
           "primitives/emr-button.component.ts",
-          "primitives/emr-feedback.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrEncounterSummaryPrintComponent } from '@drguptavivek/emr-ui';"
       },
@@ -14978,6 +16299,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrEncounterSummaryPrint } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -14993,6 +16318,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrEncounterSummaryPrint } from '@drguptavivek/emr-react';"
       },
@@ -15010,19 +16339,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "l2-fields-extra.ts",
           "l2-fields.ts",
           "l3-structures.ts",
+          "l3-workstation.ts",
+          "l4-acute-lab-perioperative.ts",
           "l4-clinical-note.ts",
           "l4-clinical.ts",
           "l4-domain.ts",
+          "l4-hospital-operations.ts",
+          "l4-maternal-peds-specialty-abdm.ts",
           "l4-mobile-charts.ts",
           "l4-observations.ts",
           "l4-operations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts",
+          "l4-ophthalmology-glaucoma-motility.ts",
           "l4-privacy-identity.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrEncounterSummaryPrintElement } from '@drguptavivek/emr-elements';",
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15047,7 +16386,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-notes-clinical-note-workspace--overview"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15068,6 +16408,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-clinical-note-workspace.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrClinicalNoteWorkspaceComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15083,6 +16426,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrClinicalNoteWorkspace } from '@drguptavivek/emr-react';"
       },
@@ -15100,35 +16447,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrClinicalNoteWorkspace } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrClinicalNoteWorkspaceElement",
         "selector": "emr-clinical-note-workspace",
         "files": [
-          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
-          "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts",
-          "l3-structures.ts",
-          "l4-clinical-note.ts",
-          "l4-clinical.ts",
-          "l4-domain.ts",
-          "l4-mobile-charts.ts",
-          "l4-observations.ts",
-          "l4-operations.ts",
-          "l4-privacy-identity.ts"
+          "l4-clinical-note.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrClinicalNoteWorkspaceElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
+        "vendorInit": "import { registerL4ClinicalNoteElements } from './components/emr/l4-clinical-note.js';\nregisterL4ClinicalNoteElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 28
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15150,7 +16491,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--text-and-inputs"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15172,6 +16514,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-textarea.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTextareaComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15182,13 +16527,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTextarea } from '@drguptavivek/emr-react';"
       },
@@ -15200,7 +16548,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15208,24 +16555,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTextarea } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrTextareaElement",
         "selector": "emr-textarea",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTextareaElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15247,7 +16599,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--actions-and-navigation"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15269,6 +16622,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrIconButtonComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15279,13 +16635,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrIconButton } from '@drguptavivek/emr-react';"
       },
@@ -15297,7 +16656,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15305,24 +16663,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrIconButton } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrIconButtonElement",
         "selector": "emr-icon-button",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrIconButtonElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15339,12 +16702,13 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Inline segmented radiogroup for compact 2–5 option clinical choices with roving keyboard navigation.",
+      "description": "Segmented radiogroup for compact 2–5 option clinical choices with size/variant/shape/orientation modes, icons, badges, descriptions, tones, clearable/allowDeselect, validation, and roving keyboard navigation.",
       "stories": [
         "foundations-building-blocks--choice-and-selection"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15366,6 +16730,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSegmentedControlComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15376,13 +16743,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSegmentedControl } from '@drguptavivek/emr-react';"
       },
@@ -15394,7 +16764,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15402,24 +16771,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSegmentedControl } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSegmentedControlElement",
         "selector": "emr-segmented-control",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSegmentedControlElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15441,7 +16815,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--text-and-inputs"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15463,6 +16838,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSearchInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15473,13 +16851,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSearchInput } from '@drguptavivek/emr-react';"
       },
@@ -15491,7 +16872,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15499,24 +16879,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSearchInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSearchInputElement",
         "selector": "emr-search-input",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSearchInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15539,7 +16924,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--text-and-inputs"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15561,6 +16947,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrPasswordInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15571,13 +16960,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrPasswordInput } from '@drguptavivek/emr-react';"
       },
@@ -15589,7 +16981,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15597,24 +16988,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPasswordInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPasswordInputElement",
         "selector": "emr-password-input",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPasswordInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15636,7 +17032,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--text-and-inputs"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15658,6 +17055,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrNumericStepperComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15668,13 +17068,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrNumericStepper } from '@drguptavivek/emr-react';"
       },
@@ -15686,7 +17089,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15694,24 +17096,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrNumericStepper } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrNumericStepperElement",
         "selector": "emr-numeric-stepper",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrNumericStepperElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15733,7 +17140,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--choice-and-selection"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15755,6 +17163,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrCheckboxGroupComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15765,13 +17176,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrCheckboxGroup } from '@drguptavivek/emr-react';"
       },
@@ -15783,7 +17197,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15791,24 +17204,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCheckboxGroup } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrCheckboxGroupElement",
         "selector": "emr-checkbox-group",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrCheckboxGroupElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15830,7 +17248,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--actions-and-navigation"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15851,6 +17270,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-pagination.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrPaginationComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15861,13 +17283,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrPagination } from '@drguptavivek/emr-react';"
       },
@@ -15879,7 +17304,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -15887,24 +17311,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPagination } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPaginationElement",
         "selector": "emr-pagination",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPaginationElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15927,7 +17356,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--feedback-and-overlays"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -15948,6 +17378,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-overlays.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrDialogComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -15960,6 +17393,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "labels.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrDialog } from '@drguptavivek/emr-react';"
       },
@@ -15974,24 +17411,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDialog } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrDialogElement",
         "selector": "emr-dialog",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDialogElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16013,7 +17455,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--feedback-and-overlays"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16034,6 +17477,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-overlays.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrPopoverComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16046,6 +17492,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "labels.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrPopover } from '@drguptavivek/emr-react';"
       },
@@ -16060,24 +17510,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPopover } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPopoverElement",
         "selector": "emr-popover",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPopoverElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16099,7 +17554,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--feedback-and-overlays"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16120,6 +17576,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-overlays.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTooltipComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16132,6 +17591,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "labels.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTooltip } from '@drguptavivek/emr-react';"
       },
@@ -16146,24 +17609,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTooltip } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrTooltipElement",
         "selector": "emr-tooltip",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTooltipElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 11
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16185,7 +17653,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--status-and-media"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16207,6 +17676,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-status-indicators.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrProgressBarComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16221,6 +17693,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrProgressBar } from '@drguptavivek/emr-react';"
       },
@@ -16237,24 +17713,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrProgressBar } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrProgressBarElement",
         "selector": "emr-progress-bar",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrProgressBarElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16276,7 +17757,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--status-and-media"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16298,6 +17780,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-status-indicators.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSpinnerComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16312,6 +17797,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSpinner } from '@drguptavivek/emr-react';"
       },
@@ -16328,24 +17817,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSpinner } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSpinnerElement",
         "selector": "emr-spinner",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSpinnerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16367,7 +17861,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--status-and-media"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16389,6 +17884,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-status-indicators.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSkeletonComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16403,6 +17901,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSkeleton } from '@drguptavivek/emr-react';"
       },
@@ -16419,24 +17921,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSkeleton } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSkeletonElement",
         "selector": "emr-skeleton",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSkeletonElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16458,7 +17965,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--status-and-media"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16480,6 +17988,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-status-indicators.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrAvatarComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16494,6 +18005,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrAvatar } from '@drguptavivek/emr-react';"
       },
@@ -16510,24 +18025,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAvatar } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrAvatarElement",
         "selector": "emr-avatar",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAvatarElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 14
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16550,7 +18070,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-building-blocks--status-and-media"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -16572,6 +18093,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrFileTriggerComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -16582,13 +18106,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrFileTrigger } from '@drguptavivek/emr-react';"
       },
@@ -16600,7 +18127,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -16608,24 +18134,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrFileTrigger } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrFileTriggerElement",
         "selector": "emr-file-trigger",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrFileTriggerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16648,7 +18179,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--scales-and-dates"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -16677,13 +18209,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrScaleFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -16709,6 +18247,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrScaleField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -16733,26 +18275,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrScaleField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrScaleFieldElement",
         "selector": "emr-scale-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrScaleFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16776,7 +18321,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--scales-and-dates"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -16805,13 +18351,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPartialDateFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -16837,6 +18389,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPartialDateField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -16861,26 +18417,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPartialDateField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPartialDateFieldElement",
         "selector": "emr-partial-date-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPartialDateFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16904,7 +18463,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--attachments-and-signatures"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -16933,13 +18493,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAttachmentFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -16965,6 +18531,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrAttachmentField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -16989,26 +18559,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAttachmentField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrAttachmentFieldElement",
         "selector": "emr-attachment-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAttachmentFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17031,7 +18604,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--paired-and-measurements"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17056,13 +18630,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPairedFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17088,6 +18668,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrPairedField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -17112,26 +18696,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPairedField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPairedFieldElement",
         "selector": "emr-paired-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPairedFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17155,7 +18742,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--paired-and-measurements"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17180,13 +18768,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrDurationInputComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17212,6 +18806,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrDurationInput } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -17236,26 +18834,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrDurationInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrDurationInputElement",
         "selector": "emr-duration-input",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDurationInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17278,7 +18879,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--paired-and-measurements"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17303,13 +18905,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRangeFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17335,6 +18943,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrRangeField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -17359,26 +18971,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRangeField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrRangeFieldElement",
         "selector": "emr-range-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrRangeFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17402,7 +19017,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--attachments-and-signatures"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17427,13 +19043,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrSignatureCaptureFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17459,6 +19081,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrSignatureCaptureField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -17483,26 +19109,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSignatureCaptureField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrSignatureCaptureFieldElement",
         "selector": "emr-signature-capture-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSignatureCaptureFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17525,7 +19154,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--demographics-and-macros"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17553,7 +19183,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrPhoneInputComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17566,7 +19200,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17576,6 +19209,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrPhoneInput } from '@drguptavivek/emr-react';"
       },
@@ -17588,7 +19225,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17599,26 +19235,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrPhoneInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrPhoneInputElement",
         "selector": "emr-phone-input",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrPhoneInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17642,7 +19281,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--demographics-and-macros"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17670,7 +19310,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrAddressFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17683,7 +19327,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17693,6 +19336,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrAddressField } from '@drguptavivek/emr-react';"
       },
@@ -17705,7 +19352,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17716,26 +19362,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAddressField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrAddressFieldElement",
         "selector": "emr-address-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAddressFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17758,7 +19407,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--demographics-and-macros"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17784,7 +19434,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrMacroTextFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17797,7 +19451,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17807,6 +19460,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrMacroTextField } from '@drguptavivek/emr-react';"
       },
@@ -17819,7 +19476,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17830,26 +19486,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMacroTextField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrMacroTextFieldElement",
         "selector": "emr-macro-text-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrMacroTextFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17873,7 +19532,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--ophthalmology-fields"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -17903,9 +19563,13 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrLateralityFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -17918,7 +19582,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17928,6 +19591,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrLateralityField } from '@drguptavivek/emr-react';"
       },
@@ -17940,7 +19607,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -17951,26 +19617,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrLateralityField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrLateralityFieldElement",
         "selector": "emr-laterality-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrLateralityFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 27
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17994,7 +19663,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--ophthalmology-fields"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -18022,9 +19692,13 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrVisualAcuityFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -18037,7 +19711,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -18047,6 +19720,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrVisualAcuityField } from '@drguptavivek/emr-react';"
       },
@@ -18059,7 +19736,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -18070,26 +19746,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrVisualAcuityField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrVisualAcuityFieldElement",
         "selector": "emr-visual-acuity-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrVisualAcuityFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 27
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18113,7 +19792,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-fields-clinical-building-blocks--ophthalmology-fields"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -18143,9 +19823,13 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrRefractionFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -18158,7 +19842,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -18168,6 +19851,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrRefractionField } from '@drguptavivek/emr-react';"
       },
@@ -18180,7 +19867,6 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "l2-field-frame.tsx",
@@ -18191,26 +19877,29 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRefractionField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrRefractionFieldElement",
         "selector": "emr-refraction-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrRefractionFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 27
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18232,7 +19921,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--choice-and-tree"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18254,6 +19944,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrToggleGroupComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18264,13 +19957,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrToggleGroup } from '@drguptavivek/emr-react';"
       },
@@ -18282,13 +19978,16 @@ export const EMR_REGISTRY_MANIFEST = {
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-new-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrToggleGroup } from '@drguptavivek/emr-react';"
       },
@@ -18299,15 +19998,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrToggleGroupElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18329,7 +20030,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--choice-and-tree"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18351,6 +20053,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-tree.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTreeViewComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18365,6 +20070,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTreeView } from '@drguptavivek/emr-react';"
       },
@@ -18381,6 +20090,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTreeView } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -18390,15 +20103,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTreeViewElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18420,7 +20135,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--choice-and-tree"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18442,6 +20158,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-tree.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTreeSelectComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18456,6 +20175,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTreeSelect } from '@drguptavivek/emr-react';"
       },
@@ -18472,6 +20195,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrTreeSelect } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -18481,15 +20208,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTreeSelectElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18513,7 +20242,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--image-suite"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18535,6 +20265,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-image.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrImageViewerComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18549,6 +20282,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrImageViewer } from '@drguptavivek/emr-react';"
       },
@@ -18565,6 +20302,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrImageViewer } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -18574,15 +20315,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrImageViewerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18606,7 +20349,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--image-suite"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18628,6 +20372,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-image.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrImageCropperComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18642,6 +20389,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrImageCropper } from '@drguptavivek/emr-react';"
       },
@@ -18658,6 +20409,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrImageCropper } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -18667,15 +20422,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrImageCropperElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18699,7 +20456,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--image-suite"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18721,6 +20479,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-image.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrImageUploadComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18735,6 +20496,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrImageUpload } from '@drguptavivek/emr-react';"
       },
@@ -18751,6 +20516,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrImageUpload } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -18760,15 +20529,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrImageUploadElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18790,7 +20561,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--temporal-and-text"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18813,6 +20585,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrDateRangeInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18821,12 +20596,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrDateRangeInput } from '@drguptavivek/emr-react';"
       },
@@ -18836,12 +20616,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrDateRangeInput } from '@drguptavivek/emr-react';"
       },
@@ -18852,15 +20637,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrDateRangeInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18877,12 +20664,13 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Free-solo WAI-ARIA combobox pairing local grouped option filtering with custom free-text entry and Clear action.",
+      "description": "Free-solo WAI-ARIA combobox pairing ranked/local/remote/none option filtering, match highlighting, Best match cue, rich option metadata, and variants/sizes with custom free-text entry and Clear action.",
       "stories": [
         "foundations-wave2-primitives--temporal-and-text"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18905,6 +20693,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrComboboxComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -18913,12 +20704,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrCombobox } from '@drguptavivek/emr-react';"
       },
@@ -18928,12 +20724,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrCombobox } from '@drguptavivek/emr-react';"
       },
@@ -18944,15 +20745,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrComboboxElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18969,12 +20772,13 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Inline multi-chip free-text tokenizer supporting Enter/delimiter commits, Backspace removal, duplicate prevention, maxTags, suggestions, and Clear all.",
+      "description": "Inline multi-chip free-text tokenizer supporting unified value/tags binding, Enter/delimiter/paste CSV commits, lockedTags, maxTags/maxTagLength, variant/size/chipTone, ranked & highlighted ARIA suggestion listbox, 44px hit targets, and Clear all.",
       "stories": [
         "foundations-wave2-primitives--temporal-and-text"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -18997,6 +20801,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrTagInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19005,12 +20812,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrTagInput } from '@drguptavivek/emr-react';"
       },
@@ -19020,12 +20832,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-inputs.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
         ],
         "import": "import { EmrTagInput } from '@drguptavivek/emr-react';"
       },
@@ -19036,15 +20853,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrTagInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19066,7 +20885,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19088,6 +20908,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSliderComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19102,6 +20925,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSlider } from '@drguptavivek/emr-react';"
       },
@@ -19118,6 +20945,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSlider } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19127,15 +20958,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSliderElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19157,7 +20990,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19179,6 +21013,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrRangeSliderComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19193,6 +21030,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrRangeSlider } from '@drguptavivek/emr-react';"
       },
@@ -19209,6 +21050,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrRangeSlider } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19218,15 +21063,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrRangeSliderElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19248,7 +21095,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19270,6 +21118,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrMaskedInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19284,6 +21135,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrMaskedInput } from '@drguptavivek/emr-react';"
       },
@@ -19300,6 +21155,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMaskedInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19309,15 +21168,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrMaskedInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19341,7 +21202,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19363,6 +21225,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrOtpInputComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19377,6 +21242,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrOtpInput } from '@drguptavivek/emr-react';"
       },
@@ -19393,6 +21262,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrOtpInput } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19402,15 +21275,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrOtpInputElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19432,7 +21307,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--navigation-and-actions"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19455,6 +21331,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrMenuComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19469,6 +21348,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrMenu } from '@drguptavivek/emr-react';"
       },
@@ -19485,6 +21368,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrMenu } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19494,15 +21381,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrMenuElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19524,7 +21413,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--navigation-and-actions"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19547,6 +21437,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrSplitButtonComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19561,6 +21454,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrSplitButton } from '@drguptavivek/emr-react';"
       },
@@ -19577,6 +21474,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrSplitButton } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19586,15 +21487,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrSplitButtonElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19616,7 +21519,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--navigation-and-actions"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19639,6 +21543,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrAccordionComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19653,6 +21560,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrAccordion } from '@drguptavivek/emr-react';"
       },
@@ -19669,6 +21580,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrAccordion } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19678,15 +21593,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrAccordionElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19708,7 +21625,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--navigation-and-actions"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19731,6 +21649,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrBreadcrumbsComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19745,6 +21666,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrBreadcrumbs } from '@drguptavivek/emr-react';"
       },
@@ -19761,6 +21686,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrBreadcrumbs } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19770,15 +21699,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrBreadcrumbsElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19800,7 +21731,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--navigation-and-actions"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19823,6 +21755,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrColorPickerComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19837,6 +21772,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrColorPicker } from '@drguptavivek/emr-react';"
       },
@@ -19853,6 +21792,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrColorPicker } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19862,15 +21805,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrColorPickerElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19892,7 +21837,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--navigation-and-actions"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations"
@@ -19915,6 +21861,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
         "import": "import { EmrCopyButtonComponent } from '@drguptavivek/emr-ui';"
       },
       "react": {
@@ -19929,6 +21878,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
         ],
         "import": "import { EmrCopyButton } from '@drguptavivek/emr-react';"
       },
@@ -19945,6 +21898,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrCopyButton } from '@drguptavivek/emr-react';"
       },
       "lit": {
@@ -19954,15 +21911,17 @@ export const EMR_REGISTRY_MANIFEST = {
           "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts"
+          "l1-primitives-wave2.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrCopyButtonElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
+        "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19988,7 +21947,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "foundations-wave2-primitives--image-suite"
       ],
       "dependencies": [
-        "@drguptavivek/emr-controller"
+        "@drguptavivek/emr-controller",
+        "react-native-web"
       ],
       "registryDependencies": [
         "foundations",
@@ -20015,13 +21975,19 @@ export const EMR_REGISTRY_MANIFEST = {
           "fields/emr-field-frame.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-image.component.ts",
           "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
           "primitives/emr-likert.component.ts",
+          "primitives/emr-likert.logic.ts",
           "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-vas.component.ts",
+          "primitives/emr-vas.logic.ts",
           "primitives/emr-wave2.logic.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
         ],
         "import": "import { EmrImageFieldComponent } from '@drguptavivek/emr-ui';"
       },
@@ -20047,6 +22013,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
         "import": "import { EmrImageField } from '@drguptavivek/emr-react';"
       },
       "expo": {
@@ -20071,26 +22041,4128 @@ export const EMR_REGISTRY_MANIFEST = {
           "theme.tsx",
           "tokens.ts"
         ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
         "import": "import { EmrImageField } from '@drguptavivek/emr-react';"
       },
       "lit": {
         "component": "EmrImageFieldElement",
         "selector": "emr-image-field",
         "files": [
-          "calendar.logic.ts",
           "foundations.ts",
           "icons.ts",
-          "l1-primitives-extra.ts",
-          "l1-primitives-wave2.ts",
-          "l1-primitives.ts",
-          "l2-fields-extra.ts",
-          "l2-fields.ts"
+          "l2-fields-extra.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
         ],
         "import": "import { EmrImageFieldElement } from '@drguptavivek/emr-elements';",
-        "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
+        "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 35
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-split-workspace",
+      "id": "EmrSplitWorkspaceComponent",
+      "reactName": "EmrSplitWorkspace",
+      "litName": "EmrSplitWorkspaceElement",
+      "selector": "emr-split-workspace",
+      "type": "registry:ui",
+      "layer": 3,
+      "layerName": "structures",
+      "categories": [
+        "application",
+        "encounter",
+        "shared"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Multi-pane split clinical workstation container with presets (50/50, 33/67, 67/33, 33/34/33), keyboard splitter nudging, pane collapse/pinning, and tabbed mobile fallback.",
+      "stories": [
+        "emr-structures-workstation-containers--split-workspace"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-split-workspace",
+        "angular": "pnpm emr add emr-split-workspace --framework angular",
+        "react": "pnpm emr add emr-split-workspace --framework react",
+        "expo": "pnpm emr add emr-split-workspace --framework expo",
+        "lit": "pnpm emr add emr-split-workspace --framework lit"
+      },
+      "angular": {
+        "component": "EmrSplitWorkspaceComponent",
+        "selector": "emr-split-workspace",
+        "files": [
+          "structures/emr-workstation-containers.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrSplitWorkspaceComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrSplitWorkspace",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrSplitWorkspace } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrSplitWorkspace",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrSplitWorkspace } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrSplitWorkspaceElement",
+        "selector": "emr-split-workspace",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrSplitWorkspaceElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 16
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-command-palette",
+      "id": "EmrCommandPaletteComponent",
+      "reactName": "EmrCommandPalette",
+      "litName": "EmrCommandPaletteElement",
+      "selector": "emr-command-palette",
+      "type": "registry:ui",
+      "layer": 3,
+      "layerName": "structures",
+      "categories": [
+        "application",
+        "operations",
+        "shared"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Cmd/Ctrl+K clinical command palette and omnibox with scope pills (All, Patients, Orders, Navigation, Templates, Actions), recent chips, keyboard navigation, and slash-command hints.",
+      "stories": [
+        "emr-structures-workstation-containers--command-palette"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-command-palette",
+        "angular": "pnpm emr add emr-command-palette --framework angular",
+        "react": "pnpm emr add emr-command-palette --framework react",
+        "expo": "pnpm emr add emr-command-palette --framework expo",
+        "lit": "pnpm emr add emr-command-palette --framework lit"
+      },
+      "angular": {
+        "component": "EmrCommandPaletteComponent",
+        "selector": "emr-command-palette",
+        "files": [
+          "structures/emr-workstation-containers.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrCommandPaletteComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrCommandPalette",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrCommandPalette } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrCommandPalette",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrCommandPalette } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrCommandPaletteElement",
+        "selector": "emr-command-palette",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrCommandPaletteElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 16
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-master-detail",
+      "id": "EmrMasterDetailComponent",
+      "reactName": "EmrMasterDetail",
+      "litName": "EmrMasterDetailElement",
+      "selector": "emr-master-detail",
+      "type": "registry:ui",
+      "layer": 3,
+      "layerName": "structures",
+      "categories": [
+        "application",
+        "inpatient",
+        "diagnostics",
+        "records",
+        "shared"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Master-detail triage and inbox container with filter chips, multi-select batch toolbar, severity badges, keyboard Next/Prev item traversal, and responsive detail view.",
+      "stories": [
+        "emr-structures-workstation-containers--master-detail-inbox"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-master-detail",
+        "angular": "pnpm emr add emr-master-detail --framework angular",
+        "react": "pnpm emr add emr-master-detail --framework react",
+        "expo": "pnpm emr add emr-master-detail --framework expo",
+        "lit": "pnpm emr add emr-master-detail --framework lit"
+      },
+      "angular": {
+        "component": "EmrMasterDetailComponent",
+        "selector": "emr-master-detail",
+        "files": [
+          "structures/emr-workstation-containers.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrMasterDetailComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrMasterDetail",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrMasterDetail } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrMasterDetail",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrMasterDetail } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrMasterDetailElement",
+        "selector": "emr-master-detail",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrMasterDetailElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 16
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-synchronized-time-grid",
+      "id": "EmrSynchronizedTimeGridComponent",
+      "reactName": "EmrSynchronizedTimeGrid",
+      "litName": "EmrSynchronizedTimeGridElement",
+      "selector": "emr-synchronized-time-grid",
+      "type": "registry:ui",
+      "layer": 3,
+      "layerName": "structures",
+      "categories": [
+        "encounter",
+        "inpatient",
+        "perioperative",
+        "shared"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Synchronized multi-track time axis and crosshair scrubber aligning vitals, labs, medications, and clinical events along a shared time window with zoom presets.",
+      "stories": [
+        "emr-structures-workstation-containers--synchronized-time-grid"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-synchronized-time-grid",
+        "angular": "pnpm emr add emr-synchronized-time-grid --framework angular",
+        "react": "pnpm emr add emr-synchronized-time-grid --framework react",
+        "expo": "pnpm emr add emr-synchronized-time-grid --framework expo",
+        "lit": "pnpm emr add emr-synchronized-time-grid --framework lit"
+      },
+      "angular": {
+        "component": "EmrSynchronizedTimeGridComponent",
+        "selector": "emr-synchronized-time-grid",
+        "files": [
+          "structures/emr-workstation-containers.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrSynchronizedTimeGridComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrSynchronizedTimeGrid",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrSynchronizedTimeGrid } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrSynchronizedTimeGrid",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
+          "l1-wave2.logic.ts",
+          "l3-workstation.logic.ts",
+          "l3-workstation.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrSynchronizedTimeGrid } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrSynchronizedTimeGridElement",
+        "selector": "emr-synchronized-time-grid",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l3-workstation.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrSynchronizedTimeGridElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 16
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-logic-rule-builder",
+      "id": "EmrLogicRuleBuilderComponent",
+      "reactName": "EmrLogicRuleBuilder",
+      "litName": "EmrLogicRuleBuilderElement",
+      "selector": "emr-logic-rule-builder",
+      "type": "registry:ui",
+      "layer": 6,
+      "layerName": "authoring",
+      "categories": [
+        "authoring"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Visual condition tree builder for authoring VersionedLogicArtifact rules (enableWhen, requiredWhen, alert) with nested ALL/ANY/NOT groups and a three-valued logic test sandbox.",
+      "stories": [
+        "emr-authoring-visual-builders--logic-rule-builder-true",
+        "emr-authoring-visual-builders--logic-rule-builder-indeterminate"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-logic-rule-builder",
+        "angular": "pnpm emr add emr-logic-rule-builder --framework angular",
+        "react": "pnpm emr add emr-logic-rule-builder --framework react",
+        "expo": "pnpm emr add emr-logic-rule-builder --framework expo",
+        "lit": "pnpm emr add emr-logic-rule-builder --framework lit"
+      },
+      "angular": {
+        "component": "EmrLogicRuleBuilderComponent",
+        "selector": "emr-logic-rule-builder",
+        "files": [
+          "authoring/emr-visual-builders.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrLogicRuleBuilderComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrLogicRuleBuilder",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l6-builders.logic.ts",
+          "l6-builders.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrLogicRuleBuilder } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrLogicRuleBuilder",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l6-builders.logic.ts",
+          "l6-builders.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrLogicRuleBuilder } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrLogicRuleBuilderElement",
+        "selector": "emr-logic-rule-builder",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l6-builders.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrLogicRuleBuilderElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL6BuilderElements } from './components/emr/l6-builders.js';\nregisterL6BuilderElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-score-builder",
+      "id": "EmrScoreBuilderComponent",
+      "reactName": "EmrScoreBuilder",
+      "litName": "EmrScoreBuilderElement",
+      "selector": "emr-score-builder",
+      "type": "registry:ui",
+      "layer": 6,
+      "layerName": "authoring",
+      "categories": [
+        "authoring"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Visual clinical calculator and score builder supporting sum, weighted-sum, and threshold-count modes, missing-item policies, severity interpretation bands, and live test inputs.",
+      "stories": [
+        "emr-authoring-visual-builders--score-builder-weighted-osdi"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-score-builder",
+        "angular": "pnpm emr add emr-score-builder --framework angular",
+        "react": "pnpm emr add emr-score-builder --framework react",
+        "expo": "pnpm emr add emr-score-builder --framework expo",
+        "lit": "pnpm emr add emr-score-builder --framework lit"
+      },
+      "angular": {
+        "component": "EmrScoreBuilderComponent",
+        "selector": "emr-score-builder",
+        "files": [
+          "authoring/emr-visual-builders.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrScoreBuilderComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrScoreBuilder",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l6-builders.logic.ts",
+          "l6-builders.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrScoreBuilder } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrScoreBuilder",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l6-builders.logic.ts",
+          "l6-builders.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrScoreBuilder } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrScoreBuilderElement",
+        "selector": "emr-score-builder",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l6-builders.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrScoreBuilderElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL6BuilderElements } from './components/emr/l6-builders.js';\nregisterL6BuilderElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-fhir-questionnaire-mapper",
+      "id": "EmrFhirQuestionnaireMapperComponent",
+      "reactName": "EmrFhirQuestionnaireMapper",
+      "litName": "EmrFhirQuestionnaireMapperElement",
+      "selector": "emr-fhir-questionnaire-mapper",
+      "type": "registry:ui",
+      "layer": 6,
+      "layerName": "authoring",
+      "categories": [
+        "authoring"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "FHIR R4/R5 Questionnaire and SDC mapper with side-by-side ClinicalFormSchema linkId tree, item type/terminology bindings, round-trip fidelity diagnostics, and JSON preview.",
+      "stories": [
+        "emr-authoring-visual-builders--fhir-questionnaire-mapper-r4",
+        "emr-authoring-visual-builders--fhir-questionnaire-mapper-r5"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-fhir-questionnaire-mapper",
+        "angular": "pnpm emr add emr-fhir-questionnaire-mapper --framework angular",
+        "react": "pnpm emr add emr-fhir-questionnaire-mapper --framework react",
+        "expo": "pnpm emr add emr-fhir-questionnaire-mapper --framework expo",
+        "lit": "pnpm emr add emr-fhir-questionnaire-mapper --framework lit"
+      },
+      "angular": {
+        "component": "EmrFhirQuestionnaireMapperComponent",
+        "selector": "emr-fhir-questionnaire-mapper",
+        "files": [
+          "authoring/emr-visual-builders.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrFhirQuestionnaireMapperComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrFhirQuestionnaireMapper",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l6-builders.logic.ts",
+          "l6-builders.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrFhirQuestionnaireMapper } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrFhirQuestionnaireMapper",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l6-builders.logic.ts",
+          "l6-builders.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrFhirQuestionnaireMapper } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrFhirQuestionnaireMapperElement",
+        "selector": "emr-fhir-questionnaire-mapper",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l6-builders.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrFhirQuestionnaireMapperElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL6BuilderElements } from './components/emr/l6-builders.js';\nregisterL6BuilderElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-gonioscopy-chart",
+      "id": "EmrGonioscopyChartComponent",
+      "reactName": "EmrGonioscopyChart",
+      "litName": "EmrGonioscopyChartElement",
+      "selector": "emr-gonioscopy-chart",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "glaucoma"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral OD/OS 4-quadrant interactive gonioscopy chart supporting Shaffer/Spaeth static and dynamic indentation grading, trabecular pigmentation, iris configuration, and PAS clock-hours.",
+      "stories": [
+        "emr-ophthalmology-glaucoma-and-motility--gonioscopy-angle-closure-suspect"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-gonioscopy-chart",
+        "angular": "pnpm emr add emr-gonioscopy-chart --framework angular",
+        "react": "pnpm emr add emr-gonioscopy-chart --framework react",
+        "expo": "pnpm emr add emr-gonioscopy-chart --framework expo",
+        "lit": "pnpm emr add emr-gonioscopy-chart --framework lit"
+      },
+      "angular": {
+        "component": "EmrGonioscopyChartComponent",
+        "selector": "emr-gonioscopy-chart",
+        "files": [
+          "domain/emr-ophthalmology-glaucoma-motility.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrGonioscopyChartComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrGonioscopyChart",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrGonioscopyChart } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrGonioscopyChart",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrGonioscopyChart } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrGonioscopyChartElement",
+        "selector": "emr-gonioscopy-chart",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-glaucoma-motility.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrGonioscopyChartElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyGlaucomaMotilityElements } from './components/emr/l4-ophthalmology-glaucoma-motility.js';\nregisterL4OphthalmologyGlaucomaMotilityElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-visual-field-summary",
+      "id": "EmrVisualFieldSummaryComponent",
+      "reactName": "EmrVisualFieldSummary",
+      "litName": "EmrVisualFieldSummaryElement",
+      "selector": "emr-visual-field-summary",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "glaucoma",
+        "diagnostics"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral automated perimetry (24-2, 30-2, 10-2, Octopus) summary with reliability indices (FL, FP, FN), global indices (VFI, MD, PSD, GHT), and print-safe stippled deviation maps.",
+      "stories": [
+        "emr-ophthalmology-glaucoma-and-motility--visual-field-arcuate-scotoma"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-visual-field-summary",
+        "angular": "pnpm emr add emr-visual-field-summary --framework angular",
+        "react": "pnpm emr add emr-visual-field-summary --framework react",
+        "expo": "pnpm emr add emr-visual-field-summary --framework expo",
+        "lit": "pnpm emr add emr-visual-field-summary --framework lit"
+      },
+      "angular": {
+        "component": "EmrVisualFieldSummaryComponent",
+        "selector": "emr-visual-field-summary",
+        "files": [
+          "domain/emr-ophthalmology-glaucoma-motility.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrVisualFieldSummaryComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrVisualFieldSummary",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrVisualFieldSummary } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrVisualFieldSummary",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrVisualFieldSummary } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrVisualFieldSummaryElement",
+        "selector": "emr-visual-field-summary",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-glaucoma-motility.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrVisualFieldSummaryElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyGlaucomaMotilityElements } from './components/emr/l4-ophthalmology-glaucoma-motility.js';\nregisterL4OphthalmologyGlaucomaMotilityElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-hess-screen-chart",
+      "id": "EmrHessScreenChartComponent",
+      "reactName": "EmrHessScreenChart",
+      "litName": "EmrHessScreenChartElement",
+      "selector": "emr-hess-screen-chart",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "motility"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral strabismus Hess/Lees screen tangent coordinate grid (-30° to +30° inner and outer fields) paired with a 9-gaze Prism Bar Cover Test (PBCT) diopter matrix and head-tilt comparison.",
+      "stories": [
+        "emr-ophthalmology-glaucoma-and-motility--hess-screen-fourth-nerve-palsy"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-hess-screen-chart",
+        "angular": "pnpm emr add emr-hess-screen-chart --framework angular",
+        "react": "pnpm emr add emr-hess-screen-chart --framework react",
+        "expo": "pnpm emr add emr-hess-screen-chart --framework expo",
+        "lit": "pnpm emr add emr-hess-screen-chart --framework lit"
+      },
+      "angular": {
+        "component": "EmrHessScreenChartComponent",
+        "selector": "emr-hess-screen-chart",
+        "files": [
+          "domain/emr-ophthalmology-glaucoma-motility.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrHessScreenChartComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrHessScreenChart",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrHessScreenChart } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrHessScreenChart",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.logic.ts",
+          "l4-ophthalmology-glaucoma-motility.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrHessScreenChart } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrHessScreenChartElement",
+        "selector": "emr-hess-screen-chart",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-glaucoma-motility.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrHessScreenChartElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyGlaucomaMotilityElements } from './components/emr/l4-ophthalmology-glaucoma-motility.js';\nregisterL4OphthalmologyGlaucomaMotilityElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-iol-biometry-planner",
+      "id": "EmrIolBiometryPlannerComponent",
+      "reactName": "EmrIolBiometryPlanner",
+      "litName": "EmrIolBiometryPlannerElement",
+      "selector": "emr-iol-biometry-planner",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "cataract",
+        "refraction"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral optical biometry and toric IOL surgical planner showing AL, ACD, LT, WTW, CCT, keratometry, SIA, multi-formula candidate IOL power matrix, and inter-ocular asymmetry warnings.",
+      "stories": [
+        "emr-ophthalmology-cataract-retina-and-cornea--iol-biometry-toric-plan"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-iol-biometry-planner",
+        "angular": "pnpm emr add emr-iol-biometry-planner --framework angular",
+        "react": "pnpm emr add emr-iol-biometry-planner --framework react",
+        "expo": "pnpm emr add emr-iol-biometry-planner --framework expo",
+        "lit": "pnpm emr add emr-iol-biometry-planner --framework lit"
+      },
+      "angular": {
+        "component": "EmrIolBiometryPlannerComponent",
+        "selector": "emr-iol-biometry-planner",
+        "files": [
+          "domain/emr-ophthalmology-cataract-retina-cornea.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrIolBiometryPlannerComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrIolBiometryPlanner",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrIolBiometryPlanner } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrIolBiometryPlanner",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrIolBiometryPlanner } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrIolBiometryPlannerElement",
+        "selector": "emr-iol-biometry-planner",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrIolBiometryPlannerElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-intravitreal-course-tracker",
+      "id": "EmrIntravitrealCourseTrackerComponent",
+      "reactName": "EmrIntravitrealCourseTracker",
+      "litName": "EmrIntravitrealCourseTrackerElement",
+      "selector": "emr-intravitreal-course-tracker",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "retina",
+        "medication"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Longitudinal intravitreal anti-VEGF and steroid therapy tracker correlating OCT central subfield thickness (CST), BCVA, fluid compartments (IRF/SRF/PED), and treat-and-extend intervals.",
+      "stories": [
+        "emr-ophthalmology-cataract-retina-and-cornea--intravitreal-anti-vegf-course"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-intravitreal-course-tracker",
+        "angular": "pnpm emr add emr-intravitreal-course-tracker --framework angular",
+        "react": "pnpm emr add emr-intravitreal-course-tracker --framework react",
+        "expo": "pnpm emr add emr-intravitreal-course-tracker --framework expo",
+        "lit": "pnpm emr add emr-intravitreal-course-tracker --framework lit"
+      },
+      "angular": {
+        "component": "EmrIntravitrealCourseTrackerComponent",
+        "selector": "emr-intravitreal-course-tracker",
+        "files": [
+          "domain/emr-ophthalmology-cataract-retina-cornea.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrIntravitrealCourseTrackerComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrIntravitrealCourseTracker",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrIntravitrealCourseTracker } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrIntravitrealCourseTracker",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrIntravitrealCourseTracker } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrIntravitrealCourseTrackerElement",
+        "selector": "emr-intravitreal-course-tracker",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrIntravitrealCourseTrackerElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-corneal-topography-summary",
+      "id": "EmrCornealTopographySummaryComponent",
+      "reactName": "EmrCornealTopographySummary",
+      "litName": "EmrCornealTopographySummaryElement",
+      "selector": "emr-corneal-topography-summary",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "cataract",
+        "diagnostics"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral Scheimpflug and Placido corneal tomography summary displaying K1/K2/Kmax, thinnest pachymetry, Belin-Ambrósio ectasia risk screening, and 4-map refractive views.",
+      "stories": [
+        "emr-ophthalmology-cataract-retina-and-cornea--corneal-topography-keratoconus"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-corneal-topography-summary",
+        "angular": "pnpm emr add emr-corneal-topography-summary --framework angular",
+        "react": "pnpm emr add emr-corneal-topography-summary --framework react",
+        "expo": "pnpm emr add emr-corneal-topography-summary --framework expo",
+        "lit": "pnpm emr add emr-corneal-topography-summary --framework lit"
+      },
+      "angular": {
+        "component": "EmrCornealTopographySummaryComponent",
+        "selector": "emr-corneal-topography-summary",
+        "files": [
+          "domain/emr-ophthalmology-cataract-retina-cornea.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrCornealTopographySummaryComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrCornealTopographySummary",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrCornealTopographySummary } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrCornealTopographySummary",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrCornealTopographySummary } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrCornealTopographySummaryElement",
+        "selector": "emr-corneal-topography-summary",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrCornealTopographySummaryElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-ophthalmic-operative-record",
+      "id": "EmrOphthalmicOperativeRecordComponent",
+      "reactName": "EmrOphthalmicOperativeRecord",
+      "litName": "EmrOphthalmicOperativeRecordElement",
+      "selector": "emr-ophthalmic-operative-record",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "cataract",
+        "perioperative"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Structured ophthalmic microsurgery operative record covering laterality timeout, anesthesia block, incision geometry, phaco metrics (CDE/US/BSS), capsule status, IOL UDI/serial, and prophylaxis.",
+      "stories": [
+        "emr-ophthalmology-cataract-retina-and-cornea--ophthalmic-operative-phaco-record"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-ophthalmic-operative-record",
+        "angular": "pnpm emr add emr-ophthalmic-operative-record --framework angular",
+        "react": "pnpm emr add emr-ophthalmic-operative-record --framework react",
+        "expo": "pnpm emr add emr-ophthalmic-operative-record --framework expo",
+        "lit": "pnpm emr add emr-ophthalmic-operative-record --framework lit"
+      },
+      "angular": {
+        "component": "EmrOphthalmicOperativeRecordComponent",
+        "selector": "emr-ophthalmic-operative-record",
+        "files": [
+          "domain/emr-ophthalmology-cataract-retina-cornea.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrOphthalmicOperativeRecordComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrOphthalmicOperativeRecord",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrOphthalmicOperativeRecord } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrOphthalmicOperativeRecord",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrOphthalmicOperativeRecord } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrOphthalmicOperativeRecordElement",
+        "selector": "emr-ophthalmic-operative-record",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrOphthalmicOperativeRecordElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-contact-lens-prescription",
+      "id": "EmrContactLensPrescriptionComponent",
+      "reactName": "EmrContactLensPrescription",
+      "litName": "EmrContactLensPrescriptionElement",
+      "selector": "emr-contact-lens-prescription",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "ophthalmology",
+        "refraction"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral contact lens fitting and prescription card supporting soft, toric, multifocal, RGP, and scleral modalities with BC, DIA, sagittal depth, centration/movement fit assessment, and care regimen.",
+      "stories": [
+        "emr-ophthalmology-cataract-retina-and-cornea--contact-lens-toric-scleral-fit"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-contact-lens-prescription",
+        "angular": "pnpm emr add emr-contact-lens-prescription --framework angular",
+        "react": "pnpm emr add emr-contact-lens-prescription --framework react",
+        "expo": "pnpm emr add emr-contact-lens-prescription --framework expo",
+        "lit": "pnpm emr add emr-contact-lens-prescription --framework lit"
+      },
+      "angular": {
+        "component": "EmrContactLensPrescriptionComponent",
+        "selector": "emr-contact-lens-prescription",
+        "files": [
+          "domain/emr-ophthalmology-cataract-retina-cornea.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrContactLensPrescriptionComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrContactLensPrescription",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrContactLensPrescription } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrContactLensPrescription",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.logic.ts",
+          "l4-ophthalmology-cataract-retina-cornea.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrContactLensPrescription } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrContactLensPrescriptionElement",
+        "selector": "emr-contact-lens-prescription",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-ophthalmology-cataract-retina-cornea.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrContactLensPrescriptionElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-appointment-calendar",
+      "id": "EmrAppointmentCalendarComponent",
+      "reactName": "EmrAppointmentCalendar",
+      "litName": "EmrAppointmentCalendarElement",
+      "selector": "emr-appointment-calendar",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "operations"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Multi-resource outpatient clinic and minor OT appointment scheduling calendar with clinician/room columns, time slots, status badges, and overbooking conflict alerts.",
+      "stories": [
+        "emr-hospital-operations-scheduling-queue-ward-sbar--appointment-calendar-multi-resource"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-appointment-calendar",
+        "angular": "pnpm emr add emr-appointment-calendar --framework angular",
+        "react": "pnpm emr add emr-appointment-calendar --framework react",
+        "expo": "pnpm emr add emr-appointment-calendar --framework expo",
+        "lit": "pnpm emr add emr-appointment-calendar --framework lit"
+      },
+      "angular": {
+        "component": "EmrAppointmentCalendarComponent",
+        "selector": "emr-appointment-calendar",
+        "files": [
+          "domain/emr-hospital-operations.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrAppointmentCalendarComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrAppointmentCalendar",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrAppointmentCalendar } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrAppointmentCalendar",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrAppointmentCalendar } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrAppointmentCalendarElement",
+        "selector": "emr-appointment-calendar",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-hospital-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrAppointmentCalendarElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-waitlist-queue",
+      "id": "EmrWaitlistQueueComponent",
+      "reactName": "EmrWaitlistQueue",
+      "litName": "EmrWaitlistQueueElement",
+      "selector": "emr-waitlist-queue",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "operations"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Live clinic, diagnostics, and minor OT token queue with priority tiers (STAT/urgent/routine), wait-time SLA breach flags, room assignment, and call-next actions.",
+      "stories": [
+        "emr-hospital-operations-scheduling-queue-ward-sbar--waitlist-queue-live-token"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-waitlist-queue",
+        "angular": "pnpm emr add emr-waitlist-queue --framework angular",
+        "react": "pnpm emr add emr-waitlist-queue --framework react",
+        "expo": "pnpm emr add emr-waitlist-queue --framework expo",
+        "lit": "pnpm emr add emr-waitlist-queue --framework lit"
+      },
+      "angular": {
+        "component": "EmrWaitlistQueueComponent",
+        "selector": "emr-waitlist-queue",
+        "files": [
+          "domain/emr-hospital-operations.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrWaitlistQueueComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrWaitlistQueue",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrWaitlistQueue } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrWaitlistQueue",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrWaitlistQueue } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrWaitlistQueueElement",
+        "selector": "emr-waitlist-queue",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-hospital-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrWaitlistQueueElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-ward-bed-board",
+      "id": "EmrWardBedBoardComponent",
+      "reactName": "EmrWardBedBoard",
+      "litName": "EmrWardBedBoardElement",
+      "selector": "emr-ward-bed-board",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "inpatient",
+        "operations"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Real-time inpatient ADT ward bed census board displaying bed status (occupied, available, housekeeping-dirty, isolation, reserved), isolation precautions, EWS scores, and transfer actions.",
+      "stories": [
+        "emr-hospital-operations-scheduling-queue-ward-sbar--ward-bed-board-inpatient-census"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-ward-bed-board",
+        "angular": "pnpm emr add emr-ward-bed-board --framework angular",
+        "react": "pnpm emr add emr-ward-bed-board --framework react",
+        "expo": "pnpm emr add emr-ward-bed-board --framework expo",
+        "lit": "pnpm emr add emr-ward-bed-board --framework lit"
+      },
+      "angular": {
+        "component": "EmrWardBedBoardComponent",
+        "selector": "emr-ward-bed-board",
+        "files": [
+          "domain/emr-hospital-operations.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrWardBedBoardComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrWardBedBoard",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrWardBedBoard } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrWardBedBoard",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrWardBedBoard } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrWardBedBoardElement",
+        "selector": "emr-ward-bed-board",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-hospital-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrWardBedBoardElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-sbar-handover",
+      "id": "EmrSbarHandoverComponent",
+      "reactName": "EmrSbarHandover",
+      "litName": "EmrSbarHandoverElement",
+      "selector": "emr-sbar-handover",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "inpatient",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Structured Situation-Background-Assessment-Recommendation (SBAR) clinical shift handover card with illness severity, actionable to-do checklist items, and incoming clinician acknowledgement.",
+      "stories": [
+        "emr-hospital-operations-scheduling-queue-ward-sbar--sbar-handover-clinical-shift"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-sbar-handover",
+        "angular": "pnpm emr add emr-sbar-handover --framework angular",
+        "react": "pnpm emr add emr-sbar-handover --framework react",
+        "expo": "pnpm emr add emr-sbar-handover --framework expo",
+        "lit": "pnpm emr add emr-sbar-handover --framework lit"
+      },
+      "angular": {
+        "component": "EmrSbarHandoverComponent",
+        "selector": "emr-sbar-handover",
+        "files": [
+          "domain/emr-hospital-operations.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrSbarHandoverComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrSbarHandover",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrSbarHandover } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrSbarHandover",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-hospital-operations.logic.ts",
+          "l4-hospital-operations.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrSbarHandover } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrSbarHandoverElement",
+        "selector": "emr-sbar-handover",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-hospital-operations.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrSbarHandoverElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-ed-track-board",
+      "id": "EmrEdTrackBoardComponent",
+      "reactName": "EmrEdTrackBoard",
+      "litName": "EmrEdTrackBoardElement",
+      "selector": "emr-ed-track-board",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "operations",
+        "inpatient"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Emergency Department real-time bay census and patient flow board with ESI triage acuity (1–5), length-of-stay 4-hour breach alerts, pending lab/imaging counts, and disposition status.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--ed-track-board"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-ed-track-board",
+        "angular": "pnpm emr add emr-ed-track-board --framework angular",
+        "react": "pnpm emr add emr-ed-track-board --framework react",
+        "expo": "pnpm emr add emr-ed-track-board --framework expo",
+        "lit": "pnpm emr add emr-ed-track-board --framework lit"
+      },
+      "angular": {
+        "component": "EmrEdTrackBoardComponent",
+        "selector": "emr-ed-track-board",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrEdTrackBoardComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrEdTrackBoard",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrEdTrackBoard } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrEdTrackBoard",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrEdTrackBoard } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrEdTrackBoardElement",
+        "selector": "emr-ed-track-board",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrEdTrackBoardElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-triage-assessment-card",
+      "id": "EmrTriageAssessmentCardComponent",
+      "reactName": "EmrTriageAssessmentCard",
+      "litName": "EmrTriageAssessmentCardElement",
+      "selector": "emr-triage-assessment-card",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "encounter",
+        "operations"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Emergency triage card capturing arrival mode, ESI acuity level (1–5), high-risk clinical red flags, primary survey vitals, pain score (0–10), and isolation screening.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--triage-assessment-card"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-triage-assessment-card",
+        "angular": "pnpm emr add emr-triage-assessment-card --framework angular",
+        "react": "pnpm emr add emr-triage-assessment-card --framework react",
+        "expo": "pnpm emr add emr-triage-assessment-card --framework expo",
+        "lit": "pnpm emr add emr-triage-assessment-card --framework lit"
+      },
+      "angular": {
+        "component": "EmrTriageAssessmentCardComponent",
+        "selector": "emr-triage-assessment-card",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrTriageAssessmentCardComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrTriageAssessmentCard",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrTriageAssessmentCard } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrTriageAssessmentCard",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrTriageAssessmentCard } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrTriageAssessmentCardElement",
+        "selector": "emr-triage-assessment-card",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrTriageAssessmentCardElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-resuscitation-event-log",
+      "id": "EmrResuscitationEventLogComponent",
+      "reactName": "EmrResuscitationEventLog",
+      "litName": "EmrResuscitationEventLogElement",
+      "selector": "emr-resuscitation-event-log",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "encounter",
+        "inpatient"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "ACLS Code Blue and trauma resuscitation real-time event recorder tracking elapsed time, rhythm state (VF/pVT, PEA, Asystole, ROSC), CPR cycles, shocks, epinephrine doses, and timestamped interventions.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--resuscitation-event-log"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-resuscitation-event-log",
+        "angular": "pnpm emr add emr-resuscitation-event-log --framework angular",
+        "react": "pnpm emr add emr-resuscitation-event-log --framework react",
+        "expo": "pnpm emr add emr-resuscitation-event-log --framework expo",
+        "lit": "pnpm emr add emr-resuscitation-event-log --framework lit"
+      },
+      "angular": {
+        "component": "EmrResuscitationEventLogComponent",
+        "selector": "emr-resuscitation-event-log",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrResuscitationEventLogComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrResuscitationEventLog",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrResuscitationEventLog } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrResuscitationEventLog",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrResuscitationEventLog } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrResuscitationEventLogElement",
+        "selector": "emr-resuscitation-event-log",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrResuscitationEventLogElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-specimen-collection-bar",
+      "id": "EmrSpecimenCollectionBarComponent",
+      "reactName": "EmrSpecimenCollectionBar",
+      "litName": "EmrSpecimenCollectionBarElement",
+      "selector": "emr-specimen-collection-bar",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "diagnostics",
+        "inpatient"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Phlebotomy and specimen barcode verification bar displaying order accession, two-identifier patient wristband verification, vacutainer tube types/volumes, and scan/hemolysis rejection status.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--specimen-collection-bar"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-specimen-collection-bar",
+        "angular": "pnpm emr add emr-specimen-collection-bar --framework angular",
+        "react": "pnpm emr add emr-specimen-collection-bar --framework react",
+        "expo": "pnpm emr add emr-specimen-collection-bar --framework expo",
+        "lit": "pnpm emr add emr-specimen-collection-bar --framework lit"
+      },
+      "angular": {
+        "component": "EmrSpecimenCollectionBarComponent",
+        "selector": "emr-specimen-collection-bar",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrSpecimenCollectionBarComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrSpecimenCollectionBar",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrSpecimenCollectionBar } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrSpecimenCollectionBar",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrSpecimenCollectionBar } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrSpecimenCollectionBarElement",
+        "selector": "emr-specimen-collection-bar",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrSpecimenCollectionBarElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-lab-cumulative-grid",
+      "id": "EmrLabCumulativeGridComponent",
+      "reactName": "EmrLabCumulativeGrid",
+      "litName": "EmrLabCumulativeGridElement",
+      "selector": "emr-lab-cumulative-grid",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "diagnostics",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Longitudinal multi-date clinical laboratory cumulative flowsheet matrix with reference intervals, low/high/critical abnormality flags, abnormal-only filter, and critical value acknowledgement.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--lab-cumulative-grid"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-lab-cumulative-grid",
+        "angular": "pnpm emr add emr-lab-cumulative-grid --framework angular",
+        "react": "pnpm emr add emr-lab-cumulative-grid --framework react",
+        "expo": "pnpm emr add emr-lab-cumulative-grid --framework expo",
+        "lit": "pnpm emr add emr-lab-cumulative-grid --framework lit"
+      },
+      "angular": {
+        "component": "EmrLabCumulativeGridComponent",
+        "selector": "emr-lab-cumulative-grid",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrLabCumulativeGridComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrLabCumulativeGrid",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrLabCumulativeGrid } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrLabCumulativeGrid",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrLabCumulativeGrid } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrLabCumulativeGridElement",
+        "selector": "emr-lab-cumulative-grid",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrLabCumulativeGridElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-microbiology-antibiogram",
+      "id": "EmrMicrobiologyAntibiogramComponent",
+      "reactName": "EmrMicrobiologyAntibiogram",
+      "litName": "EmrMicrobiologyAntibiogramElement",
+      "selector": "emr-microbiology-antibiogram",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "diagnostics",
+        "medication"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Culture and sensitivity (C&S) antibiogram matrix displaying isolated organisms, resistance mechanisms (ESBL/MRSA/CRE), MIC values, S/I/R interpretations, and antimicrobial stewardship recommendations.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--microbiology-antibiogram"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-microbiology-antibiogram",
+        "angular": "pnpm emr add emr-microbiology-antibiogram --framework angular",
+        "react": "pnpm emr add emr-microbiology-antibiogram --framework react",
+        "expo": "pnpm emr add emr-microbiology-antibiogram --framework expo",
+        "lit": "pnpm emr add emr-microbiology-antibiogram --framework lit"
+      },
+      "angular": {
+        "component": "EmrMicrobiologyAntibiogramComponent",
+        "selector": "emr-microbiology-antibiogram",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrMicrobiologyAntibiogramComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrMicrobiologyAntibiogram",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrMicrobiologyAntibiogram } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrMicrobiologyAntibiogram",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrMicrobiologyAntibiogram } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrMicrobiologyAntibiogramElement",
+        "selector": "emr-microbiology-antibiogram",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrMicrobiologyAntibiogramElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-anaesthesia-record",
+      "id": "EmrAnaesthesiaRecordComponent",
+      "reactName": "EmrAnaesthesiaRecord",
+      "litName": "EmrAnaesthesiaRecordElement",
+      "selector": "emr-anaesthesia-record",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "perioperative",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Intra-operative anaesthesia record capturing ASA physical status, Mallampati score, airway device, anaesthetic phase (induction to PACU handover), haemodynamic/EtCO2/SpO2 checkpoints, and drug log.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--anaesthesia-record"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-anaesthesia-record",
+        "angular": "pnpm emr add emr-anaesthesia-record --framework angular",
+        "react": "pnpm emr add emr-anaesthesia-record --framework react",
+        "expo": "pnpm emr add emr-anaesthesia-record --framework expo",
+        "lit": "pnpm emr add emr-anaesthesia-record --framework lit"
+      },
+      "angular": {
+        "component": "EmrAnaesthesiaRecordComponent",
+        "selector": "emr-anaesthesia-record",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrAnaesthesiaRecordComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrAnaesthesiaRecord",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrAnaesthesiaRecord } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrAnaesthesiaRecord",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrAnaesthesiaRecord } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrAnaesthesiaRecordElement",
+        "selector": "emr-anaesthesia-record",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrAnaesthesiaRecordElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-fluid-balance-chart",
+      "id": "EmrFluidBalanceChartComponent",
+      "reactName": "EmrFluidBalanceChart",
+      "litName": "EmrFluidBalanceChartElement",
+      "selector": "emr-fluid-balance-chart",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "inpatient",
+        "perioperative"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "24-hour intake and output (I/O) fluid balance chart tracking oral/enteral/IV crystalloid/colloid intake streams against urine, drain, and NG output streams with net balance calculation.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--fluid-balance-chart"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-fluid-balance-chart",
+        "angular": "pnpm emr add emr-fluid-balance-chart --framework angular",
+        "react": "pnpm emr add emr-fluid-balance-chart --framework react",
+        "expo": "pnpm emr add emr-fluid-balance-chart --framework expo",
+        "lit": "pnpm emr add emr-fluid-balance-chart --framework lit"
+      },
+      "angular": {
+        "component": "EmrFluidBalanceChartComponent",
+        "selector": "emr-fluid-balance-chart",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrFluidBalanceChartComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrFluidBalanceChart",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrFluidBalanceChart } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrFluidBalanceChart",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrFluidBalanceChart } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrFluidBalanceChartElement",
+        "selector": "emr-fluid-balance-chart",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrFluidBalanceChartElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-surgical-implant-log",
+      "id": "EmrSurgicalImplantLogComponent",
+      "reactName": "EmrSurgicalImplantLog",
+      "litName": "EmrSurgicalImplantLogElement",
+      "selector": "emr-surgical-implant-log",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "perioperative",
+        "records"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Perioperative prosthesis and implant UDI/lot/serial/expiry traceability log with sterile package verification, anatomical site recording, and surgical sponge/sharps/instrument count reconciliation.",
+      "stories": [
+        "emr-l4-acute-care-lab-perioperative--surgical-implant-log"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-surgical-implant-log",
+        "angular": "pnpm emr add emr-surgical-implant-log --framework angular",
+        "react": "pnpm emr add emr-surgical-implant-log --framework react",
+        "expo": "pnpm emr add emr-surgical-implant-log --framework expo",
+        "lit": "pnpm emr add emr-surgical-implant-log --framework lit"
+      },
+      "angular": {
+        "component": "EmrSurgicalImplantLogComponent",
+        "selector": "emr-surgical-implant-log",
+        "files": [
+          "domain/emr-acute-lab-perioperative.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrSurgicalImplantLogComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrSurgicalImplantLog",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrSurgicalImplantLog } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrSurgicalImplantLog",
+        "files": [
+          "icons.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-acute-lab-perioperative.logic.ts",
+          "l4-acute-lab-perioperative.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrSurgicalImplantLog } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrSurgicalImplantLogElement",
+        "selector": "emr-surgical-implant-log",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-acute-lab-perioperative.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrSurgicalImplantLogElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 14
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-partogram",
+      "id": "EmrPartogramComponent",
+      "reactName": "EmrPartogram",
+      "litName": "EmrPartogramElement",
+      "selector": "emr-partogram",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "inpatient",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "WHO Labour Care Guide (LCG) partogram tracking cervical dilatation (0–10 cm), fetal descent station, fetal heart rate, amniotic liquor status, uterine contractions, and alert/action line thresholds.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--partogram-active-labour"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-partogram",
+        "angular": "pnpm emr add emr-partogram --framework angular",
+        "react": "pnpm emr add emr-partogram --framework react",
+        "expo": "pnpm emr add emr-partogram --framework expo",
+        "lit": "pnpm emr add emr-partogram --framework lit"
+      },
+      "angular": {
+        "component": "EmrPartogramComponent",
+        "selector": "emr-partogram",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrPartogramComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrPartogram",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrPartogram } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrPartogram",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrPartogram } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrPartogramElement",
+        "selector": "emr-partogram",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrPartogramElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-growth-chart",
+      "id": "EmrGrowthChartComponent",
+      "reactName": "EmrGrowthChart",
+      "litName": "EmrGrowthChartElement",
+      "selector": "emr-growth-chart",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "pediatrics",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Pediatric WHO and IAP anthropometric centile and Z-score growth chart supporting weight-for-age, height-for-age, head circumference, BMI-for-age, and mid-parental target height.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--growth-chart-who-under-five"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-growth-chart",
+        "angular": "pnpm emr add emr-growth-chart --framework angular",
+        "react": "pnpm emr add emr-growth-chart --framework react",
+        "expo": "pnpm emr add emr-growth-chart --framework expo",
+        "lit": "pnpm emr add emr-growth-chart --framework lit"
+      },
+      "angular": {
+        "component": "EmrGrowthChartComponent",
+        "selector": "emr-growth-chart",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrGrowthChartComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrGrowthChart",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrGrowthChart } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrGrowthChart",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrGrowthChart } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrGrowthChartElement",
+        "selector": "emr-growth-chart",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrGrowthChartElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-immunization-ledger",
+      "id": "EmrImmunizationLedgerComponent",
+      "reactName": "EmrImmunizationLedger",
+      "litName": "EmrImmunizationLedgerElement",
+      "selector": "emr-immunization-ledger",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "pediatrics",
+        "medication",
+        "records"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Longitudinal UIP, IAP, and WHO immunization schedule ledger tracking administered, due, overdue, and contraindicated vaccine doses with batch/lot number, route, and AEFI flags.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--immunization-ledger-uip"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-immunization-ledger",
+        "angular": "pnpm emr add emr-immunization-ledger --framework angular",
+        "react": "pnpm emr add emr-immunization-ledger --framework react",
+        "expo": "pnpm emr add emr-immunization-ledger --framework expo",
+        "lit": "pnpm emr add emr-immunization-ledger --framework lit"
+      },
+      "angular": {
+        "component": "EmrImmunizationLedgerComponent",
+        "selector": "emr-immunization-ledger",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrImmunizationLedgerComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrImmunizationLedger",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrImmunizationLedger } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrImmunizationLedger",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrImmunizationLedger } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrImmunizationLedgerElement",
+        "selector": "emr-immunization-ledger",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrImmunizationLedgerElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-waveform-strip-viewer",
+      "id": "EmrWaveformStripViewerComponent",
+      "reactName": "EmrWaveformStripViewer",
+      "litName": "EmrWaveformStripViewerElement",
+      "selector": "emr-waveform-strip-viewer",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "diagnostics",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "12-lead ECG, telemetry, and fetal CTG waveform strip viewer with paper speed (25/50 mm/s), gain (10/20 mm/mV), HR/PR/QRS/QTc intervals, lead selection, and clinician sign-off.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--waveform-strip-ecg"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-waveform-strip-viewer",
+        "angular": "pnpm emr add emr-waveform-strip-viewer --framework angular",
+        "react": "pnpm emr add emr-waveform-strip-viewer --framework react",
+        "expo": "pnpm emr add emr-waveform-strip-viewer --framework expo",
+        "lit": "pnpm emr add emr-waveform-strip-viewer --framework lit"
+      },
+      "angular": {
+        "component": "EmrWaveformStripViewerComponent",
+        "selector": "emr-waveform-strip-viewer",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrWaveformStripViewerComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrWaveformStripViewer",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrWaveformStripViewer } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrWaveformStripViewer",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrWaveformStripViewer } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrWaveformStripViewerElement",
+        "selector": "emr-waveform-strip-viewer",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrWaveformStripViewerElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-odontogram",
+      "id": "EmrOdontogramComponent",
+      "reactName": "EmrOdontogram",
+      "litName": "EmrOdontogramElement",
+      "selector": "emr-odontogram",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "encounter",
+        "records"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Permanent and deciduous FDI dental arch odontogram charting tooth status (sound, caries, restored, crown, missing, RCT, implant), periodontal pocket depth, and DMFT index.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--odontogram-fdi-chart"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-odontogram",
+        "angular": "pnpm emr add emr-odontogram --framework angular",
+        "react": "pnpm emr add emr-odontogram --framework react",
+        "expo": "pnpm emr add emr-odontogram --framework expo",
+        "lit": "pnpm emr add emr-odontogram --framework lit"
+      },
+      "angular": {
+        "component": "EmrOdontogramComponent",
+        "selector": "emr-odontogram",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrOdontogramComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrOdontogram",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrOdontogram } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrOdontogram",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrOdontogram } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrOdontogramElement",
+        "selector": "emr-odontogram",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrOdontogramElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-audiogram",
+      "id": "EmrAudiogramComponent",
+      "reactName": "EmrAudiogram",
+      "litName": "EmrAudiogramElement",
+      "selector": "emr-audiogram",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "diagnostics",
+        "encounter"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Bilateral pure-tone audiogram (250–8000 Hz air and bone conduction thresholds in dB HL) displaying pure-tone average (PTA), speech discrimination score (SDS), and Jerger tympanogram type.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--audiogram-pure-tone"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-audiogram",
+        "angular": "pnpm emr add emr-audiogram --framework angular",
+        "react": "pnpm emr add emr-audiogram --framework react",
+        "expo": "pnpm emr add emr-audiogram --framework expo",
+        "lit": "pnpm emr add emr-audiogram --framework lit"
+      },
+      "angular": {
+        "component": "EmrAudiogramComponent",
+        "selector": "emr-audiogram",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrAudiogramComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrAudiogram",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrAudiogram } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrAudiogram",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrAudiogram } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrAudiogramElement",
+        "selector": "emr-audiogram",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrAudiogramElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-chemo-regimen-roadmap",
+      "id": "EmrChemoRegimenRoadmapComponent",
+      "reactName": "EmrChemoRegimenRoadmap",
+      "litName": "EmrChemoRegimenRoadmapElement",
+      "selector": "emr-chemo-regimen-roadmap",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "oncology",
+        "medication"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Oncology systemic chemotherapy protocol roadmap displaying BSA, ECOG performance status, pre-chemo ANC/platelet hematologic clearance gate, dose modification percentage, and cycle progression.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--chemo-regimen-roadmap"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-chemo-regimen-roadmap",
+        "angular": "pnpm emr add emr-chemo-regimen-roadmap --framework angular",
+        "react": "pnpm emr add emr-chemo-regimen-roadmap --framework react",
+        "expo": "pnpm emr add emr-chemo-regimen-roadmap --framework expo",
+        "lit": "pnpm emr add emr-chemo-regimen-roadmap --framework lit"
+      },
+      "angular": {
+        "component": "EmrChemoRegimenRoadmapComponent",
+        "selector": "emr-chemo-regimen-roadmap",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrChemoRegimenRoadmapComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrChemoRegimenRoadmap",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrChemoRegimenRoadmap } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrChemoRegimenRoadmap",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrChemoRegimenRoadmap } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrChemoRegimenRoadmapElement",
+        "selector": "emr-chemo-regimen-roadmap",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrChemoRegimenRoadmapElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-referral-tracker",
+      "id": "EmrReferralTrackerComponent",
+      "reactName": "EmrReferralTracker",
+      "litName": "EmrReferralTrackerElement",
+      "selector": "emr-referral-tracker",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "operations",
+        "records"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Closed-loop specialty consultation and inter-facility referral tracker managing urgency tiers, lifecycle transitions (draft to completed report), clinical questions, and consultant replies.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--referral-tracker-closed-loop"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-referral-tracker",
+        "angular": "pnpm emr add emr-referral-tracker --framework angular",
+        "react": "pnpm emr add emr-referral-tracker --framework react",
+        "expo": "pnpm emr add emr-referral-tracker --framework expo",
+        "lit": "pnpm emr add emr-referral-tracker --framework lit"
+      },
+      "angular": {
+        "component": "EmrReferralTrackerComponent",
+        "selector": "emr-referral-tracker",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrReferralTrackerComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrReferralTracker",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrReferralTracker } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrReferralTracker",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrReferralTracker } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrReferralTrackerElement",
+        "selector": "emr-referral-tracker",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrReferralTrackerElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-encounter-charge-sheet",
+      "id": "EmrEncounterChargeSheetComponent",
+      "reactName": "EmrEncounterChargeSheet",
+      "litName": "EmrEncounterChargeSheetElement",
+      "selector": "emr-encounter-charge-sheet",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "operations",
+        "records"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Encounter coding, tariff, and insurance/PM-JAY pre-authorization charge sheet with ICD-10 diagnosis pointers, itemized service lines, payer coverage toggles, and gross/covered/payable totals.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--encounter-charge-sheet-pmjay"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-encounter-charge-sheet",
+        "angular": "pnpm emr add emr-encounter-charge-sheet --framework angular",
+        "react": "pnpm emr add emr-encounter-charge-sheet --framework react",
+        "expo": "pnpm emr add emr-encounter-charge-sheet --framework expo",
+        "lit": "pnpm emr add emr-encounter-charge-sheet --framework lit"
+      },
+      "angular": {
+        "component": "EmrEncounterChargeSheetComponent",
+        "selector": "emr-encounter-charge-sheet",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrEncounterChargeSheetComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrEncounterChargeSheet",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrEncounterChargeSheet } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrEncounterChargeSheet",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrEncounterChargeSheet } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrEncounterChargeSheetElement",
+        "selector": "emr-encounter-charge-sheet",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrEncounterChargeSheetElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "emr-abdm-health-locker-panel",
+      "id": "EmrAbdmHealthLockerPanelComponent",
+      "reactName": "EmrAbdmHealthLockerPanel",
+      "litName": "EmrAbdmHealthLockerPanelElement",
+      "selector": "emr-abdm-health-locker-panel",
+      "type": "registry:ui",
+      "layer": 4,
+      "layerName": "domain",
+      "categories": [
+        "privacy",
+        "records",
+        "operations"
+      ],
+      "kind": "component",
+      "status": "stable",
+      "description": "Ayushman Bharat Digital Mission (ABDM) and FHIR Health Information Exchange panel displaying ABHA Number/Address, Scan & Share OPD token, linked care contexts, and DEPA HIU/HIP consent artefacts.",
+      "stories": [
+        "emr-maternal-child-specialty-diagnostics-claims-abdm--abdm-health-locker"
+      ],
+      "dependencies": [
+        "@drguptavivek/emr-controller",
+        "react-native-web"
+      ],
+      "registryDependencies": [
+        "foundations"
+      ],
+      "transitiveRegistryDependencies": [
+        "foundations"
+      ],
+      "installCommand": {
+        "cli": "pnpm emr add emr-abdm-health-locker-panel",
+        "angular": "pnpm emr add emr-abdm-health-locker-panel --framework angular",
+        "react": "pnpm emr add emr-abdm-health-locker-panel --framework react",
+        "expo": "pnpm emr add emr-abdm-health-locker-panel --framework expo",
+        "lit": "pnpm emr add emr-abdm-health-locker-panel --framework lit"
+      },
+      "angular": {
+        "component": "EmrAbdmHealthLockerPanelComponent",
+        "selector": "emr-abdm-health-locker-panel",
+        "files": [
+          "domain/emr-maternal-peds-specialty-abdm.component.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller"
+        ],
+        "import": "import { EmrAbdmHealthLockerPanelComponent } from '@drguptavivek/emr-ui';"
+      },
+      "react": {
+        "component": "EmrAbdmHealthLockerPanel",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native-web"
+        ],
+        "import": "import { EmrAbdmHealthLockerPanel } from '@drguptavivek/emr-react';"
+      },
+      "expo": {
+        "component": "EmrAbdmHealthLockerPanel",
+        "files": [
+          "icons.tsx",
+          "inputs-core.tsx",
+          "l1-field-chrome.tsx",
+          "l1-inputs.logic.ts",
+          "l1-wave2.logic.ts",
+          "l4-maternal-peds-specialty-abdm.logic.ts",
+          "l4-maternal-peds-specialty-abdm.tsx",
+          "labels.tsx",
+          "primitives.tsx",
+          "theme.tsx",
+          "tokens.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "react-native"
+        ],
+        "import": "import { EmrAbdmHealthLockerPanel } from '@drguptavivek/emr-react';"
+      },
+      "lit": {
+        "component": "EmrAbdmHealthLockerPanelElement",
+        "selector": "emr-abdm-health-locker-panel",
+        "files": [
+          "controlled-rendering.ts",
+          "foundations.ts",
+          "l4-maternal-peds-specialty-abdm.ts"
+        ],
+        "dependencies": [
+          "@drguptavivek/emr-controller",
+          "lit"
+        ],
+        "import": "import { EmrAbdmHealthLockerPanelElement } from '@drguptavivek/emr-elements';",
+        "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
+        "rendererStatus": "renderer"
+      },
+      "fileCount": 15
     }
   ]
 } as const;

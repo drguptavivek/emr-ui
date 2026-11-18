@@ -11,7 +11,7 @@ Source: `packages/emr-ui/src/lib/fields/emr-field-frame.component.ts`, `packages
 
 **Need** — every clinical field, regardless of its underlying control (text input, select, textarea, checkbox…), needs the same accessible label association, the same required-marker treatment, and the same single message slot beneath the control. Duplicating that layout and `aria-describedby` wiring in every field-type branch would drift.
 
-**Purpose** — renders the field's `<label>` (with a visually hidden "Required" announcement when `required()` is true), a content-projection slot (`<ng-content/>`) for the actual control, and one `aria-live="polite"` message region that shows **error**, else **warning**, else **hint**, in that strict priority order. It does NOT know what kind of control is projected into it, does NOT hold or validate a value, does NOT decide field type, and carries no dependency on `ClinicalFieldDefinition` or any other clinical-form model — its inputs are plain strings/booleans supplied by whatever wraps it (normally `EmrTypedField`).
+**Purpose** — renders the field's `<label>` (with a visually hidden "Required" announcement when `required()` is true), optional `unit` metadata pill, a content-projection slot (`<ng-content/>`) for the actual control, optional six-state `ClinicalAssessmentStatus` strip (`intent` events), and an `aria-live="polite"` message region that keeps `hint`, `note`, and deduplicated validation messages (`error` / `warning` / `info`) persistently visible. It does NOT hold or validate a value or collapse distinct assessment statuses.
 
 **API**
 ```ts
@@ -21,14 +21,26 @@ Source: `packages/emr-ui/src/lib/fields/emr-field-frame.component.ts`, `packages
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmrFieldFrameComponent {
-  readonly label = input.required<string>();
-  readonly controlId = input.required<string>();
+  readonly label = input<string>('');
+  readonly controlId = input<string>();
+  readonly definition = input<ClinicalFieldDefinition>();
+  readonly model = input<ClinicalFieldState>();
   readonly required = input(false);
+  readonly labelHidden = input(false);
+  readonly labelNamesControl = input(true);
+  readonly unit = input<string>();
+  readonly note = input<string>();
+  readonly showMetadata = input(true);
+  readonly readOnly = input(false);
+  readonly layout = input<'vertical' | 'horizontal' | 'inline'>('vertical');
+  readonly assessmentStatus = input<ClinicalAssessmentStatus>();
+  readonly assessmentStatusOptions = input<readonly ClinicalAssessmentStatusOption[]>([]);
   readonly hint = input<string>();
+  readonly info = input<string>();
   readonly warning = input<string>();
   readonly error = input<string>();
-
-  readonly messageId = () => `${this.controlId()}-message`;
+  readonly messages = input<readonly EmrValidationMessage[]>([]);
+  readonly intent = output<FieldFrameIntent>();
 }
 ```
 
@@ -36,12 +48,17 @@ export class EmrFieldFrameComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `label` | `string` (signal input, required) | — | Rendered as the `<label for>` text |
-| `controlId` | `string` (signal input, required) | — | Must match the projected control's `id`; also derives `messageId()` |
-| `required` | `boolean` (signal input) | `false` | Shows a `*` and an `emr-sr-only` "Required" announcement |
-| `hint` | `string \| undefined` | `undefined` | Shown only when neither `error` nor `warning` is set |
-| `warning` | `string \| undefined` | `undefined` | Shown only when `error` is not set |
-| `error` | `string \| undefined` | `undefined` | Highest priority; also drives `aria-invalid` on whatever control consumes `messageId()` |
+| `label` | `string` | `''` | Rendered `<label>` text (falls back to `definition?.label`) |
+| `controlId` | `string` | auto-generated | Links `<label for>` and derives `${id}-hint`, `${id}-note`, `${id}-message` |
+| `definition` / `model` | `ClinicalFieldDefinition` / `ClinicalFieldState` | `undefined` | Optional schema/state defaults overridden by explicit inputs |
+| `required` | `boolean` | `false` | Shows `*` and `emr-sr-only` "Required" announcement |
+| `labelHidden` / `labelNamesControl` | `boolean` | `false` / `true` | Visually hides label (`emr-sr-only`) / associates `<label for>` |
+| `unit` / `note` / `showMetadata` | `string` / `boolean` | `undefined` / `true` | Unit badge, clinical note, and status strip visibility |
+| `layout` | `'vertical' \| 'horizontal' \| 'inline'` | `'vertical'` | Desktop horizontal/inline layout collapsing to vertical at `<=480px` |
+| `readOnly` | `boolean` | `false` | Marks read-only and hides interactive assessment-status chips |
+| `assessmentStatus` / `assessmentStatusOptions` | `ClinicalAssessmentStatus` / array | `undefined` / `[]` | Six-state assessment status pill & interactive chips |
+| `hint` / `info` / `warning` / `error` / `messages` | `string` / `EmrValidationMessage[]` | `undefined` / `[]` | Persistent helper text + deduplicated severity messages (`role="alert"` on error) |
+| `intent` (output) | `FieldFrameIntent` | — | `{ type: 'statusChangeRequested', status }` |
 
 **Example**
 ```html
@@ -60,7 +77,7 @@ export class EmrFieldFrameComponent {
 
 **Need** — a schema-driven form needs one place that turns a `ClinicalFieldDefinition` + its current `ClinicalFieldState` into the right native control (`<input type="number">`, `<select>`, `<textarea>`, a checkbox, a quantity pair…) without every container (`EmrClinicalForm`, `EmrRepeatableGroup`, `EmrFieldGenerator`'s preview) re-implementing that switch.
 
-**Purpose** — renders one control per `ClinicalFieldDefinition.type`, wraps it in `EmrFieldFrame`, and additionally renders the field's `assessmentStatus` (badge + optional status-editing select) when the field carries `assessmentStatusOptions` or a recorded status. It emits mechanical value/status/focus events only. It does NOT call HTTP, does NOT persist, does NOT clinically validate a value, does NOT infer whether a value is complete/normal/safe, and does NOT collapse the distinct clinical states `not-assessed`/`unable-to-assess`/`not-applicable`/`declined`/`unknown` — `assessmentStatus` is passed straight through as a controller-supplied enum value with no interpretation.
+**Purpose** — renders one control per `EmrValueType` / `ClinicalFieldDefinition.type` (`text`, `multiline`, `integer`, `decimal`, `boolean`, `date`, `time`, `datetime`, `partial-date`, `select`, `multiselect`, `quantity`, `coded`, `scale`, `attachment`, `annotation`, `custom`), wraps it in `EmrFieldFrame`, and delegates unit, layout, metadata, and six-state `ClinicalAssessmentStatus` (`recorded` / `not-assessed` / `unable-to-assess` / `not-applicable` / `declined` / `unknown`) to `EmrFieldFrame`. Emits `valueChange`, `statusChange`, `focused`, and `blurred`. Supports `readOnly`, `labelHidden`, `showMetadata`, and `layout` (`vertical` | `horizontal` | `inline`). No `disabled` prop above L2.
 
 **API**
 ```ts
@@ -177,12 +194,15 @@ export type CodedInputIntent =
   | { type: 'openRequested' } | { type: 'closeRequested' }
   | { type: 'conceptSelected'; concept: EmrCodedValue }
   | { type: 'conceptRemoveRequested'; code: string; system: string }
-  | { type: 'statusChangeRequested'; status: ClinicalAssessmentStatus };
+  | { type: 'statusChangeRequested'; status: ClinicalAssessmentStatus | undefined };
 
 export class EmrCodedInputComponent {
-  @Input({ required: true }) model!: CodedInputViewModel;
-  @Input() headingId?: string;
-  @Output() readonly intent = new EventEmitter<CodedInputIntent>();
+  readonly model = input.required<CodedInputViewModel>();
+  readonly headingId = input<string>();
+  readonly controlId = input<string>();
+  readonly labelHidden = input(false);
+  readonly readOnly = input(false);
+  readonly intent = output<CodedInputIntent>();
 }
 ```
 
@@ -190,9 +210,12 @@ export class EmrCodedInputComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `CodedInputViewModel` (required) | — | field definition, value, query, results and messages, all supplied by the controller |
+| `model` | `CodedInputViewModel` (required) | — | field definition, value, query, results, status and messages, all supplied by the controller |
 | `headingId` | `string` | field label | id of an external heading; when set it names the group via `aria-labelledby` |
-| `intent` (output) | `EventEmitter<CodedInputIntent>` | — | the seven intents above |
+| `controlId` | `string` | auto-generated | DOM id for combobox input, `${id}-listbox`, and `${id}-message` |
+| `labelHidden` | `boolean` | `false` | hides visual `<label>` while preserving accessible name |
+| `readOnly` | `boolean` | `false` | locks chips/search/status without setting `disabled`; shows `"Not supplied"` when empty |
+| `intent` (output) | `OutputEmitterRef<CodedInputIntent>` | — | the seven intents above |
 
 **Example**
 ```html
@@ -217,13 +240,15 @@ export class EmrCodedInputComponent {
 
 **Need** - signing, witnessing and co-signing recur across inpatient records (MAR witness, transfusion two-person check, swab counts, controlled drugs, consent, discharge sign-off). The status bar and staged checklist each carried a private version.
 
-**Purpose** - renders the caller-supplied attestation statement, one row per `CaptureSignatory` (name, role, status badge, signed-at label or "Not supplied") and Sign / Amend buttons shown only when `canSign` / `canAmend` and not `readOnly`. It does NOT decide who may sign, format timestamps, or evaluate completeness; every label and badge comes from the controller. Compact enough for a flowsheet cell popover or checklist phase footer; action buttons are hidden in print.
+**Purpose** - renders the caller-supplied attestation statement, one row per `CaptureSignatory` (name, role, status badge, signed-at label or "Not supplied") and Sign / Amend buttons (`>=44px`) shown only when `canSign` / `canAmend` and not `readOnly`. When `readOnly` and unsigned (and no `error`), displays `"Not completed."` and keeps signatory names non-interactive. Zero `disabled` above L2; action buttons are hidden in print.
 
 **API**
 ```ts
 export class EmrAttestationComponent {
   readonly model = input.required<AttestationViewModel>();
+  readonly controlId = input<string>();
   readonly headingId = input<string>();
+  readonly readOnly = input(false);
   readonly intent = output<AttestationIntent>();
 }
 // AttestationIntent = signRequested(signatoryId?) | amendRequested | signatorySelected(signatoryId)
@@ -234,7 +259,9 @@ export class EmrAttestationComponent {
 | name | type | default | notes |
 |---|---|---|---|
 | `model` | `AttestationViewModel` (required) | - | title, statement, signatories, canSign, signLabel, canAmend, amendLabel, readOnly, error |
-| `headingId` | `string` | generated | id of the title heading, used for `aria-labelledby` |
+| `controlId` | `string` | generated | DOM id of the `<section>` region and prefix for `${id}-error` |
+| `headingId` | `string` | `${controlId}-title` | id of the title heading, used for `aria-labelledby` |
+| `readOnly` | `boolean` | `false` | hides Sign/Amend buttons, makes signatory names non-interactive, shows `"Not completed."` when unsigned |
 
 **Example**
 ```html
@@ -250,7 +277,7 @@ export class EmrAttestationComponent {
 
 **Need** — a drug order composer must capture *when* and *how much* a medicine is taken as structured `DoseSlot[]`, the same shape `EmrDoseSchedule` renders, rather than a free-text frequency that the patient-facing card would have to parse.
 
-**Purpose** — renders a `<fieldset>`/`<legend>` group with one checkbox per controller-supplied slot (four standard slots, hourly slots, or a single PRN slot). A ticked slot shows an amount control: a number input (`amountMode: 'numeric'`, with `unitLabel` beside it) or a text input (`amountMode: 'label'`, e.g. "thin layer"). Optional preset buttons tick a fixed set of slot ids and replace the selection; slots already ticked keep their amount, new ones start at `defaultAmount` / `defaultAmountLabel`. The button whose slot ids equal the current selection shows `aria-pressed="true"` and a tick glyph. Every change emits a new immutable `DoseSlot[]` in `slots` order through `valueChange`; unticked slots are omitted, and an emptied amount becomes `amount: null` with the slot still ticked. It does NOT derive frequency text or codes, totals, durations or tapers, does NOT validate amounts (no clinical bounds), and does NOT pluralise units — the controller does all of that from the emitted value. Value building lives in the controller as pure functions (`toggleSlot`, `setSlotAmount`, `applySlotPreset`). Read-only renders each slot as text ("1 tablets" uses the supplied `unitLabel` verbatim; "Not selected" otherwise); `disabled` disables the whole fieldset.
+**Purpose** — renders a `<fieldset>`/`<legend>` group with one checkbox per controller-supplied slot (four standard slots, hourly slots, or a single PRN slot). A ticked slot shows an amount control: a number input (`amountMode: 'numeric'`, with `unitLabel` beside it) or a text input (`amountMode: 'label'`, e.g. "thin layer"). Optional preset buttons tick a fixed set of slot ids and replace the selection; slots already ticked keep their amount, new ones start at `defaultAmount` / `defaultAmountLabel`. The button whose slot ids equal the current selection shows `aria-pressed="true"` and a check icon. Every change emits a new immutable `DoseSlot[]` in `slots` order through `valueChange`; unticked slots are omitted, and an emptied amount becomes `amount: null` with the slot still ticked. It does NOT derive frequency text or codes, totals, durations or tapers, does NOT validate amounts (no clinical bounds), and does NOT pluralise units — the controller does all of that from the emitted value. Value building lives in the controller as pure functions (`toggleSlot`, `setSlotAmount`, `applySlotPreset`, `isPresetActive`, `formatSlotReadout`). Read-only renders each slot as text ("1 tablets" uses the supplied `unitLabel` verbatim; "Not selected" otherwise).
 
 **API**
 ```ts
@@ -270,7 +297,6 @@ export class EmrScheduleSlotPickerComponent {
   readonly error = input<string>();
   readonly required = input(false);
   readonly readOnly = input(false);
-  readonly disabled = input(false);
   readonly value = input<readonly DoseSlot[] | null>(null);
   readonly slots = input.required<readonly ScheduleSlotDefinition[]>();
   readonly unitLabel = input<string>();
@@ -286,12 +312,11 @@ export class EmrScheduleSlotPickerComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `controlId` | `string` | generated | id of the fieldset; checkboxes are `{controlId}-{slot.id}`, amounts `{controlId}-{slot.id}-amount`, message `{controlId}-message` |
+| `controlId` | `string` | generated | id of the fieldset; checkboxes are `{controlId}-{slot.id}`, amounts `{controlId}-{slot.id}-amount`, hint `{controlId}-hint`, error `{controlId}-error` |
 | `label` | `string` (required) | — | legend text |
-| `hint` / `error` | `string` | — | one message region below the grid; error wins and is prefixed "Error:" |
-| `required` | `boolean` | `false` | `*` plus a screen-reader "Required"; the controller decides whether an empty value is an error |
+| `hint` / `error` | `string` | — | rendered below the grid (`{controlId}-hint` and `role="alert"` `{controlId}-error` with `"Error:"` prefix); both can show simultaneously |
+| `required` | `boolean` | `false` | `*`, `aria-required="true"`, and screen-reader "Required"; the controller decides whether an empty value is an error |
 | `readOnly` | `boolean` | `false` | renders text, no controls, no presets |
-| `disabled` | `boolean` | `false` | disables the fieldset |
 | `value` | `readonly DoseSlot[] \| null` | `null` | ticked slots; ids not in `slots` are ignored |
 | `slots` | `readonly ScheduleSlotDefinition[]` (required) | — | available slots, in display and emission order |
 | `unitLabel` | `string` | — | shown after numeric amounts and in the amount's accessible name |
@@ -325,14 +350,15 @@ export class EmrScheduleSlotPickerComponent {
 
 **Need** — Patient IDs and cards are scanned or typed, and the field must show what the app understood without owning any format rule.
 
-**Purpose** — Renders an `IdentifierEntryView` in `emr-field-frame` (message priority error, warning, hint): a text input (`autocapitalize="characters"`, `autocomplete="off"`, `spellcheck="false"`, `aria-invalid` on error), a Scan button (hidden when `readOnly`), the app's `normalisedValue` as "✓" confirmation text beneath, and radio chips for `typeOptions` only when present. It never normalises or validates. Deliberate shape: typing is folded into the single `intent` output as `{ type: 'valueChanged'; raw }` alongside `scanRequested` and `typeSelected`, so there is no separate `valueChange` output.
+**Purpose** — renders an `IdentifierEntryView` in `emr-field-frame` (simultaneous error, warning, hint, and structured `messages`): a text input (`autocapitalize="characters"`, `autocomplete="off"`, `spellcheck="false"`, `aria-invalid` on error, `aria-required` on required), an optional clear button (`clearable`), a Scan button with monochrome `scanner` SVG (hidden when `readOnly`), the app's `normalisedValue` with a monochrome `check` SVG beneath, and accessible `role="radiogroup"` chips for `typeOptions` (roving `tabindex`, arrow/Home/End keys, no HTML `disabled` attribute). It never normalises or validates. Deliberate shape: typing, scan, type selection, clear, submit, focus, and blur are folded into the single `intent` output (`valueChanged`, `scanRequested`, `typeSelected`, `cleared`, `submitted`, `focused`, `blurred`), so there is no separate `valueChange` output.
 
 **API**
 ```ts
-export type EmrIdentifierEntryEvent = IdentifierEntryIntent | { type: 'valueChanged'; raw: string };
+export type EmrIdentifierEntryEvent = IdentifierEntryIntent;
 export class EmrIdentifierEntryComponent {
   readonly model = input.required<IdentifierEntryView>();
   readonly controlId = input<string>(/* generated */);
+  readonly readOnly = input<boolean>(false);
   readonly labels = input<Partial<EmrIdentifierEntryLabels>>({});
   readonly intent = output<EmrIdentifierEntryEvent>();
 }
@@ -342,10 +368,11 @@ export class EmrIdentifierEntryComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `IdentifierEntryView` (required) | — | label, value, normalisedValue, error, warning, hint, readOnly, typeOptions, selectedType |
+| `model` | `IdentifierEntryView` (required) | — | label, value, normalisedValue, error, warning, hint, readOnly, required, placeholder, clearable, maxLength, typeOptions, selectedType, messages |
 | `controlId` | `string` | generated | id of the input |
-| `labels` | `Partial<EmrIdentifierEntryLabels>` | English | Scan, Recognised as |
-| `intent` (output) | `EmrIdentifierEntryEvent` | — | valueChanged, scanRequested, typeSelected |
+| `readOnly` | `boolean` | `false` | effective read-only (`readOnly \|\| model.readOnly`), keeps focus without `disabled` |
+| `labels` | `Partial<EmrIdentifierEntryLabels>` | English | scan, identifierType, normalised, clear |
+| `intent` (output) | `EmrIdentifierEntryEvent` | — | valueChanged, scanRequested, typeSelected, cleared, submitted, focused, blurred |
 
 **Example**
 ```html
@@ -361,12 +388,47 @@ export class EmrIdentifierEntryComponent {
 ### EmrScaleField
 **Layer** L2 · **Selector** `emr-scale-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--scales-and-dates`
 
-**Need** — Ordinal and visual-analogue clinical scales (`EmrValueType = 'scale'`, e.g., NRS pain 0–10, PHQ-9 item, EQ-5D VAS) need a schema-bound L2 field combining `EmrFieldFrame`, `EmrLikert` or `EmrVas`, validation messages, and no-value `ClinicalAssessmentStatus` capture.
+**Need** — Ordinal and visual-analogue clinical scales (`EmrValueType = 'scale'`, e.g., NRS pain 0–10, PHQ-9 item, EQ-5D VAS) need a schema-bound L2 field combining `EmrFieldFrame`, `EmrLikert` or `EmrVas`, validation messages, and six-state `ClinicalAssessmentStatus` capture.
 
-**Purpose** — Renders `ScaleFieldViewModel` inside `EmrFieldFrame`, switching between `EmrLikert` and `EmrVas` per `widget` / `definition.presentation.widget`, displaying controller-supplied `tone` and `messages`, and emitting `ScaleFieldIntent` (`valueChanged`, `statusChangeRequested`).
+**Purpose** — Renders `ScaleFieldViewModel` inside `EmrFieldFrame`, switching between `EmrLikert` and `EmrVas` per `variant` / `definition.presentation.widget`, displaying controller-supplied `tone`, `optionTones`, and `messages`, and emitting `ScaleFieldIntent` (`valueChangeRequested`, `statusChangeRequested`) plus focus lifecycle (`focused`, `blurred`).
+
+**API**
+```ts
+export class EmrScaleFieldComponent {
+  readonly model = input.required<ScaleFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
+  readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false);
+  readonly layout = input<FieldFrameLayout>('vertical');
+  readonly showMetadata = input(true);
+  readonly readOnly = input(false);
+  readonly intent = output<ScaleFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `ScaleFieldViewModel` (required) | — | label, variant (`likert` \| `vas`), value, min, max, step, anchors, optionTones, tone, status, statusOptions, hint, messages, required, readOnly, unit, clearable |
+| `definition` | `EmrFieldDefinition` | — | optional contract definition fallback |
+| `controlId` | `string` | generated | id prefix (`{controlId}-control` for inner L1, `{controlId}-label`, `{controlId}-message`) |
+| `headingId` | `string` | — | optional external heading/label id |
+| `labelHidden` | `boolean` | `false` | hides visual outer label while preserving assistive text |
+| `layout` | `'vertical' \| 'horizontal' \| 'inline'` | `'vertical'` | forwarded to `EmrFieldFrame` |
+| `showMetadata` | `boolean` | `true` | controls unit badge & assessment status strip |
+| `readOnly` | `boolean` | `false` | effective lock (`readOnly \|\| model.readOnly \|\| definition.contract.readOnly`) |
+| `intent` (output) | `ScaleFieldIntent` | — | `valueChangeRequested`, `statusChangeRequested` |
+
+**Example**
+```html
+<emr-scale-field [model]="painScale" (intent)="onScaleIntent($event)" />
+```
 
 **Depends on** — `EmrFieldFrameComponent`, `EmrLikertComponent`, `EmrVasComponent`.
-**Used by** — `EmrTypedFieldComponent` (`scale` valueType).
 
 ---
 
@@ -375,10 +437,50 @@ export class EmrIdentifierEntryComponent {
 
 **Need** — Historical clinical dates (symptom onset `"2019"`, childhood surgery `"2024-06"`, exact event `"2026-03-15"`) frequently have unknown day or month (`EmrValueType = 'partial-date'`).
 
-**Purpose** — Renders precision selector (`YYYY` / `YYYY-MM` / `YYYY-MM-DD`) and coordinated year/month/day inputs inside `EmrFieldFrame` with optional `ClinicalAssessmentStatus`, emitting `PartialDateFieldIntent` without calendar business-rule assumptions.
+**Purpose** — Renders a segmented precision selector (`Year` / `Year & month` / `Full date`) and date input inside `EmrFieldFrame` with optional six-state `ClinicalAssessmentStatus` capture, emitting `PartialDateFieldIntent` (`precisionChangeRequested`, `valueChangeRequested`, `statusChangeRequested`). Switching from finer to coarser precision truncates the ISO prefix (`2025-11-14` -> `2025-11` -> `2025`); switching from coarser to finer clears to `null` instead of fabricating `-01` / `-01-01`.
 
-**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
-**Used by** — `EmrTypedFieldComponent` (`partial-date` valueType).
+**API**
+```ts
+export class EmrPartialDateFieldComponent {
+  readonly model = input.required<PartialDateFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
+  readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false);
+  readonly layout = input<FieldFrameLayout>('vertical');
+  readonly showMetadata = input(true);
+  readonly readOnly = input(false);
+  readonly defaultPrecision = input<EmrPartialDate['precision']>('day');
+  readonly clearable = input(true);
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly intent = output<PartialDateFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `PartialDateFieldViewModel` (required) | — | label, value (`EmrPartialDate \| null`), min, max, displayFormat, defaultPrecision, clearable, size, status, statusOptions, hint, messages, required, readOnly |
+| `definition` | `EmrFieldDefinition` | — | optional contract definition fallback |
+| `controlId` | `string` | generated | id prefix (`{controlId}-precision`, `{controlId}-control`, `{controlId}-label`, `{controlId}-message`) |
+| `headingId` | `string` | — | optional external heading/label id |
+| `labelHidden` | `boolean` | `false` | hides visual outer label while preserving assistive text |
+| `layout` | `'vertical' \| 'horizontal' \| 'inline'` | `'vertical'` | forwarded to `EmrFieldFrame` |
+| `showMetadata` | `boolean` | `true` | controls assessment status strip visibility |
+| `readOnly` | `boolean` | `false` | effective lock (`readOnly \|\| model.readOnly \|\| definition.contract.readOnly`) |
+| `defaultPrecision` | `'year' \| 'month' \| 'day'` | `'day'` | fallback precision when `value === null` |
+| `clearable` | `boolean` | `true` | shows Clear button when `value !== null && !readOnly` |
+| `intent` (output) | `PartialDateFieldIntent` | — | `precisionChangeRequested`, `valueChangeRequested`, `statusChangeRequested` |
+
+**Example**
+```html
+<emr-partial-date-field [model]="onsetDate" (intent)="onPartialDateIntent($event)" />
+```
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`, `EmrDateInputComponent`.
 
 ---
 
@@ -387,10 +489,47 @@ export class EmrIdentifierEntryComponent {
 
 **Need** — External clinical documents, consent scans, and ophthalmic imaging attachments (`EmrValueType = 'attachment'`) need an L2 field binding `EmrAttachmentRef` list state, file selection, and remove/open intents.
 
-**Purpose** — Wraps `EmrFileTrigger` and an attachment list inside `EmrFieldFrame`, showing filename, media type, byte size, and Open/Remove buttons, emitting `AttachmentFieldIntent` (`filesSelected`, `attachmentRemoveRequested`, `attachmentOpenRequested`, `statusChangeRequested`). Performs zero network upload or storage I/O.
+**Purpose** — Renders an `EmrAttachmentRef[]` list above an `EmrFileTrigger` (plus optional `Camera` and `Scanner` triggers) inside `EmrFieldFrame`, delegating six-state `ClinicalAssessmentStatus` to `EmrFieldFrame` and emitting `AttachmentFieldIntent` (`filesSelected`, `captureRequested`, `itemSelected`, `itemRemoveRequested`, `statusChangeRequested`) plus `nativeFilesSelected` on Web. Performs zero network upload or storage I/O.
 
-**Depends on** — `EmrFieldFrameComponent`, `EmrFileTriggerComponent`.
-**Used by** — `EmrTypedFieldComponent` (`attachment` valueType).
+**API**
+```ts
+export class EmrAttachmentFieldComponent {
+  readonly model = input.required<AttachmentFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
+  readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false);
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true);
+  readonly readOnly = input(false);
+  readonly intent = output<AttachmentFieldIntent>();
+  readonly nativeFilesSelected = output<readonly File[]>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `AttachmentFieldViewModel` (required) | — | label, items, accept, multiple, maxItems, allowCamera, status, statusOptions, hint, messages, required, readOnly, layout, showMetadata |
+| `definition` | `EmrFieldDefinition` | — | optional contract definition fallback |
+| `controlId` | `string` | generated | id prefix (`{controlId}-trigger` for file trigger, `{controlId}-label`, `{controlId}-message`) |
+| `headingId` | `string` | — | optional external heading/label id |
+| `labelHidden` | `boolean` | `false` | hides visual outer label while preserving assistive text |
+| `layout` | `'vertical' \| 'horizontal' \| 'inline'` | `'vertical'` | forwarded to `EmrFieldFrame` |
+| `showMetadata` | `boolean` | `true` | controls assessment status strip visibility |
+| `readOnly` | `boolean` | `false` | effective lock (`readOnly \|\| model.readOnly \|\| definition.contract.readOnly`); keeps `itemSelected` active |
+| `intent` (output) | `AttachmentFieldIntent` | — | `filesSelected`, `captureRequested`, `itemSelected`, `itemRemoveRequested`, `statusChangeRequested` |
+| `nativeFilesSelected` (output) | `readonly File[]` | — | Web File[] escape hatch |
+
+**Example**
+```html
+<emr-attachment-field [model]="attachments" (intent)="onAttachmentIntent($event)" />
+```
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrFileTriggerComponent`, `EmrBadgeComponent`.
 
 ---
 

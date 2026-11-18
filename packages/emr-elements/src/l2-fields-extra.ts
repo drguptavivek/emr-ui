@@ -1,8 +1,11 @@
 import { html, css, svg, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
-import type {
-  AddressFieldIntent,
+import {
+  DEFAULT_PARTIAL_DATE_PRECISION_OPTIONS,
+  adaptPartialDateForPrecision,
+  formatByteSize,
+  type AddressFieldIntent,
   AddressFieldViewModel,
   AttachmentFieldIntent,
   AttachmentFieldViewModel,
@@ -257,13 +260,6 @@ function renderAssessmentStatusStrip(
   </div>`;
 }
 
-function formatByteSize(bytes: number | undefined): string {
-  if (bytes === undefined || !Number.isFinite(bytes)) return '';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 /** 1. EmrScaleFieldElement (`emr-scale-field`) */
 export class EmrScaleFieldElement extends EmrLitElement {
   static override styles = [emrShadowStyles, l2ExtraStyles];
@@ -271,39 +267,71 @@ export class EmrScaleFieldElement extends EmrLitElement {
   private readonly fallbackId = nextL2ExtraId('emr-scale-field');
 
   @property({ type: String }) controlId = '';
+  @property({ type: String }) headingId = '';
   @property({ type: Boolean }) labelHidden = false;
+  @property({ type: String }) layout: 'vertical' | 'horizontal' | 'inline' = 'vertical';
+  @property({ type: Boolean }) showMetadata = true;
+  @property({ type: Boolean }) readOnly = false;
+  @property({ attribute: false }) definition?: ScaleFieldViewModel['definition'];
   @property({ attribute: false }) model?: ScaleFieldViewModel;
 
   override render() {
     const m = this.model;
     if (!m) return nothing;
-    const id = this.controlId || m.definition?.contract?.linkId || this.fallbackId;
-    const locked = !!m.readOnly || !!m.definition?.contract?.readOnly;
+    const id = this.controlId || this.fallbackId;
+    const resolvedDef = this.definition ?? m.definition;
+    const resolvedLabel = m.label || resolvedDef?.presentation?.label || '';
+    const resolvedVariant = m.variant ?? (resolvedDef?.presentation?.widget === 'vas' ? 'vas' : 'likert');
+    const locked = this.readOnly || !!m.readOnly || !!resolvedDef?.contract?.readOnly;
+    const minCard = resolvedDef?.contract?.cardinality?.min;
+    const required = Boolean(m.required || (minCard !== undefined && minCard >= 1));
+    const resolvedTone = (m.value !== null ? m.optionTones?.[m.value] : undefined) ?? m.tone ?? 'neutral';
+    const firstError = m.messages?.find(msg => msg.severity === 'error')?.message ?? '';
+    const firstWarning = m.messages?.find(msg => msg.severity === 'warning')?.message ?? '';
 
     return html`<emr-field-frame
       .controlId=${id}
-      .label=${m.label}
+      .label=${resolvedLabel}
       .labelHidden=${this.labelHidden}
+      .labelNamesControl=${false}
+      .layout=${this.layout}
+      .showMetadata=${this.showMetadata}
+      .unit=${m.unit ?? resolvedDef?.presentation?.unitDisplay ?? ''}
+      .readOnly=${locked}
       .hint=${m.hint ?? ''}
       .messages=${m.messages ?? []}
-      ?required=${!!m.required}
+      .assessmentStatus=${m.status}
+      .assessmentStatusOptions=${m.statusOptions ?? []}
+      ?required=${required}
+      @intent=${(e: CustomEvent<{ type?: string; status?: ClinicalAssessmentStatus }>) => {
+        if (e.detail?.type === 'statusChangeRequested') {
+          e.stopPropagation();
+          if (!locked) {
+            this.emitIntent<ScaleFieldIntent>({ type: 'statusChangeRequested', status: e.detail.status });
+          }
+        }
+      }}
     >
       <div class="l2-stack">
-        ${m.variant === 'vas'
+        ${resolvedVariant === 'vas'
           ? html`<emr-vas
-              .controlId=${id}
-              .label=${m.label}
+              .controlId=${`${id}-control`}
+              .label=${resolvedLabel}
               .labelHidden=${true}
               .value=${m.value}
               .min=${m.min}
               .max=${m.max}
-              .step=${m.step ?? 1}
+              .step=${m.step}
               .majorInterval=${m.majorInterval ?? 10}
-              .minorInterval=${m.minorInterval ?? 5}
+              .minorInterval=${m.minorInterval ?? 2}
               .orientation=${m.orientation ?? 'horizontal'}
               .anchors=${m.anchors}
-              .tone=${m.tone ?? 'neutral'}
+              .tone=${resolvedTone}
               .readOnly=${locked}
+              .required=${required}
+              .error=${firstError}
+              .warning=${!firstError ? firstWarning : ''}
+              .hint=${m.hint ?? ''}
               @valueChange=${(e: CustomEvent<number | null>) => {
                 e.stopPropagation();
                 if (!locked) {
@@ -312,16 +340,21 @@ export class EmrScaleFieldElement extends EmrLitElement {
               }}
             ></emr-vas>`
           : html`<emr-likert
-              .controlId=${id}
-              .label=${m.label}
+              .controlId=${`${id}-control`}
+              .label=${resolvedLabel}
               .labelHidden=${true}
               .value=${m.value}
               .min=${m.min}
               .max=${m.max}
+              .step=${m.step ?? 1}
               .anchors=${m.anchors}
               .optionTones=${m.optionTones}
-              .tone=${m.tone}
+              .tone=${resolvedTone}
               .readOnly=${locked}
+              .required=${required}
+              .error=${firstError}
+              .warning=${!firstError ? firstWarning : ''}
+              .hint=${m.hint ?? ''}
               @valueChange=${(e: CustomEvent<number>) => {
                 e.stopPropagation();
                 if (!locked) {
@@ -329,34 +362,25 @@ export class EmrScaleFieldElement extends EmrLitElement {
                 }
               }}
             ></emr-likert>`}
-        <div class="l2-row">
-          ${m.value !== null && !locked
-            ? html`<button
+        ${m.value !== null && !locked && m.clearable !== false
+          ? html`<div class="l2-row">
+              <button
                 type="button"
                 class="emr-btn emr-btn--ghost emr-btn--sm"
+                style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;gap:6px;"
+                aria-label=${`Clear ${resolvedLabel}`}
                 @click=${() => {
-                  if (!this.model?.readOnly) {
+                  if (!locked) {
                     this.emitIntent<ScaleFieldIntent>({ type: 'valueChangeRequested', value: null });
                   }
                 }}
-              >Clear</button>`
-            : nothing}
-          ${renderAssessmentStatusStrip(m.status, m.statusOptions, locked, next => {
-            if (!this.model?.readOnly) {
-              this.emitIntent<ScaleFieldIntent>({ type: 'statusChangeRequested', status: next });
-            }
-          })}
-        </div>
+              >${renderEmrSvgIcon('close', 14)}<span>Clear</span></button>
+            </div>`
+          : nothing}
       </div>
     </emr-field-frame>`;
   }
 }
-
-const PARTIAL_DATE_PRECISION_OPTIONS: readonly EmrSegmentedOption<'year' | 'month' | 'day'>[] = [
-  { value: 'year', label: 'Year' },
-  { value: 'month', label: 'Year + Month' },
-  { value: 'day', label: 'Full Date' },
-];
 
 /** 2. EmrPartialDateFieldElement (`emr-partial-date-field`) */
 export class EmrPartialDateFieldElement extends EmrLitElement {
@@ -365,55 +389,98 @@ export class EmrPartialDateFieldElement extends EmrLitElement {
   private readonly fallbackId = nextL2ExtraId('emr-partial-date');
 
   @property({ type: String }) controlId = '';
+  @property({ type: String }) headingId = '';
   @property({ type: Boolean }) labelHidden = false;
+  @property({ type: String }) layout: 'vertical' | 'horizontal' | 'inline' = 'vertical';
+  @property({ type: Boolean }) showMetadata = true;
+  @property({ type: Boolean }) readOnly = false;
+  @property({ type: String }) defaultPrecision: 'year' | 'month' | 'day' = 'day';
+  @property({ type: String }) displayFormat: 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'mm/dd/yyyy' = 'dd-mm-yyyy';
+  @property({ type: Boolean }) clearable = true;
+  @property({ type: String }) size: 'sm' | 'md' | 'lg' = 'md';
+  @property({ attribute: false }) definition?: PartialDateFieldViewModel['definition'];
   @property({ attribute: false }) model?: PartialDateFieldViewModel;
+
+  @state() private draftPrecision?: 'year' | 'month' | 'day';
 
   override render() {
     const m = this.model;
     if (!m) return nothing;
     const id = this.controlId || this.fallbackId;
-    const locked = !!m.readOnly;
-    const precision = m.value?.precision ?? 'day';
+    const resolvedDef = this.definition ?? m.definition;
+    const resolvedLabel = m.label || resolvedDef?.presentation?.label || '';
+    const locked = this.readOnly || !!m.readOnly || !!resolvedDef?.contract?.readOnly;
+    const minCard = resolvedDef?.contract?.cardinality?.min;
+    const required = Boolean(m.required || (minCard !== undefined && minCard >= 1));
+    const precision = m.value?.precision ?? this.draftPrecision ?? m.defaultPrecision ?? this.defaultPrecision;
+    const firstError = m.messages?.find(msg => msg.severity === 'error')?.message ?? '';
+    const resolvedDisplayFormat = m.displayFormat ?? this.displayFormat;
+    const resolvedClearable = m.clearable ?? this.clearable;
 
     return html`<emr-field-frame
       .controlId=${id}
-      .label=${m.label}
+      .label=${resolvedLabel}
       .labelHidden=${this.labelHidden}
+      .labelNamesControl=${false}
+      .layout=${this.layout}
+      .showMetadata=${this.showMetadata}
+      .readOnly=${locked}
       .hint=${m.hint ?? ''}
       .messages=${m.messages ?? []}
-      ?required=${!!m.required}
+      .assessmentStatus=${m.status}
+      .assessmentStatusOptions=${m.statusOptions ?? []}
+      ?required=${required}
+      @intent=${(e: CustomEvent<{ type?: string; status?: ClinicalAssessmentStatus }>) => {
+        if (e.detail?.type === 'statusChangeRequested') {
+          e.stopPropagation();
+          if (!locked) {
+            this.emitIntent<PartialDateFieldIntent>({ type: 'statusChangeRequested', status: e.detail.status });
+          }
+        }
+      }}
     >
       <div class="l2-stack">
+        <emr-segmented-control
+          .controlId=${`${id}-precision`}
+          .label=${`${resolvedLabel} precision`}
+          .labelHidden=${true}
+          .options=${DEFAULT_PARTIAL_DATE_PRECISION_OPTIONS}
+          .value=${precision}
+          .readOnly=${locked}
+          @valueChange=${(e: CustomEvent<string>) => {
+            e.stopPropagation();
+            if (locked) return;
+            const next = e.detail as 'year' | 'month' | 'day';
+            this.draftPrecision = next;
+            this.emitIntent<PartialDateFieldIntent>({
+              type: 'precisionChangeRequested',
+              precision: next,
+            });
+            if (m.value) {
+              this.emitIntent<PartialDateFieldIntent>({
+                type: 'valueChangeRequested',
+                value: adaptPartialDateForPrecision(m.value, next),
+              });
+            }
+          }}
+        ></emr-segmented-control>
         <div class="l2-row">
-          <emr-segmented-control
-            .controlId=${`${id}-precision`}
-            .label=${`${m.label} precision`}
-            .labelHidden=${true}
-            .options=${PARTIAL_DATE_PRECISION_OPTIONS}
-            .value=${precision}
-            .readOnly=${locked}
-            @valueChange=${(e: CustomEvent<string>) => {
-              e.stopPropagation();
-              if (!this.model?.readOnly) {
-                this.emitIntent<PartialDateFieldIntent>({
-                  type: 'precisionChangeRequested',
-                  precision: e.detail as 'year' | 'month' | 'day',
-                });
-              }
-            }}
-          ></emr-segmented-control>
           <emr-date-input
-            .controlId=${id}
-            .label=${m.label}
+            .controlId=${`${id}-control`}
+            .label=${resolvedLabel}
             .labelHidden=${true}
             .precision=${precision}
+            .displayFormat=${resolvedDisplayFormat}
             .value=${m.value?.value ?? null}
             .min=${m.min ?? ''}
             .max=${m.max ?? ''}
+            .required=${required}
+            .error=${firstError}
+            .hint=${m.hint ?? ''}
             .readOnly=${locked}
             @valueChange=${(e: CustomEvent<string | null>) => {
               e.stopPropagation();
-              if (!this.model?.readOnly) {
+              if (!locked) {
                 this.emitIntent<PartialDateFieldIntent>({
                   type: 'valueChangeRequested',
                   value: e.detail ? { value: e.detail, precision } : null,
@@ -421,12 +488,20 @@ export class EmrPartialDateFieldElement extends EmrLitElement {
               }
             }}
           ></emr-date-input>
+          ${m.value !== null && !locked && resolvedClearable
+            ? html`<button
+                type="button"
+                class="emr-btn emr-btn--ghost emr-btn--sm"
+                style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;gap:6px;"
+                aria-label=${`Clear ${resolvedLabel}`}
+                @click=${() => {
+                  if (!locked) {
+                    this.emitIntent<PartialDateFieldIntent>({ type: 'valueChangeRequested', value: null });
+                  }
+                }}
+              >${renderEmrSvgIcon('close', 14)}<span>Clear</span></button>`
+            : nothing}
         </div>
-        ${renderAssessmentStatusStrip(m.status, m.statusOptions, locked, next => {
-          if (!this.model?.readOnly) {
-            this.emitIntent<PartialDateFieldIntent>({ type: 'statusChangeRequested', status: next });
-          }
-        })}
       </div>
     </emr-field-frame>`;
   }
@@ -439,27 +514,54 @@ export class EmrAttachmentFieldElement extends EmrLitElement {
   private readonly fallbackId = nextL2ExtraId('emr-attachment-field');
 
   @property({ type: String }) controlId = '';
+  @property({ type: String }) headingId = '';
   @property({ type: Boolean }) labelHidden = false;
+  @property({ type: String }) layout: 'vertical' | 'horizontal' | 'inline' = 'vertical';
+  @property({ type: Boolean }) showMetadata = true;
+  @property({ type: Boolean }) readOnly = false;
+  @property({ attribute: false }) definition?: AttachmentFieldViewModel['definition'];
   @property({ attribute: false }) model?: AttachmentFieldViewModel;
 
   override render() {
     const m = this.model;
     if (!m) return nothing;
     const id = this.controlId || this.fallbackId;
-    const locked = !!m.readOnly;
-    const atCapacity = m.maxItems !== undefined && m.items.length >= m.maxItems;
+    const resolvedDef = this.definition ?? m.definition;
+    const resolvedLabel = m.label || resolvedDef?.presentation?.label || '';
+    const locked = this.readOnly || !!m.readOnly || !!resolvedDef?.contract?.readOnly;
+    const minCard = resolvedDef?.contract?.cardinality?.min;
+    const maxCard = resolvedDef?.contract?.cardinality?.max;
+    const required = Boolean(m.required || (minCard !== undefined && minCard >= 1));
+    const effectiveMaxItems = m.maxItems ?? (typeof maxCard === 'number' ? maxCard : undefined);
+    const effectiveMultiple = m.multiple ?? effectiveMaxItems !== 1;
+    const atCapacity = effectiveMaxItems !== undefined && m.items.length >= effectiveMaxItems;
+    const firstError = m.messages?.find(msg => msg.severity === 'error')?.message ?? '';
 
     return html`<emr-field-frame
       .controlId=${id}
-      .label=${m.label}
+      .label=${resolvedLabel}
       .labelHidden=${this.labelHidden}
+      .labelNamesControl=${false}
+      .layout=${m.layout ?? this.layout}
+      .showMetadata=${this.showMetadata || Boolean(m.showMetadata)}
+      .readOnly=${locked}
       .hint=${m.hint ?? ''}
       .messages=${m.messages ?? []}
-      ?required=${!!m.required}
+      .assessmentStatus=${m.status}
+      .assessmentStatusOptions=${m.statusOptions ?? []}
+      ?required=${required}
+      @intent=${(e: CustomEvent<{ type?: string; status?: ClinicalAssessmentStatus }>) => {
+        if (e.detail?.type === 'statusChangeRequested') {
+          e.stopPropagation();
+          if (!locked) {
+            this.emitIntent<AttachmentFieldIntent>({ type: 'statusChangeRequested', status: e.detail.status });
+          }
+        }
+      }}
     >
       <div class="l2-stack">
         ${m.items.length > 0
-          ? html`<ul class="attachment-list" aria-label=${`${m.label} attachments`}>
+          ? html`<ul class="attachment-list" aria-label=${`${resolvedLabel} attachments`}>
               ${m.items.map(item => {
                 const meta = [item.contentType, formatByteSize(item.sizeBytes), item.uploadedAt]
                   .filter(Boolean)
@@ -468,6 +570,7 @@ export class EmrAttachmentFieldElement extends EmrLitElement {
                   <button
                     type="button"
                     class="attachment-select-btn"
+                    aria-label=${`Open ${item.title}`}
                     @click=${() => this.emitIntent<AttachmentFieldIntent>({ type: 'itemSelected', id: item.id })}
                   >
                     ${renderEmrSvgIcon('file', 16)}
@@ -479,36 +582,46 @@ export class EmrAttachmentFieldElement extends EmrLitElement {
                     ${!locked
                       ? html`<button
                           type="button"
+                          data-emr-print="hide"
                           class="emr-btn emr-btn--ghost emr-btn--sm"
+                          style="min-height:44px;min-width:44px;display:inline-flex;align-items:center;gap:6px;"
                           aria-label=${`Remove ${item.title}`}
                           @click=${() => {
-                            if (!this.model?.readOnly) {
+                            if (!locked) {
                               this.emitIntent<AttachmentFieldIntent>({ type: 'itemRemoveRequested', id: item.id });
                             }
                           }}
-                        >${renderEmrSvgIcon('trash', 15)} Remove</button>`
+                        >${renderEmrSvgIcon('trash', 15)}<span>Remove</span></button>`
                       : nothing}
                   </div>
                 </li>`;
               })}
             </ul>`
           : locked && !m.status
-            ? html`<span class="emr-muted">No attachments</span>`
+            ? html`<span class="emr-muted">No attachments recorded.</span>`
             : nothing}
 
         ${!locked
-          ? html`<div class="l2-row">
+          ? html`<div class="l2-row" data-emr-print="hide">
               <emr-file-trigger
-                .controlId=${id}
-                .label=${m.label}
+                .controlId=${`${id}-trigger`}
+                .label=${resolvedLabel}
                 .labelHidden=${true}
                 .accept=${m.accept ?? ''}
-                .multiple=${!!m.multiple}
+                .multiple=${effectiveMultiple}
                 .disabled=${atCapacity}
+                .error=${firstError}
+                .hint=${effectiveMaxItems !== undefined ? `${m.items.length} of ${effectiveMaxItems} attached` : ''}
                 @filesSelected=${(e: CustomEvent<readonly EmrFileSelectionItem[]>) => {
                   e.stopPropagation();
-                  if (!this.model?.readOnly && !atCapacity) {
+                  if (!locked && !atCapacity) {
                     this.emitIntent<AttachmentFieldIntent>({ type: 'filesSelected', files: e.detail });
+                  }
+                }}
+                @nativeFilesSelected=${(e: CustomEvent<readonly File[]>) => {
+                  e.stopPropagation();
+                  if (!locked && !atCapacity) {
+                    this.dispatchEvent(new CustomEvent('nativeFilesSelected', { detail: e.detail, bubbles: true, composed: true }));
                   }
                 }}
               ></emr-file-trigger>
@@ -516,34 +629,32 @@ export class EmrAttachmentFieldElement extends EmrLitElement {
                 ? html`
                     <button
                       type="button"
-                      class="emr-btn emr-btn--secondary"
+                      class="emr-btn emr-btn--outline"
+                      style="min-height:44px;min-width:44px;"
                       ?disabled=${atCapacity}
+                      aria-label=${`Capture photo for ${resolvedLabel}`}
                       @click=${() => {
-                        if (!this.model?.readOnly && !atCapacity) {
+                        if (!locked && !atCapacity) {
                           this.emitIntent<AttachmentFieldIntent>({ type: 'captureRequested', mode: 'camera' });
                         }
                       }}
-                    >${renderEmrSvgIcon('camera', 16)} Camera</button>
+                    >${renderEmrSvgIcon('camera', 16)}<span>Camera</span></button>
                     <button
                       type="button"
-                      class="emr-btn emr-btn--secondary"
+                      class="emr-btn emr-btn--outline"
+                      style="min-height:44px;min-width:44px;"
                       ?disabled=${atCapacity}
+                      aria-label=${`Scan document for ${resolvedLabel}`}
                       @click=${() => {
-                        if (!this.model?.readOnly && !atCapacity) {
+                        if (!locked && !atCapacity) {
                           this.emitIntent<AttachmentFieldIntent>({ type: 'captureRequested', mode: 'scanner' });
                         }
                       }}
-                    >${renderEmrSvgIcon('scanner', 16)} Scanner</button>
+                    >${renderEmrSvgIcon('scanner', 16)}<span>Scanner</span></button>
                   `
                 : nothing}
             </div>`
           : nothing}
-
-        ${renderAssessmentStatusStrip(m.status, m.statusOptions, locked, next => {
-          if (!this.model?.readOnly) {
-            this.emitIntent<AttachmentFieldIntent>({ type: 'statusChangeRequested', status: next });
-          }
-        })}
       </div>
     </emr-field-frame>`;
   }

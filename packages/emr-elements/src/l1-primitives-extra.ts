@@ -2,12 +2,38 @@ import { html, css, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import {
+  canClearEmrSegmentedControl,
+  clearCheckboxGroupValue,
   computeSelectAllState,
+  formatCheckboxSelectionCount,
+  formatEmrSegmentedBadge,
+  groupOptions,
+  isCheckboxOptionBlockedByMax,
+  isCheckboxOptionLocked,
+  isEmrSegmentedOptionDisabled,
+  moveEmrSegmentedFocusIndex,
+  normalizeCheckboxGroupVariant,
+  normalizeEmrSegmentedOrientation,
+  normalizeEmrSegmentedShape,
+  normalizeEmrSegmentedSize,
+  normalizeEmrSegmentedVariant,
+  resolveEmrSegmentedSelectAction,
+  resolveEmrSegmentedTabStopValue,
+  resolveEmrSegmentedValidationState,
   toggleCheckboxGroupValue,
   toggleSelectAllValues,
+  type EmrBadge,
+  type EmrCheckboxGroupLabelPlacement,
+  type EmrCheckboxGroupOrientation,
+  type EmrCheckboxGroupSize,
+  type EmrCheckboxGroupVariant,
   type EmrFileSelectionItem,
   type EmrOption,
   type EmrSegmentedOption,
+  type EmrSegmentedOrientation,
+  type EmrSegmentedShape,
+  type EmrSegmentedSize,
+  type EmrSegmentedVariant,
   type EmrTone,
 } from '@drguptavivek/emr-controller';
 import { EmrLitElement, defineEmrElement, emrShadowStyles } from './foundations.js';
@@ -35,21 +61,61 @@ const l1ExtraStyles = css`
   .segmented-track {
     display: inline-flex;
     flex-wrap: wrap;
-    gap: 4px;
-    padding: 4px;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
     border: 1px solid var(--emr-border);
-    border-radius: var(--emr-radius);
-    background: var(--emr-surface-soft);
+    border-radius: 10px;
+    background: var(--emr-surface-raised, var(--emr-surface-soft));
     max-width: 100%;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .segmented-track--full-width {
+    display: flex;
+    width: 100%;
+  }
+  .segmented-track--full-width .segmented-item {
+    flex: 1 1 0;
+  }
+  .segmented-track--vertical {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .segmented-track--vertical .segmented-item {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .segmented-track--outline {
+    background: transparent;
+  }
+  .segmented-track--soft {
+    background: color-mix(in srgb, var(--emr-surface-soft) 82%, var(--emr-primary) 8%);
+    border-color: transparent;
+  }
+  .segmented-track--pill,
+  .segmented-track--pill .segmented-item {
+    border-radius: 9999px;
+  }
+  .segmented-track--invalid {
+    border-color: var(--emr-danger);
+  }
+  .segmented-track--warning {
+    border-color: var(--emr-warning);
+  }
+  .segmented-track--readonly {
+    border-style: dashed;
+  }
+  .segmented-track--disabled {
+    opacity: 0.56;
   }
   .segmented-item {
     min-height: 44px;
     min-width: 44px;
-    padding: 0 14px;
+    padding: 6px 12px;
     border: 1px solid transparent;
     border-radius: var(--emr-radius-sm);
     background: transparent;
-    color: var(--emr-text);
+    color: var(--emr-text-muted, var(--emr-text));
     font: inherit;
     font-size: var(--emr-text-sm);
     font-weight: var(--emr-weight-medium);
@@ -58,9 +124,23 @@ const l1ExtraStyles = css`
     justify-content: center;
     gap: 6px;
     cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
   }
-  .segmented-item:hover:not(:disabled) {
+  .segmented-track--sm .segmented-item {
+    padding: 4px 10px;
+    font-size: var(--emr-text-xs);
+    gap: 4px;
+  }
+  .segmented-item--has-desc {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .segmented-item:hover:not(:disabled):not([data-readonly="true"]):not([aria-checked="true"]) {
     background: var(--emr-surface);
+    color: var(--emr-text);
+  }
+  .segmented-item:active:not(:disabled):not([data-readonly="true"]) {
+    transform: scale(0.99);
   }
   .segmented-item[aria-checked="true"] {
     background: var(--emr-surface);
@@ -68,9 +148,52 @@ const l1ExtraStyles = css`
     color: var(--emr-primary-contrast);
     font-weight: var(--emr-weight-bold);
   }
+  .segmented-item[data-readonly="true"],
+  .segmented-track--readonly .segmented-item {
+    border-style: dashed;
+    cursor: default;
+  }
+  .segmented-item[data-tone="info"][aria-checked="true"] {
+    border-color: var(--emr-info);
+    color: var(--emr-info);
+  }
+  .segmented-item[data-tone="success"][aria-checked="true"] {
+    border-color: var(--emr-success);
+    color: var(--emr-success);
+  }
+  .segmented-item[data-tone="warning"][aria-checked="true"] {
+    border-color: var(--emr-warning);
+    color: var(--emr-warning);
+  }
+  .segmented-item[data-tone="danger"][aria-checked="true"] {
+    border-color: var(--emr-danger);
+    color: var(--emr-danger);
+  }
   .segmented-item:disabled {
-    opacity: 0.5;
+    opacity: 0.52;
     cursor: not-allowed;
+  }
+  .segmented-content {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 1px;
+  }
+  .segmented-desc {
+    font-size: var(--emr-text-xs);
+    font-weight: 400;
+    color: var(--emr-text-muted);
+    line-height: 1.25;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .segmented-track,
+    .segmented-item {
+      transition: none;
+    }
+    .segmented-item:active:not(:disabled):not([data-readonly="true"]) {
+      transform: none;
+    }
   }
   .segmented-item:focus-visible,
   .input-affix-btn:focus-visible,
@@ -210,8 +333,41 @@ const l1ExtraStyles = css`
   }
   .checkbox-group-list--grid {
     display: grid;
-    grid-template-columns: repeat(var(--cols, 2), minmax(140px, 1fr));
+    grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
     gap: 8px;
+  }
+  @media (max-width: 480px) {
+    .checkbox-group-list--grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .checkbox-group-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .checkbox-group-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .checkbox-group-count {
+    font-size: var(--emr-text-xs);
+    font-weight: var(--emr-weight-medium);
+    color: var(--emr-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .checkbox-group-section-label {
+    font-size: var(--emr-text-xs);
+    font-weight: var(--emr-weight-bold);
+    color: var(--emr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+    grid-column: 1 / -1;
   }
   .checkbox-row-btn {
     min-height: 44px;
@@ -230,6 +386,13 @@ const l1ExtraStyles = css`
     cursor: pointer;
     text-align: left;
   }
+  .checkbox-row-btn--inline {
+    width: fit-content;
+    max-width: 100%;
+    padding: 8px 2px;
+    border-color: transparent;
+    background: transparent;
+  }
   .checkbox-row-btn--card {
     padding: 10px 14px;
     align-items: flex-start;
@@ -237,26 +400,108 @@ const l1ExtraStyles = css`
   .checkbox-row-btn--chip {
     border-radius: 999px;
   }
+  .checkbox-row-btn--sm {
+    font-size: var(--emr-text-sm);
+    gap: 8px;
+    padding: 6px 10px;
+  }
+  .checkbox-row-btn--sm .checkbox-box {
+    width: 16px;
+    height: 16px;
+  }
+  .checkbox-row-btn--label-start {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .checkbox-row-btn--space-between {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    width: 100%;
+  }
   .checkbox-row-copy {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
   }
+  .checkbox-row-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
   .checkbox-row-desc {
     color: var(--emr-text-muted);
     font-size: var(--emr-text-xs);
     font-weight: var(--emr-weight-medium);
   }
-  .checkbox-row-btn[aria-checked="true"],
-  .checkbox-row-btn[aria-checked="mixed"] {
+  .emr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 20px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: var(--emr-text-2xs);
+    font-weight: var(--emr-weight-bold);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .emr-badge--neutral {
+    background: var(--emr-surface-soft);
+    color: var(--emr-text-muted);
+  }
+  .emr-badge--info {
+    background: color-mix(in srgb, var(--emr-info) 14%, transparent);
+    color: var(--emr-info);
+  }
+  .emr-badge--success {
+    background: color-mix(in srgb, var(--emr-success) 14%, transparent);
+    color: var(--emr-success);
+  }
+  .emr-badge--warning {
+    background: color-mix(in srgb, var(--emr-warning) 14%, transparent);
+    color: var(--emr-warning);
+  }
+  .emr-badge--danger {
+    background: color-mix(in srgb, var(--emr-danger) 14%, transparent);
+    color: var(--emr-danger);
+  }
+  .checkbox-row-btn[aria-checked="true"]:not(.checkbox-row-btn--inline),
+  .checkbox-row-btn[aria-checked="mixed"]:not(.checkbox-row-btn--inline) {
     border-color: var(--emr-primary);
     background: var(--emr-primary-soft);
     color: var(--emr-primary-contrast);
   }
-  .checkbox-row-btn--readonly {
+  .checkbox-row-btn--invalid:not(.checkbox-row-btn--inline) {
+    border-color: var(--emr-danger);
+  }
+  .checkbox-row-btn--warning:not(.checkbox-row-btn--inline):not(.checkbox-row-btn--invalid) {
+    border-color: var(--emr-warning);
+  }
+  .checkbox-row-btn--readonly:not(.checkbox-row-btn--inline):not([aria-checked="true"]) {
     background: var(--emr-surface-soft);
+    border-style: dashed;
     cursor: default;
+  }
+  .checkbox-row-btn--readonly {
+    cursor: default;
+  }
+  .checkbox-row-btn--tone-info[aria-checked="true"]:not(.checkbox-row-btn--inline) {
+    border-color: var(--emr-info);
+    background: color-mix(in srgb, var(--emr-info) 10%, var(--emr-surface));
+  }
+  .checkbox-row-btn--tone-success[aria-checked="true"]:not(.checkbox-row-btn--inline) {
+    border-color: var(--emr-success);
+    background: color-mix(in srgb, var(--emr-success) 10%, var(--emr-surface));
+  }
+  .checkbox-row-btn--tone-warning[aria-checked="true"]:not(.checkbox-row-btn--inline) {
+    border-color: var(--emr-warning);
+    background: color-mix(in srgb, var(--emr-warning) 10%, var(--emr-surface));
+  }
+  .checkbox-row-btn--tone-danger[aria-checked="true"]:not(.checkbox-row-btn--inline) {
+    border-color: var(--emr-danger);
+    background: color-mix(in srgb, var(--emr-danger) 10%, var(--emr-surface));
   }
   .checkbox-row-btn:disabled {
     opacity: 0.55;
@@ -690,6 +935,7 @@ export class EmrSegmentedControlElement extends EmrLitElement {
   static override styles = [emrShadowStyles, l1ExtraStyles];
 
   private readonly fallbackId = nextL1ExtraId('emr-segmented');
+  private isFocusedInside = false;
 
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
@@ -697,12 +943,21 @@ export class EmrSegmentedControlElement extends EmrLitElement {
   @property({ type: String }) override ariaLabel: string | null = '';
   @property({ attribute: false }) options: readonly EmrSegmentedOption[] = [];
   @property({ type: String }) value: string | null = null;
+  @property({ type: String }) size: EmrSegmentedSize = 'md';
+  @property({ type: String }) variant: EmrSegmentedVariant = 'default';
+  @property({ type: String }) shape: EmrSegmentedShape = 'default';
+  @property({ type: String }) orientation: EmrSegmentedOrientation = 'horizontal';
+  @property({ type: Boolean }) fullWidth = false;
+  @property({ type: String }) name = '';
   @property({ type: Boolean }) clearable = false;
   @property({ type: String }) clearLabel = 'Clear';
   @property({ type: Boolean }) allowDeselect = false;
+  @property({ type: Boolean }) required = false;
+  @property({ type: Boolean }) invalid = false;
   @property({ type: Boolean }) readOnly = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: String }) hint = '';
+  @property({ type: String }) warning = '';
   @property({ type: String }) error = '';
 
   private clearSelection(): void {
@@ -711,96 +966,193 @@ export class EmrSegmentedControlElement extends EmrLitElement {
     this.emitValueChange(null);
   }
 
-  private onKeyDown = (event: KeyboardEvent): void => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
-    const container = event.currentTarget as HTMLElement;
-    const buttons = Array.from(container.querySelectorAll<HTMLButtonElement>('button[role="radio"]'));
-    const enabled = buttons.map((btn, idx) => ({ btn, idx })).filter(({ btn }) => !btn.disabled);
-    if (!enabled.length) return;
-    const cur = enabled.findIndex(({ btn }) => btn === event.target);
-    if (cur < 0) return;
+  private selectOption(opt: EmrSegmentedOption): void {
+    const action = resolveEmrSegmentedSelectAction({
+      option: opt,
+      currentValue: this.value,
+      allowDeselect: this.allowDeselect,
+      groupDisabled: this.disabled,
+      groupReadOnly: this.readOnly,
+    });
+    if (action.kind === 'select') {
+      this.emitValueChange(action.value);
+    } else if (action.kind === 'clear') {
+      this.clearSelection();
+    }
+  }
+
+  private onFocusIn = (): void => {
+    if (!this.isFocusedInside) {
+      this.isFocusedInside = true;
+      this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+    }
+  };
+
+  private onFocusOut = (event: FocusEvent): void => {
+    const currentTarget = event.currentTarget as HTMLElement | null;
+    const relatedTarget = event.relatedTarget as Node | null;
+    if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
+      return;
+    }
+    if (this.isFocusedInside) {
+      this.isFocusedInside = false;
+      this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+    }
+  };
+
+  private onKeyDown = (event: KeyboardEvent, currentIndex: number, opt: EmrSegmentedOption): void => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      this.selectOption(opt);
+      return;
+    }
+    if (
+      event.key !== 'ArrowLeft' &&
+      event.key !== 'ArrowRight' &&
+      event.key !== 'ArrowUp' &&
+      event.key !== 'ArrowDown' &&
+      event.key !== 'Home' &&
+      event.key !== 'End'
+    ) {
+      return;
+    }
+    const nextIdx = moveEmrSegmentedFocusIndex(this.options, currentIndex, event.key, this.disabled);
+    if (nextIdx < 0) return;
+    const targetOpt = this.options[nextIdx];
+    if (!targetOpt) return;
     event.preventDefault();
-    const nextIdx = event.key === 'Home'
-      ? 0
-      : event.key === 'End'
-        ? enabled.length - 1
-        : (cur + (event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1) + enabled.length) % enabled.length;
-    const target = enabled[nextIdx]!;
-    target.btn.focus();
-    if (!this.readOnly && !this.disabled) {
-      const opt = this.options[target.idx];
-      if (opt && !opt.disabled) this.emitValueChange(opt.value);
+    const buttons = this.shadowRoot?.querySelectorAll<HTMLButtonElement>('button[role="radio"]');
+    buttons?.[nextIdx]?.focus();
+    if (!this.readOnly && !this.disabled && !targetOpt.readOnly) {
+      this.emitValueChange(targetOpt.value);
     }
   };
 
   override render() {
     const id = this.controlId || this.fallbackId;
-    const msgId = `${id}-message`;
+    const labelId = `${id}-label`;
+    const hintId = `${id}-hint`;
+    const warningId = `${id}-warning`;
+    const errorId = `${id}-error`;
+
+    const resolvedSize = normalizeEmrSegmentedSize(this.size);
+    const resolvedVariant = normalizeEmrSegmentedVariant(this.variant);
+    const resolvedShape = normalizeEmrSegmentedShape(this.shape);
+    const resolvedOrientation = normalizeEmrSegmentedOrientation(this.orientation);
+    const validation = resolveEmrSegmentedValidationState({
+      error: this.error,
+      warning: this.warning,
+      invalid: this.invalid,
+    });
+    const showClear = canClearEmrSegmentedControl({
+      clearable: this.clearable,
+      value: this.value,
+      disabled: this.disabled,
+      readOnly: this.readOnly,
+    });
+    const tabStopValue = resolveEmrSegmentedTabStopValue(this.options, this.value, this.disabled);
+    const describedByIds: string[] = [];
+    if (this.hint) describedByIds.push(hintId);
+    if (validation.hasWarning) describedByIds.push(warningId);
+    if (this.error) describedByIds.push(errorId);
+    const describedBy = describedByIds.length ? describedByIds.join(' ') : nothing;
+
     const groupLabel = this.ariaLabel || this.label || 'Options';
-    const showClear = this.clearable && this.value !== null && this.value !== '' && !this.readOnly && !this.disabled;
+    const trackClasses = [
+      'segmented-track',
+      resolvedSize === 'sm' ? 'segmented-track--sm' : '',
+      resolvedVariant === 'outline' ? 'segmented-track--outline' : '',
+      resolvedVariant === 'soft' ? 'segmented-track--soft' : '',
+      resolvedShape === 'pill' ? 'segmented-track--pill' : '',
+      resolvedOrientation === 'vertical' ? 'segmented-track--vertical' : '',
+      this.fullWidth ? 'segmented-track--full-width' : '',
+      validation.isInvalid ? 'segmented-track--invalid' : '',
+      validation.hasWarning ? 'segmented-track--warning' : '',
+      this.readOnly ? 'segmented-track--readonly' : '',
+      this.disabled ? 'segmented-track--disabled' : '',
+    ].filter(Boolean).join(' ');
+
     const clearBtn = showClear
       ? html`<button
           type="button"
           class="clear-inline-btn"
           data-clear-btn="true"
+          data-emr-print="hide"
           aria-label=${`${this.clearLabel} ${groupLabel}`}
           @click=${() => this.clearSelection()}
-        >${this.clearLabel}</button>`
+        >${renderEmrSvgIcon('close', 14)}<span>${this.clearLabel}</span></button>`
       : nothing;
 
     const track = html`<div
       id=${id}
       role="radiogroup"
       part="track"
-      class="segmented-track"
-      aria-label=${groupLabel}
+      class=${trackClasses}
+      data-name=${this.name || nothing}
+      data-invalid=${validation.isInvalid ? 'true' : nothing}
+      data-warning=${validation.hasWarning ? 'true' : nothing}
+      data-readonly=${this.readOnly ? 'true' : nothing}
+      data-disabled=${this.disabled ? 'true' : nothing}
+      aria-labelledby=${!this.ariaLabel && !this.labelHidden && this.label ? labelId : nothing}
+      aria-label=${this.ariaLabel || (this.labelHidden ? groupLabel : (!this.label ? 'Options' : nothing))}
+      aria-required=${this.required ? 'true' : nothing}
+      aria-disabled=${this.disabled ? 'true' : nothing}
+      aria-orientation=${resolvedOrientation}
       aria-readonly=${this.readOnly ? 'true' : nothing}
-      aria-describedby=${!this.labelHidden && (this.error || this.hint) ? msgId : nothing}
-      @keydown=${this.onKeyDown}
+      aria-invalid=${validation.isInvalid ? 'true' : nothing}
+      aria-describedby=${describedBy}
     >
       ${this.options.map((opt, idx) => {
         const selected = this.value === opt.value;
-        const isTabStop = selected || (this.value == null && idx === 0);
+        const optDisabled = isEmrSegmentedOptionDisabled(opt, this.disabled);
+        const badge = formatEmrSegmentedBadge(opt.badge, opt.tone);
         return html`<button
           type="button"
           role="radio"
-          class="segmented-item"
+          class=${`segmented-item${opt.description ? ' segmented-item--has-desc' : ''}`}
+          data-tone=${opt.tone || nothing}
+          data-readonly=${opt.readOnly ? 'true' : nothing}
+          aria-label=${opt.ariaLabel || nothing}
           aria-checked=${String(selected)}
-          aria-readonly=${this.readOnly ? 'true' : nothing}
-          tabindex=${isTabStop ? '0' : '-1'}
-          ?disabled=${this.disabled || !!opt.disabled}
-          @click=${() => {
-            if (this.readOnly || this.disabled || opt.disabled) return;
-            if (selected && this.allowDeselect) {
-              this.clearSelection();
-              return;
-            }
-            this.emitValueChange(opt.value);
-          }}
+          aria-readonly=${this.readOnly || opt.readOnly ? 'true' : nothing}
+          tabindex=${tabStopValue === opt.value ? '0' : '-1'}
+          ?disabled=${optDisabled}
+          @click=${() => this.selectOption(opt)}
+          @keydown=${(e: KeyboardEvent) => this.onKeyDown(e, idx, opt)}
         >
-          <span>${opt.label}</span>
-          ${opt.badge ? html`<span class="emr-badge">${opt.badge}</span>` : nothing}
+          ${opt.icon ? renderEmrSvgIcon(opt.icon as EmrLitIconName, resolvedSize === 'sm' ? 13 : 15) : nothing}
+          <span class="segmented-content">
+            <span>${opt.label}</span>
+            ${opt.description ? html`<span class="segmented-desc">${opt.description}</span>` : nothing}
+          </span>
+          ${badge
+            ? html`<span class=${`emr-badge emr-badge--sm emr-badge--${badge.tone} emr-badge--${badge.variant}`}>${badge.text}</span>`
+            : nothing}
         </button>`;
       })}
     </div>`;
 
-    if (this.labelHidden) {
-      return showClear ? html`<div class="emr-row">${track}${clearBtn}</div>` : track;
-    }
-
-    return html`<div class="emr-field" part="field">
+    return html`<div class="emr-field" part="field" @focusin=${this.onFocusIn} @focusout=${this.onFocusOut}>
       ${this.label || showClear
         ? html`<div class="emr-header">
-            ${this.label ? html`<span class="emr-label">${this.label}</span>` : html`<span></span>`}
+            ${this.label
+              ? html`<span id=${labelId} class=${`emr-label${this.labelHidden ? ' emr-sr-only' : ''}`}>
+                  ${this.label}${this.required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}
+                </span>`
+              : html`<span></span>`}
             ${clearBtn}
           </div>`
         : nothing}
       ${track}
+      ${this.hint
+        ? html`<span id=${hintId} class=${`emr-hint${this.labelHidden ? ' emr-sr-only' : ''}`}>${this.hint}</span>`
+        : nothing}
+      ${validation.hasWarning
+        ? html`<span id=${warningId} class=${`emr-warning${this.labelHidden ? ' emr-sr-only' : ''}`} role="status">${this.warning}</span>`
+        : nothing}
       ${this.error
-        ? html`<span id=${msgId} class="emr-error" role="alert">${this.error}</span>`
-        : this.hint
-          ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
-          : nothing}
+        ? html`<span id=${errorId} class=${`emr-error${this.labelHidden ? ' emr-sr-only' : ''}`} role="alert">${this.error}</span>`
+        : nothing}
     </div>`;
   }
 }
@@ -1149,121 +1501,237 @@ export class EmrCheckboxGroupElement extends EmrLitElement {
   static override styles = [emrShadowStyles, l1ExtraStyles];
 
   private readonly fallbackId = nextL1ExtraId('emr-checkbox-group');
+  private isFocusedInside = false;
 
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
+  @property({ type: String }) override ariaLabel: string | null = null;
   @property({ type: Boolean }) labelHidden = false;
   @property({ attribute: false }) options: readonly EmrOption[] = [];
   @property({ attribute: false }) value: readonly string[] = [];
-  @property({ type: String }) orientation: 'vertical' | 'horizontal' | 'grid' = 'vertical';
+  @property({ type: String }) orientation: EmrCheckboxGroupOrientation = 'vertical';
   @property({ type: Number }) columns = 2;
-  @property({ type: String }) variant: 'standard' | 'card' | 'chip' = 'standard';
+  @property({ type: String }) variant: EmrCheckboxGroupVariant | 'standard' = 'tile';
+  @property({ type: String }) size: EmrCheckboxGroupSize = 'md';
+  @property({ type: String }) labelPlacement: EmrCheckboxGroupLabelPlacement = 'end';
   @property({ type: Boolean }) showSelectAll = false;
   @property({ type: String }) selectAllLabel = 'Select all';
   @property({ attribute: false }) exclusiveValues: readonly string[] = [];
+  @property({ type: Number }) minSelections?: number;
+  @property({ type: Number }) maxSelections?: number;
+  @property({ type: Boolean }) showSelectionCount = false;
+  @property({ type: Boolean }) clearable = false;
+  @property({ type: String }) clearLabel = 'Clear';
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) readOnly = false;
   @property({ type: Boolean }) disabled = false;
+  @property({ type: Boolean }) invalid = false;
   @property({ type: String }) hint = '';
+  @property({ type: String }) warning = '';
   @property({ type: String }) error = '';
 
-  private toggleOption(optValue: string): void {
-    if (this.readOnly || this.disabled) return;
+  private toggleOption(opt: EmrOption): void {
+    if (this.readOnly || this.disabled || isCheckboxOptionLocked(opt)) return;
     const current = Array.isArray(this.value) ? this.value : [];
-    const next = toggleCheckboxGroupValue(current, optValue, this.options, this.exclusiveValues);
+    const next = toggleCheckboxGroupValue(current, opt.value, this.options, {
+      exclusiveValues: this.exclusiveValues,
+      maxSelections: this.maxSelections,
+    });
     this.emitValueChange(next);
   }
 
   private toggleSelectAll(): void {
     if (this.readOnly || this.disabled) return;
     const current = Array.isArray(this.value) ? this.value : [];
-    const next = toggleSelectAllValues(current, this.options, this.exclusiveValues);
+    const next = toggleSelectAllValues(current, this.options, {
+      exclusiveValues: this.exclusiveValues,
+      maxSelections: this.maxSelections,
+    });
     this.emitValueChange(next);
+  }
+
+  private handleClear(): void {
+    if (this.readOnly || this.disabled) return;
+    const current = Array.isArray(this.value) ? this.value : [];
+    const next = clearCheckboxGroupValue(current, this.options);
+    this.emitValueChange(next);
+    this.dispatchEvent(new CustomEvent('cleared', { bubbles: true, composed: true }));
+  }
+
+  private handleFocusIn(): void {
+    if (!this.isFocusedInside) {
+      this.isFocusedInside = true;
+      this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+    }
+  }
+
+  private handleFocusOut(event: FocusEvent): void {
+    const currentTarget = event.currentTarget as HTMLElement | null;
+    const relatedTarget = event.relatedTarget as Node | null;
+    if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
+      return;
+    }
+    if (this.isFocusedInside) {
+      this.isFocusedInside = false;
+      this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+    }
+  }
+
+  private renderOptionBadge(opt: EmrOption) {
+    const b: EmrBadge | string | undefined = opt.badge;
+    if (!b) return nothing;
+    const text = typeof b === 'string' ? b : b.label ?? (b.count !== undefined ? String(b.count) : '');
+    if (!text) return nothing;
+    const tone: EmrTone = (typeof b === 'object' && b?.tone) || opt.tone || 'neutral';
+    return html`<span class=${`emr-badge emr-badge--${tone}`}>${text}</span>`;
   }
 
   override render() {
     const id = this.controlId || this.fallbackId;
     const msgId = `${id}-message`;
+    const current = Array.isArray(this.value) ? this.value : [];
+    const normalizedVariant = normalizeCheckboxGroupVariant(this.variant);
+    const isInvalid = this.invalid || Boolean(this.error);
+    const isWarning = !isInvalid && Boolean(this.warning);
     const listCls = [
       'checkbox-group-list',
       this.orientation === 'horizontal' ? 'checkbox-group-list--horizontal' : '',
       this.orientation === 'grid' ? 'checkbox-group-list--grid' : '',
     ].filter(Boolean).join(' ');
     const listStyle = this.orientation === 'grid' ? `--cols: ${Math.max(1, this.columns)};` : '';
-    const selectedSet = new Set(this.value ?? []);
+    const selectedSet = new Set(current);
     const selectAllState = this.showSelectAll
-      ? computeSelectAllState(this.value ?? [], this.options, this.exclusiveValues)
+      ? computeSelectAllState(current, this.options, this.exclusiveValues)
       : 'none';
+    const hasClearable = this.options.some(
+      (o) => selectedSet.has(o.value) && !isCheckboxOptionLocked(o)
+    );
+    const showClear = this.clearable && !this.readOnly && !this.disabled && hasClearable;
+    const iconSize = this.size === 'sm' ? 11 : 12;
+    const optionGroups = groupOptions(this.options);
     const variantCls =
-      this.variant === 'card'
+      normalizedVariant === 'card'
         ? ' checkbox-row-btn--card'
-        : this.variant === 'chip'
+        : normalizedVariant === 'chip'
           ? ' checkbox-row-btn--chip'
+          : normalizedVariant === 'inline'
+            ? ' checkbox-row-btn--inline'
+            : '';
+    const sizeCls = this.size === 'sm' ? ' checkbox-row-btn--sm' : '';
+    const placementCls =
+      this.labelPlacement === 'start'
+        ? ' checkbox-row-btn--label-start'
+        : this.labelPlacement === 'space-between'
+          ? ' checkbox-row-btn--space-between'
           : '';
+    const stateCls = `${isInvalid ? ' checkbox-row-btn--invalid' : ''}${isWarning ? ' checkbox-row-btn--warning' : ''}`;
 
     const group = html`<div
       id=${id}
       role="group"
-      class=${listCls}
+      class="checkbox-group-list"
       data-orientation=${this.orientation}
-      data-variant=${this.variant}
-      style=${listStyle}
-      aria-label=${this.label || 'Options'}
-      aria-describedby=${!this.labelHidden && (this.error || this.hint) ? msgId : nothing}
+      data-variant=${normalizedVariant}
+      aria-label=${this.ariaLabel || this.label || 'Options'}
+      aria-required=${this.required ? 'true' : nothing}
+      aria-readonly=${this.readOnly ? 'true' : nothing}
+      aria-invalid=${isInvalid ? 'true' : nothing}
+      aria-describedby=${!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing}
+      @focusin=${() => this.handleFocusIn()}
+      @focusout=${(e: FocusEvent) => this.handleFocusOut(e)}
     >
       ${this.showSelectAll
         ? html`<button
             type="button"
             role="checkbox"
             data-select-all="true"
-            class=${`checkbox-row-btn${this.readOnly ? ' checkbox-row-btn--readonly' : ''}${variantCls}`}
+            class=${`checkbox-row-btn${this.readOnly ? ' checkbox-row-btn--readonly' : ''}${variantCls}${sizeCls}${placementCls}`}
             aria-checked=${selectAllState === 'mixed' ? 'mixed' : String(selectAllState === 'all')}
             aria-readonly=${this.readOnly ? 'true' : nothing}
             ?disabled=${this.disabled}
             @click=${() => this.toggleSelectAll()}
           >
             <span class="checkbox-box" aria-hidden="true">
-              ${selectAllState === 'mixed' ? '–' : selectAllState === 'all' ? renderEmrSvgIcon('check', 12) : nothing}
+              ${selectAllState === 'mixed'
+                ? renderEmrSvgIcon('minus', iconSize)
+                : selectAllState === 'all'
+                  ? renderEmrSvgIcon('check', iconSize)
+                  : nothing}
             </span>
             <span>${this.selectAllLabel}</span>
           </button>`
         : nothing}
-      ${this.options.map(opt => {
-        const checked = selectedSet.has(opt.value);
-        const btnCls = `checkbox-row-btn${this.readOnly ? ' checkbox-row-btn--readonly' : ''}${variantCls}`;
-        return html`<button
-          type="button"
-          role="checkbox"
-          class=${btnCls}
-          aria-checked=${String(checked)}
-          aria-readonly=${this.readOnly ? 'true' : nothing}
-          ?disabled=${this.disabled || !!opt.disabled}
-          @click=${() => {
-            if (opt.disabled) return;
-            this.toggleOption(opt.value);
-          }}
-        >
-          <span class="checkbox-box" aria-hidden="true">${checked ? renderEmrSvgIcon('check', 12) : nothing}</span>
-          <span class="checkbox-row-copy">
-            <span>${opt.label}</span>
-            ${opt.description ? html`<span class="checkbox-row-desc">${opt.description}</span>` : nothing}
-          </span>
-        </button>`;
-      })}
+      <div class=${listCls} style=${listStyle}>
+        ${optionGroups.map((grp) => html`
+          ${grp.label ? html`<div class="checkbox-group-section-label">${grp.label}</div>` : nothing}
+          ${grp.options.map((opt) => {
+            const checked = selectedSet.has(opt.value);
+            const optReadOnly = this.readOnly || Boolean(opt.readOnly);
+            const optDisabled =
+              this.disabled ||
+              Boolean(opt.disabled) ||
+              isCheckboxOptionBlockedByMax(opt.value, current, this.maxSelections);
+            const toneCls = opt.tone ? ` checkbox-row-btn--tone-${opt.tone}` : '';
+            const btnCls = `checkbox-row-btn${optReadOnly ? ' checkbox-row-btn--readonly' : ''}${variantCls}${sizeCls}${placementCls}${stateCls}${toneCls}`;
+            return html`<button
+              type="button"
+              role="checkbox"
+              class=${btnCls}
+              aria-checked=${String(checked)}
+              aria-readonly=${optReadOnly ? 'true' : nothing}
+              ?disabled=${optDisabled}
+              @click=${() => this.toggleOption(opt)}
+            >
+              <span class="checkbox-box" aria-hidden="true">${checked ? renderEmrSvgIcon('check', iconSize) : nothing}</span>
+              <span class="checkbox-row-copy">
+                <span class="checkbox-row-title">
+                  <span>${opt.label}</span>
+                  ${this.renderOptionBadge(opt)}
+                </span>
+                ${opt.description ? html`<span class="checkbox-row-desc">${opt.description}</span>` : nothing}
+              </span>
+            </button>`;
+          })}
+        `)}
+      </div>
     </div>`;
 
     if (this.labelHidden) return group;
 
     return html`<div class="emr-field" part="field">
-      ${this.label
-        ? html`<span class="emr-label">${this.label}${this.required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}</span>`
+      ${this.label || this.showSelectionCount || showClear
+        ? html`<div class="checkbox-group-top">
+            ${this.label
+              ? html`<span class="emr-label">${this.label}${this.required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}</span>`
+              : html`<span></span>`}
+            ${this.showSelectionCount || showClear
+              ? html`<div class="checkbox-group-actions">
+                  ${this.showSelectionCount
+                    ? html`<span class="checkbox-group-count">${formatCheckboxSelectionCount(current, this.maxSelections)}</span>`
+                    : nothing}
+                  ${showClear
+                    ? html`<button
+                        type="button"
+                        class="clear-inline-btn"
+                        aria-label=${`${this.clearLabel} ${this.label || 'selection'}`}
+                        @click=${() => this.handleClear()}
+                      >
+                        ${renderEmrSvgIcon('close', 14)}
+                        <span>${this.clearLabel}</span>
+                      </button>`
+                    : nothing}
+                </div>`
+              : nothing}
+          </div>`
         : nothing}
       ${group}
       ${this.error
         ? html`<span id=${msgId} class="emr-error" role="alert">${this.error}</span>`
-        : this.hint
-          ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
-          : nothing}
+        : this.warning
+          ? html`<span id=${msgId} class="emr-hint" role="status">${this.warning}</span>`
+          : this.hint
+            ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
+            : nothing}
     </div>`;
   }
 }

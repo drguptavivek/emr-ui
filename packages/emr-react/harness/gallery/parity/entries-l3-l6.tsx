@@ -19,15 +19,29 @@ import {
   type EhrTemplateDefinition,
   type EhrTemplateIntent,
   type EhrTemplateViewModel,
+  type EmrCommandPaletteIntent,
+  type EmrCommandPaletteViewModel,
   type EmrGeneratedFieldDefinition,
+  type EmrMasterDetailIntent,
+  type EmrMasterDetailViewModel,
+  type EmrSplitWorkspaceIntent,
+  type EmrSplitWorkspaceViewModel,
+  type EmrSynchronizedTimeGridIntent,
+  type EmrSynchronizedTimeGridViewModel,
+  type FhirQuestionnaireMapperIntent,
+  type FhirQuestionnaireMapperViewModel,
   type FieldGeneratorIntent,
   type FieldGeneratorViewModel,
   type FieldValidationRule,
   type ImageTemplateGroup,
   type ImageTemplateOption,
   type ImageTemplatePickerIntent,
+  type LogicRuleBuilderIntent,
+  type LogicRuleBuilderViewModel,
   type RepeatableGroupDefinition,
   type RepeatableItemState,
+  type ScoreBuilderIntent,
+  type ScoreBuilderViewModel,
   type TerminologyConcept,
   type TerminologySource,
   type TimeAxisIntent,
@@ -40,13 +54,20 @@ import {
   EmrClinicalForm,
   EmrClinicalList,
   EmrClinicalMatrix,
+  EmrCommandPalette,
   EmrDataTable,
+  EmrFhirQuestionnaireMapper,
   EmrFieldGenerator,
   EmrFieldLibraryPicker,
   EmrFieldValueRow,
   EmrImageTemplatePicker,
+  EmrLogicRuleBuilder,
+  EmrMasterDetail,
   EmrRepeatableGroup,
+  EmrScoreBuilder,
   EmrSectionCard,
+  EmrSplitWorkspace,
+  EmrSynchronizedTimeGrid,
   EmrTemplateComposer,
   EmrTemplatePreview,
   EmrTerminologySearch,
@@ -1461,4 +1482,454 @@ export const PARITY_ENTRIES_L3_L6: readonly ParityEntry[] = [
       />
     ),
   }),
+
+  defineParityEntry<EmrSplitWorkspaceViewModel>({
+    selector: 'emr-split-workspace',
+    shell: true,
+    createInitialState: () => ({
+      id: 'ws-encounter-retina',
+      title: 'Vitreoretinal Encounter Split Workstation',
+      preset: '3-pane',
+      paneSizes: [25, 50, 25],
+      mobileActivePaneId: 'pane-note',
+      panes: [
+        {
+          id: 'pane-chart',
+          slot: 'pane-primary',
+          title: 'Chart Review & Prior Visits',
+          subtitle: 'Last seen 4 weeks ago',
+          badge: { label: '3 Prior OCTs', tone: 'info' },
+          summaryItems: ['BCVA OD 6/18 · OS 6/6', 'Baseline CST OD 510 µm -> 412 µm'],
+        },
+        {
+          id: 'pane-note',
+          slot: 'pane-secondary',
+          title: 'Active Encounter Note & Orders',
+          subtitle: 'SOAP + Intravitreal Procedure Order',
+          badge: { label: 'Draft in Progress', tone: 'warning' },
+          summaryItems: ['Assessment: Centre-involving DME OD responding to anti-VEGF therapy.'],
+        },
+        {
+          id: 'pane-cds',
+          slot: 'pane-tertiary',
+          title: 'PACS Key Images & CDS',
+          subtitle: 'DICOMweb + Care Gaps',
+          badge: { label: '1 Care Alert', tone: 'success' },
+          summaryItems: ['Pre-procedure povidone-iodine 5% checklist verified.'],
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrSplitWorkspace
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrSplitWorkspaceIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'presetChanged'
+              ? { ...s, preset: i.preset, paneSizes: [...i.paneSizes] }
+              : i.type === 'mobilePaneSelected'
+                ? { ...s, mobileActivePaneId: i.paneId }
+                : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-split-workspace"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as EmrSplitWorkspaceIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'presetChanged'
+                ? { ...s, preset: i.preset, paneSizes: [...i.paneSizes] }
+                : i.type === 'mobilePaneSelected'
+                  ? { ...s, mobileActivePaneId: i.paneId }
+                  : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrCommandPaletteViewModel>({
+    selector: 'emr-command-palette',
+    createInitialState: () => ({
+      id: 'cmd-launcher',
+      title: 'Clinical Workstation Command Palette (⌘K)',
+      open: true,
+      query: '',
+      activeCategory: 'all',
+      activeIndex: 0,
+      items: [
+        {
+          id: 'cmd-oct',
+          label: 'Order Spectral-Domain OCT Macula (OU)',
+          subtitle: 'Diagnostics · Ophthalmic Imaging',
+          category: 'orders',
+          groupLabel: 'Pinned Quick Orders',
+          shortcut: '⌘O',
+          pinned: true,
+          badge: { label: 'STAT Eligible', tone: 'info' },
+        },
+        {
+          id: 'cmd-sle',
+          label: '.sle-pseudophakia — Insert normal pseudophakic anterior segment exam',
+          subtitle: 'SmartPhrase · Ophthalmology',
+          category: 'smartphrases',
+          shortcut: '.sle',
+          recent: true,
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrCommandPalette
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrCommandPaletteIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'queryChanged'
+              ? { ...s, query: i.query }
+              : i.type === 'categoryChanged'
+                ? { ...s, activeCategory: i.category }
+                : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-command-palette"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as EmrCommandPaletteIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'queryChanged'
+                ? { ...s, query: i.query }
+                : i.type === 'categoryChanged'
+                  ? { ...s, activeCategory: i.category }
+                  : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrMasterDetailViewModel>({
+    selector: 'emr-master-detail',
+    createInitialState: () => ({
+      id: 'md-inbox',
+      title: 'Physician Results, Critical Alerts & Co-Sign Work Queue',
+      subtitle: 'Vitreoretinal & Glaucoma Unit II · 2 items pending',
+      searchQuery: '',
+      activeFilterId: 'all',
+      selectedId: 'inb-1',
+      checkedIds: ['inb-1'],
+      mobileDetailOpen: false,
+      filters: [
+        { id: 'all', label: 'All Items', count: 2 },
+        { id: 'critical', label: 'Critical Alerts', count: 1 },
+      ],
+      batchActions: [{ id: 'batch-ack', label: 'Acknowledge Selected', primary: true }],
+      items: [
+        {
+          id: 'inb-1',
+          title: 'Critical Post-Op IOP Spike: 38 mmHg OD',
+          subtitle: 'Ramesh Nair (64M · UHID-2026-8812)',
+          timestampLabel: '6m ago',
+          unread: true,
+          filterId: 'critical',
+          priorityBadge: { label: 'CRITICAL', tone: 'danger' },
+          statusBadge: { label: 'Action Required', tone: 'warning' },
+          detailBody: 'Recommend stat oral Acetazolamide 250 mg + topical Timolol/Dorzolamide OD.',
+          actions: [{ id: 'order-lowering', label: 'Order IOP-Lowering Protocol', primary: true }],
+        },
+        {
+          id: 'inb-2',
+          title: 'Co-Sign Resident Operative Note: Phaco + Toric PCIOL OS',
+          subtitle: 'Ananya Sharma (58F · UHID-2026-44109)',
+          timestampLabel: '35m ago',
+          unread: true,
+          filterId: 'all',
+          statusBadge: { label: 'Awaiting Co-Sign', tone: 'info' },
+          detailBody: 'Uneventful sutureless temporal clear corneal phacoemulsification.',
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrMasterDetail
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrMasterDetailIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'itemSelected' ? { ...s, selectedId: i.itemId } : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-master-detail"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as EmrMasterDetailIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'itemSelected' ? { ...s, selectedId: i.itemId } : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
+
+  defineParityEntry<EmrSynchronizedTimeGridViewModel>({
+    selector: 'emr-synchronized-time-grid',
+    createInitialState: () => ({
+      id: 'stg-icu-ophth',
+      title: 'Synchronized Longitudinal Time Grid (Vitals, IOP Trend & eMAR)',
+      subtitle: 'Ophthalmic High-Dependency Ward',
+      resolution: '1h',
+      availableResolutions: ['15m', '1h', '4h', '24h'],
+      scrollOffset: 0,
+      visibleColumnCount: 4,
+      selectedColumnId: 'c10',
+      columns: [
+        { id: 'c08', timestamp: '2026-11-12T08:00:00Z', label: '08:00', shiftBadge: 'Morning' },
+        { id: 'c09', timestamp: '2026-11-12T09:00:00Z', label: '09:00', shiftBadge: 'Morning' },
+        { id: 'c10', timestamp: '2026-11-12T10:00:00Z', label: '10:00', shiftBadge: 'Morning', isCurrentTime: true },
+        { id: 'c11', timestamp: '2026-11-12T11:00:00Z', label: '11:00', shiftBadge: 'Morning' },
+      ],
+      tracks: [
+        {
+          id: 'trk-vitals',
+          title: 'Observation Flowsheet (IOP & Vitals)',
+          kind: 'vitals',
+          rows: [
+            {
+              id: 'r-iop-od',
+              label: 'IOP Right Eye (OD)',
+              unitLabel: 'mmHg',
+              referenceRangeLabel: '10–21 mmHg',
+              cells: {
+                c08: { columnId: 'c08', valueLabel: '34', abnormalTone: 'danger' },
+                c09: { columnId: 'c09', valueLabel: '26', abnormalTone: 'warning' },
+                c10: { columnId: 'c10', valueLabel: '18' },
+                c11: { columnId: 'c11', valueLabel: '17' },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrSynchronizedTimeGrid
+        model={{ ...state, readOnly }}
+        onIntent={(i: EmrSynchronizedTimeGridIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'columnSelected' ? { ...s, selectedColumnId: i.columnId } : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-synchronized-time-grid"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as EmrSynchronizedTimeGridIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'columnSelected' ? { ...s, selectedColumnId: i.columnId } : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
+
+  defineParityEntry<LogicRuleBuilderViewModel>({
+    selector: 'emr-logic-rule-builder',
+    createInitialState: () => ({
+      ruleId: 'glaucoma-iop-alert',
+      label: 'Glaucoma Elevated IOP & Risk Rule',
+      engineVersion: 3,
+      root: {
+        kind: 'group',
+        id: 'g-root',
+        combinator: 'all',
+        children: [
+          { kind: 'predicate', id: 'p-iop', fieldId: 'iop_od', operator: 'gte', value: 22 },
+        ],
+      },
+      target: {
+        effect: 'alert',
+        targetFieldId: 'iop_od',
+        alertMessage: 'Elevated IOP >= 22 mmHg — order OCT RNFL & Humphrey VF 24-2.',
+        alertTone: 'warning',
+      },
+      availableFields: [
+        { id: 'iop_od', label: 'Intraocular Pressure OD (mmHg)', valueType: 'quantity' },
+      ],
+      testValues: { iop_od: 25 },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrLogicRuleBuilder
+        model={{ ...state, readOnly }}
+        onIntent={(i: LogicRuleBuilderIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'testValueChanged' ? { ...s, testValues: { ...s.testValues, [i.fieldId]: i.value } } : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-logic-rule-builder"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as LogicRuleBuilderIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'testValueChanged' ? { ...s, testValues: { ...s.testValues, [i.fieldId]: i.value } } : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
+
+  defineParityEntry<ScoreBuilderViewModel>({
+    selector: 'emr-score-builder',
+    createInitialState: () => ({
+      definition: {
+        schemaVersion: '1.0',
+        engineVersion: 3,
+        instrumentId: 'osdi-6-short',
+        title: 'Ocular Surface Disease Index (OSDI-6 Short Form)',
+        versionStamp: '2026.2',
+        missingItemPolicy: 'prorate',
+        items: [
+          {
+            id: 'item-photophobia',
+            fieldId: 'osdi_light',
+            label: 'Eyes that are sensitive to light',
+            weight: 1,
+            required: true,
+            optionPoints: { none: 0, some: 1, half: 2, most: 3, all: 4 },
+          },
+        ],
+        bands: [
+          { id: 'band-normal', minScore: 0, maxScore: 4, label: 'Normal ocular surface', tone: 'success' },
+        ],
+      },
+      sampleAnswers: { osdi_light: 'most' },
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrScoreBuilder
+        model={{ ...state, readOnly }}
+        onIntent={(i: ScoreBuilderIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'sampleAnswerChanged'
+              ? { ...s, sampleAnswers: { ...s.sampleAnswers, [i.fieldId]: i.value } }
+              : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-score-builder"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as ScoreBuilderIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'sampleAnswerChanged'
+                ? { ...s, sampleAnswers: { ...s.sampleAnswers, [i.fieldId]: i.value } }
+                : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
+
+  defineParityEntry<FhirQuestionnaireMapperViewModel>({
+    selector: 'emr-fhir-questionnaire-mapper',
+    createInitialState: () => ({
+      fhirVersion: 'R4',
+      schema: {
+        id: 'glaucoma-intake-form',
+        label: 'Glaucoma Baseline Intake Questionnaire',
+        sections: [
+          {
+            id: 'sec-tonometry',
+            label: 'Tonometry & Pachymetry',
+            blocks: [{ kind: 'field', id: 'iop-od', label: 'Goldmann Applanation IOP (OD)', type: 'quantity', required: true }],
+          },
+        ],
+      },
+      questionnaire: {
+        resourceType: 'Questionnaire',
+        id: 'glaucoma-intake-form',
+        url: 'urn:emr:questionnaire:glaucoma-intake-form',
+        version: '1.0.0',
+        title: 'Glaucoma Baseline Intake Questionnaire',
+        status: 'active',
+        fhirVersion: '4.0.1',
+        item: [
+          {
+            linkId: 'sec-tonometry',
+            type: 'group',
+            text: 'Tonometry & Pachymetry',
+            item: [{ linkId: 'iop-od', type: 'quantity', text: 'Goldmann Applanation IOP (OD)', required: true }],
+          },
+        ],
+      },
+      rows: [
+        {
+          linkId: 'iop-od',
+          sectionId: 'sec-tonometry',
+          label: 'Goldmann Applanation IOP (OD)',
+          emrValueType: 'quantity',
+          fhirItemType: 'quantity',
+          required: true,
+          repeats: false,
+          terminologyCodes: [{ system: 'http://loinc.org', code: '79893-4', display: 'Intraocular pressure of Right eye' }],
+          enableWhenCount: 0,
+          hasInitialValue: true,
+          warnings: [],
+        },
+      ],
+      diagnostics: [],
+      selectedLinkId: 'iop-od',
+    }),
+    renderReact: ({ state, readOnly, update }) => (
+      <EmrFhirQuestionnaireMapper
+        model={{ ...state, readOnly }}
+        onIntent={(i: FhirQuestionnaireMapperIntent) =>
+          update('react', i.type, i, (s) =>
+            i.type === 'fhirVersionToggled' ? { ...s, fhirVersion: i.fhirVersion } : s,
+          )
+        }
+      />
+    ),
+    renderLit: ({ state, readOnly, update }) => (
+      <LitElementHost
+        tag="emr-fhir-questionnaire-mapper"
+        props={{ model: { ...state, readOnly } }}
+        events={{
+          intent: (raw) => {
+            const i = raw as FhirQuestionnaireMapperIntent;
+            update('lit', i.type, i, (s) =>
+              i.type === 'fhirVersionToggled' ? { ...s, fhirVersion: i.fhirVersion } : s,
+            );
+          },
+        }}
+      />
+    ),
+  }),
 ];
+

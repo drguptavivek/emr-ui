@@ -8,7 +8,7 @@ import { RETINA_SYMBOLS } from './retina';
 import { SURGERY_SYMBOLS } from './surgery';
 
 /** L5 annotation symbol sets: data only, so these checks keep them that way. */
-const root = join(process.cwd(), 'packages/emr-ui/src/lib/recipes/annotation-symbols');
+const root = join(process.cwd(), 'packages/emr-controller/src/recipes/annotation-symbols');
 const docFile = join(process.cwd(), 'docs/catalog/L5-recipes.md');
 const sets: readonly [string, AnnotationSymbolSet][] = [['surgery', SURGERY_SYMBOLS], ['retina', RETINA_SYMBOLS], ['general-findings', GENERAL_FINDINGS_SYMBOLS]];
 const TOOLS = ['text', 'line', 'arrow', 'callout', 'curve', 'circle', 'polygon', 'freeform'];

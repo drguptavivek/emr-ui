@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ComponentType } from 'react';
+import { useId, useState, type ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type {
   ClinicalAssessmentStatus,
@@ -10,6 +10,7 @@ import type {
   EmrCodedValue,
   EmrFieldDefinition,
   EmrFieldState,
+  FieldFrameLayout,
 } from '@drguptavivek/emr-controller';
 import { EmrDateTimeText, EmrTypedText, NumberInput, ThemedInput, Unsupported } from './inputs-core';
 import { EmrCheckbox, EmrRadioGroup, EmrToggle } from './l1-inputs';
@@ -66,13 +67,16 @@ export type EmrCustomRenderers = Readonly<Record<string, EmrCustomRenderer>>;
 export interface EmrTypedFieldProps {
   definition: ClinicalFieldDefinition | EmrFieldDefinition;
   model?: ClinicalFieldState | EmrFieldState;
-  controlId: string;
+  controlId?: string;
   readOnly?: boolean;
   labelHidden?: boolean;
+  showMetadata?: boolean;
+  layout?: FieldFrameLayout;
   customRenderers?: EmrCustomRenderers;
   onValueChange: (value: ClinicalFieldValue) => void;
   onStatusChange?: (status: ClinicalAssessmentStatus | undefined) => void;
   onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 /**
@@ -83,14 +87,19 @@ export interface EmrTypedFieldProps {
 export function EmrTypedField({
   definition,
   model,
-  controlId,
+  controlId: controlIdProp,
   readOnly = false,
   labelHidden,
+  showMetadata = true,
+  layout = 'vertical',
   customRenderers = {},
   onValueChange,
   onStatusChange,
   onFocus,
+  onBlur,
 }: EmrTypedFieldProps) {
+  const autoId = useId();
+  const controlId = controlIdProp || autoId;
   const labels = useEmrLabels();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -424,6 +433,7 @@ export function EmrTypedField({
       control = (
         <EmrSelect
           label={f.label}
+          labelHidden
           options={f.options}
           value={typeof f.value === 'string' ? f.value : null}
           placeholder={f.placeholder}
@@ -623,6 +633,7 @@ export function EmrTypedField({
         control = (
           <EmrSelect
             label={f.label}
+            labelHidden
             options={f.options}
             value={currentCode}
             invalid={Boolean(f.error)}
@@ -1040,20 +1051,19 @@ export function EmrTypedField({
     }
   }
 
-  const statusBlock = !handlesOwnStatus ? (
-    <AssessmentStatusStrip
-      fieldLabel={f.label}
-      status={f.status}
-      statusOptions={f.statusOptions}
-      readOnly={f.readOnly}
-      disabled={f.disabled}
-      onStatusChange={handleStatus}
-    />
-  ) : null;
-
   if (selfFramed) {
+    const statusBlock = showMetadata && !handlesOwnStatus ? (
+      <AssessmentStatusStrip
+        fieldLabel={f.label}
+        status={f.status}
+        statusOptions={f.statusOptions}
+        readOnly={f.readOnly}
+        disabled={f.disabled}
+        onStatusChange={handleStatus}
+      />
+    ) : null;
     return (
-      <View style={styles.frame}>
+      <View style={styles.frame} onBlur={onBlur}>
         {control}
         {statusBlock}
       </View>
@@ -1061,20 +1071,32 @@ export function EmrTypedField({
   }
 
   return (
-    <EmrFieldFrame
-      label={f.label}
-      labelHidden={labelHidden}
-      controlId={controlId}
-      required={f.required}
-      hint={f.hint}
-      info={f.info}
-      warning={f.warning}
-      error={f.error}
-      messages={f.messages}
-    >
-      {control}
-      {statusBlock}
-    </EmrFieldFrame>
+    <View style={styles.frame} onBlur={onBlur}>
+      <EmrFieldFrame
+        label={f.label}
+        labelHidden={labelHidden}
+        controlId={controlId}
+        required={f.required}
+        unit={f.unit}
+        showMetadata={showMetadata}
+        layout={layout}
+        readOnly={f.readOnly}
+        assessmentStatus={handlesOwnStatus ? undefined : f.status}
+        assessmentStatusOptions={handlesOwnStatus ? undefined : f.statusOptions}
+        hint={f.hint}
+        info={f.info}
+        warning={f.warning}
+        error={f.error}
+        messages={f.messages}
+        onIntent={(intent) => {
+          if (intent.type === 'statusChangeRequested') {
+            handleStatus(intent.status);
+          }
+        }}
+      >
+        {control}
+      </EmrFieldFrame>
+    </View>
   );
 }
 

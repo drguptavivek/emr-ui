@@ -163,16 +163,41 @@ describe('Lit L2 field adapters', () => {
       const radios = identifier.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="radiogroup"] [role="radio"]');
       expect(radios).toHaveLength(2);
       expect(radios[0]!.getAttribute('aria-checked')).toBe('false');
+      expect(radios[0]!.getAttribute('tabindex')).toBe('-1');
       expect(radios[1]!.getAttribute('aria-checked')).toBe('true');
+      expect(radios[1]!.getAttribute('tabindex')).toBe('0');
       radios[0]!.click();
       const input = identifier.shadowRoot!.querySelector('input')!;
       input.value = 'MRN-42';
       input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       expect(identIntents).toEqual([
         { type: 'typeSelected', id: 'a' },
         { type: 'valueChanged', raw: 'MRN-42' },
+        { type: 'submitted', raw: '' },
       ]);
       expect(identifier.model?.selectedType).toBe('b');
+
+      // Clearable + required + normalised + readOnly keeps focus without disabled attribute
+      identifier.model = {
+        ...identModel,
+        value: 'UHID-99',
+        required: true,
+        clearable: true,
+        normalisedValue: 'UHID-99',
+      };
+      await identifier.updateComplete;
+      const input2 = identifier.shadowRoot!.querySelector('input')!;
+      expect(input2.getAttribute('aria-required')).toBe('true');
+      expect(identifier.shadowRoot!.querySelector('.ident-normalised')?.textContent).toContain('Recognised as');
+      const clearBtn = identifier.shadowRoot!.querySelector<HTMLButtonElement>('.ident-clear-btn')!;
+      clearBtn.click();
+      expect(identIntents).toContainEqual({ type: 'cleared' });
+
+      identifier.readOnly = true;
+      await identifier.updateComplete;
+      expect(identifier.shadowRoot!.querySelector('input')!.hasAttribute('disabled')).toBe(false);
+      expect(identifier.shadowRoot!.querySelector('input')!.getAttribute('aria-readonly')).toBe('true');
     } finally {
       identifier.remove();
     }
@@ -197,7 +222,7 @@ describe('Lit L2 field adapters', () => {
       await attestation.updateComplete;
       expect(attestation.shadowRoot!.textContent).toContain('Consultant Ophthalmologist');
       expect(attestation.shadowRoot!.textContent).toContain('Signed: Not supplied');
-      attestation.shadowRoot!.querySelector('button')!.click();
+      attestation.shadowRoot!.querySelector<HTMLButtonElement>('.field-options button')!.click();
       expect(intents).toEqual([{ type: 'signRequested' }]);
     } finally {
       attestation.remove();
@@ -255,6 +280,22 @@ describe('Lit L2 field adapters', () => {
       rawText.value = '2 drops';
       rawText.dispatchEvent(new Event('input'));
       expect(changes[3]).toEqual([{ id: 'morning', label: 'Morning', amount: null, amountLabel: '2 drops' }]);
+
+      // ReadOnly shows 'Not selected' for unticked slots, and simultaneous hint + error set aria-invalid/describedby
+      el.amountKind = 'number';
+      el.hint = 'Pick slots';
+      el.error = 'Required';
+      el.required = true;
+      el.readOnly = true;
+      el.controlId = 'ssp-a11y';
+      el.value = [{ id: 'morning', label: 'Morning', amount: 1 }];
+      await el.updateComplete;
+      const group = el.shadowRoot!.querySelector('[role="group"]')!;
+      expect(group.getAttribute('aria-invalid')).toBe('true');
+      expect(group.getAttribute('aria-required')).toBe('true');
+      expect(group.getAttribute('aria-describedby')).toBe('ssp-a11y-hint ssp-a11y-error');
+      expect(el.shadowRoot!.textContent).toContain('Not selected');
+      expect(el.shadowRoot!.textContent).toContain('Error: Required');
     } finally {
       el.remove();
     }
@@ -439,7 +480,10 @@ describe('Lit L2 field adapters', () => {
     const segCtrl = pd.shadowRoot!.querySelector('emr-segmented-control')!;
     await (segCtrl as HTMLElement & { updateComplete: Promise<unknown> }).updateComplete;
     segCtrl.shadowRoot!.querySelectorAll('button')[1]!.click();
-    expect(pdIntents).toEqual([{ type: 'precisionChangeRequested', precision: 'month' }]);
+    expect(pdIntents).toEqual([
+      { type: 'precisionChangeRequested', precision: 'month' },
+      { type: 'valueChangeRequested', value: null },
+    ]);
     pd.remove();
 
     // 3. emr-attachment-field
@@ -654,5 +698,317 @@ describe('Lit L2 field adapters', () => {
     sphereNative.dispatchEvent(new Event('input'));
     expect(rxIntents).toEqual([{ type: 'sphereChangeRequested', sphere: -2.25 }]);
     rx.remove();
+  });
+
+  it('renders EmrFieldFrame unit, note, deduplicated messages, and 6-state assessmentStatus intents', async () => {
+    registerAllEmrElements();
+    const ff = document.createElement('emr-field-frame') as EmrFieldFrameElement;
+    ff.label = 'IOP';
+    ff.unit = 'mmHg';
+    ff.note = 'Calibrated';
+    ff.warning = 'Duplicate warning';
+    ff.messages = [
+      { severity: 'warning', message: 'Duplicate warning' },
+      { severity: 'info', message: 'Re-check in 15 min' },
+    ];
+    ff.assessmentStatus = 'recorded';
+    ff.assessmentStatusOptions = [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+    ];
+    const ffIntents: unknown[] = [];
+    ff.addEventListener('intent', e => ffIntents.push((e as CustomEvent).detail));
+    document.body.append(ff);
+    try {
+      await ff.updateComplete;
+      expect(ff.shadowRoot!.querySelector('.frame-unit')!.textContent).toBe('mmHg');
+      expect(ff.shadowRoot!.querySelectorAll('.emr-warning').length).toBe(1);
+      expect(ff.shadowRoot!.querySelectorAll('.emr-info').length).toBe(1);
+      const chips = ff.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      chips[1]!.click();
+      expect(ffIntents).toEqual([{ type: 'statusChangeRequested', status: 'unable-to-assess' }]);
+      ff.readOnly = true;
+      await ff.updateComplete;
+      expect(ff.shadowRoot!.querySelectorAll('[role="radio"]').length).toBe(0);
+    } finally {
+      ff.remove();
+    }
+  });
+
+  it('forwards showMetadata, layout, and statusChange through EmrTypedField -> EmrFieldFrame without disabled', async () => {
+    registerAllEmrElements();
+    const tf = document.createElement('emr-typed-field') as EmrTypedFieldElement;
+    tf.definition = field('quantity', {
+      unit: 'mmHg',
+      assessmentStatusOptions: [
+        { value: 'recorded', label: 'Recorded', tone: 'success' },
+        { value: 'declined', label: 'Declined', tone: 'warning' },
+      ],
+    });
+    tf.model = { value: { value: 19, unit: 'mmHg' }, assessmentStatus: 'recorded' };
+    tf.layout = 'horizontal';
+    tf.showMetadata = true;
+    const statuses: unknown[] = [];
+    tf.addEventListener('statusChange', e => statuses.push((e as CustomEvent).detail));
+    document.body.append(tf);
+    try {
+      await tf.updateComplete;
+      const frame = tf.shadowRoot!.querySelector('emr-field-frame') as EmrFieldFrameElement;
+      await frame.updateComplete;
+      expect(frame.layout).toBe('horizontal');
+      expect(frame.shadowRoot!.querySelector('.frame-unit')!.textContent).toBe('mmHg');
+      const radios = frame.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      radios[1]!.click();
+      expect(statuses).toEqual(['declined']);
+      tf.showMetadata = false;
+      await tf.updateComplete;
+      await frame.updateComplete;
+      expect(frame.shadowRoot!.querySelector('.frame-unit')).toBeNull();
+    } finally {
+      tf.remove();
+    }
+  });
+
+  it('supports EmrCodedInput keyboard ArrowDown/Enter selection, SVG close button, aria-invalid, and readOnly Not supplied', async () => {
+    registerAllEmrElements();
+    const ci = document.createElement('emr-coded-input') as EmrCodedInputElement;
+    ci.controlId = 'ci-test';
+    ci.model = {
+      definition: {
+        schemaVersion: '1.0',
+        contract: {
+          linkId: 'dx',
+          valueType: 'coded',
+          cardinality: { min: 1, max: null },
+          terminology: [{ id: 'b1', role: 'answer-value-set', valueSetCanonical: 'http://snomed.info/sct', strength: 'preferred' }],
+          validation: [],
+        },
+        presentation: { label: 'Diagnosis' },
+      },
+      value: [{ system: 'http://snomed.info/sct', code: '77075001', display: 'POAG' }],
+      query: 'cat',
+      options: [{ system: 'http://snomed.info/sct', code: '193570009', display: 'Cataract' }],
+      open: true,
+      loading: false,
+      messages: [{ path: [], severity: 'error', message: 'Invalid code' }],
+      emptyMessage: 'None',
+      systemLabels: { 'http://snomed.info/sct': 'SNOMED CT' },
+    };
+    const ciIntents: unknown[] = [];
+    ci.addEventListener('intent', e => ciIntents.push((e as CustomEvent).detail));
+    document.body.append(ci);
+    try {
+      await ci.updateComplete;
+      expect(ci.shadowRoot!.querySelector('.coded-chip-remove svg')).not.toBeNull();
+      const input = ci.shadowRoot!.querySelector('input')!;
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      await ci.updateComplete;
+      expect(input.getAttribute('aria-activedescendant')).toBe('ci-test-option-0');
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      expect(ciIntents).toEqual([
+        { type: 'conceptSelected', concept: { system: 'http://snomed.info/sct', code: '193570009', display: 'Cataract' } },
+      ]);
+      ci.model = { ...ci.model, value: [] };
+      ci.readOnly = true;
+      await ci.updateComplete;
+      expect(ci.shadowRoot!.querySelector('.emr-hint')!.textContent).toBe('Not supplied');
+      expect(ci.shadowRoot!.querySelector('input')!.readOnly).toBe(true);
+    } finally {
+      ci.remove();
+    }
+  });
+
+  it('renders EmrAttestation headingId, clickable signatory, Sign/Amend, assistiveText, and readOnly Not completed.', async () => {
+    registerAllEmrElements();
+    const att = document.createElement('emr-attestation') as EmrAttestationElement;
+    att.controlId = 'att-test';
+    att.headingId = 'att-heading';
+    att.model = {
+      id: 'att-1',
+      title: 'Surgical timeout',
+      statement: 'Verified patient and site.',
+      signatories: [
+        {
+          id: 's1',
+          displayName: 'Dr. Iyer',
+          roleLabel: 'Surgeon',
+          status: { label: 'Pending', tone: 'warning', assistiveText: 'Awaiting signature' },
+        },
+      ],
+      canSign: true,
+      canAmend: true,
+    };
+    const intents: unknown[] = [];
+    att.addEventListener('intent', e => intents.push((e as CustomEvent).detail));
+    document.body.append(att);
+    try {
+      await att.updateComplete;
+      expect(att.shadowRoot!.querySelector('#att-heading')!.textContent).toBe('Surgical timeout');
+      expect(att.shadowRoot!.querySelector('.sr-only')!.textContent).toContain('Awaiting signature');
+      att.shadowRoot!.querySelector<HTMLButtonElement>('button.signatory-name')!.click();
+      att.shadowRoot!.querySelector<HTMLButtonElement>('.field-options button')!.click();
+      expect(intents).toEqual([
+        { type: 'signatorySelected', signatoryId: 's1' },
+        { type: 'signRequested' },
+      ]);
+      att.readOnly = true;
+      await att.updateComplete;
+      expect(att.shadowRoot!.querySelector('button.signatory-name')).toBeNull();
+      expect(att.shadowRoot!.querySelector('.emr-hint')!.textContent).toBe('Not completed.');
+    } finally {
+      att.remove();
+    }
+  });
+
+  it('renders EmrScaleField Likert/VAS switching, Clear SVG, error/warning propagation, and non-double-framed EmrTypedField', async () => {
+    registerAllEmrElements();
+    const sf = document.createElement('emr-scale-field') as EmrScaleFieldElement;
+    sf.controlId = 'sf-test';
+    sf.model = {
+      label: 'Ocular pain',
+      variant: 'likert',
+      value: 3,
+      min: 0,
+      max: 10,
+      hint: 'Before drops',
+      messages: [{ severity: 'error', message: 'Required rating' }],
+      required: true,
+    };
+    const intents: unknown[] = [];
+    sf.addEventListener('intent', e => intents.push((e as CustomEvent).detail));
+    document.body.append(sf);
+    try {
+      await sf.updateComplete;
+      const likert = sf.shadowRoot!.querySelector('emr-likert') as HTMLElement & { error?: string; required?: boolean };
+      expect(likert).not.toBeNull();
+      expect(likert.error).toBe('Required rating');
+      expect(likert.required).toBe(true);
+      // Clear button still visible when required=true and value !== null
+      const clearBtn = sf.shadowRoot!.querySelector<HTMLButtonElement>('.l2-row button')!;
+      expect(clearBtn).not.toBeNull();
+      clearBtn.click();
+      expect(intents).toEqual([{ type: 'valueChangeRequested', value: null }]);
+
+      // ReadOnly hides Clear and blocks mutation
+      sf.readOnly = true;
+      await sf.updateComplete;
+      expect(sf.shadowRoot!.querySelector('.l2-row button')).toBeNull();
+
+      // Switch to VAS
+      sf.readOnly = false;
+      sf.model = { ...sf.model, variant: 'vas', value: 50, min: 0, max: 100 };
+      await sf.updateComplete;
+      expect(sf.shadowRoot!.querySelector('emr-vas')).not.toBeNull();
+    } finally {
+      sf.remove();
+    }
+
+    // EmrTypedField scale does not double-wrap <emr-field-frame>
+    const tf = document.createElement('emr-typed-field') as EmrTypedFieldElement;
+    tf.definition = {
+      contract: { linkId: 'pain', valueType: 'scale', cardinality: { min: 0, max: 1 } },
+      presentation: { label: 'Pain score', widget: 'likert', min: 0, max: 5 },
+    };
+    tf.model = { value: 2 };
+    document.body.append(tf);
+    try {
+      await tf.updateComplete;
+      expect(tf.shadowRoot!.querySelectorAll('emr-field-frame')).toHaveLength(0);
+      expect(tf.shadowRoot!.querySelectorAll('emr-scale-field')).toHaveLength(1);
+    } finally {
+      tf.remove();
+    }
+  });
+
+  it('adapts precision cleanly without fabricating -01 in emr-partial-date-field and avoids double framing', async () => {
+    registerAllEmrElements();
+    const pd = document.createElement('emr-partial-date-field') as EmrPartialDateFieldElement;
+    pd.controlId = 'pd-test';
+    pd.model = {
+      label: 'Symptom onset',
+      value: { precision: 'day', value: '2025-11-14' },
+      hint: 'Approximate date allowed',
+      required: true,
+    };
+    const intents: unknown[] = [];
+    pd.addEventListener('intent', e => intents.push((e as CustomEvent).detail));
+    document.body.append(pd);
+    try {
+      await pd.updateComplete;
+      const seg = pd.shadowRoot!.querySelector('emr-segmented-control')!;
+      // Finer -> coarser truncates to year
+      seg.dispatchEvent(new CustomEvent('valueChange', { detail: 'year', bubbles: true, composed: true }));
+      expect(intents).toEqual([
+        { type: 'precisionChangeRequested', precision: 'year' },
+        { type: 'valueChangeRequested', value: { value: '2025', precision: 'year' } },
+      ]);
+      // Coarser -> finer NEVER fabricates '-01' or '-01-01'
+      pd.model = { ...pd.model, value: { precision: 'year', value: '2025' } };
+      await pd.updateComplete;
+      seg.dispatchEvent(new CustomEvent('valueChange', { detail: 'day', bubbles: true, composed: true }));
+      expect(intents.at(-1)).toEqual({ type: 'valueChangeRequested', value: null });
+    } finally {
+      pd.remove();
+    }
+
+    const tf = document.createElement('emr-typed-field') as EmrTypedFieldElement;
+    tf.definition = {
+      contract: { linkId: 'onset', valueType: 'partial-date', cardinality: { min: 0, max: 1 } },
+      presentation: { label: 'Onset' },
+    };
+    tf.model = { value: { precision: 'year', value: '2024' } };
+    document.body.append(tf);
+    try {
+      await tf.updateComplete;
+      expect(tf.shadowRoot!.querySelectorAll('emr-field-frame')).toHaveLength(0);
+      expect(tf.shadowRoot!.querySelectorAll('emr-partial-date-field')).toHaveLength(1);
+    } finally {
+      tf.remove();
+    }
+  });
+
+  it('supports maxItems capacity, readOnly itemSelected, and non-double-framed EmrTypedField in emr-attachment-field', async () => {
+    registerAllEmrElements();
+    const af = document.createElement('emr-attachment-field') as EmrAttachmentFieldElement;
+    af.controlId = 'af-test';
+    af.model = {
+      label: 'Clinical reports',
+      items: [{ id: 'a1', title: 'scan.pdf', contentType: 'application/pdf', sizeBytes: 1024 }],
+      maxItems: 1,
+      allowCamera: true,
+    };
+    const intents: unknown[] = [];
+    af.addEventListener('intent', e => intents.push((e as CustomEvent).detail));
+    document.body.append(af);
+    try {
+      await af.updateComplete;
+      const trigger = af.shadowRoot!.querySelector('emr-file-trigger') as HTMLElement & { disabled?: boolean };
+      expect(trigger.disabled).toBe(true);
+
+      // readOnly keeps itemSelected active while hiding Remove/upload controls
+      af.readOnly = true;
+      await af.updateComplete;
+      expect(af.shadowRoot!.querySelector('emr-file-trigger')).toBeNull();
+      af.shadowRoot!.querySelector<HTMLButtonElement>('.attachment-select-btn')!.click();
+      expect(intents).toEqual([{ type: 'itemSelected', id: 'a1' }]);
+    } finally {
+      af.remove();
+    }
+
+    const tf = document.createElement('emr-typed-field') as EmrTypedFieldElement;
+    tf.definition = {
+      contract: { linkId: 'docs', valueType: 'attachment', cardinality: { min: 0, max: 3 } },
+      presentation: { label: 'Docs' },
+    };
+    tf.model = { value: [] };
+    document.body.append(tf);
+    try {
+      await tf.updateComplete;
+      expect(tf.shadowRoot!.querySelectorAll('emr-field-frame')).toHaveLength(0);
+      expect(tf.shadowRoot!.querySelectorAll('emr-attachment-field')).toHaveLength(1);
+    } finally {
+      tf.remove();
+    }
   });
 });

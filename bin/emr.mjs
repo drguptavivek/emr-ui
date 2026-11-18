@@ -11,10 +11,13 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const registryDir = join(rootDir, 'registry');
+
+function getRegistryDir() {
+  return process.env.EMR_REGISTRY_DIR ? resolve(process.env.EMR_REGISTRY_DIR) : join(rootDir, 'registry');
+}
 
 function loadIndex() {
-  const indexPath = join(registryDir, 'index.json');
+  const indexPath = join(getRegistryDir(), 'index.json');
   if (!existsSync(indexPath)) {
     throw new Error('Registry not built yet. Run `pnpm registry:build` first.');
   }
@@ -22,16 +25,28 @@ function loadIndex() {
 }
 
 function loadItem(slug) {
-  const itemPath = join(registryDir, 'items', `${slug}.json`);
+  const itemPath = join(getRegistryDir(), 'items', `${slug}.json`);
   if (!existsSync(itemPath)) {
     throw new Error(`Unknown component "${slug}". Run \`pnpm emr list\` to see available slugs.`);
   }
   return JSON.parse(readFileSync(itemPath, 'utf8'));
 }
 
+export function loadProjectConfig(cwd) {
+  const configPath = join(cwd, 'emr.json');
+  if (!existsSync(configPath)) return null;
+  return JSON.parse(readFileSync(configPath, 'utf8'));
+}
+
+function normalizeAliasDir(alias, fallback) {
+  if (!alias || typeof alias !== 'string') return fallback;
+  const stripped = alias.replace(/^(?:[@~]\/|\.\.?\/)+/, '').replace(/\/+$/, '');
+  return stripped || fallback;
+}
+
 function parseFlags(args) {
   const positional = [];
-  const flags = { framework: 'react', cwd: process.cwd(), layer: undefined, all: false };
+  const flags = { framework: undefined, cwd: process.cwd(), layer: undefined, all: false };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--framework' || arg === '-f') {
@@ -55,7 +70,11 @@ function parseFlags(args) {
   return { positional, flags };
 }
 
-export function resolveInstallPlan(slugs, framework = 'react') {
+export function resolveInstallPlan(slugs, framework, config = null) {
+  const resolvedFramework = framework ?? config?.framework ?? 'react';
+  const componentsDir = normalizeAliasDir(config?.aliases?.components, 'components/emr');
+  const stylesDir = normalizeAliasDir(config?.aliases?.styles, 'styles');
+  const controllerAlias = config?.aliases?.controller;
   const ordered = [];
   const seen = new Set();
 
@@ -73,20 +92,50 @@ export function resolveInstallPlan(slugs, framework = 'react') {
     visit(slug);
   }
 
+  const dependencies = new Set(['@drguptavivek/emr-controller']);
+  if (resolvedFramework === 'react') dependencies.add('react-native-web');
+  if (resolvedFramework === 'expo') dependencies.add('react-native');
+  if (resolvedFramework === 'lit') dependencies.add('lit');
+
   const files = new Map();
   for (const item of ordered) {
+    const itemDeps = item[resolvedFramework]?.dependencies ?? item.dependencies ?? [];
+    for (const dep of itemDeps) {
+      if (resolvedFramework !== 'react' && dep === 'react-native-web') continue;
+      dependencies.add(dep);
+    }
     for (const file of item.files) {
-      if (framework === 'angular' && file.framework !== 'angular') continue;
-      if (framework === 'lit' && file.framework !== 'lit') continue;
-      if ((framework === 'react' || framework === 'expo') && file.framework !== 'react') continue;
-      if (framework === 'expo' && file.target.endsWith('.web.tsx')) continue;
-      files.set(file.target, file.content);
+      if (resolvedFramework === 'angular' && file.framework !== 'angular') continue;
+      if (
+        resolvedFramework === 'lit'
+        && file.framework !== 'lit'
+        && !(item.name === 'foundations' && file.target.startsWith('styles/'))
+      ) {
+        continue;
+      }
+      if ((resolvedFramework === 'react' || resolvedFramework === 'expo') && file.framework !== 'react') continue;
+      if (resolvedFramework === 'expo' && file.target.endsWith('.web.tsx')) continue;
+
+      let target = file.target;
+      if (target.startsWith('components/emr/')) {
+        target = `${componentsDir}/${target.slice('components/emr/'.length)}`;
+      } else if (target.startsWith('styles/')) {
+        target = `${stylesDir}/${target.slice('styles/'.length)}`;
+      }
+
+      let content = file.content;
+      if (controllerAlias && controllerAlias !== '@drguptavivek/emr-controller') {
+        content = content.replaceAll('@drguptavivek/emr-controller', controllerAlias);
+      }
+
+      files.set(target, content);
     }
   }
 
   return {
-    framework,
+    framework: resolvedFramework,
     components: ordered.map((item) => item.name),
+    dependencies: [...dependencies],
     files: [...files.entries()].map(([target, content]) => ({ target, content })),
   };
 }
@@ -117,10 +166,11 @@ export function runCli(argv = process.argv.slice(2)) {
   }
 
   if (command === 'init') {
+    const framework = flags.framework ?? 'react';
     const configPath = join(flags.cwd, 'emr.json');
     const config = {
       $schema: 'https://ui.shadcn.com/schema.json',
-      framework: flags.framework,
+      framework,
       aliases: {
         components: '@/components/emr',
         controller: '@drguptavivek/emr-controller',
@@ -128,34 +178,36 @@ export function runCli(argv = process.argv.slice(2)) {
     };
     mkdirSync(flags.cwd, { recursive: true });
     writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
-    const plan = resolveInstallPlan(['foundations'], flags.framework);
+    const plan = resolveInstallPlan(['foundations'], framework, config);
     for (const file of plan.files) {
       const dest = join(flags.cwd, file.target);
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, file.content);
     }
-    console.log(`Initialized emr.json (${flags.framework}) and installed L0 foundations in ${flags.cwd}`);
+    console.log(`Initialized emr.json (${framework}) and installed L0 foundations in ${flags.cwd}`);
     return { config, plan };
   }
 
   if (command === 'add') {
     const index = loadIndex();
+    const projectConfig = loadProjectConfig(flags.cwd);
+    const framework = flags.framework ?? projectConfig?.framework ?? 'react';
     const targetSlugs = flags.all
       ? index.items.map((i) => i.name)
       : flags.layer !== undefined
         ? index.items.filter((i) => i.layer === flags.layer).map((i) => i.name)
         : positional;
     if (!targetSlugs.length) {
-      throw new Error('Usage: emr add <slug...> [--framework angular|react|expo] [--cwd <dir>]');
+      throw new Error('Usage: emr add <slug...> [--framework angular|react|expo|lit] [--cwd <dir>]');
     }
-    const plan = resolveInstallPlan(targetSlugs, flags.framework);
+    const plan = resolveInstallPlan(targetSlugs, framework, projectConfig);
     for (const file of plan.files) {
       const dest = join(flags.cwd, file.target);
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, file.content);
     }
     console.log(
-      `Installed ${plan.components.length} component(s) [${plan.components.join(', ')}] (${plan.files.length} files) for ${flags.framework} into ${flags.cwd}`
+      `Installed ${plan.components.length} component(s) [${plan.components.join(', ')}] (${plan.files.length} files) for ${framework} into ${flags.cwd}`
     );
     return plan;
   }

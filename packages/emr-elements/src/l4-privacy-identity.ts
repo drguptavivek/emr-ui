@@ -537,6 +537,7 @@ export class EmrPrivacyCentreElement extends EmrModelElement<PrivacyCentreViewMo
               ${t.label}: ${t.value} ${t.sub} ${badge(t.status)}
             </button>`,
         )}
+        <div role="tabpanel"><slot></slot></div>
         <p>${m.contactText}</p>`,
     );
   }
@@ -621,7 +622,11 @@ export class EmrLinkCardsElement extends EmrModelElement<LinkCardsViewModel, Lin
             if (this.model?.entry.readOnly) return;
             if (e.detail.type === 'valueChanged') {
               this.send({ type: 'entryChanged', raw: e.detail.raw });
-            } else {
+            } else if (e.detail.type === 'cleared') {
+              this.send({ type: 'entryChanged', raw: '' });
+            } else if (e.detail.type === 'submitted') {
+              this.send({ type: 'cardEntered' });
+            } else if (e.detail.type === 'scanRequested' || e.detail.type === 'typeSelected') {
               this.send(e.detail);
             }
           }}
@@ -710,11 +715,22 @@ export class EmrContactAttemptSummaryElement extends EmrModelElement<
   ContactAttemptSummaryView,
   ContactAttemptSummaryIntent
 > {
+  @property({ type: Boolean }) canLog = false;
+
   override render() {
     const m = this.model;
     if (!m) return nothing;
-    return html`${badge(m.statusBadge)} ${m.text}
-    ${this.action('Log attempt', { type: 'logAttemptRequested' })}`;
+    const allowLog = m.canLog !== undefined ? m.canLog : this.canLog;
+    return html`<section class="emr-card emr-actions" part="summary">
+      ${badge(m.statusBadge)} <span>${m.text}</span>
+      ${allowLog
+        ? this.action(
+            'Log attempt',
+            { type: 'logAttemptRequested' },
+            () => Boolean(this.model?.canLog !== undefined ? this.model.canLog : this.canLog),
+          )
+        : nothing}
+    </section>`;
   }
 }
 export class EmrMergeCompareElement extends EmrModelElement<MergeCompareViewModel, MergeCompareIntent> {

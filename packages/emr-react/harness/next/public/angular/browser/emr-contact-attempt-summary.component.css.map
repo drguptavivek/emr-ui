@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;3043d539a4a116afabe67947e5b98d3294cf2b43a029bfeeb8b25c3a7c38e9cc;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/domain/emr-contact-attempt-summary.component.ts"],
+  "sourcesContent": ["\n    :host{display:block;color:var(--emr-text)}\n    .cas{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:var(--emr-text-sm)}\n    .cas__text{overflow-wrap:anywhere}\n    @media print{button{display:none}}\n  "],
+  "mappings": ";AACI;AAAM,WAAQ;AAAM,SAAM,IAAI;AAAW;AACzC,CAAC;AAAI,WAAQ;AAAK,aAAU;AAAK,eAAY;AAAO,OAAI,IAAI;AAAK,aAAU,IAAI;AAAc;AAC7F,CAAC;AAAU,iBAAc;AAAQ;AACjC,OAAO;AAAM;AAAO,aAAQ;AAAI;AAAC;",
+  "names": []
+}

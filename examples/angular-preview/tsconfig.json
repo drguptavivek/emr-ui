@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/angular-preview",
+    "types": []
+  },
+  "files": ["main.ts"],
+  "include": ["**/*.ts"]
+}

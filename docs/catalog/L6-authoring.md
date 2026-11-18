@@ -447,3 +447,40 @@ export class EmrTemplatePreviewComponent {
 
 **Depends on** — `EmrClinicalFormComponent` (L3). Verified: `emr-template-preview -> emr-clinical-form(L3)`.
 **Used by** — `EmrTemplateComposer` (L6, verified: `emr-template-composer -> emr-template-preview`).
+
+---
+
+### EmrLogicRuleBuilder
+**Layer** L6 · **Selector** `emr-logic-rule-builder` · **Status** stable · **Story** `emr-authoring-visual-builders--logic-rule-builder-true`
+
+**Need** — Clinical form authors need a visual way to construct branching logic (`enableWhen`, `requiredWhen`, clinical decision support alerts) without hand-editing nested boolean expressions, while testing how three-valued clinical states (`not-assessed`, `unknown`) propagate through the rule.
+
+**Purpose** — Renders a recursive condition group/predicate tree editor (`all` / `any` / `not` combinators and `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `in`, `contains`, `exists`, `empty` operators), target action editor, serialized expression preview, and a 3-valued logic (`true` / `false` / `indeterminate`) test sandbox driven by `EmrLogicRuleBuilderViewModel`. Emits `EmrLogicRuleBuilderIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified intra-UI import graph.
+
+---
+
+### EmrScoreBuilder
+**Layer** L6 · **Selector** `emr-score-builder` · **Status** stable · **Story** `emr-authoring-visual-builders--score-builder-weighted-osdi`
+
+**Need** — Patient-reported outcome instruments (PHQ-9, GAD-7, OSDI, AUDIT-C) and acute clinical scores (NEWS2, qSOFA, Wells) need a declarative authoring surface for item option weights, calculation formulas, missing-data policies, and severity interpretation bands.
+
+**Purpose** — Renders an authoring workspace driven by `EmrScoreBuilderViewModel` for configuring scoring mode (`sum`, `weighted-sum`, `threshold-count`), minimum answered items, missing-item handling (`require-all`, `prorate-answered`, `treat-missing-as-zero`), weighted item option mappings, severity bands, and a live test calculator preview. Emits `EmrScoreBuilderIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified intra-UI import graph.
+
+---
+
+### EmrFhirQuestionnaireMapper
+**Layer** L6 · **Selector** `emr-fhir-questionnaire-mapper` · **Status** stable · **Story** `emr-authoring-visual-builders--fhir-questionnaire-mapper-r4`
+
+**Need** — Interoperable health systems must map internal `ClinicalFormSchema` definitions to HL7 FHIR R4 (`4.0.1`) and R5 (`5.0.0`) `Questionnaire` resources with SDC extensions, terminology value sets, and round-trip fidelity checks.
+
+**Purpose** — Renders a side-by-side schema-to-FHIR `linkId` tree, FHIR version switcher (`4.0.1` / `5.0.0`), item type and LOINC/SNOMED/UCUM binding inspector, round-trip validation diagnostics list, and JSON artifact preview driven by `EmrFhirQuestionnaireMapperViewModel`. Emits `EmrFhirQuestionnaireMapperIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified intra-UI import graph.
+

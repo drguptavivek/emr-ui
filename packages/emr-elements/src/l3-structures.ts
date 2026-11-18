@@ -790,6 +790,9 @@ export class EmrClinicalCellRendererElement extends EmrLitElement {
   }
 }
 
+import { registerL3WorkstationElements } from './l3-workstation.js';
+export * from './l3-workstation.js';
+
 export function registerL3Elements(): void {
   registerL2Elements();
   defineEmrElement('emr-section-card', EmrSectionCardElement);
@@ -803,4 +806,5 @@ export function registerL3Elements(): void {
   defineEmrElement('emr-time-axis', EmrTimeAxisElement);
   defineEmrElement('emr-data-table', EmrDataTableElement);
   defineEmrElement('emr-clinical-cell-renderer', EmrClinicalCellRendererElement);
+  registerL3WorkstationElements();
 }

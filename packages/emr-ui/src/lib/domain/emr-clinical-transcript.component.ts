@@ -1,7 +1,15 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroExclamationTriangle, heroMicrophone, heroPencilSquare, heroSparkles, heroStop } from '@ng-icons/heroicons/outline';
-import type { EvidenceSpan, NoteCaptureIntent, NoteCaptureViewModel, TranscriptSegment } from '@drguptavivek/emr-controller';
+import type {
+  EmrChartReviewPane,
+  EmrSmartLink,
+  EmrSmartPhrase,
+  EvidenceSpan,
+  NoteCaptureIntent,
+  NoteCaptureViewModel,
+  TranscriptSegment,
+} from '@drguptavivek/emr-controller';
 
 let nextTranscriptId = 0;
 
@@ -99,11 +107,101 @@ interface DescriptionView { readonly id: string; readonly text: string; }
         @for (d of descriptions; track d.id) { <span class="emr-sr-only" [id]="d.id">{{ d.text }}</span> }
       </div>
 
+      @if (model.chartReviewPanes?.length) {
+        <div class="ct__chart-review" role="region" aria-label="Split-pane chart review">
+          <div class="ct__chart-review-head">
+            <div class="ct__chart-review-tabs">
+              <span class="ct__chart-review-eyebrow">SPLIT-PANE CHART REVIEW</span>
+              @for (pane of model.chartReviewPanes!; track pane.id) {
+                <button
+                  type="button"
+                  class="ct__chip"
+                  [class.ct__chip--active]="isChartPaneActive(pane.id)"
+                  [attr.aria-pressed]="isChartPaneActive(pane.id)"
+                  [attr.aria-label]="'Chart review tab ' + pane.label"
+                  (click)="selectChartPane(pane.id)"
+                >{{ pane.label }}</button>
+              }
+            </div>
+            <button
+              type="button"
+              class="ct__toggle-btn"
+              [attr.aria-expanded]="showChartReview"
+              [attr.aria-label]="showChartReview ? 'Hide chart review' : 'Show chart review'"
+              (click)="toggleChartReview()"
+            >{{ showChartReview ? 'Hide ▴' : 'Show ▾' }}</button>
+          </div>
+          @if (showChartReview) {
+            @if (activeChartPane(); as pane) {
+              <div class="ct__chart-review-cards">
+                @for (item of pane.items; track $index) {
+                  <div class="ct__chart-card">
+                    <span class="ct__chart-card-title">{{ item.title }}</span>
+                    <strong class="ct__chart-card-val">{{ item.value }}</strong>
+                    @if (item.meta) { <span class="ct__chart-card-meta">{{ item.meta }}</span> }
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+
       @if (!model.readOnly) {
+        @if (hasSmartTools()) {
+          <div class="ct__smart-tools" role="region" aria-label="Epic SmartTools">
+            @if (model.smartPhrases?.length) {
+              <div class="ct__smart-row">
+                <span class="ct__smart-label">SMARTPHRASES (.dotphrase):</span>
+                @for (sp of model.smartPhrases!; track sp.trigger) {
+                  <button
+                    type="button"
+                    class="ct__smart-pill ct__smart-pill--phrase"
+                    [attr.aria-label]="'Insert SmartPhrase ' + sp.trigger + ': ' + sp.label"
+                    (click)="insertSmartPhrase(sp)"
+                  >{{ sp.trigger }} ({{ sp.label }})</button>
+                }
+              </div>
+            }
+            @if (model.smartLinks?.length) {
+              <div class="ct__smart-row">
+                <span class="ct__smart-label">SMARTLINKS (@token@):</span>
+                @for (sl of model.smartLinks!; track sl.token) {
+                  <button
+                    type="button"
+                    class="ct__smart-pill ct__smart-pill--link"
+                    [attr.aria-label]="'Insert SmartLink ' + sl.token + ': ' + sl.resolvedValue"
+                    (click)="insertSmartLink(sl)"
+                  >{{ sl.token }} → {{ sl.resolvedValue }}</button>
+                }
+              </div>
+            }
+            @if (model.smartLists?.length) {
+              <div class="ct__smart-row">
+                <span class="ct__smart-label">SMARTLISTS ({{ '{' }}choice{{ '}' }}):</span>
+                @for (list of model.smartLists!; track list.id) {
+                  <div class="ct__smart-list-group">
+                    <span class="ct__smart-list-label">{{ '{' }}{{ list.label }}:{{ '}' }}</span>
+                    @for (choice of list.choices; track choice) {
+                      <button
+                        type="button"
+                        class="ct__chip"
+                        [class.ct__chip--active]="list.selected === choice"
+                        [attr.aria-pressed]="list.selected === choice"
+                        [attr.aria-label]="list.label + ': ' + choice"
+                        (click)="selectSmartListChoice(list.id, choice)"
+                      >{{ choice }}</button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
         <form class="ct__type" (submit)="$event.preventDefault(); append()">
           <label class="ct__type-label" [for]="uid + '-type'">Type a note</label>
           <textarea class="emr-control" rows="2" [id]="uid + '-type'" [value]="draft" placeholder="Type a finding to add to the transcript"
-            (input)="draft = $any($event.target).value" (keydown.control.enter)="append()" (keydown.meta.enter)="append()"></textarea>
+            (input)="onDraftInput($event)" (keydown.control.enter)="append()" (keydown.meta.enter)="append()"></textarea>
           <button type="submit" class="emr-button emr-button--small" [disabled]="!draft.trim()">Add to transcript</button>
         </form>
       }
@@ -146,10 +244,29 @@ interface DescriptionView { readonly id: string; readonly text: string; }
     .ct__editor{display:grid;gap:8px}
     .ct__note{margin:0;font-size:var(--emr-text-xs);color:var(--emr-text-muted)}
     .ct__empty{min-height:96px}
+    .ct__chart-review{border:1px solid var(--emr-border);border-radius:6px;background:var(--emr-surface-raised);padding:10px;display:grid;gap:8px}
+    .ct__chart-review-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+    .ct__chart-review-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .ct__chart-review-eyebrow{color:var(--emr-text-muted);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-bold);letter-spacing:.06em;text-transform:uppercase}
+    .ct__toggle-btn{border:0;background:transparent;color:var(--emr-primary);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-bold);cursor:pointer;font-family:inherit;padding:2px 4px}
+    .ct__chart-review-cards{display:flex;flex-wrap:wrap;gap:8px}
+    .ct__chart-card{padding:4px 8px;border-radius:4px;border:1px solid var(--emr-border);background:var(--emr-surface);display:grid;gap:1px}
+    .ct__chart-card-title{color:var(--emr-text-muted);font-size:var(--emr-text-2xs)}
+    .ct__chart-card-val{color:var(--emr-text);font-size:var(--emr-text-xs);font-weight:var(--emr-weight-bold);font-family:var(--emr-font-mono)}
+    .ct__chart-card-meta{color:var(--emr-text-muted);font-size:var(--emr-text-2xs)}
+    .ct__smart-tools{padding:8px;border-radius:6px;border:1px solid var(--emr-border);background:var(--emr-surface-soft);display:grid;gap:6px}
+    .ct__smart-row,.ct__smart-list-group{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+    .ct__smart-label{color:var(--emr-text-muted);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-bold)}
+    .ct__smart-list-label{color:var(--emr-text);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-medium)}
+    .ct__smart-pill{padding:3px 7px;border-radius:4px;border:1px solid var(--emr-border);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-bold);font-family:var(--emr-font-mono);cursor:pointer}
+    .ct__smart-pill--phrase{border-color:var(--emr-primary);background:var(--emr-primary-soft);color:var(--emr-primary-contrast)}
+    .ct__smart-pill--link{border-color:var(--emr-info);background:var(--emr-info-soft);color:var(--emr-info)}
+    .ct__chip{padding:3px 8px;border-radius:4px;border:1px solid var(--emr-border);background:var(--emr-surface);color:var(--emr-text);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-medium);cursor:pointer;font-family:inherit}
+    .ct__chip--active{border-color:var(--emr-primary);background:var(--emr-primary-soft);color:var(--emr-primary-contrast);font-weight:var(--emr-weight-bold)}
     .ct__type{display:grid;gap:6px;grid-template-columns:minmax(0,1fr) auto;align-items:end}
     .ct__type-label{grid-column:1 / -1;font-size:var(--emr-text-md);font-weight:var(--emr-weight-bold)}
     @media(max-width:480px){.ct{padding:12px}.ct__type{grid-template-columns:minmax(0,1fr)}.ct__dictate,.ct__dictate button{flex:1 1 auto}.ct__text{font-size:var(--emr-text-md)}}
-    @media print{.ct__scroll{max-height:none;overflow:visible}.ct__bar button,.ct__dictate,.ct__type,.ct__edit,.ct__head button{display:none}.ct__span--on{box-shadow:none;border:2px solid currentColor}}
+    @media print{.ct__scroll{max-height:none;overflow:visible}.ct__bar button,.ct__dictate,.ct__type,.ct__edit,.ct__head button,.ct__smart-tools{display:none}.ct__span--on{box-shadow:none;border:2px solid currentColor}}
   `],
 })
 export class EmrClinicalTranscriptComponent implements OnChanges, AfterViewChecked {
@@ -165,6 +282,8 @@ export class EmrClinicalTranscriptComponent implements OnChanges, AfterViewCheck
   protected draft = '';
   protected editDraft = '';
   protected editingId: string | null = null;
+  protected showChartReview = true;
+  protected activeChartPaneId: string | null = null;
   private reveal = false;
   private lastHighlight = '';
 
@@ -174,6 +293,69 @@ export class EmrClinicalTranscriptComponent implements OnChanges, AfterViewCheck
   }
 
   titleId(): string { return this.headingId ?? `${this.uid}-heading`; }
+
+  hasSmartTools(): boolean {
+    return !!(this.model.smartPhrases?.length || this.model.smartLinks?.length || this.model.smartLists?.length);
+  }
+
+  isChartPaneActive(paneId: string): boolean {
+    const resolvedId = this.activeChartPaneId ?? this.model.chartReviewPanes?.[0]?.id;
+    return resolvedId === paneId;
+  }
+
+  activeChartPane(): EmrChartReviewPane | undefined {
+    const panes = this.model.chartReviewPanes;
+    if (!panes?.length) return undefined;
+    const resolvedId = this.activeChartPaneId ?? panes[0]?.id;
+    return panes.find((p) => p.id === resolvedId) ?? panes[0];
+  }
+
+  selectChartPane(paneId: string): void {
+    this.activeChartPaneId = paneId;
+    this.showChartReview = true;
+  }
+
+  toggleChartReview(): void {
+    this.showChartReview = !this.showChartReview;
+  }
+
+  handleDraftChange(nextText: string, target?: HTMLTextAreaElement): void {
+    if (this.model.smartPhrases?.length && nextText.endsWith(' ')) {
+      for (const sp of this.model.smartPhrases) {
+        if (nextText.endsWith(`${sp.trigger} `)) {
+          const expanded = nextText.slice(0, nextText.length - (sp.trigger.length + 1)) + `${sp.expansion} `;
+          this.draft = expanded;
+          if (target) target.value = expanded;
+          this.intent.emit({ type: 'smartPhraseTriggered', trigger: sp.trigger, expansion: sp.expansion });
+          return;
+        }
+      }
+    }
+    this.draft = nextText;
+  }
+
+  onDraftInput(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.handleDraftChange(target.value, target);
+  }
+
+  insertSmartPhrase(sp: EmrSmartPhrase): void {
+    if (this.model.readOnly) return;
+    this.draft = this.draft ? `${this.draft.trimEnd()} ${sp.expansion}` : sp.expansion;
+    this.intent.emit({ type: 'smartPhraseTriggered', trigger: sp.trigger, expansion: sp.expansion });
+  }
+
+  insertSmartLink(sl: EmrSmartLink): void {
+    if (this.model.readOnly) return;
+    this.draft = this.draft ? `${this.draft.trimEnd()} ${sl.resolvedValue}` : sl.resolvedValue;
+    this.intent.emit({ type: 'smartLinkInserted', token: sl.token, resolvedValue: sl.resolvedValue });
+  }
+
+  selectSmartListChoice(listId: string, choice: string): void {
+    if (this.model.readOnly) return;
+    this.draft = this.draft ? `${this.draft.trimEnd()} ${choice}` : choice;
+    this.intent.emit({ type: 'smartListChoiceSelected', listId, choice });
+  }
 
   ngOnChanges(): void {
     const { segments, spans, suggestions, highlightedSpanIds } = this.model;

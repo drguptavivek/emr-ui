@@ -2502,3 +2502,377 @@ The clinical note workspace supports consultation, ward and operative notes. It 
 The controller supplies the current document, review preview, available actions, and structured signature details. A signature carries signer identity, role, purpose, method, and signing time. When the host verifies a digital signature, it supplies the verification result, time, and evidence identifier. The component emits `actionRequested` and `fieldChanged` intents. A signed addendum adds information. An amendment creates a new version linked to the signed version it corrects. An entered-in-error event records why an entry was removed from routine use. Authorisation, durable version checks, audit retention, and digital signature verification belong in the host application and its server.
 
 The showcase uses synthetic data to demonstrate a consultation addendum, a resident progress note co-signature, and a correction to an operative note. Its signing actions simulate clinician attestation. The workspace prints the current signed record and signed addenda.
+
+---
+
+### EmrGonioscopyChart
+**Layer** L4 · **Selector** `emr-gonioscopy-chart` · **Status** stable · **Story** `emr-ophthalmology-glaucoma-and-motility--gonioscopy-angle-closure-suspect`
+
+**Need** — Glaucoma evaluations require bilateral OD/OS 4-quadrant (Superior, Nasal, Inferior, Temporal) angle grading with static and dynamic indentation comparison, trabecular pigmentation (0–4+), iris configuration, and peripheral anterior synechiae (PAS) clock-hours.
+
+**Purpose** — Renders `EmrGonioscopyChartViewModel` with an anatomically oriented SVG 4-quadrant angle diagram and PAS clock-hour selector, emitting `EmrGonioscopyChartIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrVisualFieldSummary
+**Layer** L4 · **Selector** `emr-visual-field-summary` · **Status** stable · **Story** `emr-ophthalmology-glaucoma-and-motility--visual-field-arcuate-scotoma`
+
+**Need** — Automated perimetry review (Humphrey 24-2/30-2/10-2, Octopus) requires reliability metrics (FL, FP, FN), global indices (VFI, MD, PSD, GHT), and print-safe stippled Total and Pattern Deviation probability maps.
+
+**Purpose** — Renders `EmrVisualFieldSummaryViewModel` and emits `EmrVisualFieldSummaryIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrHessScreenChart
+**Layer** L4 · **Selector** `emr-hess-screen-chart` · **Status** stable · **Story** `emr-ophthalmology-glaucoma-and-motility--hess-screen-fourth-nerve-palsy`
+
+**Need** — Strabismus and cranial nerve palsy workups require bilateral Hess/Lees tangent coordinate plots (-30° to +30° inner and outer fields) alongside a 9-gaze Prism Bar Cover Test (PBCT) diopter matrix and Bielschowsky head-tilt comparison.
+
+**Purpose** — Renders `EmrHessScreenChartViewModel` and emits `EmrHessScreenChartIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrIolBiometryPlanner
+**Layer** L4 · **Selector** `emr-iol-biometry-planner` · **Status** stable · **Story** `emr-ophthalmology-cataract-retina-and-cornea--iol-biometry-toric-plan`
+
+**Need** — Cataract surgery planning requires bilateral optical biometry (AL, ACD, LT, WTW, CCT, K1/K2, SIA), inter-ocular asymmetry warnings, toric IOL axis alignment, and multi-formula candidate power comparison.
+
+**Purpose** — Renders controller-computed `EmrIolBiometryPlannerViewModel` and emits `EmrIolBiometryPlannerIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrIntravitrealCourseTracker
+**Layer** L4 · **Selector** `emr-intravitreal-course-tracker` · **Status** stable · **Story** `emr-ophthalmology-cataract-retina-and-cornea--intravitreal-anti-vegf-course`
+
+**Need** — Medical retina clinics managing nAMD, DME, and RVO require a longitudinal timeline correlating OCT central subfield thickness (CST), BCVA, fluid compartments (IRF, SRF, PED), anti-VEGF/steroid agent switches, and treat-and-extend intervals.
+
+**Purpose** — Renders `EmrIntravitrealCourseTrackerViewModel` and emits `EmrIntravitrealCourseTrackerIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrCornealTopographySummary
+**Layer** L4 · **Selector** `emr-corneal-topography-summary` · **Status** stable · **Story** `emr-ophthalmology-cataract-retina-and-cornea--corneal-topography-keratoconus`
+
+**Need** — Cornea and refractive clinics require a bilateral Scheimpflug/Placido tomography summary showing K1/K2/Kmax, thinnest pachymetry coordinates, anterior/posterior elevation, and Belin-Ambrósio ectasia risk screening across 4 refractive maps.
+
+**Purpose** — Renders `EmrCornealTopographySummaryViewModel` and emits `EmrCornealTopographySummaryIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrOphthalmicOperativeRecord
+**Layer** L4 · **Selector** `emr-ophthalmic-operative-record` · **Status** stable · **Story** `emr-ophthalmology-cataract-retina-and-cornea--ophthalmic-operative-phaco-record`
+
+**Need** — Ophthalmic operating theatres require a structured microsurgical record capturing WHO eye/laterality safety timeout, regional block, incision meridian, phacoemulsification metrics (CDE, US time, BSS), posterior capsule integrity, implanted IOL UDI/serial/power/toric axis, and intracameral antibiotic prophylaxis.
+
+**Purpose** — Renders `EmrOphthalmicOperativeRecordViewModel` and emits `EmrOphthalmicOperativeRecordIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrContactLensPrescription
+**Layer** L4 · **Selector** `emr-contact-lens-prescription` · **Status** stable · **Story** `emr-ophthalmology-cataract-retina-and-cornea--contact-lens-toric-scleral-fit`
+
+**Need** — Contact lens clinics require a bilateral fitting and final prescription surface distinct from spectacles, capturing lens modality (soft, toric, multifocal, RGP, scleral), base curve, diameter, sagittal depth, Dk/t, centration/movement/push-up fit assessment, and replacement/care regimen.
+
+**Purpose** — Renders `EmrContactLensPrescriptionViewModel` and emits `EmrContactLensPrescriptionIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrAppointmentCalendar
+**Layer** L4 · **Selector** `emr-appointment-calendar` · **Status** stable · **Story** `emr-hospital-operations-scheduling-queue-ward-sbar--appointment-calendar-multi-resource`
+
+**Need** — Multi-resource outpatient clinic and minor OT scheduling calendar with clinician/room columns, time slots, status badges, and overbooking conflict alerts.
+
+**Purpose** — Renders `EmrAppointmentCalendarViewModel` and emits `EmrAppointmentCalendarIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrWaitlistQueue
+**Layer** L4 · **Selector** `emr-waitlist-queue` · **Status** stable · **Story** `emr-hospital-operations-scheduling-queue-ward-sbar--waitlist-queue-live-token`
+
+**Need** — Live clinic, diagnostics, and minor OT token queue with priority tiers (STAT/urgent/routine), wait-time SLA breach flags, room assignment, and call-next actions.
+
+**Purpose** — Renders `EmrWaitlistQueueViewModel` and emits `EmrWaitlistQueueIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrWardBedBoard
+**Layer** L4 · **Selector** `emr-ward-bed-board` · **Status** stable · **Story** `emr-hospital-operations-scheduling-queue-ward-sbar--ward-bed-board-inpatient-census`
+
+**Need** — Real-time inpatient ADT ward bed census board displaying bed status (occupied, available, housekeeping-dirty, isolation, reserved), isolation precautions, EWS scores, and transfer actions.
+
+**Purpose** — Renders `EmrWardBedBoardViewModel` and emits `EmrWardBedBoardIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrSbarHandover
+**Layer** L4 · **Selector** `emr-sbar-handover` · **Status** stable · **Story** `emr-hospital-operations-scheduling-queue-ward-sbar--sbar-handover-clinical-shift`
+
+**Need** — Structured Situation-Background-Assessment-Recommendation (SBAR) clinical shift handover card with illness severity, actionable to-do checklist items, and incoming clinician acknowledgement.
+
+**Purpose** — Renders `EmrSbarHandoverViewModel` and emits `EmrSbarHandoverIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrEdTrackBoard
+**Layer** L4 · **Selector** `emr-ed-track-board` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--ed-track-board`
+
+**Need** — Emergency Department real-time bay census and patient flow board with ESI triage acuity (1–5), length-of-stay 4-hour breach alerts, pending lab/imaging counts, and disposition status.
+
+**Purpose** — Renders `EmrEdTrackBoardViewModel` and emits `EmrEdTrackBoardIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrTriageAssessmentCard
+**Layer** L4 · **Selector** `emr-triage-assessment-card` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--triage-assessment-card`
+
+**Need** — Emergency triage card capturing arrival mode, ESI acuity level (1–5), high-risk clinical red flags, primary survey vitals, pain score (0–10), and isolation screening.
+
+**Purpose** — Renders `EmrTriageAssessmentCardViewModel` and emits `EmrTriageAssessmentCardIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrResuscitationEventLog
+**Layer** L4 · **Selector** `emr-resuscitation-event-log` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--resuscitation-event-log`
+
+**Need** — ACLS Code Blue and trauma resuscitation real-time event recorder tracking elapsed time, rhythm state (VF/pVT, PEA, Asystole, ROSC), CPR cycles, shocks, epinephrine doses, and timestamped interventions.
+
+**Purpose** — Renders `EmrResuscitationEventLogViewModel` and emits `EmrResuscitationEventLogIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrSpecimenCollectionBar
+**Layer** L4 · **Selector** `emr-specimen-collection-bar` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--specimen-collection-bar`
+
+**Need** — Phlebotomy and specimen barcode verification bar displaying order accession, two-identifier patient wristband verification, vacutainer tube types/volumes, and scan/hemolysis rejection status.
+
+**Purpose** — Renders `EmrSpecimenCollectionBarViewModel` and emits `EmrSpecimenCollectionBarIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrLabCumulativeGrid
+**Layer** L4 · **Selector** `emr-lab-cumulative-grid` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--lab-cumulative-grid`
+
+**Need** — Longitudinal multi-date clinical laboratory cumulative flowsheet matrix with reference intervals, low/high/critical abnormality flags, abnormal-only filter, and critical value acknowledgement.
+
+**Purpose** — Renders `EmrLabCumulativeGridViewModel` and emits `EmrLabCumulativeGridIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrMicrobiologyAntibiogram
+**Layer** L4 · **Selector** `emr-microbiology-antibiogram` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--microbiology-antibiogram`
+
+**Need** — Culture and sensitivity (C&S) antibiogram matrix displaying isolated organisms, resistance mechanisms (ESBL/MRSA/CRE), MIC values, S/I/R interpretations, and antimicrobial stewardship recommendations.
+
+**Purpose** — Renders `EmrMicrobiologyAntibiogramViewModel` and emits `EmrMicrobiologyAntibiogramIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrAnaesthesiaRecord
+**Layer** L4 · **Selector** `emr-anaesthesia-record` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--anaesthesia-record`
+
+**Need** — Intra-operative anaesthesia record capturing ASA physical status, Mallampati score, airway device, anaesthetic phase (induction to PACU handover), haemodynamic/EtCO2/SpO2 checkpoints, and drug log.
+
+**Purpose** — Renders `EmrAnaesthesiaRecordViewModel` and emits `EmrAnaesthesiaRecordIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrFluidBalanceChart
+**Layer** L4 · **Selector** `emr-fluid-balance-chart` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--fluid-balance-chart`
+
+**Need** — 24-hour intake and output (I/O) fluid balance chart tracking oral/enteral/IV crystalloid/colloid intake streams against urine, drain, and NG output streams with net balance calculation.
+
+**Purpose** — Renders `EmrFluidBalanceChartViewModel` and emits `EmrFluidBalanceChartIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrSurgicalImplantLog
+**Layer** L4 · **Selector** `emr-surgical-implant-log` · **Status** stable · **Story** `emr-l4-acute-care-lab-perioperative--surgical-implant-log`
+
+**Need** — Perioperative prosthesis and implant UDI/lot/serial/expiry traceability log with sterile package verification, anatomical site recording, and surgical sponge/sharps/instrument count reconciliation.
+
+**Purpose** — Renders `EmrSurgicalImplantLogViewModel` and emits `EmrSurgicalImplantLogIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrPartogram
+**Layer** L4 · **Selector** `emr-partogram` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--partogram-active-labour`
+
+**Need** — WHO Labour Care Guide (LCG) partogram tracking cervical dilatation (0–10 cm), fetal descent station, fetal heart rate, amniotic liquor status, uterine contractions, and alert/action line thresholds.
+
+**Purpose** — Renders `EmrPartogramViewModel` and emits `EmrPartogramIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrGrowthChart
+**Layer** L4 · **Selector** `emr-growth-chart` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--growth-chart-who-under-five`
+
+**Need** — Pediatric WHO and IAP anthropometric centile and Z-score growth chart supporting weight-for-age, height-for-age, head circumference, BMI-for-age, and mid-parental target height.
+
+**Purpose** — Renders `EmrGrowthChartViewModel` and emits `EmrGrowthChartIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrImmunizationLedger
+**Layer** L4 · **Selector** `emr-immunization-ledger` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--immunization-ledger-uip`
+
+**Need** — Longitudinal UIP, IAP, and WHO immunization schedule ledger tracking administered, due, overdue, and contraindicated vaccine doses with batch/lot number, route, and AEFI flags.
+
+**Purpose** — Renders `EmrImmunizationLedgerViewModel` and emits `EmrImmunizationLedgerIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrWaveformStripViewer
+**Layer** L4 · **Selector** `emr-waveform-strip-viewer` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--waveform-strip-ecg`
+
+**Need** — 12-lead ECG, telemetry, and fetal CTG waveform strip viewer with paper speed (25/50 mm/s), gain (10/20 mm/mV), HR/PR/QRS/QTc intervals, lead selection, and clinician sign-off.
+
+**Purpose** — Renders `EmrWaveformStripViewerViewModel` and emits `EmrWaveformStripViewerIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrOdontogram
+**Layer** L4 · **Selector** `emr-odontogram` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--odontogram-fdi-chart`
+
+**Need** — Permanent and deciduous FDI dental arch odontogram charting tooth status (sound, caries, restored, crown, missing, RCT, implant), periodontal pocket depth, and DMFT index.
+
+**Purpose** — Renders `EmrOdontogramViewModel` and emits `EmrOdontogramIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrAudiogram
+**Layer** L4 · **Selector** `emr-audiogram` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--audiogram-pure-tone`
+
+**Need** — Bilateral pure-tone audiogram (250–8000 Hz air and bone conduction thresholds in dB HL) displaying pure-tone average (PTA), speech discrimination score (SDS), and Jerger tympanogram type.
+
+**Purpose** — Renders `EmrAudiogramViewModel` and emits `EmrAudiogramIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrChemoRegimenRoadmap
+**Layer** L4 · **Selector** `emr-chemo-regimen-roadmap` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--chemo-regimen-roadmap`
+
+**Need** — Oncology systemic chemotherapy protocol roadmap displaying BSA, ECOG performance status, pre-chemo ANC/platelet hematologic clearance gate, dose modification percentage, and cycle progression.
+
+**Purpose** — Renders `EmrChemoRegimenRoadmapViewModel` and emits `EmrChemoRegimenRoadmapIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrReferralTracker
+**Layer** L4 · **Selector** `emr-referral-tracker` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--referral-tracker-closed-loop`
+
+**Need** — Closed-loop specialty consultation and inter-facility referral tracker managing urgency tiers, lifecycle transitions (draft to completed report), clinical questions, and consultant replies.
+
+**Purpose** — Renders `EmrReferralTrackerViewModel` and emits `EmrReferralTrackerIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrEncounterChargeSheet
+**Layer** L4 · **Selector** `emr-encounter-charge-sheet` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--encounter-charge-sheet-pmjay`
+
+**Need** — Encounter coding, tariff, and insurance/PM-JAY pre-authorization charge sheet with ICD-10 diagnosis pointers, itemized service lines, payer coverage toggles, and gross/covered/payable totals.
+
+**Purpose** — Renders `EmrEncounterChargeSheetViewModel` and emits `EmrEncounterChargeSheetIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+---
+
+### EmrAbdmHealthLockerPanel
+**Layer** L4 · **Selector** `emr-abdm-health-locker-panel` · **Status** stable · **Story** `emr-maternal-child-specialty-diagnostics-claims-abdm--abdm-health-locker`
+
+**Need** — Ayushman Bharat Digital Mission (ABDM) and FHIR Health Information Exchange panel displaying ABHA Number/Address, Scan & Share OPD token, linked care contexts, and DEPA HIU/HIP consent artefacts.
+
+**Purpose** — Renders `EmrAbdmHealthLockerPanelViewModel` and emits `EmrAbdmHealthLockerPanelIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none yet.
+
+

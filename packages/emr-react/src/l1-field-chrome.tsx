@@ -16,6 +16,9 @@ export interface FieldChromeProps {
   readonly labelHidden?: boolean;
   readonly controlId: string;
   readonly required?: boolean;
+  readonly unit?: string;
+  readonly note?: string;
+  readonly layout?: 'vertical' | 'horizontal' | 'inline';
   readonly hint?: string;
   readonly info?: string;
   readonly warning?: string;
@@ -34,6 +37,9 @@ export function FieldChrome({
   labelHidden,
   controlId,
   required,
+  unit,
+  note,
+  layout = 'vertical',
   hint,
   info,
   warning,
@@ -45,9 +51,9 @@ export function FieldChrome({
   const labels = useEmrLabels();
 
   const lines: FieldValidationLine[] = [];
-  if (error) lines.push({ severity: 'error', message: error });
-  if (warning) lines.push({ severity: 'warning', message: warning });
   if (info) lines.push({ severity: 'info', message: info });
+  if (warning) lines.push({ severity: 'warning', message: warning });
+  if (error) lines.push({ severity: 'error', message: error });
   if (messages?.length) {
     for (const msg of messages) {
       if (!lines.some(existing => existing.severity === msg.severity && existing.message === msg.message)) {
@@ -56,98 +62,130 @@ export function FieldChrome({
     }
   }
 
-  const hasFooter = Boolean(hint || lines.length > 0);
+  const hasFooter = Boolean(hint || note || lines.length > 0);
   const showLabel = Boolean(label && !labelHidden);
+  const horizontal = layout === 'horizontal' || layout === 'inline';
 
-  return (
-    <View style={styles.frame}>
-      {showLabel ? (
-        <View style={styles.labelRow}>
-          <Text
-            nativeID={`${controlId}-label`}
-            numberOfLines={1}
-            aria-label={required ? `${label}, ${labels.required}` : label}
-            {...(labelNamesControl && Platform.OS !== 'web'
-              ? { importantForAccessibility: 'no' as const, accessibilityElementsHidden: true }
-              : null)}
-            style={{
-              color: t.text,
-              fontSize: t.textSm,
-              lineHeight: 20,
-              minHeight: 20,
-              fontWeight: fontWeight(t.weightMedium),
-              fontFamily: fontFamily(t),
-              flexShrink: 1,
-            }}
-          >
-            {label}
-            {required ? (
-              <Text style={{ color: t.danger, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}> *</Text>
-            ) : null}
+  const labelEl = showLabel ? (
+    <View style={[styles.labelRow, horizontal && Platform.OS === 'web' ? { minWidth: 120, maxWidth: 170, paddingTop: 10 } : undefined]}>
+      <Text
+        nativeID={`${controlId}-label`}
+        numberOfLines={horizontal ? 2 : 1}
+        aria-label={required ? `${label}, ${labels.required}` : label}
+        {...(labelNamesControl && Platform.OS !== 'web'
+          ? { importantForAccessibility: 'no' as const, accessibilityElementsHidden: true }
+          : null)}
+        style={{
+          color: t.text,
+          fontSize: t.textSm,
+          lineHeight: 20,
+          minHeight: 20,
+          fontWeight: fontWeight(t.weightMedium),
+          fontFamily: fontFamily(t),
+          flexShrink: 1,
+        }}
+      >
+        {label}
+        {required ? (
+          <Text style={{ color: t.danger, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}> *</Text>
+        ) : null}
+      </Text>
+      {unit ? (
+        <View style={[styles.unitBadge, { backgroundColor: t.surfaceSoft, borderColor: t.border }]}>
+          <Text style={{ color: t.textMuted, fontSize: t.text2xs, fontWeight: fontWeight(600), fontFamily: fontFamily(t) }}>
+            {unit}
           </Text>
         </View>
       ) : null}
-      {children}
-      {hasFooter ? (
-        <View nativeID={`${controlId}-message`} style={styles.footer}>
-          {hint ? (
-            <Text
-              nativeID={`${controlId}-hint`}
-              style={{
-                color: t.textMuted,
-                fontSize: t.textXs,
-                lineHeight: 16,
-                fontFamily: fontFamily(t),
-                fontWeight: fontWeight(t.weightRegular),
-              }}
-            >
-              {hint}
-            </Text>
-          ) : null}
-          {lines.length > 0 ? (
-            <View aria-live="polite" style={styles.lines}>
-              {lines.map((line, idx) => {
-                const color =
-                  line.severity === 'error'
-                    ? t.danger
-                    : line.severity === 'warning'
-                      ? t.warning
-                      : t.info;
-                const prefix =
-                  line.severity === 'error'
-                    ? '⚠ '
-                    : line.severity === 'warning'
-                      ? '! '
-                      : 'ℹ ';
-                return (
-                  <Text
-                    key={`${line.severity}-${idx}`}
-                    role={line.severity === 'error' ? 'alert' : undefined}
-                    nativeID={`${controlId}-msg-${idx}`}
-                    style={{
-                      color,
-                      fontSize: t.textXs,
-                      lineHeight: 16,
-                      fontFamily: fontFamily(t),
-                      fontWeight: fontWeight(600),
-                    }}
-                  >
-                    {prefix}
-                    {line.message}
-                  </Text>
-                );
-              })}
-            </View>
-          ) : null}
+    </View>
+  ) : null;
+
+  const footerEl = hasFooter ? (
+    <View nativeID={`${controlId}-message`} style={styles.footer}>
+      {hint ? (
+        <Text
+          nativeID={`${controlId}-hint`}
+          style={{
+            color: t.textMuted,
+            fontSize: t.textXs,
+            lineHeight: 16,
+            fontFamily: fontFamily(t),
+            fontWeight: fontWeight(t.weightRegular),
+          }}
+        >
+          {hint}
+        </Text>
+      ) : null}
+      {note ? (
+        <Text
+          nativeID={`${controlId}-note`}
+          style={{
+            color: t.textMuted,
+            fontSize: t.textXs,
+            lineHeight: 16,
+            fontFamily: fontFamily(t),
+            fontWeight: fontWeight(t.weightRegular),
+          }}
+        >
+          {note}
+        </Text>
+      ) : null}
+      {lines.length > 0 ? (
+        <View aria-live="polite" style={styles.lines}>
+          {lines.map((line, idx) => {
+            const color =
+              line.severity === 'error'
+                ? t.danger
+                : line.severity === 'warning'
+                  ? t.warning
+                  : t.info;
+            const prefix =
+              line.severity === 'error'
+                ? 'Error: '
+                : line.severity === 'warning'
+                  ? 'Warning: '
+                  : 'Info: ';
+            return (
+              <Text
+                key={`${line.severity}-${idx}`}
+                role={line.severity === 'error' ? 'alert' : 'status'}
+                nativeID={`${controlId}-msg-${idx}`}
+                style={{
+                  color,
+                  fontSize: t.textXs,
+                  lineHeight: 16,
+                  fontFamily: fontFamily(t),
+                  fontWeight: fontWeight(600),
+                }}
+              >
+                {prefix}
+                {line.message}
+              </Text>
+            );
+          })}
         </View>
       ) : null}
+    </View>
+  ) : null;
+
+  return (
+    <View style={[styles.frame, horizontal && Platform.OS === 'web' ? styles.frameHorizontal : undefined]}>
+      {labelEl}
+      <View style={[styles.controlCol, horizontal && Platform.OS === 'web' ? styles.controlColHorizontal : undefined]}>
+        {children}
+        {footerEl}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   frame: { gap: 6, minWidth: 0 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 },
+  frameHorizontal: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 16 },
+  controlCol: { minWidth: 0, gap: 6 },
+  controlColHorizontal: { flex: 1, minWidth: 180 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0, flexWrap: 'wrap' },
+  unitBadge: { paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, borderWidth: 1 },
   footer: { gap: 3 },
   lines: { gap: 2 },
 });

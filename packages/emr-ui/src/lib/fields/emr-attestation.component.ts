@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-// ponytail: relative path until attestation.models is exported from the controller index.ts (temporary).
+import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
 import type { AttestationIntent, AttestationViewModel } from '@drguptavivek/emr-controller';
 
 let nextAttestationId = 0;
@@ -9,7 +8,7 @@ let nextAttestationId = 0;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="at" [attr.aria-labelledby]="titleId()">
+    <section class="at" [id]="resolvedId()" [attr.aria-labelledby]="titleId()">
       @if (model().title) { <h4 class="at__title" [id]="titleId()">{{ model().title }}</h4> }
       @else { <h4 class="emr-sr-only" [id]="titleId()">Signatures</h4> }
 
@@ -20,21 +19,29 @@ let nextAttestationId = 0;
           @for (s of model().signatories; track s.id) {
             <li class="at__row">
               <span class="at__who">
-                <button class="at__name" type="button" (click)="intent.emit({ type: 'signatorySelected', signatoryId: s.id })">{{ s.displayName }}</button>
+                @if (effectiveReadOnly()) {
+                  <span class="at__name at__name--readonly">{{ s.displayName }}</span>
+                } @else {
+                  <button class="at__name" type="button" (click)="intent.emit({ type: 'signatorySelected', signatoryId: s.id })">{{ s.displayName }}</button>
+                }
                 <span class="at__muted">{{ s.roleLabel }}</span>
               </span>
-              <span class="emr-badge" [class]="'emr-tone-' + s.status.tone">{{ s.status.label }}@if (s.status.assistiveText) { <span class="emr-sr-only"> {{ s.status.assistiveText }}</span> }</span>
+              <span [class]="'emr-badge emr-tone-' + s.status.tone">{{ s.status.label }}@if (s.status.assistiveText) { <span class="emr-sr-only"> {{ s.status.assistiveText }}</span> }</span>
               <span class="at__when"><span class="at__key">Signed</span> {{ s.signedAtLabel || 'Not supplied' }}</span>
             </li>
           }
         </ul>
       }
 
-      @if (model().error) { <p class="at__error" role="alert"><strong>Not completed.</strong> {{ model().error }}</p> }
+      @if (model().error) {
+        <p class="at__error" [id]="resolvedId() + '-error'" role="alert"><strong>Not completed.</strong> {{ model().error }}</p>
+      } @else if (effectiveReadOnly() && isUnsigned()) {
+        <p class="at__readonly-note">Not completed.</p>
+      }
 
-      @if (!model().readOnly && (model().canSign || model().canAmend)) {
+      @if (!effectiveReadOnly() && (model().canSign || model().canAmend)) {
         <div class="at__actions">
-          @if (model().canSign) { <button class="emr-button emr-button--small" type="button" (click)="intent.emit({ type: 'signRequested' })">{{ model().signLabel || 'Sign' }}</button> }
+          @if (model().canSign) { <button class="emr-button emr-button--primary emr-button--small" type="button" (click)="intent.emit({ type: 'signRequested' })">{{ model().signLabel || 'Sign' }}</button> }
           @if (model().canAmend) { <button class="emr-button emr-button--small emr-button--outline" type="button" (click)="intent.emit({ type: 'amendRequested' })">{{ model().amendLabel || 'Amend' }}</button> }
         </div>
       }
@@ -48,21 +55,31 @@ let nextAttestationId = 0;
     .at__list{list-style:none;margin:0;padding:0;display:grid;gap:4px}
     .at__row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;min-height:var(--emr-compact-height);font-size:var(--emr-text-md)}
     .at__who{flex:1 1 12rem;min-width:0;overflow-wrap:anywhere;display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}
-    .at__name{min-height:44px;padding:0;border:0;background:none;color:var(--emr-text);font:inherit;font-weight:var(--emr-weight-bold);text-align:start;cursor:pointer;overflow-wrap:anywhere}
+    .at__name{min-height:44px;min-width:44px;padding:0;border:0;background:none;color:var(--emr-text);font:inherit;font-weight:var(--emr-weight-bold);text-align:start;cursor:pointer;overflow-wrap:anywhere;display:inline-flex;align-items:center}
+    .at__name--readonly{cursor:default}
     .at__name:focus-visible{outline:2px solid var(--emr-focus);outline-offset:2px}
-    .at__muted,.at__when{color:var(--emr-text-muted)}
+    .at__muted,.at__when,.at__readonly-note{margin:0;color:var(--emr-text-muted);font-size:var(--emr-text-sm)}
     .at__key{font-size:var(--emr-text-xs);font-weight:var(--emr-weight-bold);letter-spacing:.06em;text-transform:uppercase;margin-inline-end:4px}
     .at__error{margin:0;padding:8px 12px;border:1px solid var(--emr-danger);border-radius:8px;background:var(--emr-danger-soft);color:var(--emr-text);font-size:var(--emr-text-md)}
     .at__actions{display:flex;flex-wrap:wrap;gap:8px}
+    .at__actions .emr-button{min-height:44px;min-width:44px}
     @media (max-width:480px){.at__actions .emr-button{flex:1 1 auto}}
     @media print{.at__actions{display:none}}
   `]
 })
 export class EmrAttestationComponent {
   readonly model = input.required<AttestationViewModel>();
+  readonly controlId = input<string>();
   readonly headingId = input<string>();
+  readonly readOnly = input(false, { transform: booleanAttribute });
   readonly intent = output<AttestationIntent>();
 
   private readonly generatedId = `emr-attestation-${++nextAttestationId}`;
-  readonly titleId = computed(() => this.headingId() ?? this.generatedId);
+  readonly resolvedId = computed(() => this.controlId() || this.generatedId);
+  readonly titleId = computed(() => this.headingId() ?? `${this.resolvedId()}-title`);
+  readonly effectiveReadOnly = computed(() => this.readOnly() || Boolean(this.model().readOnly));
+  readonly isUnsigned = computed(() => {
+    const list = this.model().signatories;
+    return list.length === 0 || list.every((s) => !s.signedAtLabel);
+  });
 }

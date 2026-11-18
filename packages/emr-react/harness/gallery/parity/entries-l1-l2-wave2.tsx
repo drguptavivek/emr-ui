@@ -86,9 +86,46 @@ const DATE_PRESETS: readonly EmrDateRangePreset[] = [
 ];
 
 const CHIEF_COMPLAINT_OPTIONS = [
-  { value: 'Reduced distance vision', label: 'Reduced distance vision', group: 'Vision' },
-  { value: 'Metamorphopsia', label: 'Metamorphopsia', group: 'Vision' },
-  { value: 'Foreign body sensation', label: 'Foreign body sensation', group: 'Surface' },
+  {
+    value: 'Reduced distance vision',
+    label: 'Reduced distance vision',
+    code: 'H53.8',
+    description: 'Progressive blur at 6 m Snellen chart',
+    group: 'Vision',
+    badge: { label: 'Common', tone: 'info' as const },
+  },
+  {
+    value: 'Metamorphopsia',
+    label: 'Metamorphopsia',
+    code: 'H53.15',
+    description: 'Wavy or distorted central grid lines (Amsler)',
+    group: 'Vision',
+    badge: { label: 'Urgent', tone: 'warning' as const },
+  },
+  {
+    value: 'Foreign body sensation',
+    label: 'Foreign body sensation',
+    code: 'H57.89',
+    description: 'Gritty ocular surface discomfort',
+    group: 'Surface',
+    tone: 'neutral' as const,
+  },
+  {
+    value: 'Sudden vision loss',
+    label: 'Sudden painless vision loss',
+    code: 'H53.13',
+    description: 'Acute monocular visual loss — triage STAT',
+    group: 'Vision',
+    badge: { label: 'STAT', tone: 'danger' as const },
+    readOnly: true,
+  },
+  {
+    value: 'Deprecated symptom',
+    label: 'Unspecified visual disturbance (archived)',
+    code: 'H53.9',
+    group: 'Archive',
+    disabled: true,
+  },
 ] as const;
 
 const ENCOUNTER_MENU_ITEMS: readonly EmrMenuItem[] = [
@@ -234,7 +271,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         displayMode="path"
         clearable
         readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -251,7 +288,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: (v as string | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
         }}
       />
     ),
@@ -371,7 +408,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         presets={DATE_PRESETS}
         clearable
         readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -393,18 +430,62 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<{ value: string | null }>({
+  defineParityEntry<{
+    value: string | null;
+    variant: 'outline' | 'filled' | 'subtle';
+    size: 'md' | 'sm';
+    filterMode: 'local' | 'remote' | 'none';
+    allowCustomValue: boolean;
+    highlightMatch: boolean;
+    clearable: boolean;
+    loading: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-combobox',
-    createInitialState: () => ({ value: 'Gradual glare at night' }),
+    createInitialState: () => ({
+      value: 'Gradual glare at night',
+      variant: 'outline',
+      size: 'md',
+      filterMode: 'local',
+      allowCustomValue: true,
+      highlightMatch: true,
+      clearable: true,
+      loading: false,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrCombobox
         controlId="parity-combobox-react"
         label="Chief complaint (free-solo combobox)"
+        labelHidden={state.labelHidden}
         options={CHIEF_COMPLAINT_OPTIONS}
         value={state.value}
-        clearable
-        readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        variant={state.variant}
+        size={state.size}
+        filterMode={state.filterMode}
+        allowCustomValue={state.allowCustomValue}
+        highlightMatch={state.highlightMatch}
+        clearable={state.clearable}
+        loading={state.loading}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        warning={state.warning || undefined}
+        error={state.error || undefined}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -413,31 +494,106 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         props={{
           controlId: 'parity-combobox-lit',
           label: 'Chief complaint (free-solo combobox)',
+          labelHidden: state.labelHidden,
           options: CHIEF_COMPLAINT_OPTIONS,
           value: state.value,
-          clearable: true,
-          readOnly,
+          variant: state.variant,
+          size: state.size,
+          filterMode: state.filterMode,
+          allowCustomValue: state.allowCustomValue,
+          highlightMatch: state.highlightMatch,
+          clearable: state.clearable,
+          loading: state.loading,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: (v as string | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ values: readonly string[] }>({
+  defineParityEntry<{
+    values: readonly string[];
+    lockedTags: readonly string[];
+    maxTags: number;
+    maxTagLength: number;
+    chipTone: 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+    variant: 'outline' | 'filled' | 'subtle';
+    size: 'md' | 'sm';
+    clearable: boolean;
+    allowDuplicates: boolean;
+    filterSuggestions: boolean;
+    highlightMatch: boolean;
+    disabled: boolean;
+    readOnly: boolean;
+    required: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-tag-input',
-    createInitialState: () => ({ values: ['IOL-SN-88412', 'OVD-LOT-2209'] }),
+    createInitialState: () => ({
+      values: ['Penicillin', 'Latex'],
+      lockedTags: ['Penicillin'],
+      maxTags: 6,
+      maxTagLength: 24,
+      chipTone: 'neutral',
+      variant: 'outline',
+      size: 'md',
+      clearable: true,
+      allowDuplicates: false,
+      filterSuggestions: true,
+      highlightMatch: true,
+      disabled: false,
+      readOnly: false,
+      required: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrTagInput
         controlId="parity-tag-input-react"
-        label="Specimen & implant batch labels"
-        values={state.values}
-        suggestions={['BSS-LOT-901', 'TRYPAN-04']}
-        clearable
-        readOnly={readOnly}
-        onValuesChange={(v) => update('react', 'onValuesChange', v, () => ({ values: v }))}
+        label="Allergies & Clinical Alerts"
+        placeholder="Add allergen or press Enter…"
+        tags={state.values}
+        lockedTags={state.lockedTags}
+        maxTags={state.maxTags}
+        maxTagLength={state.maxTagLength}
+        chipTone={state.chipTone}
+        variant={state.variant}
+        size={state.size}
+        clearable={state.clearable}
+        allowDuplicates={state.allowDuplicates}
+        filterSuggestions={state.filterSuggestions}
+        highlightMatch={state.highlightMatch}
+        disabled={state.disabled}
+        required={state.required}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
+        suggestions={[
+          'Sulfa',
+          'NSAIDs',
+          'Aspirin',
+          'Contrast Dye',
+          'Atropine',
+          'Tropicamide',
+          'Fluorescein',
+          'Lidocaine',
+        ]}
+        readOnly={readOnly || state.readOnly}
+        onTagsChange={(v) => update('react', 'onTagsChange', v, (prev) => ({ ...prev, values: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -445,15 +601,41 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         tag="emr-tag-input"
         props={{
           controlId: 'parity-tag-input-lit',
-          label: 'Specimen & implant batch labels',
-          value: state.values,
-          suggestions: ['BSS-LOT-901', 'TRYPAN-04'],
-          clearable: true,
-          readOnly,
+          label: 'Allergies & Clinical Alerts',
+          placeholder: 'Add allergen or press Enter…',
+          tags: state.values,
+          lockedTags: state.lockedTags,
+          maxTags: state.maxTags,
+          maxTagLength: state.maxTagLength,
+          chipTone: state.chipTone,
+          variant: state.variant,
+          size: state.size,
+          clearable: state.clearable,
+          allowDuplicates: state.allowDuplicates,
+          filterSuggestions: state.filterSuggestions,
+          highlightMatch: state.highlightMatch,
+          disabled: state.disabled,
+          required: state.required,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
+          suggestions: [
+            'Sulfa',
+            'NSAIDs',
+            'Aspirin',
+            'Contrast Dye',
+            'Atropine',
+            'Tropicamide',
+            'Fluorescein',
+            'Lidocaine',
+          ],
+          readOnly: readOnly || state.readOnly,
         }}
         events={{
-          valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({
+          tagsChange: (v) =>
+            update('lit', 'tagsChange', v, (prev) => ({
+              ...prev,
               values: Array.isArray(v) ? (v as readonly string[]) : [],
             })),
         }}
@@ -475,7 +657,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         unit="%"
         clearable
         readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -555,7 +737,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         value={state.value}
         clearable
         readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -571,7 +753,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: (v as string | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
         }}
       />
     ),
@@ -587,7 +769,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         length={6}
         value={state.value}
         readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -733,7 +915,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         allowCustomHex
         clearable
         readOnly={readOnly}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -750,7 +932,7 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: (v as string | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
         }}
       />
     ),

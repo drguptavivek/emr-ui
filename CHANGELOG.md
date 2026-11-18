@@ -2,6 +2,15 @@
 
 Current state and pending work live in `handoff.md`. Exact changes and authorship live in Git.
 
+## 18 November 2026 — L1 Choice & Selection Primitives Parity (Angular, React/Expo, Lit)
+
+- **Audited `PASS` across Angular, React Web/Expo Native, Lit, and `:3300` / `:4200` (`docs/audits/emr-*.md`)**:
+  - `emr-checkbox` & `emr-toggle`: Unified `value` precedence over `checked`, `variant` (`tile`/`inline`), `size` (`md`/`sm`), `labelPlacement` (`end`/`start`/`space-between`), `mixed` state, `loading` (`aria-busy` + thumb spinner), `onLabel`/`offLabel`, `Hint -> Warning -> Error` ordering, border-box `42x24` / `38x22` switch track geometry, symmetric `.emr-print` / `@media print` rules, and `Space`/`Enter` toggles.
+  - `emr-checkbox-group`, `emr-radio-group`, & `emr-segmented-control`: `tile`/`inline`/`card`/`pill`/`chip`/`segmented`/`soft`/`outline` variants, `orientation` (`vertical`/`horizontal`/`grid` with `<= 480px` 1-col collapse), `allowDeselect`, `clearable` (preserving locked items), tri-state `Select all` with monochrome SVG `minus`/`check`, `minSelections`/`maxSelections`, `exclusiveValues`, grouped headings, option `badge`/`tone`/`icon`/`description`/`readOnly` vs `disabled`, and roving `tabIndex` keyboard navigation.
+  - `emr-select`, `emr-search-select`, `emr-combobox`, & `emr-tag-input`: Single and multi-select (`multiple`, removable chips with `44x44px` targets, `maxTagCount` `+N` & `0` summary, `maxSelections`/`maxTags`), deterministic tiered `rankAndFilterOptions` best-match ranking + `"Best match"` cue + `<mark>`/highlighted spans, `filterMode: 'local' | 'remote' | 'none'`, `creatable`/`allowCustomValue`, `lockedTags`, CSV paste splitting, `variant: 'outline' | 'filled' | 'subtle'`, `loading` (`aria-busy` + spinner), WAI-ARIA `role="combobox"`/`aria-activedescendant` keyboard focus retention, and mobile `<Modal>` sheets.
+- **Shared `@drguptavivek/emr-controller` Additions**: Extended `EmrOption` (`readOnly`, `badge`, `tone`, `code`, `keywords`), `EmrSegmentedOption`, `rankAndFilterOptions`, `splitMatchHighlightSegments`, `resolveComboboxDisplayValue`, and pure normalization/selection/validation/keyboard helpers for all choice & selection controls, mirrored cleanly into `emr-ui` `*.logic.ts` (type-only imports preserved for SSR).
+- **L2 Field Audits (`PASS`)**: Completed Stage 1–3 verification and wrote `docs/audits/*.md` (`PASS`) for `#26 emr-field-frame` through `#34 emr-attachment-field`.
+
 ## 18 October 2026 — VCMS D14–D16 (React Native; Angular deferred)
 
 - Contracts in emr-controller: `IdentifierEntryView`, `IdentifierCheckViewModel`, `LinkCardsViewModel` (identity.models); `MergeCompareViewModel` (2–4 sources, breaking: replaces left/right), `ContactAttemptViewModel.consequence`, `DraftRecordListViewModel` (workflow.models); `ClinicalFormViewModel.correction` + `correctionRequested`.

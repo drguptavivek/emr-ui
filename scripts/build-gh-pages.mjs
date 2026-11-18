@@ -15,6 +15,8 @@ import * as esbuild from 'esbuild';
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(rootDir, 'dist/gh-pages');
 const nextPublicLitDir = join(rootDir, 'packages/emr-react/harness/next/public/lit');
+const nextPublicAnatomyDir = join(rootDir, 'packages/emr-react/harness/next/public/assets/anatomy');
+const anatomyAssetsDir = join(rootDir, 'packages/emr-controller/assets/anatomy');
 const nextOutDir = join(rootDir, 'packages/emr-react/harness/next/out');
 const registryDir = join(rootDir, 'registry');
 const storybookDir = join(rootDir, 'storybook-static');
@@ -871,6 +873,10 @@ run('pnpm registry:build');
 
 // 2. Bundle the Lit elements and workstation example into the Next.js static export
 mkdirSync(nextPublicLitDir, { recursive: true });
+if (existsSync(anatomyAssetsDir)) {
+  mkdirSync(nextPublicAnatomyDir, { recursive: true });
+  cpSync(anatomyAssetsDir, nextPublicAnatomyDir, { recursive: true });
+}
 await esbuild.build({
   stdin: {
     resolveDir: rootDir,

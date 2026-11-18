@@ -269,10 +269,7 @@ describe('L2 pure helpers & EmrTypedField unified contract dispatch', () => {
       value: '2026-08',
       precision: 'month',
     });
-    expect(adaptPartialDatePrecision({ value: '2026', precision: 'year' }, 'day')).toEqual({
-      value: '2026-01-01',
-      precision: 'day',
-    });
+    expect(adaptPartialDatePrecision({ value: '2026', precision: 'year' }, 'day')).toBeNull();
 
     expect(
       buildScaleAnchors(0, 10, { minLabel: 'No pain', midLabel: 'Moderate', maxLabel: 'Worst' })

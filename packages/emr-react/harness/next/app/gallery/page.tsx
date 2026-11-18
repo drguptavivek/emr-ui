@@ -1,5 +1,5 @@
-import { GalleryPage } from '../../../gallery/gallery-page';
+import { ComponentsDocsPage } from '../../../gallery/components-docs';
 
 export default function Page() {
-  return <GalleryPage />;
+  return <ComponentsDocsPage />;
 }

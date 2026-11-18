@@ -144,17 +144,69 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<{ value: string | null }>({
+  defineParityEntry<{
+    value: string | null;
+    size: 'md' | 'sm';
+    variant: 'default' | 'outline' | 'soft';
+    shape: 'default' | 'pill';
+    orientation: 'horizontal' | 'vertical';
+    fullWidth: boolean;
+    clearable: boolean;
+    allowDeselect: boolean;
+    required: boolean;
+    invalid: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-segmented-control',
-    createInitialState: () => ({ value: 'OD' }),
+    createInitialState: () => ({
+      value: 'OD',
+      size: 'md',
+      variant: 'default',
+      shape: 'default',
+      orientation: 'horizontal',
+      fullWidth: false,
+      clearable: false,
+      allowDeselect: false,
+      required: false,
+      invalid: false,
+      readOnly: false,
+      disabled: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrSegmentedControl
         controlId="parity-seg-react"
-        label="Operative eye"
-        options={EYE_SEGMENTS}
-        readOnly={readOnly}
+        label="Operative eye & verification"
+        options={[
+          { value: 'OD', label: 'OD', description: 'Right eye', icon: 'eye', tone: 'info', badge: { label: 'Primary', tone: 'info' } },
+          { value: 'OS', label: 'OS', description: 'Left eye', icon: 'eye', badge: 2 },
+          { value: 'OU', label: 'OU', description: 'Both eyes', readOnly: true, badge: { label: 'Locked', tone: 'warning' } },
+          { value: 'NA', label: 'Defer', disabled: true },
+        ]}
+        size={state.size}
+        variant={state.variant}
+        shape={state.shape}
+        orientation={state.orientation}
+        fullWidth={state.fullWidth}
+        clearable={state.clearable}
+        allowDeselect={state.allowDeselect}
+        required={state.required}
+        invalid={state.invalid}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        labelHidden={state.labelHidden}
+        hint="Select operative eye laterality"
+        warning={state.warning}
+        error={state.error}
         value={state.value}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: null }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -162,13 +214,33 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
         tag="emr-segmented-control"
         props={{
           controlId: 'parity-seg-lit',
-          label: 'Operative eye',
-          options: EYE_SEGMENTS,
-          readOnly,
+          label: 'Operative eye & verification',
+          options: [
+            { value: 'OD', label: 'OD', description: 'Right eye', icon: 'eye', tone: 'info', badge: { label: 'Primary', tone: 'info' } },
+            { value: 'OS', label: 'OS', description: 'Left eye', icon: 'eye', badge: 2 },
+            { value: 'OU', label: 'OU', description: 'Both eyes', readOnly: true, badge: { label: 'Locked', tone: 'warning' } },
+            { value: 'NA', label: 'Defer', disabled: true },
+          ],
+          size: state.size,
+          variant: state.variant,
+          shape: state.shape,
+          orientation: state.orientation,
+          fullWidth: state.fullWidth,
+          clearable: state.clearable,
+          allowDeselect: state.allowDeselect,
+          required: state.required,
+          invalid: state.invalid,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          labelHidden: state.labelHidden,
+          hint: 'Select operative eye laterality',
+          warning: state.warning,
+          error: state.error,
           value: state.value,
         }}
         events={{
-          valueChange: (v) => update('lit', 'valueChange', v, () => ({ value: (v as string | null) ?? null })),
+          valueChange: (v) => update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: null })),
         }}
       />
     ),
@@ -272,17 +344,70 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<{ value: readonly string[] }>({
+  defineParityEntry<{
+    value: readonly string[];
+    variant: 'tile' | 'inline' | 'card' | 'chip';
+    orientation: 'vertical' | 'horizontal' | 'grid';
+    size: 'md' | 'sm';
+    labelPlacement: 'end' | 'start' | 'space-between';
+    showSelectAll: boolean;
+    showSelectionCount: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-checkbox-group',
-    createInitialState: () => ({ value: ['consent', 'site'] }),
+    createInitialState: () => ({
+      value: ['consent', 'site'],
+      variant: 'tile',
+      orientation: 'vertical',
+      size: 'md',
+      labelPlacement: 'end',
+      showSelectAll: true,
+      showSelectionCount: true,
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrCheckboxGroup
         controlId="parity-cbg-react"
         label="Pre-operative preparation checks"
-        options={PREOP_CHECKS}
-        readOnly={readOnly}
+        options={[
+          { value: 'consent', label: 'Informed consent signed', group: 'Mandatory Safety', readOnly: true, badge: { label: 'Verified', tone: 'success' }, tone: 'success' },
+          { value: 'site', label: 'Operative eye marked (OD)', group: 'Mandatory Safety', description: 'Confirmed with patient & surgical list', badge: { label: 'Critical', tone: 'info' } },
+          { value: 'dilation', label: 'Mydriatic drops instilled', group: 'Clinical Prep', description: 'Tropicamide 0.8% + Phenylephrine 5%' },
+          { value: 'biometry', label: 'IOL biometry verified', group: 'Clinical Prep', disabled: true, description: 'Awaiting IOLMaster upload' },
+          { value: 'none', label: 'No prep required (defer)', tone: 'warning' },
+        ]}
+        exclusiveValues={['none']}
+        variant={state.variant}
+        orientation={state.orientation}
+        size={state.size}
+        labelPlacement={state.labelPlacement}
+        showSelectAll={state.showSelectAll}
+        showSelectionCount={state.showSelectionCount}
+        clearable={state.clearable}
+        required={state.required}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
+        readOnly={readOnly || state.readOnly}
         value={state.value}
-        onValueChange={(v) => update('react', 'onValueChange', v, () => ({ value: v }))}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => prev)}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -291,12 +416,33 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
         props={{
           controlId: 'parity-cbg-lit',
           label: 'Pre-operative preparation checks',
-          options: PREOP_CHECKS,
-          readOnly,
+          options: [
+            { value: 'consent', label: 'Informed consent signed', group: 'Mandatory Safety', readOnly: true, badge: { label: 'Verified', tone: 'success' }, tone: 'success' },
+            { value: 'site', label: 'Operative eye marked (OD)', group: 'Mandatory Safety', description: 'Confirmed with patient & surgical list', badge: { label: 'Critical', tone: 'info' } },
+            { value: 'dilation', label: 'Mydriatic drops instilled', group: 'Clinical Prep', description: 'Tropicamide 0.8% + Phenylephrine 5%' },
+            { value: 'biometry', label: 'IOL biometry verified', group: 'Clinical Prep', disabled: true, description: 'Awaiting IOLMaster upload' },
+            { value: 'none', label: 'No prep required (defer)', tone: 'warning' },
+          ],
+          exclusiveValues: ['none'],
+          variant: state.variant,
+          orientation: state.orientation,
+          size: state.size,
+          labelPlacement: state.labelPlacement,
+          showSelectAll: state.showSelectAll,
+          showSelectionCount: state.showSelectionCount,
+          clearable: state.clearable,
+          required: state.required,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
+          readOnly: readOnly || state.readOnly,
           value: state.value,
         }}
         events={{
-          valueChange: (v) => update('lit', 'valueChange', v, () => ({ value: (v as readonly string[]) ?? [] })),
+          valueChange: (v) => update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as readonly string[]) ?? [] })),
+          cleared: () => update('lit', 'cleared', null, (prev) => prev),
         }}
       />
     ),
@@ -503,7 +649,7 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
   }),
 
   // ── 13 New L2 Clinical Field Building Blocks ─────────────────────────────
-  defineParityEntry<ScaleFieldViewModel>({
+  defineParityEntry<ScaleFieldViewModel & { readOnly: boolean; required: boolean }>({
     selector: 'emr-scale-field',
     createInitialState: () => ({
       label: 'Post-operative ocular pain (NRS 0–10)',
@@ -514,10 +660,14 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       anchors: { minLabel: 'No pain', maxLabel: 'Worst imaginable pain' },
       tone: 'warning',
       hint: 'Record prior to topical anaesthetic instillation',
+      required: false,
+      readOnly: false,
     }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrScaleField
-        model={{ ...state, readOnly }}
+        controlId="parity-scale-react"
+        readOnly={state.readOnly || readOnly}
+        model={{ ...state, readOnly: state.readOnly || readOnly }}
         onIntent={(i) =>
           update('react', i.type, i, (s) =>
             i.type === 'valueChangeRequested'
@@ -530,7 +680,11 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-scale-field"
-        props={{ model: { ...state, readOnly } }}
+        props={{
+          controlId: 'parity-scale-lit',
+          readOnly: state.readOnly || readOnly,
+          model: { ...state, readOnly: state.readOnly || readOnly },
+        }}
         events={{
           intent: (raw) => {
             const i = raw as { type: string; value?: number | null; status?: ScaleFieldViewModel['status'] };
@@ -545,19 +699,31 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<PartialDateFieldViewModel>({
+  defineParityEntry<PartialDateFieldViewModel & { readOnly: boolean; required: boolean; clearable: boolean }>({
     selector: 'emr-partial-date-field',
     createInitialState: () => ({
       label: 'Onset of gradual blurring',
       value: { precision: 'month', value: '2025-11' },
+      defaultPrecision: 'month',
       hint: 'Year or year-month supported when exact day is unknown',
+      required: false,
+      readOnly: false,
+      clearable: true,
     }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrPartialDateField
-        model={{ ...state, readOnly }}
+        controlId="parity-pd-react"
+        readOnly={state.readOnly || readOnly}
+        model={{ ...state, readOnly: state.readOnly || readOnly }}
         onIntent={(i) =>
           update('react', i.type, i, (s) =>
-            i.type === 'valueChangeRequested' ? { ...s, value: i.value } : s,
+            i.type === 'precisionChangeRequested'
+              ? { ...s, defaultPrecision: i.precision }
+              : i.type === 'valueChangeRequested'
+                ? { ...s, value: i.value }
+                : i.type === 'statusChangeRequested'
+                  ? { ...s, status: i.status }
+                  : s,
           )
         }
       />
@@ -565,12 +731,27 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-partial-date-field"
-        props={{ model: { ...state, readOnly } }}
+        props={{
+          controlId: 'parity-pd-lit',
+          readOnly: state.readOnly || readOnly,
+          model: { ...state, readOnly: state.readOnly || readOnly },
+        }}
         events={{
           intent: (raw) => {
-            const i = raw as { type: string; value?: PartialDateFieldViewModel['value'] };
+            const i = raw as {
+              type: string;
+              precision?: 'year' | 'month' | 'day';
+              value?: PartialDateFieldViewModel['value'];
+              status?: PartialDateFieldViewModel['status'];
+            };
             update('lit', i.type, i, (s) =>
-              i.type === 'valueChangeRequested' ? { ...s, value: i.value ?? null } : s,
+              i.type === 'precisionChangeRequested' && i.precision
+                ? { ...s, defaultPrecision: i.precision }
+                : i.type === 'valueChangeRequested'
+                  ? { ...s, value: i.value ?? null }
+                  : i.type === 'statusChangeRequested'
+                    ? { ...s, status: i.status }
+                    : s,
             );
           },
         }}
@@ -578,7 +759,7 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<AttachmentFieldViewModel>({
+  defineParityEntry<AttachmentFieldViewModel & { readOnly: boolean; required: boolean }>({
     selector: 'emr-attachment-field',
     createInitialState: () => ({
       label: 'Prior B-scan & referral reports',
@@ -593,32 +774,72 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       ],
       accept: '.pdf,image/png,image/jpeg',
       multiple: true,
+      maxItems: 3,
       allowCamera: true,
+      required: false,
+      readOnly: false,
     }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrAttachmentField
-        model={{ ...state, readOnly }}
+        controlId="parity-att-react"
+        readOnly={state.readOnly || readOnly}
+        model={{ ...state, readOnly: state.readOnly || readOnly }}
         onIntent={(i) =>
-          update('react', i.type, i, (s) =>
-            i.type === 'itemRemoveRequested'
-              ? { ...s, items: s.items.filter((x) => x.id !== i.id) }
-              : s,
-          )
+          update('react', i.type, i, (s) => {
+            if (i.type === 'itemRemoveRequested') {
+              return { ...s, items: s.items.filter((x) => x.id !== i.id) };
+            }
+            if (i.type === 'filesSelected') {
+              const added = i.files.map((f, idx) => ({
+                id: `att-${Date.now()}-${idx}`,
+                title: f.name,
+                contentType: f.mimeType || 'application/octet-stream',
+                sizeBytes: f.sizeBytes,
+              }));
+              return { ...s, items: [...s.items, ...added] };
+            }
+            if (i.type === 'statusChangeRequested') {
+              return { ...s, status: i.status };
+            }
+            return s;
+          })
         }
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-attachment-field"
-        props={{ model: { ...state, readOnly } }}
+        props={{
+          controlId: 'parity-att-lit',
+          readOnly: state.readOnly || readOnly,
+          model: { ...state, readOnly: state.readOnly || readOnly },
+        }}
         events={{
           intent: (raw) => {
-            const i = raw as { type: string; id?: string };
-            update('lit', i.type, i, (s) =>
-              i.type === 'itemRemoveRequested'
-                ? { ...s, items: s.items.filter((x) => x.id !== i.id) }
-                : s,
-            );
+            const i = raw as {
+              type: string;
+              id?: string;
+              files?: readonly { name: string; mimeType: string; sizeBytes: number }[];
+              status?: AttachmentFieldViewModel['status'];
+            };
+            update('lit', i.type, i, (s) => {
+              if (i.type === 'itemRemoveRequested' && i.id) {
+                return { ...s, items: s.items.filter((x) => x.id !== i.id) };
+              }
+              if (i.type === 'filesSelected' && i.files) {
+                const added = i.files.map((f, idx) => ({
+                  id: `att-${Date.now()}-${idx}`,
+                  title: f.name,
+                  contentType: f.mimeType || 'application/octet-stream',
+                  sizeBytes: f.sizeBytes,
+                }));
+                return { ...s, items: [...s.items, ...added] };
+              }
+              if (i.type === 'statusChangeRequested') {
+                return { ...s, status: i.status };
+              }
+              return s;
+            });
           },
         }}
       />

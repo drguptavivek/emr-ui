@@ -1,4 +1,5 @@
 import type { EmrBadge, EmrTone } from './models.js';
+import type { EmrValidationMessage } from './validation.models.js';
 
 /**
  * A patient as shown on identity cards, banners and confirm prompts. Every string is pre-resolved by the
@@ -27,6 +28,22 @@ export type PatientIdentityIntent =
 
 // ---- Identifier entry (scan or type) -------------------------------------------------------------------
 
+export interface IdentifierEntryTypeOption {
+  readonly id: string;
+  readonly label: string;
+}
+
+export const DEFAULT_IDENTIFIER_ENTRY_LABELS = {
+  scan: 'Scan',
+  identifierType: 'Identifier type',
+  normalised: 'Recognised as',
+  clear: 'Clear identifier',
+} as const;
+
+export type EmrIdentifierEntryLabels = {
+  readonly [K in keyof typeof DEFAULT_IDENTIFIER_ENTRY_LABELS]: string;
+};
+
 /**
  * A barcode / ID entry field. Validator-agnostic: the app's normaliser supplies normalisedValue, error and
  * warning; the camera is the app's (scanRequested). `typeOptions` appear only when the type is ambiguous.
@@ -39,14 +56,23 @@ export interface IdentifierEntryView {
   warning?: string;
   hint?: string;
   readOnly?: boolean;
-  typeOptions?: { id: string; label: string }[];
+  required?: boolean;
+  placeholder?: string;
+  clearable?: boolean;
+  maxLength?: number;
+  typeOptions?: readonly IdentifierEntryTypeOption[];
   selectedType?: string;
+  messages?: readonly EmrValidationMessage[];
 }
 
 export type IdentifierEntryIntent =
   | { type: 'valueChanged'; raw: string }
   | { type: 'scanRequested' }
-  | { type: 'typeSelected'; id: string };
+  | { type: 'typeSelected'; id: string }
+  | { type: 'cleared' }
+  | { type: 'submitted'; raw: string }
+  | { type: 'focused' }
+  | { type: 'blurred' };
 
 // ---- Identifier duplicate check ---------------------------------------------------------------------------
 

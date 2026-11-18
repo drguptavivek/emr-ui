@@ -405,6 +405,7 @@ let nextTypedFieldId = 0;
               [required]="isRequired()"
               [disabled]="isDisabled()"
               [readOnly]="isReadOnly()"
+              [invalid]="hasError()"
               [error]="errorFlag()"
               (valueChange)="onMultiCodeChange($event)"
             />

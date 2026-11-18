@@ -10,21 +10,10 @@ import {
   output,
   viewChildren,
 } from '@angular/core';
-import type { EmrTone } from '@drguptavivek/emr-controller';
+import type { EmrLikertAnchor, EmrLikertSize, EmrTone } from '@drguptavivek/emr-controller';
+import { buildLikertPoints, resolveLikertAnchors } from './emr-likert.logic';
 
-/**
- * Controlled Likert / numeric rating scale.
- *
- * Uses native <fieldset role="radiogroup">/<legend> for accessible radiogroup semantics
- * without invalid aria-required/aria-readonly attributes on inner generic <div> wrappers.
- */
-export interface EmrLikertAnchor {
-  /** Value this label is anchored to (typically `min` or `max`). */
-  value: number;
-  label: string;
-  /** Short description read by screen readers in place of the numeric label. */
-  assistiveLabel?: string;
-}
+export type { EmrLikertAnchor };
 
 @Component({
   selector: 'emr-likert',
@@ -34,72 +23,92 @@ export interface EmrLikertAnchor {
   template: `
     <fieldset
       class="emr-likert"
+      [class.emr-likert--sm]="size() === 'sm'"
+      [class.emr-likert--lg]="size() === 'lg'"
+      [class.emr-likert--full-width]="fullWidth()"
       role="radiogroup"
       [id]="resolvedId()"
       [disabled]="disabled()"
+      [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
       [attr.aria-required]="required() || null"
-      [attr.aria-invalid]="error() ? 'true' : null"
+      [attr.aria-readonly]="readOnly() || null"
+      [attr.aria-invalid]="!!error() || invalid() ? 'true' : null"
+      [attr.data-warning]="!error() && !invalid() && !!warning() ? 'true' : null"
       [attr.aria-describedby]="describedBy()"
+      (focusin)="onFocusIn()"
+      (focusout)="onFocusOut($event)"
     >
-      <legend class="emr-likert__legend" [class.emr-sr-only]="labelHidden()">
-        {{ label() }}
-        @if (required()) {
-          <span class="emr-likert__required" aria-hidden="true">*</span>
-          <span class="emr-sr-only">Required</span>
-        }
-      </legend>
+      <div class="emr-choice-fieldset__top">
+        <legend class="emr-likert__legend" [class.emr-sr-only]="labelHidden()">
+          {{ label() }}
+          @if (required()) {
+            <span class="emr-likert__required" aria-hidden="true">*</span>
+            <span class="emr-sr-only">Required</span>
+          }
+        </legend>
 
-      @if (showClear()) {
-        <div class="emr-choice-header">
+        @if (showClear()) {
           <button
             type="button"
             class="emr-choice-clear"
-            [attr.aria-label]="'Clear ' + (label() || 'selection')"
+            data-emr-print="hide"
+            [attr.aria-label]="clearLabel() + ' ' + (label() || 'selection')"
             (click)="clearSelection()"
           >
-            {{ clearLabel() }}
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+            </svg>
+            <span>{{ clearLabel() }}</span>
           </button>
-        </div>
-      }
+        }
+      </div>
 
       <div class="emr-likert__track">
-        @for (point of points(); track point) {
+        @for (point of points(); track point.value) {
           <label
             class="emr-likert__option"
-            [class.emr-likert__option--selected]="value() === point"
-            [attr.data-tone]="value() === point ? (toneFor(point) ?? null) : null"
+            [class.emr-likert__option--selected]="point.selected"
+            [attr.data-tone]="point.selected ? (point.tone ?? null) : null"
           >
             <input
               #radioInput
               type="radio"
               class="emr-sr-only"
               [name]="resolvedName()"
-              [value]="point"
-              [checked]="value() === point"
+              [value]="point.value"
+              [checked]="point.selected"
               [disabled]="disabled()"
               [attr.aria-readonly]="readOnly() || null"
-              [attr.aria-label]="ariaLabelFor(point)"
+              [attr.aria-label]="point.assistiveLabel"
               (click)="onClick($event)"
-              (change)="onSelect(point)"
+              (keydown)="onKeydown($event)"
+              (change)="onSelect(point.value)"
             />
-            <span class="emr-likert__pip" aria-hidden="true">{{ point }}</span>
+            <span class="emr-likert__pip" aria-hidden="true">{{ point.label }}</span>
           </label>
         }
       </div>
 
-      @if (!disabled() && (minAnchor() || maxAnchor())) {
+      @if (anchorsSummary().start || anchorsSummary().mid || anchorsSummary().end) {
         <div class="emr-likert__anchors" aria-hidden="true">
-          <span class="emr-likert__anchor">{{ minAnchor()?.label }}</span>
-          <span class="emr-likert__anchor">{{ maxAnchor()?.label }}</span>
+          <span class="emr-likert__anchor">{{ anchorsSummary().start?.label }}</span>
+          @if (anchorsSummary().mid) {
+            <span class="emr-likert__anchor">{{ anchorsSummary().mid?.label }}</span>
+          }
+          <span class="emr-likert__anchor">{{ anchorsSummary().end?.label }}</span>
         </div>
       }
 
-      @if (!labelHidden()) {
-        <div class="emr-likert__messages" aria-live="polite">
-          @if (error()) {
-            <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
-          } @else if (!disabled() && hint()) {
+      @if (!labelHidden() && (hint() || warning() || error())) {
+        <div class="emr-likert__messages">
+          @if (hint()) {
             <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
+          }
+          @if (warning()) {
+            <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ warning() }}</span>
+          }
+          @if (error()) {
+            <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">{{ error() }}</span>
           }
         </div>
       }
@@ -108,20 +117,27 @@ export interface EmrLikertAnchor {
 })
 export class EmrLikertComponent implements AfterViewChecked {
   static _idSeq = 0;
+  readonly ariaDescribedBy = input<string | undefined>(undefined);
 
   readonly controlId = input<string>();
   /** Radio-group name. Defaults to a per-instance id so two likerts never share a native group. */
-  readonly name = input('');
-  readonly label = input('');
+  readonly name = input<string>('');
+  readonly label = input<string>('');
+  readonly ariaLabel = input<string>();
   readonly labelHidden = input(false, { transform: booleanAttribute });
   readonly hint = input<string>();
+  readonly warning = input<string>();
   readonly error = input<string>();
-  readonly min = input(0);
-  readonly max = input(10);
+  readonly invalid = input(false, { transform: booleanAttribute });
+  readonly min = input<number>(0);
+  readonly max = input<number>(10);
+  readonly step = input<number>(1);
+  readonly size = input<EmrLikertSize>('md');
+  readonly fullWidth = input(false, { transform: booleanAttribute });
   readonly value = input<number | null>(null);
   readonly anchors = input<readonly EmrLikertAnchor[]>([]);
   readonly clearable = input(false, { transform: booleanAttribute });
-  readonly clearLabel = input('Clear');
+  readonly clearLabel = input<string>('Clear');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readOnly = input(false, { transform: booleanAttribute });
   readonly required = input(false, { transform: booleanAttribute });
@@ -132,10 +148,13 @@ export class EmrLikertComponent implements AfterViewChecked {
 
   readonly valueChange = output<number | null>();
   readonly cleared = output<void>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   readonly groupId = `emr-likert-${++EmrLikertComponent._idSeq}`;
   readonly resolvedId = computed(() => this.controlId() || this.groupId);
   readonly resolvedName = computed(() => this.name() || this.resolvedId());
+  private hasFocus = false;
 
   protected readonly showClear = computed(
     () =>
@@ -148,22 +167,32 @@ export class EmrLikertComponent implements AfterViewChecked {
       ),
   );
 
-  readonly points = computed<readonly number[]>(() => {
-    const pts: number[] = [];
-    const lo = this.min();
-    const hi = this.max();
-    for (let i = lo; i <= hi; i++) pts.push(i);
-    return pts;
-  });
+  readonly points = computed(() =>
+    buildLikertPoints({
+      min: this.min(),
+      max: this.max(),
+      step: this.step(),
+      value: this.value(),
+      anchors: this.anchors(),
+      tone: this.tone(),
+      optionTones: this.optionTones(),
+    }),
+  );
 
-  readonly minAnchor = computed(() => this.anchors().find((a) => a.value === this.min()));
-  readonly maxAnchor = computed(() => this.anchors().find((a) => a.value === this.max()));
+  protected readonly anchorsSummary = computed(() =>
+    resolveLikertAnchors(this.points(), this.anchors()),
+  );
 
   protected readonly describedBy = computed(() => {
-    if (this.labelHidden()) return null;
-    if (this.error()) return `${this.resolvedId()}-error`;
-    if (!this.disabled() && this.hint()) return `${this.resolvedId()}-hint`;
-    return null;
+    const ext = this.ariaDescribedBy();
+    if (this.labelHidden()) return ext || null;
+    const id = this.resolvedId();
+    const ids: string[] = [];
+    if (this.hint()) ids.push(`${id}-hint`);
+    if (this.warning()) ids.push(`${id}-warning`);
+    if (this.error()) ids.push(`${id}-error`);
+    if (ext) ids.push(ext);
+    return ids.length ? ids.join(' ') : null;
   });
 
   private readonly radioRefs = viewChildren<ElementRef<HTMLInputElement>>('radioInput');
@@ -176,14 +205,36 @@ export class EmrLikertComponent implements AfterViewChecked {
     }
   }
 
-  protected toneFor(point: number): EmrTone | undefined {
-    return this.optionTones()?.[point] ?? this.tone();
+  protected onFocusIn(): void {
+    if (!this.hasFocus) {
+      this.hasFocus = true;
+      this.focused.emit();
+    }
   }
 
-  protected ariaLabelFor(point: number): string {
-    const anchor = this.anchors().find((a) => a.value === point);
-    const base = anchor?.assistiveLabel ?? anchor?.label ?? String(point);
-    return `${point} – ${base}`;
+  protected onFocusOut(event: FocusEvent): void {
+    const cur = event.currentTarget as HTMLElement | null;
+    const rel = event.relatedTarget as Node | null;
+    if (!cur || !rel || !cur.contains(rel)) {
+      this.hasFocus = false;
+      this.syncRadios();
+      this.blurred.emit();
+    }
+  }
+
+  protected onKeydown(event: KeyboardEvent): void {
+    if (this.readOnly() || this.disabled()) {
+      if (
+        event.key === ' ' ||
+        event.key === 'ArrowLeft' ||
+        event.key === 'ArrowRight' ||
+        event.key === 'ArrowUp' ||
+        event.key === 'ArrowDown'
+      ) {
+        event.preventDefault();
+        this.syncRadios();
+      }
+    }
   }
 
   /** Read-only keeps the control focusable and announceable, but blocks the native toggle. */

@@ -18,7 +18,7 @@ Use the **Specialty / workflow** filter in the Registry Explorer or the [Lit com
 - `@drguptavivek/emr-elements` — Lit Web Components that render the shared controller models and emit bubbling, composed `intent` events.
 - Storybook & Harnesses — synthetic clinical examples for component discovery, responsive states, light/dark themes, print context, Next.js (`packages/emr-react/harness/next`), and Expo (`packages/emr-react/harness/expo`).
 
-The complete agreed scope and implementation sequence is in [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md).
+The complete agreed scope and implementation sequence is in [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md). Component design, cross-framework parity, and the 3-stage subagent verification workflow live in [docs/COMPONENT_DESIGN_WORKFLOW.md](./docs/COMPONENT_DESIGN_WORKFLOW.md) and [AGENTS.md](./AGENTS.md).
 
 ## Installation
 

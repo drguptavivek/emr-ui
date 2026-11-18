@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;6081d2b41c8092deb2676514c959edaca8ec9cec2c61cd9165893b0f25b111c8;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/fields/emr-clinical-fields.component.ts"],
+  "sourcesContent": ["\n  :host {\n    display: block;\n    min-width: 0;\n  }\n  .clf-stack {\n    display: grid;\n    gap: 8px;\n    min-width: 0;\n  }\n  .clf-sub {\n    font-size: var(--emr-text-xs);\n    font-weight: var(--emr-weight-medium);\n    color: var(--emr-text-muted);\n  }\n"],
+  "mappings": ";AACE;AACE,WAAS;AACT,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACL,aAAW;AACb;AACA,CAAC;AACC,aAAW,IAAI;AACf,eAAa,IAAI;AACjB,SAAO,IAAI;AACb;",
+  "names": []
+}

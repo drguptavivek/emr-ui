@@ -126,4 +126,5 @@ it('forwards one keyboard result selection through the top bar', async () => {
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
   expect(intents).toEqual([{ type: 'resultSelected', groupId: 'patients', id: 'record' }]);
+  expect(el.shadowRoot!.querySelector('slot[name="actions"]')).not.toBeNull();
 });

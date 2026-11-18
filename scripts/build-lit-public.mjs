@@ -3,17 +3,23 @@
  * `packages/emr-react/harness/next/public/lit/` so `next dev` (`pnpm site`) and
  * the React ⇄ Lit Parity Workbench load live custom elements and token/print CSS.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const nextPublicLitDir = join(rootDir, 'packages/emr-react/harness/next/public/lit');
+const nextPublicAnatomyDir = join(rootDir, 'packages/emr-react/harness/next/public/assets/anatomy');
+const anatomyAssetsDir = join(rootDir, 'packages/emr-controller/assets/anatomy');
 const emrCssPath = join(rootDir, 'packages/emr-ui/src/lib/foundations/emr.css');
 const emrPrintCssPath = join(rootDir, 'packages/emr-ui/src/lib/foundations/emr-print.css');
 
 mkdirSync(nextPublicLitDir, { recursive: true });
+if (existsSync(anatomyAssetsDir)) {
+  mkdirSync(nextPublicAnatomyDir, { recursive: true });
+  cpSync(anatomyAssetsDir, nextPublicAnatomyDir, { recursive: true });
+}
 
 await esbuild.build({
   stdin: {
@@ -35,4 +41,4 @@ await esbuild.build({
 writeFileSync(join(nextPublicLitDir, 'emr.css'), readFileSync(emrCssPath, 'utf8'));
 writeFileSync(join(nextPublicLitDir, 'emr-print.css'), readFileSync(emrPrintCssPath, 'utf8'));
 
-console.log('Built public/lit/{emr-elements.bundle.js,emr.css,emr-print.css}');
+console.log('Built public/lit/{emr-elements.bundle.js,emr.css,emr-print.css} and synced /assets/anatomy');

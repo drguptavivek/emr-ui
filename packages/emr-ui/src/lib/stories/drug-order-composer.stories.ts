@@ -273,12 +273,12 @@ const TEMPLATE = `
         <emr-quantity-input controlId="order-strength" label="Strength" [required]="true" [value]="c.s.strength" [unit]="c.s.strengthUnit" [units]="c.strengthUnits"
           [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.strength ?? ''" (valueChange)="c.setStrength($event)" (unitChange)="c.setStrengthUnit($event)" />
         <emr-select controlId="order-form" label="Form" placeholder="Choose" [required]="true" [value]="c.s.form" [options]="c.formOptions"
-          [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.form ?? ''" (valueChange)="c.setForm($event)" />
+          [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.form ?? ''" (valueChange)="c.setForm($any($event))" />
         <emr-select controlId="order-route" label="Route" placeholder="Choose" [required]="true" [value]="c.s.route" [options]="c.routeOptions"
-          [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.route ?? ''" (valueChange)="c.setRoute($event)" />
+          [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.route ?? ''" (valueChange)="c.setRoute($any($event))" />
         @if (c.s.route === 'eye') {
           <emr-select controlId="order-site" label="Which eye" placeholder="Choose" [required]="true" [value]="c.s.site" [options]="c.siteOptions"
-            [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.site ?? ''" (valueChange)="c.setSite($event)" />
+            [readOnly]="c.s.readOnly || c.s.signed" [error]="c.s.errors.site ?? ''" (valueChange)="c.setSite($any($event))" />
         }
       </div>
       <emr-schedule-slot-picker controlId="order-slots" [label]="c.s.taperRest ? 'Week 1 schedule' : c.s.prn ? 'As needed' : 'When to take'" [required]="true"

@@ -6,7 +6,7 @@ import { localDateTimeToUtcIso, toLocalDateTimeInputValue } from '@drguptavivek/
 export { localDateTimeToUtcIso, toLocalDateTimeInputValue };
 
 /** Display order only; the value is always ISO (`YYYY-MM-DD`, `YYYY-MM`, or `YYYY`). Comes from the locale (labels provider): en-IN dd-mm-yyyy. */
-export type DateDisplayFormat = 'dd-mm-yyyy' | 'mm-dd-yyyy' | 'yyyy-mm-dd' | 'mm-yyyy' | 'yyyy-mm' | 'yyyy';
+export type DateDisplayFormat = 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'mm-dd-yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd' | 'mm-yyyy' | 'yyyy-mm' | 'yyyy';
 export type DatePrecision = 'day' | 'month' | 'year';
 export type TimePrecision = 'minute' | 'second';
 
@@ -26,7 +26,12 @@ function daysIn(year: number, month: number): number {
 // ---- pure L1 numeric draft & step mechanics ------------------------------------------------
 
 export function sanitizeNumberText(text: string, integer: boolean): string {
-  const cleaned = text.replace(integer ? /[^\d-]/g : /[^\d.-]/g, '');
+  const noSpaces = text.replace(/[\s\u00A0\u202F]+/g, '');
+  const normalized =
+    !integer && !noSpaces.includes('.') && noSpaces.includes(',')
+      ? noSpaces.replace(',', '.')
+      : noSpaces;
+  const cleaned = normalized.replace(integer ? /[^\d-]/g : /[^\d.-]/g, '');
   const sign = cleaned.startsWith('-') ? '-' : '';
   const body = cleaned.replace(/-/g, '');
   if (integer) return sign + body;
@@ -135,7 +140,11 @@ export function parseDateText(text: string, baseFormat: DateDisplayFormat, preci
   const parts = digits ?? trimmed.split(/[-/. ]+/);
   if (parts.length !== 3 || parts.some(part => !/^\d+$/.test(part))) return { status: 'draft' };
   const [a, b, c] = parts as [string, string, string];
-  const [d, m, y] = format === 'dd-mm-yyyy' ? [a, b, c] : format === 'mm-dd-yyyy' ? [b, a, c] : [c, b, a];
+  const [d, m, y] = format === 'dd-mm-yyyy' || format === 'dd/mm/yyyy'
+    ? [a, b, c]
+    : format === 'mm-dd-yyyy' || format === 'mm/dd/yyyy'
+      ? [b, a, c]
+      : [c, b, a];
   if (y.length !== 4 || d.length > 2 || m.length > 2) return { status: 'draft' };
   const year = Number(y), month = Number(m), day = Number(d);
   if (year < 1 || month < 1 || month > 12 || day < 1 || day > daysIn(year, month)) return { status: 'draft' };
@@ -159,7 +168,15 @@ export function formatDate(iso: string | null | undefined, baseFormat: DateDispl
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!match) return '';
   const [, y, m, d] = match;
-  return format === 'dd-mm-yyyy' ? `${d}-${m}-${y}` : format === 'mm-dd-yyyy' ? `${m}-${d}-${y}` : `${y}-${m}-${d}`;
+  return format === 'dd-mm-yyyy'
+    ? `${d}-${m}-${y}`
+    : format === 'dd/mm/yyyy'
+      ? `${d}/${m}/${y}`
+      : format === 'mm-dd-yyyy'
+        ? `${m}-${d}-${y}`
+        : format === 'mm/dd/yyyy'
+          ? `${m}/${d}/${y}`
+          : `${y}-${m}-${d}`;
 }
 
 /** Checks whether an ISO date (`YYYY-MM-DD`, `YYYY-MM`, or `YYYY`) falls outside optional ISO `min` / `max` bounds. */

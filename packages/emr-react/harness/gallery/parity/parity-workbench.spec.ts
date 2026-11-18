@@ -18,8 +18,8 @@ describe('ParityWorkbench catalog coverage', () => {
         : [],
     );
 
-  it('covers 100% of the 171 catalog selectors with no duplicates or orphans', () => {
-    expect(manifestSelectors.length).toBe(171);
+  it('covers 100% of the catalog selectors with no duplicates or orphans', () => {
+    expect(manifestSelectors.length).toBeGreaterThanOrEqual(178);
     const seen = new Set<string>();
     const duplicates: string[] = [];
     for (const entry of PARITY_ENTRIES) {
@@ -51,7 +51,7 @@ describe('ParityWorkbench catalog coverage', () => {
     expect(shellSelectors.length).toBeGreaterThanOrEqual(9);
   });
 
-  it('initializes state and builds both React and Lit element trees for all 171 descriptors', () => {
+  it('initializes state and builds both React and Lit element trees for all descriptors', () => {
     for (const entry of PARITY_ENTRIES) {
       const state = entry.createInitialState();
       try {
@@ -81,7 +81,7 @@ describe('ParityWorkbench catalog coverage', () => {
         root.render(createElement(EmrThemeProvider, { scheme: 'light', children: createElement(ParityWorkbench) }));
       });
 
-      expect(container.textContent).toContain('Catalog Navigator (171 / 171)');
+      expect(container.textContent).toContain(`Catalog Navigator (${manifestSelectors.length} / ${manifestSelectors.length})`);
       expect(container.textContent).toContain('React · @drguptavivek/emr-react');
       expect(container.textContent).toContain('Lit · @drguptavivek/emr-elements');
       expect(container.textContent).toContain('<emr-prescribing-table>');

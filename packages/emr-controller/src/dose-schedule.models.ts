@@ -46,7 +46,7 @@ export interface DoseTaperStep {
 }
 
 export interface DoseScheduleViewModel {
-  medication: { label: string; strength?: string; formLabel: string; form: DoseForm };
+  medication: { label: string; strength?: string; formLabel: string; form: DoseForm; code?: string };
   /** Unit words for numeric amounts. Omit when every amount uses `amountLabel`. */
   unit?: DoseUnit;
   frequency: DoseLabelled;
@@ -57,10 +57,13 @@ export interface DoseScheduleViewModel {
   foodRelation?: string;
   duration?: string;
   startLabel?: string;
+  maxDailyDose?: string;
   instructions?: readonly string[];
   /** As-needed dosing, e.g. { label: 'Only when needed for pain', maxLabel: 'No more than 4 times in 24 hours' }. */
   prn?: { label: string; maxLabel?: string };
   separationNote?: string;
+  clinicianNote?: string;
+  patientNote?: string;
   taper?: readonly DoseTaperStep[];
   status?: EmrBadge;
   readOnly?: boolean;

@@ -377,7 +377,7 @@ export class EmrSpectacleDeliveryComponent {
           [label]="l.centre"
           [options]="centreOptions()"
           [value]="f.selectedCentreId ?? ''"
-          (valueChange)="emitFilter({ centreId: $event || undefined })"
+          (valueChange)="emitFilter({ centreId: typeof $event === 'string' && $event ? $event : undefined })"
         />
         <div class="emr-bnd__dates">
           <emr-date-input

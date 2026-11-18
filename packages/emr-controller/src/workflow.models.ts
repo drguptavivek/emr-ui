@@ -74,6 +74,7 @@ export interface ContactAttemptSummaryView {
   /** e.g. "Last call 12-10-2026 · not reachable · 3 attempts · next 15-10-2026". */
   text: string;
   statusBadge?: EmrBadge;
+  canLog?: boolean;
 }
 
 export type ContactAttemptSummaryIntent = { type: 'logAttemptRequested' };

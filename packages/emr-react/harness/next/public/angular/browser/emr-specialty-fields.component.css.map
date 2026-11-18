@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;1187a50a34efe37006d1ce033620d6e3dc8a5dd88d9e45d30437eddb8f32708a;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/fields/emr-specialty-fields.component.ts"],
+  "sourcesContent": ["\n  :host {\n    display: block;\n    min-width: 0;\n  }\n  .spf-stack {\n    display: grid;\n    gap: 8px;\n    min-width: 0;\n  }\n  .spf-row {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: flex-end;\n    gap: 8px;\n  }\n  .spf-cell {\n    flex: 1 1 128px;\n    min-width: 0;\n    display: grid;\n    gap: 4px;\n  }\n  .spf-sub {\n    font-size: var(--emr-text-xs);\n    font-weight: var(--emr-weight-medium);\n    color: var(--emr-text-muted);\n  }\n  .spf-status {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    gap: 8px;\n    margin-top: 4px;\n  }\n  .spf-status__select {\n    width: auto;\n    max-width: 100%;\n    min-width: 0;\n  }\n"],
+  "mappings": ";AACE;AACE,WAAS;AACT,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACL,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,aAAW;AACX,eAAa;AACb,OAAK;AACP;AACA,CAAC;AACC,QAAM,EAAE,EAAE;AACV,aAAW;AACX,WAAS;AACT,OAAK;AACP;AACA,CAAC;AACC,aAAW,IAAI;AACf,eAAa,IAAI;AACjB,SAAO,IAAI;AACb;AACA,CAAC;AACC,WAAS;AACT,aAAW;AACX,eAAa;AACb,OAAK;AACL,cAAY;AACd;AACA,CAAC;AACC,SAAO;AACP,aAAW;AACX,aAAW;AACb;",
+  "names": []
+}

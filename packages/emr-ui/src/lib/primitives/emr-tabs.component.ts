@@ -4,11 +4,27 @@ import {
   ElementRef,
   ViewEncapsulation,
   booleanAttribute,
+  computed,
   input,
   output,
   viewChildren,
 } from '@angular/core';
-import type { EmrOption } from '@drguptavivek/emr-controller';
+import type {
+  EmrTabOption,
+  EmrTabsActivationMode,
+  EmrTabsIconPosition,
+  EmrTabsOrientation,
+  EmrTabsSize,
+  EmrTabsVariant,
+} from '@drguptavivek/emr-controller';
+import {
+  canActivateTab,
+  getNextTabIndex,
+  resolveActiveTabValue,
+  resolveTabStopIndex,
+} from './emr-tabs.logic';
+
+let nextTabsId = 0;
 
 @Component({
   selector: 'emr-tabs',
@@ -16,24 +32,52 @@ import type { EmrOption } from '@drguptavivek/emr-controller';
   template: `
     <div
       class="emr-tabs"
+      [class.emr-tabs--pill]="variant() === 'pill'"
+      [class.emr-tabs--soft]="variant() === 'soft'"
+      [class.emr-tabs--sm]="size() === 'sm'"
+      [class.emr-tabs--lg]="size() === 'lg'"
+      [class.emr-tabs--vertical]="orientation() === 'vertical'"
+      [class.emr-tabs--fitted]="fitted() && orientation() === 'horizontal'"
+      [class.emr-tabs--readonly]="readOnly()"
       role="tablist"
-      [attr.id]="controlId() || null"
-      [attr.aria-label]="ariaLabel()"
+      [attr.id]="resolvedId()"
+      [attr.aria-orientation]="orientation()"
+      [attr.aria-label]="ariaLabelledBy() ? null : ariaLabel()"
+      [attr.aria-labelledby]="ariaLabelledBy() || null"
+      [attr.aria-readonly]="readOnly() ? 'true' : null"
+      [attr.aria-disabled]="disabled() ? 'true' : null"
+      (focusin)="onFocusIn()"
+      (focusout)="onFocusOut($event)"
     >
-      @for (tab of tabs(); track tab.value) {
+      @for (tab of tabs(); track tab.value; let idx = $index) {
         <button
           #tabButton
           class="emr-tab"
           type="button"
           role="tab"
-          [disabled]="tab.disabled"
-          [attr.aria-selected]="active() === tab.value"
-          [attr.aria-disabled]="readOnly() && active() !== tab.value ? 'true' : null"
-          [attr.tabindex]="active() === tab.value || (!active() && $first) ? 0 : -1"
+          [id]="resolvedId() + '-tab-' + idx"
+          [disabled]="disabled() || !!tab.disabled"
+          [attr.aria-selected]="resolvedActive() === tab.value"
+          [attr.aria-controls]="tab.panelId || null"
+          [attr.aria-disabled]="disabled() || tab.disabled || (readOnly() && resolvedActive() !== tab.value) ? 'true' : null"
+          [attr.tabindex]="idx === tabStopIndex() ? 0 : -1"
           (click)="onTabClick(tab)"
-          (keydown)="onKeydown($event, tab.value)"
+          (keydown)="onKeydown($event, idx)"
         >
-          {{ tab.label }}
+          @if (iconPosition() === 'end') {
+            <span>{{ tab.label }}</span>
+          }
+          @if (tab.icon) {
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+          }
+          @if (iconPosition() !== 'end') {
+            <span>{{ tab.label }}</span>
+          }
+          @if (tab.badge !== undefined && tab.badge !== null && tab.badge !== '') {
+            <span class="emr-tab__badge">{{ tab.badge }}</span>
+          }
         </button>
       }
     </div>
@@ -43,50 +87,93 @@ import type { EmrOption } from '@drguptavivek/emr-controller';
 })
 export class EmrTabsComponent {
   readonly controlId = input<string>();
-  readonly ariaLabel = input('Sections');
-  readonly tabs = input<readonly EmrOption[]>([]);
-  readonly active = input('');
+  readonly ariaLabel = input<string>('Sections');
+  readonly ariaLabelledBy = input<string>();
+  readonly tabs = input<readonly EmrTabOption[]>([]);
+  readonly value = input<string | undefined>(undefined);
+  readonly active = input<string | undefined>(undefined);
+  readonly variant = input<EmrTabsVariant>('underline');
+  readonly size = input<EmrTabsSize>('md');
+  readonly orientation = input<EmrTabsOrientation>('horizontal');
+  readonly fitted = input(false, { transform: booleanAttribute });
+  readonly activationMode = input<EmrTabsActivationMode>('automatic');
+  readonly loop = input(true, { transform: booleanAttribute });
+  readonly iconPosition = input<EmrTabsIconPosition>('start');
   readonly readOnly = input(false, { transform: booleanAttribute });
+  readonly disabled = input(false, { transform: booleanAttribute });
 
+  readonly valueChange = output<string>();
   readonly tabChange = output<string>();
   readonly tabChanged = output<string>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+
+  private readonly fallbackId = `emr-tabs-${++nextTabsId}`;
+  protected readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  protected readonly resolvedActive = computed(() =>
+    resolveActiveTabValue(this.tabs(), this.value(), this.active()),
+  );
+  protected readonly tabStopIndex = computed(() =>
+    resolveTabStopIndex(this.tabs(), this.resolvedActive(), this.disabled()),
+  );
 
   private readonly tabButtons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
+  private hasFocus = false;
 
-  protected onTabClick(tab: EmrOption): void {
-    if (tab.disabled || this.readOnly()) return;
-    this.emitTab(tab.value);
+  protected onFocusIn(): void {
+    if (!this.hasFocus) {
+      this.hasFocus = true;
+      this.focused.emit();
+    }
   }
 
-  protected onKeydown(event: KeyboardEvent, value: string): void {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const enabledTabs = this.tabs().filter((tab) => !tab.disabled);
-    if (!enabledTabs.length) return;
-    const current = Math.max(
-      0,
-      enabledTabs.findIndex((tab) => tab.value === value),
-    );
-    const targetIndex =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? enabledTabs.length - 1
-          : event.key === 'ArrowRight'
-            ? (current + 1) % enabledTabs.length
-            : (current - 1 + enabledTabs.length) % enabledTabs.length;
-    const target = enabledTabs[targetIndex];
-    if (!target) return;
-    event.preventDefault();
-    if (!this.readOnly()) {
-      this.emitTab(target.value);
+  protected onFocusOut(event: FocusEvent): void {
+    const current = event.currentTarget as HTMLElement | null;
+    const related = event.relatedTarget as Node | null;
+    if (!current || !related || !current.contains(related)) {
+      this.hasFocus = false;
+      this.blurred.emit();
     }
-    const enabledButtons = this.tabButtons()
-      .map((ref) => ref.nativeElement)
-      .filter((btn) => !btn.disabled);
-    enabledButtons[targetIndex]?.focus();
+  }
+
+  protected onTabClick(tab: EmrTabOption): void {
+    if (!canActivateTab(tab, this.disabled(), this.readOnly())) return;
+    if (tab.value !== this.resolvedActive()) {
+      this.emitTab(tab.value);
+    }
+  }
+
+  protected onKeydown(event: KeyboardEvent, currentIndex: number): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      const tab = this.tabs()[currentIndex];
+      if (canActivateTab(tab, this.disabled(), this.readOnly()) && tab!.value !== this.resolvedActive()) {
+        event.preventDefault();
+        this.emitTab(tab!.value);
+      }
+      return;
+    }
+
+    const nextIdx = getNextTabIndex(this.tabs(), currentIndex, event.key, {
+      orientation: this.orientation(),
+      loop: this.loop(),
+    });
+    if (nextIdx === null) return;
+    event.preventDefault();
+    const buttons = this.tabButtons().map((ref) => ref.nativeElement);
+    const targetBtn = buttons[nextIdx];
+    targetBtn?.focus();
+    targetBtn?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+
+    if (this.activationMode() === 'automatic') {
+      const targetTab = this.tabs()[nextIdx];
+      if (canActivateTab(targetTab, this.disabled(), this.readOnly()) && targetTab!.value !== this.resolvedActive()) {
+        this.emitTab(targetTab!.value);
+      }
+    }
   }
 
   private emitTab(value: string): void {
+    this.valueChange.emit(value);
     this.tabChange.emit(value);
     this.tabChanged.emit(value);
   }

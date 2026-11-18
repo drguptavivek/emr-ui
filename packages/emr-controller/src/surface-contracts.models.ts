@@ -263,6 +263,14 @@ export type EmrUploadQueueIntent =
 // 5. Stat Tile & L1 Display / Interactive
 // ---------------------------------------------------------------------------
 
+export interface EmrStatTileTrend {
+  readonly label: string;
+  readonly direction?: 'up' | 'down' | 'flat';
+  readonly tone?: EmrTone;
+}
+
+export type EmrStatTileSize = 'sm' | 'md' | 'lg';
+
 /**
  * One count or KPI. Every string is controller-supplied and already formatted: the tile never
  * counts, rounds, compares or picks a tone. A tone, when wanted, arrives as a labelled badge.
@@ -273,6 +281,8 @@ export interface EmrStatTileModel {
   value: string;
   sub?: string;
   status?: EmrBadge;
+  trend?: EmrStatTileTrend;
+  tone?: EmrTone;
   /** Spoken instead of "label value sub", e.g. "12 patients seen today, opens the list". */
   accessibilityLabel?: string;
 }
@@ -280,14 +290,17 @@ export interface EmrStatTileModel {
 export type EmrStatTileIntent = { type: 'statSelected'; key: string };
 
 export interface EmrStatusCellAttribution {
-  nameLabel: string;
+  nameLabel?: string;
   roleLabel?: string;
   timeLabel?: string;
+  author?: string;
+  timestamp?: string;
 }
 
 export interface EmrStatusCellAction {
   label: string;
   icon?: string;
+  ariaLabel?: string;
 }
 
 /** Angular's `actionClicked` and `selected` outputs, folded into one callback. */
@@ -298,6 +311,7 @@ export interface EmrStage {
   readonly label: string;
   readonly status?: EmrBadge;
   readonly description?: string;
+  readonly disabled?: boolean;
 }
 
 // ---------------------------------------------------------------------------

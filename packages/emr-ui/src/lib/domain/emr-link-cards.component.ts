@@ -36,7 +36,7 @@ export type EmrLinkCardsLabels = typeof DEFAULT_LABELS;
       <emr-patient-identity-card [model]="m.patient" mode="compact" />
       <div class="lc__entry">
         <emr-identifier-entry class="lc__field" [model]="m.entry" [controlId]="id + '-entry'"
-          (intent)="onEntry($event)" (keydown.enter)="onEnter($event)" />
+          (intent)="onEntry($event)" />
         <button class="emr-button" type="button" (click)="intent.emit({ type: 'cardEntered' })">{{ l.addCard }}</button>
       </div>
       @if (m.cards.length) {
@@ -100,11 +100,6 @@ export class EmrLinkCardsComponent {
     if (e.type === 'valueChanged') this.intent.emit({ type: 'entryChanged', raw: e.raw ?? '' });
     else if (e.type === 'scanRequested') this.intent.emit({ type: 'scanRequested' });
     else if (e.type === 'typeSelected') this.intent.emit({ type: 'typeSelected', id: e.id ?? '' });
-  }
-
-  /** Enter in the text box adds the card; Enter on the Scan button or a type radio keeps its own meaning. */
-  onEnter(event: Event): void {
-    const t = event.target as HTMLInputElement;
-    if (t.tagName === 'INPUT' && t.type === 'text') this.intent.emit({ type: 'cardEntered' });
+    else if (e.type === 'submitted') this.intent.emit({ type: 'cardEntered' });
   }
 }

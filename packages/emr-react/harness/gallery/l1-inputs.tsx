@@ -86,7 +86,7 @@ function DateDemo() {
   const [yr, setYr] = useState<string | null>('2026');
   return (
     <EmrColumns count={3} gap={16}>
-      <EmrDateInput label="Full date (dd-mm-yyyy)" hint="Type or click 📅" value={d} onValueChange={setD} />
+      <EmrDateInput label="Full date (dd-mm-yyyy)" hint="Type or click the calendar button" value={d} onValueChange={setD} />
       <EmrDateInput label="ISO order (yyyy-mm-dd)" displayFormat="yyyy-mm-dd" value={y} onValueChange={setY} />
       <EmrDateInput label="Year-Month (mm-yyyy)" precision="month" hint={`ISO value: ${ym ?? 'null'}`} value={ym} onValueChange={setYm} />
       <EmrDateInput label="Year only (yyyy)" precision="year" hint={`ISO value: ${yr ?? 'null'}`} value={yr} onValueChange={setYr} />

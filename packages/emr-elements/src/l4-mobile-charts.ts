@@ -322,6 +322,7 @@ export class EmrTopBarElement extends EmrModelElement<EmrTopBarModel, EmrTopBarI
         event.stopPropagation();
         this.send(event.detail);
       }}></emr-top-bar-search>
+      <slot name="actions"></slot>
       ${this.action(m.userLabel ?? 'User menu', { type: 'menuRequested' })}
     </header>`;
   }

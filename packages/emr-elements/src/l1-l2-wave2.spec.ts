@@ -383,6 +383,37 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
     comboInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     expect(customVals).toEqual(['Every 2 hours']);
 
+    // Upgraded combobox: toggle button, match highlighting, Best match, code/badge/readOnly, ArrowDown nav & aria-activedescendant
+    const richCombo = document.createElement('emr-combobox') as EmrComboboxElement;
+    richCombo.label = 'Chief complaint';
+    richCombo.options = [
+      { value: 'Reduced distance vision', label: 'Reduced distance vision', code: 'H53.8', badge: { label: 'Common', tone: 'info' }, group: 'Vision' },
+      { value: 'Metamorphopsia', label: 'Metamorphopsia', code: 'H53.15', group: 'Vision', readOnly: true },
+    ];
+    host.appendChild(richCombo);
+    await richCombo.updateComplete;
+
+    const toggleBtn = richCombo.shadowRoot?.querySelector<HTMLButtonElement>('button[data-toggle-btn="true"]');
+    expect(toggleBtn).toBeTruthy();
+    const richInput = richCombo.shadowRoot?.querySelector<HTMLInputElement>('input[role="combobox"]')!;
+    richInput.focus();
+    richInput.value = 'Reduced';
+    richInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await richCombo.updateComplete;
+
+    expect(richCombo.shadowRoot?.querySelector('mark.emr-match-highlight')?.textContent).toBe('Reduced');
+    expect(richCombo.shadowRoot?.textContent).toContain('Best match');
+    expect(richCombo.shadowRoot?.textContent).toContain('H53.8');
+    expect(richCombo.shadowRoot?.textContent).toContain('Common');
+
+    richInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    await richCombo.updateComplete;
+    expect(richInput.getAttribute('aria-activedescendant')).toBeTruthy();
+
+    richInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await richCombo.updateComplete;
+    expect(richCombo.open).toBe(false);
+
     const tags = document.createElement('emr-tag-input') as EmrTagInputElement;
     tags.label = 'Allergies';
     tags.value = ['Penicillin'];
@@ -390,11 +421,46 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
     await tags.updateComplete;
 
     const tagChanges: (readonly string[])[] = [];
+    const tagsChanges: (readonly string[])[] = [];
     tags.addEventListener('valueChange', e => tagChanges.push((e as CustomEvent<readonly string[]>).detail));
+    tags.addEventListener('tagsChange', e => tagsChanges.push((e as CustomEvent<readonly string[]>).detail));
     const tagInput = tags.shadowRoot?.querySelector<HTMLInputElement>('input.tag-bare-input')!;
     tagInput.value = 'Sulfa, Latex';
     tagInput.dispatchEvent(new Event('input', { bubbles: true }));
     expect(tagChanges[0]).toEqual(['Penicillin', 'Sulfa', 'Latex']);
+    expect(tagsChanges[0]).toEqual(['Penicillin', 'Sulfa', 'Latex']);
+
+    const richTags = document.createElement('emr-tag-input') as EmrTagInputElement;
+    richTags.label = 'Clinical Allergies';
+    richTags.tags = ['Penicillin', 'Sulfa'];
+    richTags.lockedTags = ['Penicillin'];
+    richTags.suggestions = ['Latex', 'NSAIDs', 'Contrast Dye'];
+    richTags.clearable = true;
+    richTags.chipTone = 'danger';
+    richTags.variant = 'filled';
+    richTags.size = 'sm';
+    host.appendChild(richTags);
+    await richTags.updateComplete;
+
+    expect(richTags.shadowRoot?.querySelector('.tag-chip-lock')).not.toBeNull();
+    expect(richTags.shadowRoot?.querySelectorAll('button.tag-chip-remove').length).toBe(1);
+
+    const richTagInput = richTags.shadowRoot?.querySelector<HTMLInputElement>('input.tag-bare-input')!;
+    richTagInput.dispatchEvent(new Event('focus'));
+    richTagInput.value = 'la';
+    richTagInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await richTags.updateComplete;
+
+    const listbox = richTags.shadowRoot?.querySelector('[role="listbox"]');
+    expect(listbox).not.toBeNull();
+    expect(richTags.getAttribute('data-open')).toBe('true');
+    expect(listbox?.textContent).toContain('Best match');
+    expect(listbox?.querySelector('mark.emr-match-highlight')?.textContent).toBe('La');
+
+    const clearedRich: (readonly string[])[] = [];
+    richTags.addEventListener('tagsChange', e => clearedRich.push((e as CustomEvent<readonly string[]>).detail));
+    richTags.shadowRoot?.querySelector<HTMLButtonElement>('[data-clear-btn="true"]')?.click();
+    expect(clearedRich[0]).toEqual(['Penicillin']);
   });
 
   it('10, 11, 12 & 13. EmrSliderElement, EmrRangeSliderElement, EmrMaskedInputElement, and EmrOtpInputElement', async () => {

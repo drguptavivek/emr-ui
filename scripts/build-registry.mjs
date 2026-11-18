@@ -25,7 +25,7 @@ export function slugForEntry(entry) {
 }
 
 export function reactNameForEntry(entry) {
-  if (entry.id === 'EmrClinicalCellRendererDirective') return 'EmrCustomRenderers';
+  if (entry.id === 'EmrClinicalCellRendererDirective') return 'EmrMatrixCellRenderers';
   return entry.id.replace(/(?:Component|Directive)$/, '');
 }
 
@@ -34,19 +34,33 @@ export function litNameForEntry(entry) {
   return `${entry.id.replace(/(?:Component|Directive)$/, '')}Element`;
 }
 
-function litFilesForLayer(layer) {
-  if (layer === 1) return ['l1-primitives.ts'];
-  if (layer === 2) return ['l2-fields.ts'];
-  if (layer === 3) return ['l3-structures.ts'];
-  if (layer === 4) return ['l4-domain.ts'];
-  if (layer === 6) return ['l6-authoring.ts'];
-  return ['foundations.ts'];
+function collectLitFileMap() {
+  const fileMap = new Map();
+  const registerMap = new Map();
+  const files = readdirSync(litSrcDir)
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.spec.ts') && f !== 'index.ts')
+    .sort();
+  for (const file of files) {
+    const full = join(litSrcDir, file);
+    const text = readFileSync(full, 'utf8');
+    const regMatch = text.match(/export\s+function\s+(register[A-Za-z0-9_]+)\s*\(/);
+    if (regMatch) {
+      registerMap.set(file, regMatch[1]);
+    }
+    for (const m of text.matchAll(/export\s+(?:abstract\s+)?(?:function|const|class|type|interface)\s+([A-Za-z0-9_]+)/g)) {
+      const name = m[1];
+      const list = fileMap.get(name) ?? [];
+      if (!list.includes(file)) list.push(file);
+      fileMap.set(name, list);
+    }
+  }
+  return { fileMap, registerMap };
 }
 
 function collectReactFileMap() {
   const map = new Map();
   const files = readdirSync(reactSrcDir).filter(
-    (f) => (f.endsWith('.tsx') || f.endsWith('.ts')) && !f.endsWith('.spec.ts') && !f.endsWith('.spec.tsx')
+    (f) => (f.endsWith('.tsx') || f.endsWith('.ts')) && !f.endsWith('.spec.ts') && !f.endsWith('.spec.tsx') && f !== 'index.ts'
   );
   for (const file of files) {
     const full = join(reactSrcDir, file);
@@ -114,8 +128,9 @@ function relatedFiles(sourceDir, primaryFiles, react = false, cache = new Map())
   return [...all].sort();
 }
 
-export async function generateRegistry({ writeFiles = true } = {}) {
+export async function generateRegistry({ writeFiles = true, catalog } = {}) {
   const { EMR_CATALOG, EMR_CATALOG_CATEGORIES, EMR_LAYERS } = await import(join(rootDir, 'packages/emr-ui/catalog.manifest.ts'));
+  const catalogEntries = catalog ?? EMR_CATALOG;
   const fileCache = new Map();
   const readText = (full) => {
     let entry = fileCache.get(full);
@@ -127,7 +142,8 @@ export async function generateRegistry({ writeFiles = true } = {}) {
     return entry.text;
   };
   const reactFileMap = collectReactFileMap();
-  const byId = new Map(EMR_CATALOG.map((e) => [e.id, e]));
+  const { fileMap: litFileMap, registerMap: litRegisterMap } = collectLitFileMap();
+  const byId = new Map(catalogEntries.map((e) => [e.id, e]));
   const foundationReactFiles = relatedFiles(reactSrcDir, ['tokens.ts', 'theme.tsx', 'labels.tsx', 'use-controller.ts'], true, fileCache);
   const foundationLitFiles = relatedFiles(litSrcDir, ['foundations.ts', 'icons.ts'], false, fileCache);
   const litSourceFiles = readdirSync(litSrcDir).filter((f) => f.endsWith('.ts') && !f.endsWith('.spec.ts'));
@@ -166,22 +182,26 @@ export async function generateRegistry({ writeFiles = true } = {}) {
     categories: ['shared'],
     status: 'stable',
     description: 'L0 design tokens, light/dark themes, print context stylesheet, and React Native token/theme provider.',
-    dependencies: ['@drguptavivek/emr-controller'],
+    dependencies: ['@drguptavivek/emr-controller', 'react-native-web'],
     registryDependencies: [],
     angular: {
       files: ['foundations/emr.css', 'foundations/emr-print.css'],
+      dependencies: ['@drguptavivek/emr-controller'],
       import: "@import '@drguptavivek/emr-ui/styles/emr.css';",
     },
     react: {
       files: foundationReactFiles,
+      dependencies: ['@drguptavivek/emr-controller', 'react-native-web'],
       import: "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';",
     },
     expo: {
       files: foundationReactFiles.filter((f) => !f.endsWith('.web.tsx')),
+      dependencies: ['@drguptavivek/emr-controller', 'react-native'],
       import: "import { EmrThemeProvider, useEmrTheme, emrLightTokens, emrDarkTokens } from '@drguptavivek/emr-react';",
     },
     lit: {
-      files: foundationLitFiles,
+      files: ['foundations/emr.css', 'foundations/emr-print.css', ...foundationLitFiles],
+      dependencies: ['@drguptavivek/emr-controller', 'lit'],
       import: "import { EmrLitElement, applyEmrCustomTheme, EMR_PALETTE_PRESETS, EMR_FONT_STACKS } from '@drguptavivek/emr-elements';",
     },
     files: [
@@ -194,6 +214,18 @@ export async function generateRegistry({ writeFiles = true } = {}) {
       {
         path: 'packages/emr-ui/src/lib/foundations/emr-print.css',
         framework: 'angular',
+        target: 'styles/emr-print.css',
+        content: readText(join(uiLibDir, 'foundations/emr-print.css')),
+      },
+      {
+        path: 'packages/emr-ui/src/lib/foundations/emr.css',
+        framework: 'lit',
+        target: 'styles/emr.css',
+        content: readText(join(uiLibDir, 'foundations/emr.css')),
+      },
+      {
+        path: 'packages/emr-ui/src/lib/foundations/emr-print.css',
+        framework: 'lit',
         target: 'styles/emr-print.css',
         content: readText(join(uiLibDir, 'foundations/emr-print.css')),
       },
@@ -214,14 +246,23 @@ export async function generateRegistry({ writeFiles = true } = {}) {
 
   const items = [foundationsItem];
 
-  for (const entry of EMR_CATALOG) {
+  for (const entry of catalogEntries) {
     const slug = slugForEntry(entry);
     const reactName = reactNameForEntry(entry);
     const litName = litNameForEntry(entry);
-    const primaryReact = reactFileMap.get(reactName) ?? reactFileMap.get('EmrBadgeView') ?? [];
+    const primaryReact = reactFileMap.get(reactName);
+    if (!primaryReact || primaryReact.length === 0) {
+      throw new Error(`Missing React registry source for ${entry.id} (${reactName})`);
+    }
+    const primaryLit = litFileMap.get(litName);
+    if (!primaryLit || primaryLit.length === 0) {
+      throw new Error(`Missing Lit registry source for ${entry.id} (${litName})`);
+    }
     const rFiles = relatedFiles(reactSrcDir, primaryReact, true, fileCache);
     const ngFiles = relatedFiles(uiLibDir, [entry.file], false, fileCache);
-    const lFiles = relatedFiles(litSrcDir, litFilesForLayer(entry.layer), false, fileCache);
+    const lFiles = relatedFiles(litSrcDir, primaryLit, false, fileCache);
+    const primaryLitFile = primaryLit[0];
+    const litRegisterFn = litRegisterMap.get(primaryLitFile) ?? `registerL${entry.layer}Elements`;
     const directDeps = ['foundations', ...entry.dependsOn.map((id) => slugForEntry(byId.get(id))).filter(Boolean)];
     const transitiveDeps = resolveTransitiveSlugs(entry);
 
@@ -261,7 +302,7 @@ export async function generateRegistry({ writeFiles = true } = {}) {
       status: entry.status,
       description: entry.summary,
       stories: entry.stories,
-      dependencies: ['@drguptavivek/emr-controller'],
+      dependencies: ['@drguptavivek/emr-controller', 'react-native-web'],
       registryDependencies: directDeps,
       transitiveRegistryDependencies: transitiveDeps,
       installCommand: {
@@ -275,24 +316,28 @@ export async function generateRegistry({ writeFiles = true } = {}) {
         component: entry.id,
         selector: entry.selector,
         files: ngFiles,
+        dependencies: ['@drguptavivek/emr-controller'],
         import: `import { ${entry.id} } from '@drguptavivek/emr-ui';`,
       },
       react: {
         component: reactName,
         files: rFiles,
+        dependencies: ['@drguptavivek/emr-controller', 'react-native-web'],
         import: `import { ${reactName} } from '@drguptavivek/emr-react';`,
       },
       expo: {
         component: reactName,
         files: rFiles.filter((f) => !f.endsWith('.web.tsx')),
+        dependencies: ['@drguptavivek/emr-controller', 'react-native'],
         import: `import { ${reactName} } from '@drguptavivek/emr-react';`,
       },
       lit: {
         component: litName,
         selector: slug,
         files: lFiles,
+        dependencies: ['@drguptavivek/emr-controller', 'lit'],
         import: `import { ${litName} } from '@drguptavivek/emr-elements';`,
-        vendorInit: `import { registerL${entry.layer}Elements } from './components/emr/${litFilesForLayer(entry.layer)[0].replace(/\.ts$/, '.js')}';\nregisterL${entry.layer}Elements();`,
+        vendorInit: `import { ${litRegisterFn} } from './components/emr/${primaryLitFile.replace(/\.ts$/, '.js')}';\n${litRegisterFn}();`,
         rendererStatus: litShells.has(litName) ? 'shell' : 'renderer',
       },
       files: itemFiles,

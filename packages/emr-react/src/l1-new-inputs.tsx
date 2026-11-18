@@ -1,6 +1,6 @@
 'use client';
 
-import { createElement, useId, useRef, useState, type ReactNode } from 'react';
+import { createElement, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -8,30 +8,82 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
   type PressableStateCallbackType,
   type TextInputContentSizeChangeEvent,
 } from 'react-native';
-import type { EmrFileSelectionItem, EmrOption, EmrSegmentedOption } from '@drguptavivek/emr-controller';
+import type {
+  EmrCheckboxGroupLabelPlacement,
+  EmrCheckboxGroupOrientation,
+  EmrCheckboxGroupSize,
+  EmrCheckboxGroupVariant,
+  EmrFileSelectionItem,
+  EmrOption,
+  EmrSegmentedOption,
+  EmrSegmentedOrientation,
+  EmrSegmentedShape,
+  EmrSegmentedSize,
+  EmrSegmentedVariant,
+  EmrTone,
+} from '@drguptavivek/emr-controller';
 import { NumberInput, ThemedInput } from './inputs-core';
 import { isEmrIconName, SvgIcon, type IconName } from './icons';
 import { FieldChrome } from './l1-field-chrome';
 import { computePrecisionStep } from './l1-inputs.logic';
-import { rovingTarget } from './l1-interactive.logic';
 import { webProps, type WebKeyEvent } from './l1-interactive-shared';
 import {
+  canClearEmrSegmentedControl,
+  clearCheckboxGroupValue,
   computeSelectAllState,
+  formatCheckboxSelectionCount,
+  formatEmrSegmentedBadge,
+  groupOptions,
+  isCheckboxOptionBlockedByMax,
+  isCheckboxOptionLocked,
+  isEmrSegmentedOptionDisabled,
+  moveEmrSegmentedFocusIndex,
+  normalizeCheckboxGroupVariant,
+  normalizeEmrSegmentedOrientation,
+  normalizeEmrSegmentedShape,
+  normalizeEmrSegmentedSize,
+  normalizeEmrSegmentedVariant,
+  resolveEmrSegmentedSelectAction,
+  resolveEmrSegmentedTabStopValue,
+  resolveEmrSegmentedValidationState,
   toggleCheckboxGroupValue,
   toggleSelectAllValues,
 } from './l1-wave2.logic';
 import { useEmrLabels } from './labels';
 import { EmrOptionChip, EmrRow, EmrSelect, resolveButtonPalette, type EmrButtonSize, type EmrButtonVariant } from './primitives';
-import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';
+import { focusRing, fontFamily, fontWeight, useEmrTheme, type EmrTheme } from './theme';
 
 export type { EmrFileSelectionItem, EmrSegmentedOption };
 
-type PressState = PressableStateCallbackType & { focused?: boolean };
+type PressState = PressableStateCallbackType & { focused?: boolean; hovered?: boolean };
 type FocusRef = ({ focus(): void } | null)[];
+
+function withAlpha(color: string, alpha: number): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(color.trim());
+  if (!m) return color;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+function resolveToneColor(t: EmrTheme, tone?: EmrTone): string | undefined {
+  switch (tone) {
+    case 'info':
+      return t.info;
+    case 'success':
+      return t.success;
+    case 'warning':
+      return t.warning;
+    case 'danger':
+      return t.danger;
+    default:
+      return undefined;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // 1. EmrTextarea
@@ -237,13 +289,28 @@ export function EmrSegmentedControl({
   ariaLabel,
   options,
   value,
+  size = 'md',
+  variant = 'default',
+  shape = 'default',
+  orientation = 'horizontal',
+  fullWidth,
   clearable,
+  clearLabel,
+  allowDeselect,
+  name,
+  required,
+  invalid,
+  warning,
   readOnly,
   disabled,
   hint,
   error,
   onValueChange,
   onCleared,
+  onFocus,
+  onFocused,
+  onBlur,
+  onBlurred,
 }: {
   controlId?: string;
   label?: string;
@@ -251,64 +318,243 @@ export function EmrSegmentedControl({
   ariaLabel?: string;
   options: readonly EmrSegmentedOption[];
   value: string | null;
+  size?: EmrSegmentedSize;
+  variant?: EmrSegmentedVariant;
+  shape?: EmrSegmentedShape;
+  orientation?: EmrSegmentedOrientation;
+  fullWidth?: boolean;
   clearable?: boolean;
+  clearLabel?: string;
+  allowDeselect?: boolean;
+  name?: string;
+  required?: boolean;
+  invalid?: boolean;
+  warning?: string;
   readOnly?: boolean;
   disabled?: boolean;
   hint?: string;
   error?: string;
   onValueChange: (v: string | null) => void;
   onCleared?: () => void;
+  onFocus?: () => void;
+  onFocused?: () => void;
+  onBlur?: () => void;
+  onBlurred?: () => void;
 }) {
   const t = useEmrTheme();
   const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
   const refs = useRef<FocusRef>([]);
-  const interactive = !disabled && !readOnly;
-  const canClear = Boolean(clearable && value !== null && value !== undefined && value !== '' && interactive);
+  const groupRef = useRef<unknown>(null);
+  const focusActiveRef = useRef(false);
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [activeFocusValue, setActiveFocusValue] = useState<string | null>(null);
 
-  const onKey = (e: WebKeyEvent, index: number) => {
-    if (!interactive) return;
-    const target = rovingTarget(
-      e.key,
-      index,
-      options.map(o => !o.disabled),
-    );
-    if (target === null) return;
-    e.preventDefault();
-    const chosen = options[target];
-    if (chosen) {
-      onValueChange(chosen.value);
-      refs.current[target]?.focus();
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const onDocKeyDown = (ev: KeyboardEvent) => {
+      if (ev.key !== ' ' && ev.key !== 'Spacebar') return;
+      const active = document.activeElement as HTMLElement | null;
+      if (focusActiveRef.current || active?.getAttribute?.('role') === 'radio') {
+        ev.preventDefault();
+      }
+    };
+    document.addEventListener('keydown', onDocKeyDown, true);
+    return () => document.removeEventListener('keydown', onDocKeyDown, true);
+  }, []);
+
+  const resolvedSize = normalizeEmrSegmentedSize(size);
+  const resolvedVariant = normalizeEmrSegmentedVariant(variant);
+  const resolvedShape = normalizeEmrSegmentedShape(shape);
+  const resolvedOrientation = normalizeEmrSegmentedOrientation(orientation);
+  const validation = resolveEmrSegmentedValidationState({ error, warning, invalid });
+  const showClear = canClearEmrSegmentedControl({ clearable, value, disabled, readOnly });
+  const resolvedClearLabel = clearLabel ?? labels.clear;
+  const tabStopValue = resolveEmrSegmentedTabStopValue(options, activeFocusValue ?? value, disabled);
+  const hasMessage = Boolean(hint || warning || error);
+
+  const handleChildFocus = () => {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current);
+      blurTimerRef.current = null;
+    }
+    if (!focusActiveRef.current) {
+      focusActiveRef.current = true;
+      onFocus?.();
+      onFocused?.();
     }
   };
 
-  const firstEnabledIdx = options.findIndex(o => !o.disabled);
-  const selectedIdx = options.findIndex(o => o.value === value && !o.disabled);
-  const activeStopIdx = selectedIdx >= 0 ? selectedIdx : firstEnabledIdx;
+  const handleChildBlur = () => {
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+    blurTimerRef.current = setTimeout(() => {
+      focusActiveRef.current = false;
+      onBlur?.();
+      onBlurred?.();
+    }, 0);
+  };
+
+  const handleSelect = (opt: EmrSegmentedOption) => {
+    setActiveFocusValue(opt.value);
+    const action = resolveEmrSegmentedSelectAction({
+      option: opt,
+      currentValue: value,
+      allowDeselect,
+      groupDisabled: disabled,
+      groupReadOnly: readOnly,
+    });
+    if (action.kind === 'select') {
+      onValueChange(action.value);
+    } else if (action.kind === 'clear') {
+      onValueChange(null);
+      onCleared?.();
+    }
+  };
+
+  const handleKeyDown = (
+    e: {
+      key?: string;
+      preventDefault?: () => void;
+      nativeEvent?: { preventDefault?: () => void };
+      stopPropagation?: () => void;
+    },
+    index: number,
+    opt: EmrSegmentedOption,
+  ) => {
+    const key = e.key ?? '';
+    if (key === ' ' || key === 'Spacebar' || key === 'Enter') {
+      e.preventDefault?.();
+      e.nativeEvent?.preventDefault?.();
+      e.stopPropagation?.();
+      handleSelect(opt);
+      return;
+    }
+    if (
+      key !== 'ArrowLeft' &&
+      key !== 'ArrowRight' &&
+      key !== 'ArrowUp' &&
+      key !== 'ArrowDown' &&
+      key !== 'Home' &&
+      key !== 'End'
+    ) {
+      return;
+    }
+    const target = moveEmrSegmentedFocusIndex(options, index, key, disabled);
+    if (target < 0) return;
+    const chosen = options[target];
+    if (!chosen) return;
+    e.preventDefault?.();
+    e.nativeEvent?.preventDefault?.();
+    e.stopPropagation?.();
+    setActiveFocusValue(chosen.value);
+    if (!readOnly && !disabled && !chosen.readOnly) {
+      onValueChange(chosen.value);
+    }
+    refs.current[target]?.focus();
+  };
+
+  const trackBg =
+    resolvedVariant === 'outline'
+      ? 'transparent'
+      : resolvedVariant === 'soft'
+        ? withAlpha(t.primary, 0.08)
+        : t.surfaceRaised;
+
+  const trackBorder = validation.isInvalid
+    ? t.danger
+    : validation.hasWarning
+      ? t.warning
+      : resolvedVariant === 'soft'
+        ? 'transparent'
+        : t.border;
+
+  const clearButton = showClear ? (
+    <Pressable
+      role="button"
+      aria-label={`${resolvedClearLabel} ${ariaLabel ?? label ?? 'selection'}`}
+      onPress={() => {
+        if (disabled || readOnly) return;
+        onValueChange(null);
+        onCleared?.();
+      }}
+      onFocus={handleChildFocus}
+      onBlur={handleChildBlur}
+      style={({ hovered, pressed, focused }: PressState) => [
+        focusRing(t, focused),
+        {
+          minHeight: 44,
+          minWidth: 44,
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 7,
+          borderWidth: 1,
+          borderColor: t.border,
+          backgroundColor: pressed ? t.surfaceRaised : hovered ? t.surfaceSoft : 'transparent',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+        },
+      ]}
+    >
+      <SvgIcon name="close" size={14} color={t.textMuted} />
+      <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+        {resolvedClearLabel}
+      </Text>
+    </Pressable>
+  ) : null;
 
   const control = (
-    <View style={styles.segmentedRow}>
+    <View style={{ gap: 6, maxWidth: '100%', alignSelf: fullWidth || resolvedOrientation === 'vertical' ? 'stretch' : 'flex-start' }}>
+      {clearButton ? (
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          {clearButton}
+        </View>
+      ) : null}
       <View
-        id={id}
+        ref={groupRef as never}
+        nativeID={id}
         role="radiogroup"
-        aria-labelledby={label && !labelHidden ? `${id}-label` : undefined}
-        aria-label={ariaLabel ?? label ?? 'Segmented options'}
-        aria-readonly={readOnly}
-        aria-disabled={disabled}
+        aria-labelledby={!ariaLabel && label && !labelHidden ? `${id}-label` : undefined}
+        aria-label={ariaLabel ?? (labelHidden ? (label || 'Segmented options') : (!label ? 'Segmented options' : undefined))}
+        aria-required={required || undefined}
+        aria-readonly={readOnly || undefined}
+        aria-disabled={disabled || undefined}
+        aria-orientation={resolvedOrientation}
+        aria-invalid={validation.isInvalid ? true : undefined}
+        aria-describedby={hasMessage ? `${id}-message` : undefined}
+        {...(Platform.OS === 'web'
+          ? webProps({
+              ...(name ? { 'data-name': name } : {}),
+              onKeyDownCapture: (e: { key?: string; preventDefault?: () => void }) => {
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                  e.preventDefault?.();
+                }
+              },
+            })
+          : {})}
         style={[
           styles.segmentedGroup,
-          styles.segmentedGrow,
+          resolvedOrientation === 'vertical' && styles.segmentedGroupVertical,
+          resolvedShape === 'pill' && { borderRadius: 9999 },
           {
-            borderColor: error ? t.danger : t.border,
-            backgroundColor: t.surfaceRaised,
-            opacity: disabled ? 0.6 : 1,
+            borderColor: trackBorder,
+            borderStyle: readOnly ? 'dashed' : 'solid',
+            backgroundColor: trackBg,
+            opacity: disabled ? 0.56 : 1,
           },
         ]}
       >
         {options.map((opt, idx) => {
           const selected = opt.value === value;
-          const optDisabled = Boolean(disabled || opt.disabled);
+          const optDisabled = isEmrSegmentedOptionDisabled(opt, disabled);
+          const optReadOnly = Boolean(readOnly || opt.readOnly);
+          const toneColor = resolveToneColor(t, opt.tone);
+          const badge = formatEmrSegmentedBadge(opt.badge, opt.tone);
+          const badgeColor = badge ? (resolveToneColor(t, badge.tone) ?? t.textMuted) : t.textMuted;
+          const activeColor = toneColor ?? t.primary;
+          const isTabStop = tabStopValue === opt.value;
+
           return (
             <Pressable
               key={opt.value}
@@ -316,53 +562,105 @@ export function EmrSegmentedControl({
                 refs.current[idx] = el;
               }}
               role="radio"
+              aria-label={opt.ariaLabel}
               aria-checked={selected}
               aria-disabled={optDisabled || undefined}
-              aria-readonly={readOnly}
+              aria-readonly={optReadOnly || undefined}
               disabled={optDisabled}
-              onPress={interactive && !optDisabled ? () => { if (!selected) onValueChange(opt.value); } : undefined}
-              {...webProps({
-                tabIndex: idx === activeStopIdx ? 0 : -1,
-                onKeyDown: (e: WebKeyEvent) => onKey(e, idx),
-              })}
-              style={({ pressed, focused }: PressState) => [
+              onFocus={handleChildFocus}
+              onBlur={handleChildBlur}
+              onPress={Platform.OS !== 'web' && !optDisabled && !optReadOnly ? () => handleSelect(opt) : undefined}
+              {...(Platform.OS === 'web'
+                ? ({
+                    tabIndex: isTabStop ? 0 : -1,
+                    onClick: !optDisabled && !optReadOnly ? () => handleSelect(opt) : undefined,
+                    onKeyDown: (e: {
+                      key?: string;
+                      preventDefault?: () => void;
+                      nativeEvent?: { preventDefault?: () => void };
+                      stopPropagation?: () => void;
+                    }) => handleKeyDown(e, idx, opt),
+                  } as object)
+                : {})}
+              style={({ hovered, pressed, focused }: PressState) => [
                 styles.segmentBtn,
+                fullWidth && resolvedOrientation !== 'vertical' && styles.segmentBtnFullWidth,
+                resolvedOrientation === 'vertical' && styles.segmentBtnVertical,
+                resolvedShape === 'pill' && { borderRadius: 9999 },
+                resolvedSize === 'sm' && { paddingHorizontal: 10, paddingVertical: 4, gap: 4 },
+                opt.description ? { paddingVertical: 8 } : null,
                 focusRing(t, focused),
                 {
-                  minHeight: Math.max(44, t.controlHeight),
+                  minHeight: 44,
                   minWidth: 44,
                   backgroundColor: selected
                     ? t.surface
-                    : pressed && interactive && !optDisabled
+                    : !optDisabled && !optReadOnly && pressed
                       ? t.surfaceSoft
-                      : 'transparent',
-                  borderColor: selected ? t.primary : 'transparent',
-                  opacity: opt.disabled && !disabled ? 0.5 : 1,
+                      : !optDisabled && !optReadOnly && hovered
+                        ? withAlpha(t.surface, 0.72)
+                        : 'transparent',
+                  borderColor: selected ? activeColor : 'transparent',
+                  borderStyle: optReadOnly ? 'dashed' : 'solid',
+                  opacity: opt.disabled && !disabled ? 0.52 : 1,
                 },
               ]}
             >
-              <Text
-                numberOfLines={1}
-                style={{
-                  color: selected ? t.primary : t.text,
-                  fontSize: t.textSm,
-                  fontWeight: fontWeight(selected ? t.weightBold : t.weightMedium),
-                  fontFamily: fontFamily(t),
-                }}
-              >
-                {opt.label}
-              </Text>
-              {opt.badge ? (
-                <View style={[styles.segmentBadge, { backgroundColor: selected ? t.primarySoft : t.neutralSoft }]}>
+              {opt.icon && isEmrIconName(opt.icon) ? (
+                <SvgIcon
+                  name={opt.icon as IconName}
+                  size={resolvedSize === 'sm' ? 13 : 15}
+                  color={selected ? activeColor : t.textMuted}
+                />
+              ) : null}
+              <View style={opt.description ? { alignItems: 'flex-start', gap: 1 } : undefined}>
+                <Text
+                  style={{
+                    color: selected ? activeColor : t.text,
+                    fontSize: resolvedSize === 'sm' ? t.textXs : t.textSm,
+                    fontWeight: fontWeight(selected ? t.weightBold : t.weightMedium),
+                    fontFamily: fontFamily(t),
+                  }}
+                >
+                  {opt.label}
+                </Text>
+                {opt.description ? (
                   <Text
                     style={{
-                      color: selected ? t.primary : t.textMuted,
+                      color: t.textMuted,
+                      fontSize: t.textXs,
+                      fontFamily: fontFamily(t),
+                    }}
+                  >
+                    {opt.description}
+                  </Text>
+                ) : null}
+              </View>
+              {badge ? (
+                <View
+                  style={[
+                    styles.segmentBadge,
+                    {
+                      backgroundColor:
+                        badge.variant === 'solid'
+                          ? badgeColor
+                          : badge.variant === 'outline'
+                            ? 'transparent'
+                            : withAlpha(badgeColor, 0.14),
+                      borderWidth: badge.variant === 'outline' ? 1 : 0,
+                      borderColor: badge.variant === 'outline' ? badgeColor : 'transparent',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: badge.variant === 'solid' ? t.primaryContrast : badgeColor,
                       fontSize: t.text2xs,
                       fontWeight: fontWeight(t.weightBold),
                       fontFamily: fontFamily(t),
                     }}
                   >
-                    {opt.badge}
+                    {badge.text}
                   </Text>
                 </View>
               ) : null}
@@ -370,36 +668,20 @@ export function EmrSegmentedControl({
           );
         })}
       </View>
-      {canClear ? (
-        <Pressable
-          role="button"
-          aria-label={`${labels.clear} ${ariaLabel ?? label ?? 'selection'}`}
-          onPress={() => {
-            onValueChange(null);
-            onCleared?.();
-          }}
-          style={({ pressed, focused }: PressState) => [
-            styles.pageBtn,
-            focusRing(t, focused),
-            {
-              minWidth: 44,
-              minHeight: Math.max(44, t.controlHeight),
-              borderColor: t.border,
-              backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft,
-            },
-          ]}
-        >
-          <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
-            {labels.clear}
-          </Text>
-        </Pressable>
-      ) : null}
     </View>
   );
 
-  if (!label && !hint && !error) return control;
+  if (!label && !hasMessage) return control;
   return (
-    <FieldChrome controlId={id} label={label} labelHidden={!label || labelHidden} hint={hint} error={error}>
+    <FieldChrome
+      controlId={id}
+      label={label}
+      labelHidden={!label || labelHidden}
+      required={required}
+      hint={labelHidden ? undefined : hint}
+      warning={labelHidden ? undefined : warning}
+      error={labelHidden ? undefined : error}
+    >
       {control}
     </FieldChrome>
   );
@@ -551,20 +833,23 @@ export function EmrToggleGroup({
               >
                 {opt.label}
               </Text>
-              {opt.badge ? (
-                <View style={[styles.segmentBadge, { backgroundColor: active ? t.surface : t.neutralSoft }]}>
-                  <Text
-                    style={{
-                      color: active ? t.primary : t.textMuted,
-                      fontSize: t.text2xs,
-                      fontWeight: fontWeight(t.weightBold),
-                      fontFamily: fontFamily(t),
-                    }}
-                  >
-                    {opt.badge}
-                  </Text>
-                </View>
-              ) : null}
+              {(() => {
+                const toggleBadge = formatEmrSegmentedBadge(opt.badge, opt.tone);
+                return toggleBadge ? (
+                  <View style={[styles.segmentBadge, { backgroundColor: active ? t.surface : t.neutralSoft }]}>
+                    <Text
+                      style={{
+                        color: active ? t.primary : t.textMuted,
+                        fontSize: t.text2xs,
+                        fontWeight: fontWeight(t.weightBold),
+                        fontFamily: fontFamily(t),
+                      }}
+                    >
+                      {toggleBadge.text}
+                    </Text>
+                  </View>
+                ) : null;
+              })()}
             </Pressable>
           );
         })}
@@ -950,56 +1235,130 @@ export function EmrNumericStepper({
 export function EmrCheckboxGroup({
   controlId,
   label,
+  ariaLabel,
   labelHidden,
   options,
   value,
-  orientation = 'horizontal',
+  orientation = 'vertical',
   columns,
-  variant = 'standard',
+  variant = 'tile',
+  size = 'md',
+  labelPlacement = 'end',
   showSelectAll,
   selectAllLabel = 'Select all',
   exclusiveValues = [],
+  minSelections: _minSelections,
+  maxSelections,
+  showSelectionCount,
+  clearable,
+  clearLabel = 'Clear',
   required,
   readOnly,
   disabled,
+  invalid,
   hint,
+  warning,
   error,
   onValueChange,
+  onCleared,
+  onFocused,
+  onBlurred,
 }: {
   controlId?: string;
   label?: string;
+  ariaLabel?: string;
   labelHidden?: boolean;
   options: readonly EmrOption[];
   value: readonly string[];
-  orientation?: 'vertical' | 'horizontal' | 'grid';
+  orientation?: EmrCheckboxGroupOrientation;
   columns?: number;
-  variant?: 'standard' | 'card' | 'chip';
+  variant?: EmrCheckboxGroupVariant | 'standard';
+  size?: EmrCheckboxGroupSize;
+  labelPlacement?: EmrCheckboxGroupLabelPlacement;
   showSelectAll?: boolean;
   selectAllLabel?: string;
   exclusiveValues?: readonly string[];
+  minSelections?: number;
+  maxSelections?: number;
+  showSelectionCount?: boolean;
+  clearable?: boolean;
+  clearLabel?: string;
   required?: boolean;
   readOnly?: boolean;
   disabled?: boolean;
+  invalid?: boolean;
   hint?: string;
+  warning?: string;
   error?: string;
   onValueChange: (v: readonly string[]) => void;
+  onCleared?: () => void;
+  onFocused?: () => void;
+  onBlurred?: () => void;
 }) {
   const t = useEmrTheme();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const hasMessage = Boolean(hint || error);
+  const { width: windowWidth } = useWindowDimensions();
+  const normalizedVariant = normalizeCheckboxGroupVariant(variant);
+  const isInvalid = Boolean(invalid || error);
+  const hasMessage = Boolean(!labelHidden && (hint || warning || error));
   const selectedSet = new Set(value);
   const selectAllState = computeSelectAllState(value, options, exclusiveValues);
-  const resolvedColumns = orientation === 'grid' ? (columns ?? 2) : columns;
+  const isNarrow = windowWidth > 0 && windowWidth <= 480;
+  const resolvedColumns =
+    orientation === 'grid' ? (isNarrow ? 1 : Math.max(1, columns ?? 2)) : columns;
+  const optionGroups = groupOptions(options);
+  const hasClearableSelection = options.some(
+    o => selectedSet.has(o.value) && !isCheckboxOptionLocked(o)
+  );
+  const showClear = Boolean(clearable && !readOnly && !disabled && hasClearableSelection);
+  const focusActiveRef = useRef(false);
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChildFocus = () => {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current);
+      blurTimerRef.current = null;
+    }
+    if (!focusActiveRef.current) {
+      focusActiveRef.current = true;
+      onFocused?.();
+    }
+  };
+
+  const handleChildBlur = () => {
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+    blurTimerRef.current = setTimeout(() => {
+      focusActiveRef.current = false;
+      onBlurred?.();
+    }, 0);
+  };
 
   const toggle = (itemValue: string) => {
-    if (readOnly || disabled) return;
-    onValueChange(toggleCheckboxGroupValue(value, itemValue, options, exclusiveValues));
+    const opt = options.find(o => o.value === itemValue);
+    if (readOnly || disabled || (opt && isCheckboxOptionLocked(opt))) return;
+    onValueChange(
+      toggleCheckboxGroupValue(value, itemValue, options, {
+        exclusiveValues,
+        maxSelections,
+      })
+    );
   };
 
   const handleSelectAll = () => {
     if (readOnly || disabled) return;
-    onValueChange(toggleSelectAllValues(value, options, exclusiveValues));
+    onValueChange(
+      toggleSelectAllValues(value, options, {
+        exclusiveValues,
+        maxSelections,
+      })
+    );
+  };
+
+  const handleClear = () => {
+    if (readOnly || disabled) return;
+    onValueChange(clearCheckboxGroupValue(value, options));
+    onCleared?.();
   };
 
   return (
@@ -1008,21 +1367,62 @@ export function EmrCheckboxGroup({
       label={label}
       labelHidden={!label || labelHidden}
       required={required}
-      hint={hint}
-      error={error}
+      hint={labelHidden ? undefined : hint}
+      warning={labelHidden ? undefined : warning}
+      error={labelHidden ? undefined : error}
     >
       <View
         id={id}
         role="group"
-        aria-labelledby={label && !labelHidden ? `${id}-label` : undefined}
-        aria-label={label ?? 'Checkbox options'}
+        aria-labelledby={!ariaLabel && label && !labelHidden ? `${id}-label` : undefined}
+        aria-label={ariaLabel ?? (label || 'Checkbox options')}
         aria-describedby={hasMessage ? `${id}-message` : undefined}
         aria-required={required}
         aria-readonly={readOnly}
         aria-disabled={disabled}
-        aria-invalid={error ? true : undefined}
+        aria-invalid={isInvalid ? true : undefined}
         style={styles.checkboxGroupStack}
       >
+        {!labelHidden && (showSelectionCount || showClear) ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            {showSelectionCount ? (
+              <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>
+                {formatCheckboxSelectionCount(value, maxSelections)}
+              </Text>
+            ) : (
+              <View />
+            )}
+            {showClear ? (
+              <Pressable
+                role="button"
+                aria-label={`${clearLabel} ${label || 'selection'}`}
+                onPress={handleClear}
+                onFocus={handleChildFocus}
+                onBlur={handleChildBlur}
+                style={({ focused }: PressState) => [
+                  focusRing(t, focused),
+                  {
+                    minHeight: 44,
+                    minWidth: 44,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 7,
+                    borderWidth: 1,
+                    borderColor: t.border,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                  },
+                ]}
+              >
+                <SvgIcon name="close" size={14} color={t.textMuted} />
+                <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                  {clearLabel}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
         {showSelectAll ? (
           <Pressable
             role="checkbox"
@@ -1030,7 +1430,20 @@ export function EmrCheckboxGroup({
             aria-disabled={disabled}
             aria-readonly={readOnly}
             disabled={disabled}
+            onFocus={handleChildFocus}
+            onBlur={handleChildBlur}
             onPress={readOnly ? undefined : handleSelectAll}
+            {...(Platform.OS === 'web'
+              ? ({
+                  onKeyDown: (e: WebKeyEvent) => {
+                    if (readOnly || disabled) return;
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSelectAll();
+                    }
+                  },
+                } as Record<string, unknown>)
+              : {})}
             style={({ focused }: PressState) => [
               styles.selectAllRow,
               focusRing(t, focused),
@@ -1047,22 +1460,17 @@ export function EmrCheckboxGroup({
               style={[
                 styles.selectAllBox,
                 {
+                  width: size === 'sm' ? 16 : 18,
+                  height: size === 'sm' ? 16 : 18,
                   borderColor: selectAllState !== 'none' ? t.primary : t.border,
                   backgroundColor: selectAllState === 'all' ? t.primary : t.surface,
                 },
               ]}
             >
-              {selectAllState !== 'none' ? (
-                <Text
-                  style={{
-                    color: selectAllState === 'all' ? t.surface : t.primary,
-                    fontSize: t.text2xs,
-                    lineHeight: 12,
-                    fontWeight: fontWeight(t.weightBold),
-                  }}
-                >
-                  {selectAllState === 'all' ? '✓' : '–'}
-                </Text>
+              {selectAllState === 'all' ? (
+                <SvgIcon name="check" size={size === 'sm' ? 10 : 12} color={t.surface} />
+              ) : selectAllState === 'mixed' ? (
+                <SvgIcon name="minus" size={size === 'sm' ? 10 : 12} color={t.primary} />
               ) : null}
             </View>
             <Text
@@ -1077,21 +1485,81 @@ export function EmrCheckboxGroup({
             </Text>
           </Pressable>
         ) : null}
-        <EmrRow single={orientation === 'vertical'} columns={resolvedColumns}>
-          {options.map(opt => (
-            <EmrOptionChip
-              key={opt.value}
-              label={opt.label}
-              description={opt.description}
-              variant={variant}
-              multiple
-              selected={selectedSet.has(opt.value)}
-              readOnly={readOnly}
-              disabled={disabled || opt.disabled}
-              onPress={() => toggle(opt.value)}
-            />
-          ))}
-        </EmrRow>
+        {optionGroups.map(grp => {
+          const renderOption = (opt: EmrOption) => {
+            const isOptDisabled = Boolean(
+              disabled ||
+                opt.disabled ||
+                isCheckboxOptionBlockedByMax(opt.value, value, maxSelections)
+            );
+            const isOptReadOnly = Boolean(readOnly || opt.readOnly);
+            return (
+              <EmrOptionChip
+                key={opt.value}
+                label={opt.label}
+                description={opt.description}
+                badge={opt.badge}
+                tone={opt.tone}
+                variant={normalizedVariant}
+                size={size}
+                labelPlacement={labelPlacement}
+                multiple
+                selected={selectedSet.has(opt.value)}
+                invalid={isInvalid}
+                warning={!isInvalid && Boolean(warning)}
+                readOnly={isOptReadOnly}
+                disabled={isOptDisabled}
+                onFocus={handleChildFocus}
+                onBlur={handleChildBlur}
+                onPress={() => toggle(opt.value)}
+              />
+            );
+          };
+          return (
+            <View key={grp.label ?? '__ungrouped'} style={{ gap: 6 }}>
+              {grp.label ? (
+                <Text
+                  style={{
+                    color: t.textMuted,
+                    fontSize: t.textXs,
+                    fontWeight: fontWeight(t.weightBold),
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                    fontFamily: fontFamily(t),
+                    marginTop: 4,
+                  }}
+                >
+                  {grp.label}
+                </Text>
+              ) : null}
+              {orientation === 'grid' && Platform.OS === 'web' ? (
+                <View
+                  style={
+                    {
+                      display: 'grid',
+                      gridTemplateColumns: isNarrow
+                        ? 'minmax(0, 1fr)'
+                        : `repeat(${Math.max(1, columns ?? 2)}, minmax(0, 1fr))`,
+                      gap: 8,
+                      width: '100%',
+                      minWidth: 0,
+                      maxWidth: '100%',
+                    } as Record<string, unknown>
+                  }
+                >
+                  {grp.options.map(renderOption)}
+                </View>
+              ) : (
+                <EmrRow
+                  single={orientation === 'vertical' || (orientation === 'grid' && isNarrow)}
+                  columns={resolvedColumns}
+                >
+                  {grp.options.map(renderOption)}
+                </EmrRow>
+              )}
+            </View>
+          );
+        })}
       </View>
     </FieldChrome>
   );
@@ -1283,7 +1751,7 @@ function toSelectionItems(rawFiles: readonly File[]): EmrFileSelectionItem[] {
 export function EmrFileTrigger({
   controlId,
   label,
-  buttonLabel = 'Choose file',
+  buttonLabel,
   dropHint,
   accept,
   multiple,
@@ -1310,6 +1778,7 @@ export function EmrFileTrigger({
   const t = useEmrTheme();
   const generatedId = useId();
   const id = controlId ?? generatedId;
+  const resolvedButtonLabel = buttonLabel ?? (multiple ? 'Choose files' : 'Choose file');
   const fileInputRef = useRef<WebFileInputHandle | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const interactive = !disabled && !readOnly;
@@ -1388,7 +1857,7 @@ export function EmrFileTrigger({
       <Pressable
         id={id}
         role="button"
-        aria-label={label ? `${buttonLabel}: ${label}` : buttonLabel}
+        aria-label={label ? `${resolvedButtonLabel}: ${label}` : resolvedButtonLabel}
         aria-disabled={!interactive || undefined}
         disabled={disabled}
         onPress={interactive ? triggerPicker : undefined}
@@ -1412,7 +1881,7 @@ export function EmrFileTrigger({
             fontFamily: fontFamily(t),
           }}
         >
-          {buttonLabel}
+          {resolvedButtonLabel}
         </Text>
       </Pressable>
       {dropHint ? (
@@ -1446,28 +1915,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  segmentedGrow: {
-    flex: 1,
-    minWidth: 0,
-  },
   segmentedGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    maxWidth: '100%',
     borderWidth: 1,
     borderRadius: 10,
     padding: 3,
     gap: 3,
   },
+  segmentedGroupVertical: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
   segmentBtn: {
-    flexGrow: 1,
-    flexBasis: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 7,
     borderWidth: 1,
+  },
+  segmentBtnFullWidth: {
+    flex: 1,
+  },
+  segmentBtnVertical: {
+    width: '100%',
+    justifyContent: 'flex-start',
   },
   segmentBadge: {
     borderRadius: 999,

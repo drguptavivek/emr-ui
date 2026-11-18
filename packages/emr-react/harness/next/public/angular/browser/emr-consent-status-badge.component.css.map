@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;dadc537538642ee5ce84f51d02ae853e42a652fdbbc74093af3800b96d92b2a4;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/domain/emr-consent-status-badge.component.ts"],
+  "sourcesContent": ["\n    :host{display:inline-block;max-width:100%;font-family:var(--emr-font-family)}\n    .cs{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 8px;max-width:100%;color:var(--emr-text)}\n    .cs--button{min-height:44px;padding:0 4px;border:0;border-radius:8px;background:none;font:inherit;text-align:start;cursor:pointer}\n    .cs--button:focus-visible{outline:3px solid var(--emr-focus);outline-offset:2px}\n    .cs__detail{font-size:var(--emr-text-sm);color:var(--emr-text-muted);overflow-wrap:anywhere}\n  "],
+  "mappings": ";AACI;AAAM,WAAQ;AAAa,aAAU;AAAK,eAAY,IAAI;AAAkB;AAC5E,CAAC;AAAG,WAAQ;AAAY,aAAU;AAAK,eAAY;AAAO,OAAI,IAAI;AAAI,aAAU;AAAK,SAAM,IAAI;AAAW;AAC1G,CAAC;AAAW,cAAW;AAAK,WAAQ,EAAE;AAAI,UAAO;AAAE,iBAAc;AAAI,cAAW;AAAK,QAAK;AAAQ,cAAW;AAAM,UAAO;AAAO;AACjI,CADC,UACU;AAAe,WAAQ,IAAI,MAAM,IAAI;AAAa,kBAAe;AAAG;AAC/E,CAAC;AAAW,aAAU,IAAI;AAAe,SAAM,IAAI;AAAkB,iBAAc;AAAQ;",
+  "names": []
+}

@@ -184,7 +184,11 @@
     width: 11px;
     height: 11px;
   }
-  .emr-print .emr-toggle__track {
+  .emr-print .emr-toggle__track,
+  .emr-print .emr-toggle__spinner,
+  .emr-print .emr-checkbox__box,
+  .emr-print .emr-radio__circle,
+  .emr-print .emr-choice-clear {
     display: none !important;
   }
   .emr-print .emr-dialog-backdrop {
@@ -322,7 +326,11 @@
     width: 11px;
     height: 11px;
   }
-  .emr-toggle__track {
+  .emr-toggle__track,
+  .emr-toggle__spinner,
+  .emr-checkbox__box,
+  .emr-radio__circle,
+  .emr-choice-clear {
     display: none !important;
   }
   .emr-dialog-backdrop {

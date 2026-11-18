@@ -20,7 +20,13 @@ interface SlotRow {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fieldset class="ssp" [id]="id()" [disabled]="disabled()" [attr.aria-describedby]="error() || hint() ? messageId() : null">
+    <fieldset
+      class="ssp"
+      [id]="id()"
+      [attr.aria-invalid]="error() ? 'true' : null"
+      [attr.aria-required]="required() ? 'true' : null"
+      [attr.aria-describedby]="describedBy()"
+    >
       <legend class="ssp__legend">
         {{ label() }}
         @if (required()) { <span class="ssp__required" aria-hidden="true">*</span><span class="emr-sr-only">Required</span> }
@@ -30,7 +36,11 @@ interface SlotRow {
         <div class="ssp__presets" role="group" [attr.aria-label]="label() + ' presets'">
           @for (preset of presets(); track preset.id) {
             <button type="button" class="emr-button emr-button--outline emr-button--small ssp__preset" [attr.aria-pressed]="isActive(preset)" (click)="applyPreset(preset)">
-              @if (isActive(preset)) { <span class="ssp__tick" aria-hidden="true">✓</span> }
+              @if (isActive(preset)) {
+                <svg class="ssp__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3.5 8.5 6.5 11.5 12.5 4.5" />
+                </svg>
+              }
               {{ preset.label }}
             </button>
           }
@@ -74,10 +84,11 @@ interface SlotRow {
       </ul>
 
       <div class="ssp__messages" aria-live="polite">
+        @if (hint()) {
+          <span class="emr-field__hint" [id]="hintId()">{{ hint() }}</span>
+        }
         @if (error()) {
-          <span class="emr-field__error" [id]="messageId()">Error: {{ error() }}</span>
-        } @else if (hint()) {
-          <span class="emr-field__hint" [id]="messageId()">{{ hint() }}</span>
+          <span class="emr-field__error" role="alert" [id]="errorId()">Error: {{ error() }}</span>
         }
       </div>
     </fieldset>
@@ -88,8 +99,9 @@ interface SlotRow {
     .ssp__legend{padding:0;margin-bottom:6px;font-size:var(--emr-text-sm);font-weight:var(--emr-weight-bold)}
     .ssp__required{margin-left:2px;color:var(--emr-danger)}
     .ssp__presets{display:flex;flex-wrap:wrap;gap:6px}
-    .ssp__preset[aria-pressed="true"]{background:var(--emr-primary-soft);border-width:2px;font-weight:var(--emr-weight-bold)}
-    .ssp__tick{margin-right:4px}
+    .ssp__preset{min-height:44px;min-width:44px;background:var(--emr-surface);color:var(--emr-text);border:1px solid var(--emr-border)}
+    .ssp__preset[aria-pressed="true"]{background:var(--emr-primary-soft);border-color:var(--emr-primary);color:var(--emr-primary-contrast);border-width:2px;font-weight:var(--emr-weight-bold)}
+    .ssp__tick{margin-right:4px;flex:0 0 auto}
     .ssp__slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:8px;margin:0;padding:0;list-style:none}
     .ssp__slot{display:grid;align-content:start;gap:6px;min-width:0;padding:4px 10px 8px;border:1px solid var(--emr-border);border-radius:8px;background:var(--emr-surface)}
     .ssp__slot--on{border-color:var(--emr-primary-border);background:var(--emr-surface-soft)}
@@ -104,7 +116,6 @@ interface SlotRow {
     .ssp__amount-input--label{width:100%}
     .ssp__unit{font-size:var(--emr-text-sm);color:var(--emr-text-muted);overflow-wrap:anywhere}
     .ssp__messages:empty{display:none}
-    fieldset:disabled .ssp__toggle{cursor:not-allowed;opacity:.6}
   `],
 })
 export class EmrScheduleSlotPickerComponent {
@@ -114,7 +125,6 @@ export class EmrScheduleSlotPickerComponent {
   readonly error = input<string>();
   readonly required = input(false);
   readonly readOnly = input(false);
-  readonly disabled = input(false);
   readonly value = input<readonly DoseSlot[] | null>(null);
   /** Available slots in display order: the four standard slots, hourly slots, or a single 'PRN'. */
   readonly slots = input.required<readonly ScheduleSlotDefinition[]>();
@@ -131,7 +141,14 @@ export class EmrScheduleSlotPickerComponent {
 
   private readonly fallbackId = `emr-schedule-slot-picker-${++nextSlotPickerId}`;
   readonly id = computed(() => this.controlId() ?? this.fallbackId);
-  readonly messageId = computed(() => `${this.id()}-message`);
+  readonly hintId = computed(() => `${this.id()}-hint`);
+  readonly errorId = computed(() => `${this.id()}-error`);
+  readonly describedBy = computed(() => {
+    const ids: string[] = [];
+    if (this.hint()) ids.push(this.hintId());
+    if (this.error()) ids.push(this.errorId());
+    return ids.length ? ids.join(' ') : null;
+  });
 
   readonly rows = computed<readonly SlotRow[]>(() => {
     const byId = new Map((this.value() ?? []).map((slot) => [slot.id, slot]));

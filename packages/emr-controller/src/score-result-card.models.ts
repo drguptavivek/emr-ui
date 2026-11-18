@@ -22,6 +22,17 @@ export interface ScoreResultCardViewModel {
   readonly canViewDetail?: boolean;
   /** Slim single-row banner: label, total, band and actions only. */
   readonly compact?: boolean;
+  readonly subscales?: readonly {
+    id?: string;
+    label: string;
+    value: number | string;
+    bandLabel?: string;
+    max?: number;
+  }[];
+  readonly missingItems?: readonly string[];
+  readonly completenessLabel?: string;
+  readonly computedAtLabel?: string;
+  readonly provenance?: string;
 }
 
 export type ScoreResultCardIntent =

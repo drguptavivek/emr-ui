@@ -57,6 +57,43 @@
           }
         }
       }
+    },
+    "emr-angular-preview": {
+      "projectType": "application",
+      "root": "examples/angular-preview",
+      "sourceRoot": "examples/angular-preview",
+      "prefix": "emr",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "packages/emr-react/harness/next/public/angular",
+            "index": "examples/angular-preview/index.html",
+            "browser": "examples/angular-preview/main.ts",
+            "tsConfig": "examples/angular-preview/tsconfig.json",
+            "styles": [
+              "packages/emr-ui/node_modules/@fontsource-variable/inter/index.css",
+              "packages/emr-ui/src/lib/foundations/emr.css",
+              "packages/emr-ui/src/lib/foundations/emr-print.css"
+            ]
+          },
+          "configurations": {
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "emr-angular-preview:build:development",
+            "port": 4200
+          }
+        }
+      }
     }
   },
   "cli": {

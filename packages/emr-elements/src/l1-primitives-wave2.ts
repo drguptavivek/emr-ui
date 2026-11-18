@@ -9,23 +9,36 @@ import {
   clampRangeSliderPair,
   clampSliderValue,
   clampStraightenAngle,
+  clearUnlockedTags,
   collapseBreadcrumbs,
   collectAllExpandableTreeIds,
+  commitTagInputValues,
   computeSelectAllState,
   DEFAULT_ASPECT_PRESETS,
   DEFAULT_CLINICAL_COLOR_SWATCHES,
   DEFAULT_IMAGE_CROP_TRANSFORM,
   DEFAULT_IMAGE_VIEWPORT,
   filterOptionsLocally,
+  findNextEnabledSearchOptionIndex,
   flattenVisibleTreeNodes,
   formatImageTransformCss,
   formatTreeSelectionLabel,
   groupOptions,
   isIsoDateInRange,
   isIsoRangeEdge,
+  isTagLocked,
   normalizeDateRangeSelection,
   normalizeOtpSlots,
+  popLastUnlockedTag,
+  rankAndFilterOptions,
+  rankTagSuggestions,
+  removeTagInputAtIndex,
+  resolveComboboxDisplayValue,
+  resolveCustomSearchCandidate,
+  resolveDefaultActiveOptionIndex,
+  resolveEmrTagsValue,
   rotateImage90,
+  splitMatchHighlightSegments,
   splitTagTokens,
   stepImageZoom,
   toggleAccordionId,
@@ -34,12 +47,17 @@ import {
   toggleTreeNodeCheck,
   type EmrAccordionItem,
   type EmrAspectPreset,
+  type EmrBadge,
   type EmrBreadcrumbItem,
   type EmrColorSwatch,
+  type EmrControlVariant,
   type EmrDateRangePreset,
   type EmrDateRangeValue,
   type EmrFileSelectionItem,
   type EmrFlatTreeRow,
+  type EmrTagInputSize,
+  type EmrTagInputVariant,
+  type EmrTone,
   type EmrImageCropResult,
   type EmrImageCropTransform,
   type EmrImageItem,
@@ -48,6 +66,9 @@ import {
   type EmrMenuItem,
   type EmrOption,
   type EmrOptionGroup,
+  type EmrScoredOption,
+  type EmrSearchSelectFilterMode,
+  type EmrSearchSelectSize,
   type EmrSliderMark,
   type EmrTreeCheckStrategy,
   type EmrTreeNode,
@@ -294,6 +315,173 @@ const l1Wave2Styles = css`
     z-index: 9999;
   }
 
+  :host([data-open="true"]) {
+    position: relative;
+    z-index: 100;
+  }
+  .combo-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+  }
+  .combo-input-wrap {
+    position: relative;
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+  }
+  .combo-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font-size: var(--emr-text-md);
+  }
+  .combo-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .combo-input--sm { font-size: var(--emr-text-sm); }
+  .combo-input--filled { background: var(--emr-surface-soft); border-color: transparent; }
+  .combo-input--subtle { background: transparent; border-color: transparent; }
+  .combo-input--subtle:hover,
+  .combo-input--subtle:focus { border-color: var(--emr-border); background: var(--emr-surface); }
+  .combo-btn--subtle { background: transparent; border-color: transparent; }
+  .combo-btn--subtle:hover:not(:disabled) { border-color: var(--emr-border); background: var(--emr-surface); }
+  .combo-warning { color: var(--emr-warning); font-size: var(--emr-text-xs); }
+  .combo-input--invalid { border-color: var(--emr-danger); }
+  .combo-input--warning { border-color: var(--emr-warning); }
+  .combo-input--readonly { border-style: dashed; background: var(--emr-surface-soft); }
+  .combo-input--loading { padding-right: 34px; }
+  .combo-spinner-wrap {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--emr-text-muted);
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .combo-spinner {
+    animation: emr-combo-spin 0.9s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes emr-combo-spin {
+    to { transform: rotate(360deg); }
+  }
+  .combo-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    max-height: 280px;
+    overflow: auto;
+    margin-top: 0;
+    z-index: 100;
+  }
+  .combo-group-header {
+    padding: 6px 8px 4px;
+    font-size: var(--emr-text-xs);
+    font-weight: var(--emr-weight-bold);
+    color: var(--emr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .combo-option {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+  }
+  .combo-option--active {
+    background: var(--emr-surface-raised);
+    outline: 2px solid var(--emr-focus);
+    outline-offset: -2px;
+  }
+  .combo-option--selected {
+    background: var(--emr-primary-soft, var(--emr-surface-raised));
+  }
+  .combo-option--readonly { cursor: default; }
+  .combo-option-check {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--emr-primary);
+    flex-shrink: 0;
+  }
+  .combo-option-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .combo-option-top {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .combo-code {
+    font-family: var(--emr-font-mono, monospace);
+    font-size: var(--emr-text-xs);
+    color: var(--emr-text-muted);
+    background: var(--emr-surface-soft);
+    border: 1px solid var(--emr-border);
+    border-radius: 4px;
+    padding: 0 5px;
+  }
+  .combo-best-match {
+    font-size: var(--emr-text-2xs, 11px);
+    font-weight: var(--emr-weight-bold);
+    color: var(--emr-primary);
+    background: var(--emr-primary-soft, var(--emr-surface-raised));
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  .combo-option-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .combo-badge {
+    font-size: var(--emr-text-2xs, 11px);
+    font-weight: var(--emr-weight-medium);
+    border-radius: 999px;
+    padding: 1px 8px;
+    border: 1px solid var(--emr-border);
+    background: var(--emr-surface-soft);
+    color: var(--emr-text-muted);
+  }
+  .combo-badge--info { background: var(--emr-info-soft, var(--emr-surface-soft)); color: var(--emr-info); border-color: var(--emr-info); }
+  .combo-badge--success { background: var(--emr-success-soft, var(--emr-surface-soft)); color: var(--emr-success); border-color: var(--emr-success); }
+  .combo-badge--warning { background: var(--emr-warning-soft, var(--emr-surface-soft)); color: var(--emr-warning); border-color: var(--emr-warning); }
+  .combo-badge--danger { background: var(--emr-danger-soft, var(--emr-surface-soft)); color: var(--emr-danger); border-color: var(--emr-danger); }
+  .combo-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    color: var(--emr-text-muted);
+    font-size: var(--emr-text-sm);
+  }
+  .emr-match-highlight {
+    background: var(--emr-primary-soft, var(--emr-surface-raised));
+    color: var(--emr-primary);
+    font-weight: var(--emr-weight-bold);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
   .viewer-shell {
     border: 1px solid var(--emr-border);
     border-radius: var(--emr-radius-lg);
@@ -421,6 +609,10 @@ const l1Wave2Styles = css`
     flex-wrap: wrap;
   }
 
+  .tag-wrap {
+    position: relative;
+    width: 100%;
+  }
   .tag-shell {
     display: flex;
     align-items: center;
@@ -428,19 +620,124 @@ const l1Wave2Styles = css`
     gap: 6px;
     padding: 4px 8px;
     min-height: var(--emr-control-height);
+    max-width: 100%;
+    box-sizing: border-box;
     border: 1px solid var(--emr-border);
     border-radius: var(--emr-radius);
     background: var(--emr-surface);
   }
+  .tag-shell:focus-within {
+    outline: 3px solid color-mix(in srgb, var(--emr-focus) 70%, transparent);
+    outline-offset: 2px;
+    border-color: var(--emr-primary);
+  }
+  .tag-shell--sm {
+    min-height: 36px;
+    padding: 3px 6px;
+    gap: 4px;
+  }
+  .tag-shell--filled {
+    background: var(--emr-surface-soft);
+    border-color: transparent;
+  }
+  .tag-shell--subtle {
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--emr-border);
+    border-radius: 0;
+  }
+  .tag-shell--readonly {
+    border-style: dashed;
+    background: var(--emr-surface-soft);
+  }
+  .tag-shell--disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .tag-shell--invalid {
+    border-color: var(--emr-danger);
+  }
+  .tag-shell--warning {
+    border-color: var(--emr-warning);
+  }
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    min-width: 0;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: var(--emr-text-xs);
+    font-weight: var(--emr-weight-medium);
+    border: 1px solid var(--emr-border);
+    background: var(--emr-surface-soft);
+    color: var(--emr-text);
+  }
+  .tag-chip--locked {
+    border-style: dashed;
+  }
+  .tag-chip--info {
+    background: color-mix(in srgb, var(--emr-primary) 14%, transparent);
+    border-color: color-mix(in srgb, var(--emr-primary) 40%, transparent);
+    color: var(--emr-primary);
+  }
+  .tag-chip--success {
+    background: color-mix(in srgb, var(--emr-success) 14%, transparent);
+    border-color: color-mix(in srgb, var(--emr-success) 40%, transparent);
+    color: var(--emr-success);
+  }
+  .tag-chip--warning {
+    background: color-mix(in srgb, var(--emr-warning) 14%, transparent);
+    border-color: color-mix(in srgb, var(--emr-warning) 40%, transparent);
+    color: var(--emr-warning);
+  }
+  .tag-chip--danger {
+    background: color-mix(in srgb, var(--emr-danger) 14%, transparent);
+    border-color: color-mix(in srgb, var(--emr-danger) 40%, transparent);
+    color: var(--emr-danger);
+  }
+  .tag-chip-lock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.78;
+  }
+  .tag-chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tag-chip-remove {
+    min-width: 44px;
+    min-height: 44px;
+    margin: -10px -8px -10px 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .tag-chip-remove:hover {
+    background: color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .tag-chip-remove:focus-visible {
+    outline: 2px solid var(--emr-focus);
+    outline-offset: -2px;
+  }
   .tag-bare-input {
-    flex: 1;
-    min-width: 110px;
+    flex: 1 1 100px;
+    min-width: 80px;
     min-height: 36px;
     border: 0;
     background: transparent;
     color: var(--emr-text);
     font: inherit;
-    font-size: var(--emr-text-sm);
+    font-size: var(--emr-text-md);
     outline: none;
   }
 
@@ -1964,12 +2261,25 @@ export class EmrComboboxElement extends EmrLitElement {
 
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
+  @property({ type: String }) override ariaLabel = '';
   @property({ type: Boolean }) labelHidden = false;
   @property({ attribute: false }) options: readonly EmrOption[] = [];
   @property({ type: String }) value: string | null = null;
-  @property({ type: String }) placeholder = 'Select or type…';
+  @property({ type: String }) placeholder = 'Type or select…';
+  @property({ type: String }) variant: EmrControlVariant = 'outline';
+  @property({ type: String }) size: EmrSearchSelectSize = 'md';
+  @property({ type: String }) filterMode: EmrSearchSelectFilterMode = 'local';
   @property({ type: Boolean }) allowCustomValue = true;
+  @property({ type: Boolean }) creatable?: boolean;
+  @property({ type: Boolean }) highlightMatch = true;
+  @property({ type: Boolean }) autoHighlight = true;
   @property({ type: Boolean }) clearable = true;
+  @property({ type: String }) clearLabel = 'Clear';
+  @property({ type: Boolean }) loading = false;
+  @property({ type: String }) loadingMessage = 'Loading suggestions…';
+  @property({ type: String }) emptyMessage = 'No matching options';
+  @property({ type: Boolean }) invalid = false;
+  @property({ type: String }) warning = '';
   @property({ type: Boolean }) open = false;
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) readOnly = false;
@@ -1978,129 +2288,371 @@ export class EmrComboboxElement extends EmrLitElement {
   @property({ type: String }) error = '';
 
   @state() private query = '';
+  @state() private isActivelyTyping = false;
+  @state() private activeIndex = -1;
+
+  private readonly onDocumentClick = (e: MouseEvent): void => {
+    if (!this.open) return;
+    const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+    if (!path.includes(this)) {
+      this.isActivelyTyping = false;
+      this.setOpen(false);
+    }
+  };
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', this.onDocumentClick);
+    }
+  }
+
+  override disconnectedCallback(): void {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', this.onDocumentClick);
+    }
+    super.disconnectedCallback();
+  }
+
+  override updated(changed: Map<PropertyKey, unknown>): void {
+    super.updated(changed);
+    if (this.open && !this.locked) {
+      this.setAttribute('data-open', 'true');
+    } else {
+      this.removeAttribute('data-open');
+    }
+  }
 
   private get locked(): boolean {
     return this.readOnly || this.disabled;
   }
 
-  private pickOption(val: string, isCustom = false): void {
-    if (this.locked) return;
-    this.open = false;
-    this.query = '';
-    if (isCustom) {
-      this.dispatchEvent(new CustomEvent<string>('customValueCommitted', { detail: val, bubbles: true, composed: true }));
+  private get effectiveAllowCustom(): boolean {
+    return this.creatable !== undefined ? this.creatable : this.allowCustomValue;
+  }
+
+  private setOpen(next: boolean, flatOptions: readonly EmrOption[] = []): void {
+    if (next && this.locked) return;
+    if (this.open !== next) {
+      this.open = next;
+      this.dispatchEvent(new CustomEvent<boolean>('openChange', { detail: next, bubbles: true, composed: true }));
     }
-    this.emitValueChange(val);
+    if (next) {
+      this.activeIndex = resolveDefaultActiveOptionIndex(
+        flatOptions,
+        this.value ? [this.value] : [],
+        this.isActivelyTyping ? this.query : '',
+        this.autoHighlight,
+      );
+    } else {
+      this.activeIndex = -1;
+    }
+  }
+
+  private pickOption(opt: EmrOption): void {
+    if (this.locked || opt.disabled || opt.readOnly) return;
+    this.isActivelyTyping = false;
+    this.query = opt.label;
+    this.setOpen(false);
+    this.dispatchEvent(new CustomEvent<EmrOption>('optionSelected', { detail: opt, bubbles: true, composed: true }));
+    this.emitValueChange(opt.value);
+    this.dispatchEvent(new CustomEvent<string>('submitted', { detail: opt.value, bubbles: true, composed: true }));
+  }
+
+  private commitCustom(val: string): void {
+    if (this.locked) return;
+    const trimmed = val.trim();
+    if (!trimmed) return;
+    this.isActivelyTyping = false;
+    this.query = trimmed;
+    this.setOpen(false);
+    this.dispatchEvent(new CustomEvent<string>('customValueCommitted', { detail: trimmed, bubbles: true, composed: true }));
+    this.emitValueChange(trimmed);
+    this.dispatchEvent(new CustomEvent<string>('submitted', { detail: trimmed, bubbles: true, composed: true }));
   }
 
   private clearValue(): void {
     if (this.locked) return;
+    this.isActivelyTyping = false;
     this.query = '';
-    this.open = false;
+    this.setOpen(false);
     this.dispatchEvent(new CustomEvent('cleared', { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent<string>('queryChange', { detail: '', bubbles: true, composed: true }));
     this.emitValueChange(null);
+    this.shadowRoot?.querySelector('input')?.focus();
+  }
+
+  private renderHighlighted(text: string) {
+    if (!this.highlightMatch || !this.isActivelyTyping || !this.query.trim()) {
+      return text;
+    }
+    return splitMatchHighlightSegments(text, this.query).map((seg) =>
+      seg.matched ? html`<mark class="emr-match-highlight">${seg.text}</mark>` : seg.text,
+    );
   }
 
   override render() {
     const id = this.controlId || this.fallbackId;
     const listboxId = `${id}-listbox`;
     const msgId = `${id}-message`;
-    const matchedOption = this.options.find(o => o.value === this.value);
-    const displayValue = this.open ? this.query : (matchedOption?.label ?? this.value ?? '');
-    const filtered = filterOptionsLocally(this.options, this.query);
-    const groups: readonly EmrOptionGroup[] = groupOptions(filtered);
+    const isInvalid = this.invalid || Boolean(this.error);
+    const displayValue = resolveComboboxDisplayValue({
+      isActivelyTyping: this.isActivelyTyping,
+      query: this.query,
+      value: this.value,
+      options: this.options,
+    });
+    const activeQuery = this.isActivelyTyping ? this.query : '';
     const trimmed = this.query.trim();
-    const canCustom =
-      this.allowCustomValue &&
-      trimmed.length > 0 &&
-      !filtered.some(o => o.label.toLowerCase() === trimmed.toLowerCase() || o.value === trimmed);
+    const scored: readonly EmrScoredOption[] = rankAndFilterOptions(this.options, activeQuery, this.filterMode);
+    const bestMatchValue =
+      this.isActivelyTyping && trimmed.length > 0 && this.filterMode === 'local'
+        ? (scored.find((r) => r.isBestMatch)?.option.value ?? null)
+        : null;
+    const filtered = scored.map((r) => r.option);
+    const groups: readonly EmrOptionGroup[] = groupOptions(filtered);
+    const flatOptions = groups.flatMap((g) => g.options);
+    const flatIndexMap = new Map<string, number>();
+    flatOptions.forEach((o, idx) => flatIndexMap.set(o.value, idx));
+    const customCandidate = this.isActivelyTyping
+      ? resolveCustomSearchCandidate(this.query, this.options, this.effectiveAllowCustom)
+      : null;
+    const totalNavCount = flatOptions.length + (customCandidate ? 1 : 0);
+    const activeDescendantId =
+      this.open && !this.locked && this.activeIndex >= 0 && this.activeIndex < totalNavCount
+        ? `${id}-opt-${this.activeIndex}`
+        : nothing;
+
+    const inputClasses = [
+      'emr-control',
+      'combo-input',
+      this.size === 'sm' ? 'combo-input--sm' : '',
+      this.variant === 'filled' ? 'combo-input--filled' : '',
+      this.variant === 'subtle' ? 'combo-input--subtle' : '',
+      isInvalid ? 'combo-input--invalid' : '',
+      !isInvalid && this.warning ? 'combo-input--warning' : '',
+      this.readOnly ? 'combo-input--readonly' : '',
+      this.loading ? 'combo-input--loading' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     const control = html`<div class="popover-anchor">
-      <div class="trigger-bar">
-        <input
-          id=${id}
-          type="text"
-          role="combobox"
-          class="emr-control"
-          autocomplete="off"
-          aria-autocomplete="list"
-          aria-expanded=${String(this.open && !this.locked)}
-          aria-controls=${this.open && !this.locked ? listboxId : nothing}
-          aria-invalid=${this.error ? 'true' : nothing}
-          aria-describedby=${!this.labelHidden && (this.error || this.hint) ? msgId : nothing}
-          placeholder=${this.placeholder}
-          .value=${live(displayValue)}
-          ?readonly=${this.readOnly}
-          ?disabled=${this.disabled}
-          ?required=${this.required}
-          @focus=${() => {
-            if (!this.locked) {
-              this.query = matchedOption?.label ?? this.value ?? '';
-              this.open = true;
-            }
-          }}
-          @input=${(e: Event) => {
-            if (this.locked) {
-              (e.target as HTMLInputElement).value = displayValue;
-              return;
-            }
-            this.query = (e.target as HTMLInputElement).value;
-            this.open = true;
-          }}
-          @keydown=${(e: KeyboardEvent) => {
-            if (e.key === 'Enter' && !this.locked) {
-              e.preventDefault();
-              if (filtered.length > 0 && !filtered[0]!.disabled && (!this.allowCustomValue || filtered[0]!.label.toLowerCase() === trimmed.toLowerCase())) {
-                this.pickOption(filtered[0]!.value, false);
-              } else if (this.allowCustomValue && trimmed) {
-                this.pickOption(trimmed, true);
-              } else if (filtered.length > 0 && !filtered[0]!.disabled) {
-                this.pickOption(filtered[0]!.value, false);
+      <div class="combo-bar">
+        <div class="combo-input-wrap">
+          <input
+            id=${id}
+            type="text"
+            role="combobox"
+            class=${inputClasses}
+            autocomplete="off"
+            aria-autocomplete="list"
+            aria-label=${!this.label ? (this.ariaLabel || this.placeholder || 'Combobox') : nothing}
+            aria-expanded=${String(this.open && !this.locked)}
+            aria-controls=${this.open && !this.locked ? listboxId : nothing}
+            aria-activedescendant=${activeDescendantId}
+            aria-busy=${this.loading ? 'true' : nothing}
+            aria-invalid=${isInvalid ? 'true' : nothing}
+            aria-describedby=${!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing}
+            placeholder=${this.placeholder}
+            .value=${live(displayValue)}
+            ?readonly=${this.readOnly}
+            ?disabled=${this.disabled}
+            ?required=${this.required}
+            @focus=${() => {
+              if (!this.locked) {
+                this.query = resolveComboboxDisplayValue({
+                  isActivelyTyping: false,
+                  query: '',
+                  value: this.value,
+                  options: this.options,
+                });
+                this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+                this.setOpen(true, flatOptions);
               }
-            } else if (e.key === 'Escape' && this.open) {
-              e.preventDefault();
-              this.open = false;
-            }
-          }}
-        />
-        ${this.clearable && (this.value !== null && this.value !== '') && !this.locked
+            }}
+            @blur=${() => {
+              this.isActivelyTyping = false;
+              this.setOpen(false);
+              this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+            }}
+            @input=${(e: Event) => {
+              if (this.locked) {
+                (e.target as HTMLInputElement).value = displayValue;
+                return;
+              }
+              const nextQ = (e.target as HTMLInputElement).value;
+              this.isActivelyTyping = true;
+              this.query = nextQ;
+              this.dispatchEvent(new CustomEvent<string>('queryChange', { detail: nextQ, bubbles: true, composed: true }));
+              const nextScored = rankAndFilterOptions(this.options, nextQ, this.filterMode);
+              const nextFlat = groupOptions(nextScored.map((r) => r.option)).flatMap((g) => g.options);
+              this.setOpen(true, nextFlat);
+              if (this.effectiveAllowCustom) {
+                this.emitValueChange(nextQ.length > 0 ? nextQ : null);
+              }
+            }}
+            @keydown=${(e: KeyboardEvent) => {
+              if (this.locked) return;
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Home' || e.key === 'End') {
+                e.preventDefault();
+                if (!this.open) {
+                  this.setOpen(true, flatOptions);
+                  return;
+                }
+                const next = findNextEnabledSearchOptionIndex(flatOptions, this.activeIndex, e.key);
+                if (next !== null) {
+                  this.activeIndex = next;
+                } else if (customCandidate && e.key === 'ArrowDown') {
+                  this.activeIndex = flatOptions.length;
+                }
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (this.open && this.activeIndex >= 0 && this.activeIndex < flatOptions.length) {
+                  const opt = flatOptions[this.activeIndex];
+                  if (opt && !opt.disabled && !opt.readOnly) {
+                    this.pickOption(opt);
+                  }
+                  return;
+                }
+                if (this.open && customCandidate && this.activeIndex === flatOptions.length) {
+                  this.commitCustom(customCandidate);
+                  return;
+                }
+                if (this.effectiveAllowCustom && trimmed) {
+                  this.commitCustom(trimmed);
+                  return;
+                }
+                const firstEnabled = flatOptions.find((o) => !o.disabled && !o.readOnly);
+                if (firstEnabled) {
+                  this.pickOption(firstEnabled);
+                }
+              } else if (e.key === 'Escape' && this.open) {
+                e.preventDefault();
+                this.isActivelyTyping = false;
+                this.setOpen(false);
+              }
+            }}
+          />
+          ${this.loading
+            ? html`<span class="combo-spinner-wrap" aria-hidden="true">
+                <svg class="combo-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+              </span>`
+            : nothing}
+        </div>
+        ${this.clearable && (this.value !== null && this.value !== '' || displayValue) && !this.locked
           ? html`<button
               type="button"
-              class="clear-btn"
+              class=${`clear-btn${this.variant === 'subtle' ? ' combo-btn--subtle' : ''}`}
               data-clear-btn="true"
-              aria-label=${`Clear ${this.label || 'value'}`}
+              aria-label=${`${this.clearLabel} ${this.ariaLabel || this.label || 'value'}`}
               @click=${() => this.clearValue()}
             >${renderEmrSvgIcon('close', 14)}</button>`
           : nothing}
+        <button
+          type="button"
+          class=${`clear-btn${this.variant === 'subtle' ? ' combo-btn--subtle' : ''}`}
+          data-toggle-btn="true"
+          ?disabled=${this.locked}
+          aria-label=${`${this.open && !this.locked ? 'Close' : 'Open'} ${this.ariaLabel || this.label || 'suggestions'}`}
+          aria-expanded=${String(this.open && !this.locked)}
+          @click=${() => {
+            if (this.locked) return;
+            if (!this.open) {
+              this.query = resolveComboboxDisplayValue({
+                isActivelyTyping: false,
+                query: '',
+                value: this.value,
+                options: this.options,
+              });
+              this.setOpen(true, flatOptions);
+            } else {
+              this.isActivelyTyping = false;
+              this.setOpen(false);
+            }
+            this.shadowRoot?.querySelector('input')?.focus();
+          }}
+        >${renderEmrSvgIcon(this.open && !this.locked ? 'chevron-up' : 'chevron-down', 14)}</button>
       </div>
       ${this.open && !this.locked
-        ? html`<div id=${listboxId} role="listbox" class="dropdown-panel" aria-label=${this.label || 'Options'}>
-            ${groups.map(grp => html`
-              ${grp.label ? html`<div class="emr-muted" style="padding:4px 8px;font-weight:var(--emr-weight-bold);">${grp.label}</div>` : nothing}
-              ${grp.options.map(opt => html`<button
-                type="button"
-                role="option"
-                class="menu-item"
-                aria-selected=${String(this.value === opt.value)}
-                ?disabled=${opt.disabled}
-                @click=${() => {
-                  if (!opt.disabled) this.pickOption(opt.value, false);
-                }}
-              >
-                <span>${opt.label}</span>
-                ${opt.description ? html`<span class="row-desc">${opt.description}</span>` : nothing}
-              </button>`)}
-            `)}
-            ${canCustom
-              ? html`<button
-                  type="button"
-                  role="option"
-                  data-custom-option="true"
-                  class="menu-item"
-                  aria-selected="false"
-                  @click=${() => this.pickOption(trimmed, true)}
-                >Use "${trimmed}"</button>`
-              : nothing}
+        ? html`<div id=${listboxId} role="listbox" class="dropdown-panel combo-panel" aria-label=${this.ariaLabel || this.label || 'Options'} aria-busy=${this.loading ? 'true' : nothing}>
+            ${this.loading
+              ? html`<div class="combo-status" role="status">
+                  <svg class="combo-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  <span>${this.loadingMessage}</span>
+                </div>`
+              : groups.length === 0 && !customCandidate
+                ? html`<div class="combo-status">
+                    ${this.effectiveAllowCustom && trimmed
+                      ? `Using custom value "${trimmed}"`
+                      : this.emptyMessage}
+                  </div>`
+                : html`
+                    ${groups.map(grp => html`
+                      ${grp.label ? html`<div class="combo-group-header" role="presentation">${grp.label}</div>` : nothing}
+                      ${grp.options.map(opt => {
+                        const optIdx = flatIndexMap.get(opt.value) ?? -1;
+                        const isSelected = this.value === opt.value;
+                        const isActive = this.activeIndex === optIdx;
+                        const isBest = bestMatchValue === opt.value;
+                        const badgeObj: EmrBadge | null = opt.badge
+                          ? typeof opt.badge === 'string'
+                            ? { label: opt.badge, tone: 'neutral' }
+                            : opt.badge
+                          : opt.tone
+                            ? { label: opt.tone, tone: opt.tone }
+                            : null;
+                        return html`<button
+                          type="button"
+                          role="option"
+                          id=${`${id}-opt-${optIdx}`}
+                          class=${`menu-item combo-option${isSelected ? ' combo-option--selected' : ''}${isActive ? ' combo-option--active' : ''}${opt.readOnly ? ' combo-option--readonly' : ''}`}
+                          aria-selected=${String(isSelected)}
+                          aria-readonly=${opt.readOnly ? 'true' : nothing}
+                          ?disabled=${opt.disabled}
+                          @mousedown=${(ev: Event) => ev.preventDefault()}
+                          @click=${() => {
+                            if (!opt.disabled && !opt.readOnly) this.pickOption(opt);
+                          }}
+                        >
+                          <span class="combo-option-check" aria-hidden="true">
+                            ${isSelected ? renderEmrSvgIcon('check', 14) : nothing}
+                          </span>
+                          <span class="combo-option-body">
+                            <span class="combo-option-top">
+                              <span>${this.renderHighlighted(opt.label)}</span>
+                              ${opt.code ? html`<span class="combo-code">${this.renderHighlighted(opt.code)}</span>` : nothing}
+                              ${isBest ? html`<span class="combo-best-match">Best match</span>` : nothing}
+                            </span>
+                            ${opt.description ? html`<span class="row-desc">${this.renderHighlighted(opt.description)}</span>` : nothing}
+                          </span>
+                          <span class="combo-option-meta">
+                            ${badgeObj ? html`<span class=${`combo-badge combo-badge--${badgeObj.tone || 'neutral'}`}>${badgeObj.label}</span>` : nothing}
+                            ${opt.readOnly ? html`<span aria-label="Read-only option">${renderEmrSvgIcon('lock', 13)}</span>` : nothing}
+                          </span>
+                        </button>`;
+                      })}
+                    `)}
+                    ${customCandidate
+                      ? html`<button
+                          type="button"
+                          role="option"
+                          id=${`${id}-opt-${flatOptions.length}`}
+                          data-custom-option="true"
+                          class=${`menu-item combo-option${this.activeIndex === flatOptions.length ? ' combo-option--active' : ''}`}
+                          aria-selected="false"
+                          @mousedown=${(ev: Event) => ev.preventDefault()}
+                          @click=${() => this.commitCustom(customCandidate)}
+                        >
+                          <span class="combo-option-check" aria-hidden="true"></span>
+                          <span class="combo-option-body">Use "${customCandidate}"</span>
+                        </button>`
+                      : nothing}
+                  `}
           </div>`
         : nothing}
     </div>`;
@@ -2114,9 +2666,11 @@ export class EmrComboboxElement extends EmrLitElement {
       ${control}
       ${this.error
         ? html`<span id=${msgId} class="emr-error" role="alert">${this.error}</span>`
-        : this.hint
-          ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
-          : nothing}
+        : this.warning
+          ? html`<span id=${msgId} class="emr-warning combo-warning">${this.warning}</span>`
+          : this.hint
+            ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
+            : nothing}
     </div>`;
   }
 }
@@ -2129,124 +2683,353 @@ export class EmrTagInputElement extends EmrLitElement {
 
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
+  @property({ type: String }) override ariaLabel = '';
   @property({ type: Boolean }) labelHidden = false;
   @property({ attribute: false }) value: readonly string[] = [];
+  @property({ attribute: false }) tags: readonly string[] | undefined = undefined;
   @property({ attribute: false }) suggestions: readonly string[] = [];
   @property({ type: String }) placeholder = 'Add tag…';
+  @property({ attribute: false }) separators: readonly string[] | undefined = undefined;
   @property({ attribute: false }) delimiters: readonly string[] = [',', ';'];
   @property({ type: Boolean }) allowDuplicates = false;
   @property({ type: Number }) maxTags?: number;
+  @property({ type: Number }) maxTagLength?: number;
+  @property({ attribute: false }) lockedTags: readonly string[] = [];
+  @property({ type: String }) variant: EmrTagInputVariant = 'outline';
+  @property({ type: String }) size: EmrTagInputSize = 'md';
+  @property({ type: String }) chipTone: EmrTone = 'neutral';
+  @property({ type: Boolean }) filterSuggestions = true;
+  @property({ type: Boolean }) highlightMatch = true;
   @property({ type: Boolean }) clearable = false;
+  @property({ type: String }) clearLabel = 'Clear';
   @property({ type: Boolean }) required = false;
+  @property({ type: Boolean }) invalid = false;
+  @property({ type: String }) warning = '';
   @property({ type: Boolean }) readOnly = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: String }) hint = '';
   @property({ type: String }) error = '';
 
   @state() private draft = '';
+  @state() private isFocused = false;
+  @state() private dropdownDismissed = false;
+  @state() private activeSuggestionIndex = -1;
 
   private get locked(): boolean {
     return this.readOnly || this.disabled;
   }
 
+  private get resolvedTags(): readonly string[] {
+    return resolveEmrTagsValue(this.tags, this.value);
+  }
+
+  private get resolvedSeparators(): readonly string[] {
+    return this.separators ?? this.delimiters;
+  }
+
+  private get isMaxReached(): boolean {
+    return this.maxTags !== undefined && this.resolvedTags.length >= this.maxTags;
+  }
+
+  private get rankedSuggestions() {
+    return rankTagSuggestions(this.suggestions, this.resolvedTags, this.draft, {
+      allowDuplicates: this.allowDuplicates,
+      filterSuggestions: this.filterSuggestions,
+    });
+  }
+
+  private get isDropdownOpen(): boolean {
+    return (
+      this.isFocused &&
+      !this.dropdownDismissed &&
+      !this.locked &&
+      !this.isMaxReached &&
+      this.rankedSuggestions.length > 0
+    );
+  }
+
+  private syncOpenAttribute(open: boolean): void {
+    if (open) {
+      this.setAttribute('data-open', 'true');
+    } else {
+      this.removeAttribute('data-open');
+    }
+  }
+
+  private emitTags(next: readonly string[]): void {
+    this.dispatchEvent(new CustomEvent<readonly string[]>('tagsChange', { detail: next, bubbles: true, composed: true }));
+    this.emitValueChange(next);
+  }
+
   private commitDraft(raw: string): void {
     if (this.locked) return;
-    const tokens = splitTagTokens(raw, this.delimiters);
-    if (!tokens.length) return;
-    const current = Array.isArray(this.value) ? this.value : [];
-    const next = addTagValues(current, tokens, { allowDuplicates: this.allowDuplicates, maxTags: this.maxTags });
+    const res = commitTagInputValues(this.resolvedTags, raw, {
+      separators: this.resolvedSeparators,
+      allowDuplicates: this.allowDuplicates,
+      maxTags: this.maxTags,
+      maxTagLength: this.maxTagLength,
+    });
     this.draft = '';
-    for (const t of tokens) {
-      if (next.includes(t)) {
+    this.activeSuggestionIndex = -1;
+    if (res.added.length > 0) {
+      for (const t of res.added) {
         this.dispatchEvent(new CustomEvent<string>('tagAdded', { detail: t, bubbles: true, composed: true }));
       }
+      this.emitTags(res.next);
     }
-    this.emitValueChange(next);
   }
 
   private removeTagAt(idx: number): void {
     if (this.locked) return;
-    const current = Array.isArray(this.value) ? this.value : [];
-    const removed = current[idx];
-    const next = current.filter((_, i) => i !== idx);
-    if (removed !== undefined) {
-      this.dispatchEvent(new CustomEvent<string>('tagRemoved', { detail: removed, bubbles: true, composed: true }));
+    const res = removeTagInputAtIndex(this.resolvedTags, idx, this.lockedTags);
+    if (res.removed !== null) {
+      this.dispatchEvent(new CustomEvent<string>('tagRemoved', { detail: res.removed, bubbles: true, composed: true }));
+      this.emitTags(res.next);
     }
-    this.emitValueChange(next);
   }
 
   private clearAll(): void {
     if (this.locked) return;
     this.draft = '';
+    this.activeSuggestionIndex = -1;
+    const res = clearUnlockedTags(this.resolvedTags, this.lockedTags);
+    if (res.removed.length > 0) {
+      this.emitTags(res.next);
+    }
     this.dispatchEvent(new CustomEvent('cleared', { bubbles: true, composed: true }));
-    this.emitValueChange([]);
+  }
+
+  private selectSuggestion(val: string): void {
+    this.commitDraft(val);
+    this.shadowRoot?.querySelector<HTMLInputElement>('input.tag-bare-input')?.focus();
+  }
+
+  private renderHighlighted(text: string) {
+    if (!this.highlightMatch) return text;
+    return splitMatchHighlightSegments(text, this.draft).map((seg) =>
+      seg.matched ? html`<mark class="emr-match-highlight">${seg.text}</mark>` : seg.text,
+    );
   }
 
   override render() {
     const id = this.controlId || this.fallbackId;
     const msgId = `${id}-message`;
-    const tags = Array.isArray(this.value) ? this.value : [];
+    const listboxId = `${id}-listbox`;
+    const tags = this.resolvedTags;
+    const isInvalid = this.invalid || Boolean(this.error);
+    const suggestions = this.rankedSuggestions;
+    const open = this.isDropdownOpen;
+    this.syncOpenAttribute(open);
 
-    const shell = html`<div class="tag-shell">
-      ${tags.map(
-        (tag, idx) => html`<span class="emr-chip" role="listitem">
-          <span>${tag}</span>
-          ${!this.locked
-            ? html`<button
-                type="button"
-                class="emr-btn emr-btn--ghost"
-                data-remove-tag=${tag}
-                aria-label=${`Remove ${tag}`}
-                @click=${() => this.removeTagAt(idx)}
-              >${renderEmrSvgIcon('close', 12)}</button>`
-            : nothing}
-        </span>`,
-      )}
-      <input
-        id=${id}
-        type="text"
-        class="tag-bare-input"
-        placeholder=${this.placeholder}
-        .value=${live(this.draft)}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        aria-label=${this.labelHidden ? this.label || 'Add tag' : nothing}
-        aria-invalid=${this.error ? 'true' : nothing}
-        aria-describedby=${!this.labelHidden && (this.error || this.hint) ? msgId : nothing}
-        @input=${(e: Event) => {
-          if (this.locked) {
-            (e.target as HTMLInputElement).value = '';
-            return;
-          }
-          const raw = (e.target as HTMLInputElement).value;
-          if (this.delimiters.some(d => raw.includes(d))) {
-            this.commitDraft(raw);
-            (e.target as HTMLInputElement).value = '';
-          } else {
-            this.draft = raw;
-          }
-        }}
-        @keydown=${(e: KeyboardEvent) => {
-          if (this.locked) return;
-          if (e.key === 'Enter' || this.delimiters.includes(e.key)) {
-            if (this.draft.trim()) {
-              e.preventDefault();
+    const activeOptId =
+      open && this.activeSuggestionIndex >= 0 && this.activeSuggestionIndex < suggestions.length
+        ? `${id}-opt-${this.activeSuggestionIndex}`
+        : nothing;
+
+    const shellClass = [
+      'tag-shell',
+      this.size === 'sm' ? 'tag-shell--sm' : '',
+      this.variant === 'filled' ? 'tag-shell--filled' : '',
+      this.variant === 'subtle' ? 'tag-shell--subtle' : '',
+      this.readOnly ? 'tag-shell--readonly' : '',
+      this.disabled ? 'tag-shell--disabled' : '',
+      isInvalid ? 'tag-shell--invalid' : '',
+      !isInvalid && this.warning ? 'tag-shell--warning' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const hasClearableTags =
+      this.clearable && !this.locked && tags.some((tag) => !isTagLocked(tag, this.lockedTags));
+
+    const shell = html`<div class="tag-wrap">
+      <div class=${shellClass} role="list" aria-label=${this.ariaLabel || this.label || 'Tags'}>
+        ${tags.map((tag, idx) => {
+          const tagLocked = isTagLocked(tag, this.lockedTags);
+          const chipClass = [
+            'tag-chip',
+            this.chipTone !== 'neutral' ? `tag-chip--${this.chipTone}` : '',
+            tagLocked ? 'tag-chip--locked' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          return html`<span class=${chipClass} role="listitem">
+            ${tagLocked
+              ? html`<span class="tag-chip-lock" aria-label="Locked tag">${renderEmrSvgIcon('lock', 12)}</span>`
+              : nothing}
+            <span class="tag-chip-label">${tag}</span>
+            ${!this.locked && !tagLocked
+              ? html`<button
+                  type="button"
+                  class="tag-chip-remove"
+                  data-remove-tag=${tag}
+                  aria-label=${`Remove ${tag}`}
+                  @click=${() => this.removeTagAt(idx)}
+                  @keydown=${(e: KeyboardEvent) => {
+                    const btns = Array.from(
+                      this.shadowRoot?.querySelectorAll<HTMLButtonElement>('button.tag-chip-remove') ?? [],
+                    );
+                    const btnIdx = btns.indexOf(e.currentTarget as HTMLButtonElement);
+                    if (e.key === 'ArrowLeft' && btnIdx > 0) {
+                      e.preventDefault();
+                      btns[btnIdx - 1]?.focus();
+                    } else if (e.key === 'ArrowRight') {
+                      e.preventDefault();
+                      if (btnIdx >= 0 && btnIdx < btns.length - 1) {
+                        btns[btnIdx + 1]?.focus();
+                      } else {
+                        this.shadowRoot?.querySelector<HTMLInputElement>('input.tag-bare-input')?.focus();
+                      }
+                    }
+                  }}
+                >${renderEmrSvgIcon('close', 12)}</button>`
+              : nothing}
+          </span>`;
+        })}
+        <input
+          id=${id}
+          type="text"
+          role="combobox"
+          autocomplete="off"
+          class="tag-bare-input"
+          placeholder=${this.isMaxReached ? '' : this.placeholder}
+          .value=${live(this.draft)}
+          ?readonly=${this.readOnly || this.isMaxReached}
+          aria-readonly=${this.readOnly ? 'true' : nothing}
+          ?disabled=${this.disabled}
+          maxlength=${this.maxTagLength ?? nothing}
+          aria-label=${this.labelHidden || !this.label ? this.ariaLabel || this.label || 'Add tag' : nothing}
+          aria-required=${this.required ? 'true' : nothing}
+          aria-invalid=${isInvalid ? 'true' : nothing}
+          aria-describedby=${!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing}
+          aria-expanded=${String(open)}
+          aria-controls=${open ? listboxId : nothing}
+          aria-activedescendant=${activeOptId}
+          @focus=${() => {
+            this.isFocused = true;
+            this.dropdownDismissed = false;
+            this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+          }}
+          @blur=${() => {
+            this.isFocused = false;
+            this.activeSuggestionIndex = -1;
+            if (!this.locked && this.draft.trim()) {
               this.commitDraft(this.draft);
             }
-          } else if (e.key === 'Backspace' && !this.draft && tags.length > 0) {
-            e.preventDefault();
-            this.removeTagAt(tags.length - 1);
-          }
-        }}
-      />
-      ${this.clearable && tags.length > 0 && !this.locked
-        ? html`<button
-            type="button"
-            class="clear-btn"
-            data-clear-btn="true"
-            aria-label=${`Clear ${this.label || 'tags'}`}
-            @click=${() => this.clearAll()}
-          >${renderEmrSvgIcon('close', 14)}</button>`
+            this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+          }}
+          @paste=${(e: ClipboardEvent) => {
+            if (this.locked) return;
+            const pasted = e.clipboardData?.getData('text') ?? '';
+            if (pasted && this.resolvedSeparators.some((s) => pasted.includes(s))) {
+              e.preventDefault();
+              this.commitDraft(pasted);
+            }
+          }}
+          @input=${(e: Event) => {
+            if (this.locked) {
+              (e.target as HTMLInputElement).value = '';
+              return;
+            }
+            this.dropdownDismissed = false;
+            this.activeSuggestionIndex = -1;
+            const raw = (e.target as HTMLInputElement).value;
+            if (this.resolvedSeparators.some((d) => raw.includes(d))) {
+              this.commitDraft(raw);
+              (e.target as HTMLInputElement).value = '';
+            } else {
+              const clamped =
+                this.maxTagLength !== undefined && this.maxTagLength >= 0
+                  ? raw.slice(0, this.maxTagLength)
+                  : raw;
+              if (clamped !== raw) {
+                (e.target as HTMLInputElement).value = clamped;
+              }
+              this.draft = clamped;
+            }
+          }}
+          @keydown=${(e: KeyboardEvent) => {
+            if (this.locked) return;
+            if (e.key === 'ArrowDown' && suggestions.length > 0 && !this.isMaxReached) {
+              e.preventDefault();
+              this.dropdownDismissed = false;
+              this.activeSuggestionIndex =
+                this.activeSuggestionIndex < suggestions.length - 1 ? this.activeSuggestionIndex + 1 : 0;
+              return;
+            }
+            if (e.key === 'ArrowUp' && suggestions.length > 0 && !this.isMaxReached) {
+              e.preventDefault();
+              this.dropdownDismissed = false;
+              this.activeSuggestionIndex =
+                this.activeSuggestionIndex > 0 ? this.activeSuggestionIndex - 1 : suggestions.length - 1;
+              return;
+            }
+            if (e.key === 'Escape' && open) {
+              e.preventDefault();
+              this.dropdownDismissed = true;
+              this.activeSuggestionIndex = -1;
+              return;
+            }
+            if (e.key === 'Enter' || this.resolvedSeparators.includes(e.key)) {
+              if (open && this.activeSuggestionIndex >= 0 && this.activeSuggestionIndex < suggestions.length) {
+                e.preventDefault();
+                this.selectSuggestion(suggestions[this.activeSuggestionIndex]!.value);
+                return;
+              }
+              if (this.draft.trim()) {
+                e.preventDefault();
+                this.commitDraft(this.draft);
+              }
+            } else if (e.key === 'Backspace' && !this.draft && tags.length > 0) {
+              e.preventDefault();
+              const res = popLastUnlockedTag(tags, this.lockedTags);
+              if (res.removed !== null) {
+                this.dispatchEvent(new CustomEvent<string>('tagRemoved', { detail: res.removed, bubbles: true, composed: true }));
+                this.emitTags(res.next);
+              }
+            } else if (e.key === 'ArrowLeft' && !this.draft) {
+              const btns = Array.from(
+                this.shadowRoot?.querySelectorAll<HTMLButtonElement>('button.tag-chip-remove') ?? [],
+              );
+              if (btns.length > 0) {
+                e.preventDefault();
+                btns[btns.length - 1]?.focus();
+              }
+            }
+          }}
+        />
+        ${hasClearableTags
+          ? html`<button
+              type="button"
+              class="clear-btn"
+              data-clear-btn="true"
+              aria-label=${`${this.clearLabel} ${this.label || 'tags'}`}
+              @click=${() => this.clearAll()}
+            >${renderEmrSvgIcon('close', 14)}</button>`
+          : nothing}
+      </div>
+      ${open
+        ? html`<div id=${listboxId} role="listbox" class="dropdown-panel combo-panel" aria-label="Tag suggestions">
+            ${suggestions.map((sug, i) => {
+              const isActive = this.activeSuggestionIndex === i;
+              return html`<button
+                type="button"
+                role="option"
+                id=${`${id}-opt-${i}`}
+                class=${`menu-item combo-option${isActive ? ' combo-option--active' : ''}`}
+                aria-selected=${String(isActive)}
+                @mousedown=${(ev: Event) => ev.preventDefault()}
+                @click=${() => this.selectSuggestion(sug.value)}
+              >
+                <span class="combo-option-body">
+                  <span class="combo-option-top">
+                    <span>${this.renderHighlighted(sug.value)}</span>
+                    ${sug.isBestMatch ? html`<span class="combo-best-match">Best match</span>` : nothing}
+                  </span>
+                </span>
+              </button>`;
+            })}
+          </div>`
         : nothing}
     </div>`;
 
@@ -2259,9 +3042,11 @@ export class EmrTagInputElement extends EmrLitElement {
       ${shell}
       ${this.error
         ? html`<span id=${msgId} class="emr-error" role="alert">${this.error}</span>`
-        : this.hint
-          ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
-          : nothing}
+        : this.warning
+          ? html`<span id=${msgId} class="emr-hint" role="status">${this.warning}</span>`
+          : this.hint
+            ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
+            : nothing}
     </div>`;
   }
 }

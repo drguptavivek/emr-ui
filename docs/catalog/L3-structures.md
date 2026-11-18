@@ -677,3 +677,52 @@ export class EmrDataTableComponent {
 
 **Depends on** — none (L0 tokens only).
 **Used by** — none in the verified component graph.
+
+---
+
+### EmrSplitWorkspace
+**Layer** L3 · **Selector** `emr-split-workspace` · **Status** stable · **Story** `emr-structures-workstation-containers--split-workspace`
+
+**Need** — Desktop EMR workstations require side-by-side comparison and charting (e.g., clinical notes beside prior labs/imaging or PACS), while narrow/tablet screens and print mode need a clean single-column or tabbed fallback without losing pane context.
+
+**Purpose** — Renders a 2- or 3-pane resizable workstation layout driven by `EmrSplitWorkspaceViewModel` with preset ratio pills (`50/50`, `33/67`, `67/33`, `33/34/33`), accessible `role="separator"` splitters supporting ArrowLeft/ArrowRight/Home/End ratio nudges, pane pin/collapse controls, and a mobile tab bar when `model.mobileMode === true`. Emits `EmrSplitWorkspaceIntent` (`paneResized`, `presetApplied`, `paneCollapsedToggled`, `panePinnedToggled`, `activePaneChanged`).
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified component graph.
+
+---
+
+### EmrCommandPalette
+**Layer** L3 · **Selector** `emr-command-palette` · **Status** stable · **Story** `emr-structures-workstation-containers--command-palette`
+
+**Need** — High-velocity clinicians need keyboard-first (`Cmd/Ctrl+K`) navigation across patient charts, rapid order entry, clinical templates, and slash commands without hunting through deep menus.
+
+**Purpose** — Renders a modal or inline WAI-ARIA combobox + grouped listbox driven by `EmrCommandPaletteViewModel` with category scope pills (`all`, `patients`, `orders`, `navigation`, `templates`, `actions`), recent-command chips, slash-command badges, keyboard shortcuts, and ArrowUp/ArrowDown/Enter/Escape navigation. Emits `EmrCommandPaletteIntent` (`queryChanged`, `scopeSelected`, `itemHighlighted`, `itemExecuted`, `recentCleared`, `closeRequested`).
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified component graph.
+
+---
+
+### EmrMasterDetail
+**Layer** L3 · **Selector** `emr-master-detail` · **Status** stable · **Story** `emr-structures-workstation-containers--master-detail-inbox`
+
+**Need** — Clinical inboxes (abnormal lab triage, radiology sign-off queues, referral triage, pharmacy verification) require a synchronized master list with severity badges and bulk actions paired with a detail inspection pane.
+
+**Purpose** — Renders a master-detail split surface driven by `EmrMasterDetailViewModel` with filter chips, search input, multi-select checkboxes, batch action toolbar, Next/Previous item traversal, and named slots (`[slot="detail"]`, `[slot="detail-empty"]`) plus mobile back-to-list navigation. Emits `EmrMasterDetailIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified component graph.
+
+---
+
+### EmrSynchronizedTimeGrid
+**Layer** L3 · **Selector** `emr-synchronized-time-grid` · **Status** stable · **Story** `emr-structures-workstation-containers--synchronized-time-grid`
+
+**Need** — Correlating acute clinical changes across vital signs, cumulative labs, medication administrations, and events requires a shared horizontal time axis and vertical crosshair scrubber so clinicians can inspect exact temporal alignment.
+
+**Purpose** — Renders a sticky time header with zoom presets (`1h`, `4h`, `8h`, `12h`, `24h`, `7d`), pan controls, collapsible swimlane tracks (`vitals`, `labs`, `medications`, `io`, `events`), time-positioned event markers, and a keyboard-navigable (`ArrowLeft`/`ArrowRight`) vertical crosshair scrubber driven by `EmrSynchronizedTimeGridViewModel`. Emits `EmrSynchronizedTimeGridIntent`.
+
+**Depends on** — none (L0 tokens only).
+**Used by** — none in the verified component graph.
+

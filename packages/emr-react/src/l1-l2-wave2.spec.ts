@@ -137,7 +137,7 @@ describe('Part 1: Upgraded L1 Primitives (EmrSelect, EmrSearchSelect, EmrRadioGr
         open: true,
       }),
     );
-    expect(searchSelectHtml).toContain('Penicillin');
+    expect(searchSelectHtml.replace(/<[^>]+>/g, '')).toContain('Penicillin');
     expect(searchSelectHtml).toContain('Antibiotics');
   });
 
@@ -403,6 +403,31 @@ describe('Part 2: All 20 New Wave 2 Components & Logic', () => {
       }),
     );
     expect(comboHtml).toContain('Chief Complaint');
+    expect(comboHtml).toContain('role="combobox"');
+
+    const openComboHtml = renderToStaticMarkup(
+      createElement(EmrCombobox, {
+        label: 'Chief Complaint',
+        options: [
+          {
+            value: 'Reduced distance vision',
+            label: 'Reduced distance vision',
+            code: 'H53.8',
+            badge: { label: 'Common', tone: 'info' },
+            group: 'Vision',
+          },
+        ],
+        open: true,
+        variant: 'filled',
+        size: 'sm',
+        warning: 'Verify laterality',
+      }),
+    );
+    expect(openComboHtml).toContain('role="listbox"');
+    expect(openComboHtml).toContain('role="option"');
+    expect(openComboHtml).toContain('H53.8');
+    expect(openComboHtml).toContain('Common');
+    expect(openComboHtml).toContain('Verify laterality');
 
     expect(splitTagTokens('glaucoma, cataract; uveitis')).toEqual([
       'glaucoma',
@@ -425,6 +450,35 @@ describe('Part 2: All 20 New Wave 2 Components & Logic', () => {
     );
     expect(tagHtml).toContain('Glaucoma');
     expect(tagHtml).toContain('Pseudophakia');
+
+    const richTagHtml = renderToStaticMarkup(
+      createElement(EmrTagInput, {
+        label: 'Allergies',
+        tags: ['Penicillin', 'Latex'],
+        lockedTags: ['Penicillin'],
+        chipTone: 'danger',
+        variant: 'filled',
+        size: 'sm',
+        clearable: true,
+        warning: 'Verify before prescribing',
+      }),
+    );
+    expect(richTagHtml).toContain('Penicillin');
+    expect(richTagHtml).toContain('Latex');
+    expect(richTagHtml).toContain('Verify before prescribing');
+    expect(richTagHtml).toContain('Clear Allergies');
+    expect(richTagHtml).toContain('Remove Latex');
+    expect(richTagHtml).not.toContain('Remove Penicillin');
+
+    const disabledTagHtml = renderToStaticMarkup(
+      createElement(EmrTagInput, {
+        label: 'Disabled Allergies',
+        tags: ['Penicillin'],
+        disabled: true,
+      }),
+    );
+    expect(disabledTagHtml).toContain('disabled=""');
+    expect(disabledTagHtml).toContain('aria-disabled="true"');
   });
 
   it('10, 11, 12 & 13. EmrSlider, EmrRangeSlider, EmrMaskedInput, and EmrOtpInput', () => {

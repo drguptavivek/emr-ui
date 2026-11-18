@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1400" viewBox="0 0 1000 1400" role="img">
+  <title>Left knee, bony outline, anterior view</title>
+  <rect width="1000" height="1400" fill="#ffffff"/>
+  <path d="M 576 70 Q 500 52 424 70 C 422 250 415 320 395 380 C 360 440 320 460 320 530 C 320 580 328 618 352 642 C 370 656 410 658 440 650 C 450 646 458 640 460 626 C 464 604 478 590 500 590 C 522 590 536 604 540 626 C 542 640 550 646 560 650 C 590 658 628 654 646 636 C 666 618 680 580 680 530 C 680 460 640 440 605 380 C 585 320 578 250 576 70 Z" fill="none" stroke="#475569" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 674 713 C 650 713 632 730 632 752 C 632 775 644 790 650 800 C 644 850 638 920 637 1000 C 636 1100 628 1230 612 1330 Q 630 1342 648 1330 C 662 1260 672 1180 673 1080 C 674 1000 674 920 676 850 C 678 830 678 810 680 792 C 700 790 716 776 716 752 C 716 730 698 713 674 713 Z" fill="none" stroke="#475569" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 678 702 C 678 686 665 679 640 677 C 600 674 560 672 538 671 C 534 668 530 652 520 650 C 510 650 506 662 500 665 C 494 662 490 650 480 650 C 470 652 466 668 462 671 C 440 674 430 676 400 677 C 360 678 322 686 320 704 C 322 750 350 790 375 830 C 395 860 410 900 414 960 C 418 1050 422 1200 428 1332 Q 500 1350 572 1332 C 576 1200 584 1050 586 950 C 588 880 605 835 625 810 C 655 775 676 740 678 702 Z" fill="#ffffff" stroke="#475569" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 500 570 C 514 570 528 555 540 533 C 550 515 555 497 555 480 C 555 457 538 445 515 445 L 485 445 C 462 445 445 457 445 480 C 445 497 450 515 460 533 C 472 555 486 570 500 570 Z" fill="none" stroke="#475569" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M660 243L580 243" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M360 663L459 663" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M778 750L718 750" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M760 1100L675 1100" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M320 1000L413 1000" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="670" y="250" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8" text-anchor="start">Femur</text>
+  <text x="350" y="671" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8" text-anchor="end">Tibial spines</text>
+  <text x="428" y="505" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8" text-anchor="end">Patella</text>
+  <text x="784" y="758" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8" text-anchor="start">Fibular head</text>
+  <text x="766" y="1108" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8" text-anchor="start">Fibula</text>
+  <text x="310" y="1008" font-family="system-ui, sans-serif" font-size="28" fill="#94a3b8" text-anchor="end">Tibia</text>
+  <text x="940" y="100" font-family="system-ui, sans-serif" font-size="48" font-weight="700" fill="#475569" text-anchor="end">L</text>
+  <text x="60" y="100" font-family="system-ui, sans-serif" font-size="30" fill="#94a3b8" text-anchor="start">Anterior</text>
+</svg>

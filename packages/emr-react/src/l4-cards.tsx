@@ -73,7 +73,16 @@ export function EmrLinkCards({ model: m, labels, onIntent }: {
   return (
     <View style={styles.root}>
       <EmrPatientIdentityCard mode="compact" model={m.patient} onIntent={noop} />
-      <EmrBarcodeScanField {...m.entry} labels={labels} onValueChange={raw => onIntent({ type: 'entryChanged', raw })} onSubmit={() => onIntent({ type: 'cardEntered' })} onIntent={onIntent} />
+      <EmrBarcodeScanField
+        {...m.entry}
+        labels={labels}
+        onValueChange={raw => onIntent({ type: 'entryChanged', raw })}
+        onSubmit={() => onIntent({ type: 'cardEntered' })}
+        onIntent={i => {
+          if (i.type === 'scanRequested' || i.type === 'typeSelected') onIntent(i);
+          else if (i.type === 'cleared') onIntent({ type: 'entryChanged', raw: '' });
+        }}
+      />
       <EmrButton variant="outline" label={l.addCard} onPress={() => onIntent({ type: 'cardEntered' })} />
       {m.cards.length ? (
         <View role="radiogroup" aria-label={l.primaryGroup}>

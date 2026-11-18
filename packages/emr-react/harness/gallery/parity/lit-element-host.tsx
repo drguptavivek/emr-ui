@@ -13,7 +13,7 @@ let bundlePromise: Promise<void> | null = null;
 export function resolveSitePublicUrl(assetPath: string): string {
   if (typeof window === 'undefined') return assetPath;
   const { origin, pathname } = window.location;
-  const rootPath = pathname.replace(/\/(gallery|clinical-notes)\/?$/, '/').replace(/\/?$/, '/');
+  const rootPath = pathname.replace(/\/(gallery|clinical-notes|components|theme-studio)\/?$/, '/').replace(/\/?$/, '/');
   return `${origin}${rootPath}${assetPath.replace(/^\.?\//, '')}`;
 }
 
@@ -22,7 +22,9 @@ export function ensureEmrElementsRegistered(): Promise<void> {
     return Promise.resolve();
   }
   if (!bundlePromise) {
-    const bundleUrl = resolveSitePublicUrl('lit/emr-elements.bundle.js');
+    const baseUrl = resolveSitePublicUrl('lit/emr-elements.bundle.js');
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const bundleUrl = isLocal ? `${baseUrl}?v=${Date.now()}` : baseUrl;
     bundlePromise = (async () => {
       const importUrl = new Function('u', 'return import(u)') as (url: string) => Promise<LitBundleModule>;
       const mod = await importUrl(bundleUrl);
@@ -43,6 +45,7 @@ export interface LitElementHostProps {
   attrs?: Record<string, string | boolean | undefined>;
   events?: Record<string, (detail: unknown, event: CustomEvent<unknown>) => void>;
   slotHtml?: string;
+  inline?: boolean;
 }
 
 /**
@@ -50,7 +53,7 @@ export interface LitElementHostProps {
  * keeping JS properties, HTML attributes, light-DOM slotted markup, and
  * CustomEvent listeners synchronized with React state.
  */
-export function LitElementHost({ tag, props, attrs, events, slotHtml }: LitElementHostProps) {
+export function LitElementHost({ tag, props, attrs, events, slotHtml, inline = false }: LitElementHostProps) {
   const t = useEmrTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const elRef = useRef<HTMLElement | null>(null);
@@ -90,8 +93,8 @@ export function LitElementHost({ tag, props, attrs, events, slotHtml }: LitEleme
 
     host.innerHTML = '';
     const el = document.createElement(tag);
-    el.style.display = 'block';
-    el.style.width = '100%';
+    el.style.display = inline ? 'inline-flex' : 'block';
+    el.style.width = inline ? 'auto' : '100%';
     elRef.current = el;
 
     const names = eventNamesKey ? eventNamesKey.split(',') : [];
@@ -177,6 +180,6 @@ export function LitElementHost({ tag, props, attrs, events, slotHtml }: LitEleme
   return createElement('div', {
     ref: containerRef,
     'data-parity-lit-host': tag,
-    style: { width: '100%' },
+    style: inline ? { display: 'inline-flex', alignSelf: 'stretch', width: 'auto' } : { width: '100%' },
   });
 }

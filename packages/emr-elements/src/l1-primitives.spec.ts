@@ -13,6 +13,7 @@ import {
   type EmrDateInputElement,
   type EmrDateTimeInputElement,
   type EmrDialogElement,
+  type EmrFieldValueRowElement,
   type EmrFileTriggerElement,
   type EmrIconButtonElement,
   type EmrLikertElement,
@@ -155,6 +156,56 @@ describe('controlled L1 primitives', () => {
     el.remove();
   });
 
+  it('supports emr-select multi-select chips, maxSelections, maxTagCount, grouped role="group", readOnly options, and inline clear', async () => {
+    const el = await mount<EmrSelectElement>('emr-select');
+    el.label = 'Clinical tags';
+    el.multiple = true;
+    el.clearable = true;
+    el.maxSelections = 3;
+    el.maxTagCount = 2;
+    el.options = [
+      { value: 'glaucoma', label: 'Glaucoma', group: 'Ocular', badge: 'Chronic', tone: 'info', readOnly: true },
+      { value: 'cataract', label: 'Cataract', group: 'Ocular', description: 'Lens opacity' },
+      { value: 'dm', label: 'Diabetes', group: 'Systemic', tone: 'warning' },
+      { value: 'htn', label: 'Hypertension', group: 'Systemic' },
+    ];
+    el.value = ['glaucoma', 'cataract', 'dm'];
+    await el.updateComplete;
+
+    // 2 visible chips + 1 overflow chip (+1)
+    const chips = el.shadowRoot!.querySelectorAll('.select-chip');
+    expect(chips).toHaveLength(3);
+    expect(el.shadowRoot!.querySelector('.select-chip--overflow')?.textContent?.trim()).toBe('+1');
+
+    // readOnly chip ('glaucoma') has no remove button; 'cataract' does
+    const removeBtns = el.shadowRoot!.querySelectorAll<HTMLButtonElement>('.select-chip-remove');
+    expect(removeBtns).toHaveLength(1);
+    expect(removeBtns[0]!.getAttribute('aria-label')).toBe('Remove Cataract');
+
+    // Open menu: grouped role="group" with aria-labelledby, maxSelections blocks 'htn'
+    const trigger = el.shadowRoot!.querySelector<HTMLButtonElement>('[role="combobox"]')!;
+    trigger.click();
+    await el.updateComplete;
+    const groups = el.shadowRoot!.querySelectorAll('[role="group"]');
+    expect(groups).toHaveLength(2);
+    expect(groups[0]!.getAttribute('aria-labelledby')).toBeTruthy();
+
+    const opts = el.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="option"]');
+    expect(opts[3]!.disabled).toBe(true); // blocked by maxSelections = 3
+    expect(opts[0]!.getAttribute('aria-readonly')).toBe('true');
+
+    // Clear button preserves readOnly 'glaucoma' and emits cleared + valueChange
+    const changes: unknown[] = [];
+    let clearedCount = 0;
+    el.addEventListener('valueChange', (e) => changes.push((e as CustomEvent).detail));
+    el.addEventListener('cleared', () => { clearedCount++; });
+    el.shadowRoot!.querySelector<HTMLButtonElement>('[data-clear-btn="true"]')!.click();
+    await el.updateComplete;
+    expect(clearedCount).toBe(1);
+    expect(changes).toEqual([['glaucoma']]);
+    el.remove();
+  });
+
   it('renders emr-toggle as a switch track + thumb distinct from emr-checkbox', async () => {
     const toggle = await mount<EmrToggleElement>('emr-toggle');
     const checkbox = await mount<EmrCheckboxElement>('emr-checkbox');
@@ -192,6 +243,43 @@ describe('controlled L1 primitives', () => {
 
     toggle.remove();
     checkbox.remove();
+  });
+
+  it('supports mixed, value precedence, warning/error, required, inline, and readOnly in emr-checkbox', async () => {
+    const cb = await mount<EmrCheckboxElement>('emr-checkbox');
+    cb.label = 'Consent obtained';
+    cb.checked = true;
+    cb.value = undefined;
+    cb.mixed = true;
+    cb.warning = 'Verify witness';
+    cb.required = true;
+    cb.variant = 'inline';
+    await cb.updateComplete;
+
+    const btn = cb.shadowRoot!.querySelector<HTMLButtonElement>('[role="checkbox"]')!;
+    expect(btn.getAttribute('aria-checked')).toBe('mixed');
+    expect(btn.getAttribute('aria-required')).toBe('true');
+    expect(btn.getAttribute('data-warning')).toBe('true');
+    expect(btn.classList.contains('option-tile--inline')).toBe(true);
+
+    const emitted: boolean[] = [];
+    cb.addEventListener('valueChange', e => emitted.push((e as CustomEvent<boolean>).detail));
+    btn.click();
+    expect(emitted).toEqual([true]);
+
+    cb.error = 'Required';
+    await cb.updateComplete;
+    expect(btn.getAttribute('aria-invalid')).toBe('true');
+    expect(btn.hasAttribute('data-warning')).toBe(false);
+
+    cb.readOnly = true;
+    await cb.updateComplete;
+    expect(btn.disabled).toBe(false);
+    expect(btn.getAttribute('aria-readonly')).toBe('true');
+    btn.click();
+    expect(emitted).toEqual([true]);
+
+    cb.remove();
   });
 
   it('opens an EMR calendar component for emr-date-input instead of a browser date input', async () => {
@@ -268,11 +356,10 @@ describe('controlled L1 primitives', () => {
     const changes: unknown[] = []; const units: unknown[] = [];
     el.addEventListener('valueChange', (e) => changes.push((e as CustomEvent).detail));
     el.addEventListener('unitChange', (e) => units.push((e as CustomEvent).detail));
-    const nested = el.shadowRoot!.querySelector('emr-number-input') as EmrNumberInputElement;
     const unitSelect = el.shadowRoot!.querySelector('emr-select') as EmrSelectElement;
-    await nested.updateComplete;
     await unitSelect.updateComplete;
-    nested.shadowRoot!.querySelector('button:last-child')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const stepBtns = el.shadowRoot!.querySelectorAll<HTMLButtonElement>('.stepper-btn');
+    stepBtns[1]!.click();
     unitSelect.shadowRoot!.querySelector<HTMLButtonElement>('[role="combobox"]')!.click();
     await unitSelect.updateComplete;
     const opts = unitSelect.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="option"]');
@@ -281,6 +368,21 @@ describe('controlled L1 primitives', () => {
     opts[1]!.click(); // enabled unit — must NOT leak onto valueChange!
     expect(changes).toEqual([1]);
     expect(units).toEqual(['mmHg']);
+
+    // Per-side error & clearable parity
+    el.value = 18;
+    el.unit = 'mmHg';
+    el.clearable = true;
+    el.valueError = 'Too high';
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('input[role="spinbutton"]')?.getAttribute('aria-invalid')).toBe('true');
+    expect(el.shadowRoot!.querySelector('[role="alert"]')?.textContent).toContain('Too high');
+    const clearedEvents: number[] = [];
+    el.addEventListener('cleared', () => clearedEvents.push(1));
+    el.shadowRoot!.querySelector<HTMLButtonElement>('.clear-inline-btn')!.click();
+    expect(changes).toEqual([1, null]);
+    expect(units).toEqual(['mmHg', null]);
+    expect(clearedEvents).toEqual([1]);
     el.remove();
   });
 
@@ -409,7 +511,7 @@ describe('controlled L1 primitives', () => {
     await cb.updateComplete;
     const cbBtn = cb.shadowRoot!.querySelector<HTMLButtonElement>('[role="checkbox"]')!;
     expect(cbBtn.getAttribute('aria-checked')).toBe('mixed');
-    expect(cbBtn.textContent).toContain('–');
+    expect(cbBtn.querySelector('.indicator svg')).toBeTruthy();
     const checked: unknown[] = [];
     cb.addEventListener('checkedChange', e => checked.push((e as CustomEvent).detail));
     cbBtn.click();
@@ -483,35 +585,106 @@ describe('controlled L1 primitives', () => {
     expect(cols.shadowRoot!.querySelector('.columns-grid')!.getAttribute('style')).toContain('1fr 2fr 1fr');
     cols.remove();
 
+    const fvrHead = await mount<EmrFieldValueRowElement>('emr-field-value-row');
+    fvrHead.heading = true;
+    fvrHead.field = 'Parameter';
+    fvrHead.value = '';
+    await fvrHead.updateComplete;
+    expect(fvrHead.shadowRoot!.querySelector('.fvr-field')!.getAttribute('role')).toBe('columnheader');
+    expect(fvrHead.shadowRoot!.querySelector('.fvr-value')!.textContent).toBe('');
+    fvrHead.remove();
+
+    const fvr = await mount<EmrFieldValueRowElement>('emr-field-value-row');
+    fvr.field = 'IOP (OD)';
+    fvr.value = 0;
+    fvr.tone = 'info';
+    fvr.interactive = true;
+    await fvr.updateComplete;
+    expect(fvr.shadowRoot!.querySelector('.fvr-field')!.getAttribute('role')).toBe('rowheader');
+    expect(fvr.shadowRoot!.querySelector('.fvr-value')!.textContent).toBe('0');
+    let fvrActivated = 0;
+    fvr.addEventListener('activated', () => { fvrActivated += 1; });
+    fvr.shadowRoot!.querySelector<HTMLElement>('.fvr-row')!.click();
+    expect(fvrActivated).toBe(1);
+    fvr.readOnly = true;
+    await fvr.updateComplete;
+    fvr.shadowRoot!.querySelector<HTMLElement>('.fvr-row')!.click();
+    expect(fvrActivated).toBe(1);
+    fvr.remove();
+
     const cell = await mount<EmrStatusCellElement>('emr-status-cell');
     cell.status = { label: 'Critical', tone: 'danger' };
     cell.valueLabel = '32 mmHg';
     cell.attribution = { author: 'Dr Rao', timestamp: '09:15' };
-    cell.actionLabel = 'Repeat';
-    cell.interactive = true;
+    cell.action = { label: 'Repeat', icon: 'pen' };
+    cell.selectable = true;
     await cell.updateComplete;
+    const cellIntents: unknown[] = [];
     let actionCount = 0;
+    cell.addEventListener('intent', e => cellIntents.push((e as CustomEvent).detail));
     cell.addEventListener('actionClicked', () => { actionCount += 1; });
+    expect(cell.shadowRoot!.querySelector('.status-cell-body button')).toBeNull(); // no nested button inside selectable body
+    expect(cell.shadowRoot!.querySelector('.status-cell-action svg')).not.toBeNull();
+    cell.shadowRoot!.querySelector<HTMLElement>('.status-cell-body')!.click();
     cell.shadowRoot!.querySelector<HTMLButtonElement>('.status-cell-action')!.click();
     expect(actionCount).toBe(1);
+    expect(cellIntents).toEqual(['selected', 'action']);
+    cell.readOnly = true;
+    await cell.updateComplete;
+    expect(cell.shadowRoot!.querySelector('.status-cell-action')).toBeNull();
+    cell.shadowRoot!.querySelector<HTMLElement>('.status-cell-body')!.click();
+    expect(cellIntents).toEqual(['selected', 'action']);
     cell.remove();
 
     const stepper = await mount<EmrStageStepperElement>('emr-stage-stepper');
-    stepper.stages = [{ id: 's1', label: 'Sign in' }, { id: 's2', label: 'Time out' }];
+    stepper.stages = [{ id: 's1', label: 'Sign in' }, { id: 's2', label: 'Time out' }, { id: 's3', label: 'Sign out' }];
     stepper.activeId = 's1';
+    stepper.completedIds = ['s1'];
     stepper.readOnly = true;
     await stepper.updateComplete;
     const stepBtns = stepper.shadowRoot!.querySelectorAll('button');
+    expect(stepBtns[0]!.hasAttribute('aria-pressed')).toBe(false);
+    expect(stepBtns[0]!.querySelector('.stage-num svg')).not.toBeNull();
     expect(stepBtns[1]!.disabled).toBe(false); // focusable when readOnly!
     const stageEvents: unknown[] = [];
+    const stageIntents: unknown[] = [];
     stepper.addEventListener('stageSelected', e => stageEvents.push((e as CustomEvent).detail));
+    stepper.addEventListener('intent', e => stageIntents.push((e as CustomEvent).detail));
     stepBtns[1]!.click();
     expect(stageEvents).toEqual([]);
     stepper.readOnly = false;
+    stepper.linear = true;
     await stepper.updateComplete;
-    stepper.shadowRoot!.querySelectorAll('button')[1]!.click();
+    stepper.shadowRoot!.querySelectorAll('button')[2]!.click(); // s3 blocked in linear mode from s1
+    expect(stageEvents).toEqual([]);
+    stepper.shadowRoot!.querySelectorAll('button')[1]!.click(); // s2 allowed
     expect(stageEvents).toEqual(['s2']);
+    expect(stageIntents).toEqual([{ type: 'stageSelected', stageId: 's2' }]);
     stepper.remove();
+
+    const tile = await mount<EmrStatTileElement>('emr-stat-tile');
+    tile.model = {
+      key: 'iop',
+      label: 'Referred',
+      value: '14',
+      trend: { label: '+12%', direction: 'up', tone: 'success' },
+      sub: 'Today',
+      status: { label: 'Active', tone: 'info' },
+    };
+    tile.selected = true;
+    await tile.updateComplete;
+    const tileBtn = tile.shadowRoot!.querySelector<HTMLButtonElement>('button.stat-tile')!;
+    expect(tileBtn.getAttribute('aria-pressed')).toBe('true');
+    expect(tileBtn.querySelector('.stat-tile-trend svg')).not.toBeNull();
+    const tileIntents: unknown[] = [];
+    tile.addEventListener('intent', e => tileIntents.push((e as CustomEvent).detail));
+    tileBtn.click();
+    expect(tileIntents).toEqual([{ type: 'statSelected', key: 'iop' }]);
+    tile.loading = true;
+    await tile.updateComplete;
+    expect(tile.shadowRoot!.querySelector('button.stat-tile')).toBeNull();
+    expect(tile.shadowRoot!.querySelector('[role="group"]')!.getAttribute('aria-busy')).toBe('true');
+    tile.remove();
 
     const sep = await mount<EmrSeparatorElement>('emr-separator');
     expect(sep.shadowRoot!.querySelector('.separator-plain')).not.toBeNull();
@@ -699,5 +872,166 @@ describe('controlled L1 primitives', () => {
     fileInput.dispatchEvent(new Event('change'));
     expect(selectedMeta).toEqual([[{ name: 'oct-scan.png', sizeBytes: 3, mimeType: 'image/png', lastModified: mockFile.lastModified }]]);
     ft.remove();
+  });
+
+  it('supports emr-radio-group variants (tile/inline/card/pill/segmented), group headers, per-option readOnly/badge/tone, roving focus, clearable, and labelHidden', async () => {
+    const rg = await mount<EmrRadioGroupElement>('emr-radio-group');
+    rg.label = 'Referral priority';
+    rg.options = [
+      { value: 'stat', label: 'STAT', description: 'Immediate review', badge: 'Urgent', tone: 'danger', group: 'Acuity' },
+      { value: 'locked', label: 'Locked', readOnly: true, group: 'Acuity' },
+      { value: 'dis', label: 'Disabled', disabled: true, group: 'Routine' },
+      { value: 'routine', label: 'Routine', badge: { label: '24h', tone: 'info' }, group: 'Routine' },
+    ];
+    rg.value = 'stat';
+    rg.variant = 'segmented';
+    rg.clearable = true;
+    await rg.updateComplete;
+
+    // Segmented track + badges + group headers
+    const groupEl = rg.shadowRoot!.querySelector('[role="radiogroup"]')!;
+    expect(groupEl.classList.contains('radio-segmented')).toBe(true);
+    expect(groupEl.textContent).toContain('Acuity');
+    expect(groupEl.textContent).toContain('Routine');
+    expect(groupEl.querySelector('.emr-badge--danger')?.textContent).toBe('Urgent');
+    expect(groupEl.querySelector('.emr-badge--info')?.textContent).toBe('24h');
+
+    // Roving tabIndex: selected enabled option has tabIndex 0, others -1
+    const radios = Array.from(rg.shadowRoot!.querySelectorAll<HTMLButtonElement>('button[role="radio"]'));
+    expect(radios.map((r) => r.tabIndex)).toEqual([0, -1, -1, -1]);
+
+    // ArrowRight from 'stat' moves focus to 'locked' (readOnly) WITHOUT changing value
+    const changes: unknown[] = [];
+    let clearedCount = 0;
+    rg.addEventListener('valueChange', (e) => changes.push((e as CustomEvent).detail));
+    rg.addEventListener('cleared', () => { clearedCount += 1; });
+
+    radios[0]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(rg.shadowRoot!.activeElement).toBe(radios[1]);
+    expect(changes).toEqual([]);
+
+    // Clicking readOnly option does not emit valueChange
+    radios[1]!.click();
+    expect(changes).toEqual([]);
+
+    // ArrowRight from 'locked' skips disabled 'dis' and lands on 'routine', emitting valueChange
+    radios[1]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(rg.shadowRoot!.activeElement).toBe(radios[3]);
+    expect(changes).toEqual(['routine']);
+
+    // Clear button emits cleared + valueChange(null)
+    const clearBtn = rg.shadowRoot!.querySelector<HTMLButtonElement>('[data-clear-btn="true"]')!;
+    expect(clearBtn).not.toBeNull();
+    clearBtn.click();
+    expect(clearedCount).toBe(1);
+    expect(changes).toEqual(['routine', null]);
+
+    // Clear button hides when value is null or when selected option is locked (readOnly)
+    rg.value = null;
+    await rg.updateComplete;
+    expect(rg.shadowRoot!.querySelector('[data-clear-btn="true"]')).toBeNull();
+    rg.value = 'locked';
+    await rg.updateComplete;
+    expect(rg.shadowRoot!.querySelector('[data-clear-btn="true"]')).toBeNull();
+    rg.value = 'stat';
+    await rg.updateComplete;
+
+    // Inline variant & labelHidden preserves aria-label without duplicate footer text
+    rg.variant = 'inline';
+    rg.hint = 'Select one';
+    rg.error = 'Required';
+    rg.labelHidden = true;
+    await rg.updateComplete;
+    expect(rg.shadowRoot!.querySelector('.emr-hint')).toBeNull();
+    expect(rg.shadowRoot!.querySelector('.emr-error')).toBeNull();
+    expect(rg.shadowRoot!.querySelector('[role="radiogroup"]')?.getAttribute('aria-label')).toBe('Referral priority');
+    expect(rg.shadowRoot!.querySelector('button[role="radio"]')?.classList.contains('option-tile--inline')).toBe(true);
+
+    rg.remove();
+  });
+
+  it('supports emr-toggle value/checked resolution, loading/readOnly/disabled gating, validation, labelPlacement, and labelHidden', async () => {
+    const toggle = await mount<EmrToggleElement>('emr-toggle');
+    toggle.label = 'Auto-refractometer sync';
+    toggle.description = 'Sync readings on save';
+    toggle.onLabel = 'On';
+    toggle.offLabel = 'Off';
+    toggle.required = true;
+    toggle.value = true;
+    toggle.checked = false; // value takes precedence over checked
+    await toggle.updateComplete;
+
+    const btn = toggle.shadowRoot!.querySelector<HTMLButtonElement>('button[role="switch"]')!;
+    expect(btn.getAttribute('aria-checked')).toBe('true');
+    expect(btn.getAttribute('aria-required')).toBe('true');
+    expect(btn.textContent).toContain('On');
+    expect(btn.textContent).toContain('Auto-refractometer sync');
+    expect(btn.textContent).toContain('*');
+
+    const changes: boolean[] = [];
+    const checkedChanges: boolean[] = [];
+    toggle.addEventListener('valueChange', (e) => changes.push((e as CustomEvent<boolean>).detail));
+    toggle.addEventListener('checkedChange', (e) => checkedChanges.push((e as CustomEvent<boolean>).detail));
+
+    btn.click();
+    expect(changes).toEqual([false]);
+    expect(checkedChanges).toEqual([false]);
+
+    // Loading gates mutations, sets aria-busy + data-loading, and renders SVG spinner in thumb
+    toggle.loading = true;
+    await toggle.updateComplete;
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.getAttribute('data-loading')).toBe('true');
+    expect(btn.querySelector('.switch-thumb svg.switch-spinner')).not.toBeNull();
+    btn.click();
+    btn.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    btn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(changes).toEqual([false]);
+
+    // readOnly & disabled gate mutations
+    toggle.loading = false;
+    toggle.readOnly = true;
+    await toggle.updateComplete;
+    expect(btn.getAttribute('aria-readonly')).toBe('true');
+    btn.click();
+    expect(changes).toEqual([false]);
+
+    toggle.readOnly = false;
+    toggle.disabled = true;
+    await toggle.updateComplete;
+    expect(btn.disabled).toBe(true);
+    btn.click();
+    expect(changes).toEqual([false]);
+
+    // Warning vs invalid precedence
+    toggle.disabled = false;
+    toggle.warning = 'Check device calibration';
+    await toggle.updateComplete;
+    expect(btn.getAttribute('data-warning')).toBe('true');
+    expect(btn.getAttribute('data-invalid')).toBeNull();
+    expect(toggle.shadowRoot!.querySelector('.emr-warning')?.getAttribute('role')).toBe('status');
+
+    toggle.invalid = true;
+    await toggle.updateComplete;
+    expect(btn.getAttribute('data-warning')).toBeNull();
+    expect(btn.getAttribute('data-invalid')).toBe('true');
+    expect(btn.getAttribute('aria-invalid')).toBe('true');
+
+    // labelHidden omits visual text/messages and clears aria-describedby while keeping aria-label
+    toggle.error = 'Required';
+    toggle.hint = 'Helpful hint';
+    toggle.labelHidden = true;
+    await toggle.updateComplete;
+    const hiddenBtn = toggle.shadowRoot!.querySelector<HTMLButtonElement>('button[role="switch"]')!;
+    expect(hiddenBtn.getAttribute('data-label-hidden')).toBe('true');
+    expect(hiddenBtn.getAttribute('aria-label')).toBe('Auto-refractometer sync');
+    expect(hiddenBtn.getAttribute('aria-describedby')).toBeNull();
+    expect(toggle.shadowRoot!.querySelector('.option-tile-copy')).toBeNull();
+    expect(toggle.shadowRoot!.querySelector('.toggle-state-label')).toBeNull();
+    expect(toggle.shadowRoot!.querySelector('.emr-hint')).toBeNull();
+    expect(toggle.shadowRoot!.querySelector('.emr-warning')).toBeNull();
+    expect(toggle.shadowRoot!.querySelector('.emr-error')).toBeNull();
+
+    toggle.remove();
   });
 });

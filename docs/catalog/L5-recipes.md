@@ -156,3 +156,16 @@ Data-only symbol sets for the annotation canvas's Symbol select, in `recipes/ann
 - `general-findings` — skin and wound findings: inflammation, swelling, redness, lump or mass, scar, staples (stapled), sutures (sutured), open wound, laceration, bruise (crosshatch), abrasion, ulcer, burn, rash, tenderness (callout) and pain point (arrow). The Symbol select shows these by default where no specialty set is chosen.
 
 Every set starts `reviewStatus: 'unreviewed'`; a clinician must review the colours and conventions before production use. Stories: `emr-clinical-photo-annotation--retina-symbols`, `clinical-drawing-anatomy-outlines--surgical-symbols` and `--wound-and-skin-findings`.
+
+## Clinical schema content packs
+
+Pure, serializable `ClinicalFormSchema`, `ClinicalMatrixSchema`, `ClinicalProScoringRecipe`, and `OrderSetRecipe` content packs live in `@drguptavivek/emr-controller` (`recipes/clinical-schemas/`) and are re-exported across `@drguptavivek/emr-ui`, `@drguptavivek/emr-react`, and `@drguptavivek/emr-elements`:
+
+- `general-ros` — 14-system Review of Systems (`GENERAL_ROS_FORM_SCHEMA`).
+- `admission` — Adult History & Physical (`ADULT_HP_FORM_SCHEMA`) and Nursing Admission Assessment (`NURSING_ADMISSION_FORM_SCHEMA`) covering Braden, Morse Fall Scale, MST nutritional screening, and home med reconciliation.
+- `neurology` — Cranial Nerves I–XII (`CRANIAL_NERVE_MATRIX_SCHEMA`), MRC 0–5 Motor & Reflexes (`MOTOR_REFLEX_MATRIX_SCHEMA`), and NIHSS 15-item stroke scale (`NIHSS_FORM_SCHEMA`).
+- `rheumatology` — 28-Joint Swollen/Tender DAS28 matrix (`DAS28_JOINT_MATRIX_SCHEMA`) and GALS locomotor screen (`GALS_SCREEN_FORM_SCHEMA`).
+- `burn` — Lund & Browder age-adjusted TBSA matrix (`LUND_BROWDER_MATRIX_SCHEMA`) and Parkland 24h fluid resuscitation assessment (`PARKLAND_BURN_FORM_SCHEMA`).
+- `pro-questionnaires` — PHQ-9, GAD-7, OSDI, and AUDIT-C schemas paired with `ClinicalProScoringRecipe` band definitions and pure `evaluateProScore()` helper.
+- `order-sets` — Cataract Surgery Day-Case, Community-Acquired Pneumonia, Acute Chest Pain / ACS, and DKA Protocol order sets (`ALL_ORDER_SET_RECIPES`).
+

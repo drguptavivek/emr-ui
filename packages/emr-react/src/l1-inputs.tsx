@@ -1,8 +1,22 @@
 'use client';
 
 import { useId } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import type { ClinicalOption } from '@drguptavivek/emr-controller';
+import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
+import {
+  resolveQuantityStep,
+  resolveTimePlaceholder,
+  type EmrDateTimeDisplayFormat,
+  type EmrDateTimeHourCycle,
+  type EmrDateTimeSize,
+  type EmrDateTimeWireFormat,
+  type EmrOption,
+  type EmrQuantityNumericMode,
+  type EmrQuantitySize,
+  type EmrTimeHourCycle,
+  type EmrTimePrecision,
+  type EmrTimeSize,
+} from '@drguptavivek/emr-controller';
+import { SvgIcon } from './icons';
 import { EmrDateTimeText, EmrTypedText, NumberInput, ThemedInput } from './inputs-core';
 import { FieldChrome } from './l1-field-chrome';
 import {
@@ -91,12 +105,95 @@ function Frame({ id, p, children }: { id: string; p: EmrFieldProps; children: Re
 // ---- text, number -------------------------------------------------------------------------
 
 export function EmrTextInput(
-  p: EmrFieldProps & { value: string | null; onValueChange: (value: string | null) => void },
+  p: EmrFieldProps & {
+    value: string | null;
+    type?: 'text' | 'email' | 'tel' | 'url';
+    maxLength?: number;
+    showCount?: boolean;
+    clearable?: boolean;
+    prefix?: string;
+    suffix?: string;
+    autoComplete?: string;
+    onValueChange: (value: string | null) => void;
+    onCleared?: () => void;
+    onSubmit?: () => void;
+    onBlur?: () => void;
+  },
 ) {
   const { id, input } = useControl(p);
+  const t = useEmrTheme();
+  const canEdit = !p.disabled && !p.readOnly;
+  const hasAffix = Boolean(p.prefix || p.suffix || (p.clearable && p.value && canEdit));
+  const keyboardType = p.type === 'email' ? 'email-address' : p.type === 'tel' ? 'phone-pad' : p.type === 'url' ? 'url' : 'default';
+  const inputEl = (
+    <ThemedInput
+      {...input}
+      style={hasAffix ? { flex: 1, borderWidth: 0, minHeight: Math.max(42, t.controlHeight - 2) } : undefined}
+      value={p.value ?? ''}
+      maxLength={p.maxLength}
+      keyboardType={keyboardType}
+      autoComplete={p.autoComplete as never}
+      onBlur={() => p.onBlur?.()}
+      onSubmitEditing={() => p.onSubmit?.()}
+      onChangeText={text => p.onValueChange(text === '' ? null : text)}
+    />
+  );
   return (
     <Frame id={id} p={p}>
-      <ThemedInput {...input} value={p.value ?? ''} onChangeText={text => p.onValueChange(text === '' ? null : text)} />
+      {p.prefix || p.suffix || p.clearable ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            minHeight: t.controlHeight,
+            borderWidth: 1,
+            borderRadius: 8,
+            borderColor: p.error ? t.danger : t.border,
+            backgroundColor: p.disabled ? t.surfaceRaised : p.readOnly ? t.surfaceSoft : t.surface,
+            overflow: 'hidden',
+          }}
+        >
+          {p.prefix ? (
+            <Text style={{ paddingHorizontal: 10, color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>
+              {p.prefix}
+            </Text>
+          ) : null}
+          <View style={{ flex: 1, minWidth: 0 }}>{inputEl}</View>
+          {p.clearable && p.value && canEdit ? (
+            <Pressable
+              role="button"
+              aria-label="Clear"
+              onPress={() => {
+                p.onValueChange(null);
+                p.onCleared?.();
+              }}
+              style={({ hovered }: PressableStateCallbackType & { hovered?: boolean }) => ({
+                minWidth: 44,
+                minHeight: Math.max(42, t.controlHeight - 2),
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderLeftWidth: 1,
+                borderColor: t.border,
+                backgroundColor: hovered ? t.primaryHover : t.surfaceSoft,
+              })}
+            >
+              <Text style={{ color: t.text, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold) }}>×</Text>
+            </Pressable>
+          ) : null}
+          {p.suffix ? (
+            <Text style={{ paddingHorizontal: 10, color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>
+              {p.suffix}
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        inputEl
+      )}
+      {!p.labelHidden && p.showCount && p.maxLength ? (
+        <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t), marginTop: 2 }}>
+          {(p.value ?? '').length} / {p.maxLength}
+        </Text>
+      ) : null}
     </Frame>
   );
 }
@@ -170,40 +267,71 @@ export function EmrDateInput(
 export function EmrTimeInput(
   p: EmrFieldProps & {
     value: string | null;
-    precision?: TimePrecision;
+    precision?: EmrTimePrecision;
+    hourCycle?: EmrTimeHourCycle;
+    min?: string;
+    max?: string;
+    step?: number;
+    size?: EmrTimeSize;
+    clearable?: boolean;
     onValueChange: (value: string | null) => void;
+    onCleared?: () => void;
+    onBlur?: () => void;
+    onSubmit?: () => void;
   },
 ) {
   const { id, input } = useControl(p);
-  const withSeconds = p.precision === 'second';
-  const mode = withSeconds ? 'time-seconds' : 'time';
-  const defaultPlaceholder = withSeconds ? 'hh:mm:ss' : 'hh:mm';
+  const precision = p.precision ?? 'minute';
+  const hourCycle = p.hourCycle ?? '24';
+  const mode = precision === 'second' ? 'time-seconds' : 'time';
+  const defaultPlaceholder = resolveTimePlaceholder(precision, hourCycle);
   return (
     <Frame id={id} p={p}>
       <EmrTypedText
-        key={mode}
+        key={`${mode}-${hourCycle}`}
         {...input}
         placeholder={p.placeholder ?? defaultPlaceholder}
         mode={mode}
+        hourCycle={hourCycle}
+        min={p.min}
+        max={p.max}
+        step={p.step}
+        size={p.size}
+        clearable={p.clearable}
+        warning={Boolean(p.warning && !p.error && !input.invalid)}
         value={p.value}
         onValueChange={p.onValueChange}
+        onCleared={p.onCleared}
+        onBlur={() => p.onBlur?.()}
+        onSubmitEditing={() => p.onSubmit?.()}
       />
     </Frame>
   );
 }
 
-/** Date + time of a UTC instant: `value` is ISO-8601 with Z; shown and typed as local date and time (`hh:mm` or `hh:mm:ss`). */
+/** Date + time input supporting displayFormat, hourCycle, timePrecision, wireFormat, min/max, clearable, size, warning/invalid. */
 export function EmrDateTimeInput(
   p: EmrFieldProps & {
     value: string | null;
-    displayFormat?: DateDisplayFormat;
+    ariaLabel?: string;
+    displayFormat?: EmrDateTimeDisplayFormat;
     timePrecision?: TimePrecision;
+    hourCycle?: EmrDateTimeHourCycle;
+    wireFormat?: EmrDateTimeWireFormat;
+    min?: string;
+    max?: string;
+    size?: EmrDateTimeSize;
+    clearable?: boolean;
+    invalid?: boolean;
     dateLabel?: string;
     timeLabel?: string;
     onValueChange: (value: string | null) => void;
+    onCleared?: () => void;
+    onBlurred?: () => void;
+    onSubmitted?: () => void;
   },
 ) {
-  const { id } = useControl(p);
+  const { id, input } = useControl(p);
   const labels = useEmrLabels();
   return (
     <Frame id={id} p={p}>
@@ -211,13 +339,23 @@ export function EmrDateTimeInput(
         value={p.value}
         format={p.displayFormat ?? labels.dateFormat}
         timePrecision={p.timePrecision ?? 'minute'}
-        label={p.label}
+        hourCycle={p.hourCycle ?? '24'}
+        wireFormat={p.wireFormat ?? 'utc'}
+        min={p.min}
+        max={p.max}
+        size={p.size}
+        clearable={p.clearable}
+        warning={Boolean(p.warning && !p.error && !p.invalid && !input.invalid)}
+        label={p.ariaLabel ?? p.label}
         dateLabel={p.dateLabel ?? labels.dateLabel}
         timeLabel={p.timeLabel ?? labels.timeLabel}
-        invalid={!!p.error}
+        invalid={Boolean(p.invalid || p.error || input.invalid)}
         readOnly={p.readOnly}
         editable={!p.disabled}
         onFocus={p.onFocus}
+        onBlur={p.onBlurred}
+        onCleared={p.onCleared}
+        onSubmit={p.onSubmitted}
         onValueChange={p.onValueChange}
       />
     </Frame>
@@ -231,61 +369,162 @@ export function EmrQuantityInput(
   p: EmrFieldProps & {
     value: number | null;
     unit: string | null;
-    units: readonly ClinicalOption[];
+    units: readonly EmrOption[];
+    mode?: EmrQuantityNumericMode;
+    precision?: number;
+    showSteppers?: boolean;
+    size?: EmrQuantitySize;
+    clearable?: boolean;
+    clearLabel?: string;
     unitLabel?: string;
+    unitPlaceholder?: string;
+    valueRequired?: boolean;
+    unitRequired?: boolean;
+    unitReadOnly?: boolean;
+    warning?: string;
+    valueError?: string;
+    unitError?: string;
     min?: number;
     max?: number;
     step?: number;
     onValueChange: (value: number | null) => void;
     onUnitChange: (unit: string | null) => void;
+    onCleared?: () => void;
+    onBlurred?: () => void;
+    onSubmitted?: () => void;
   },
 ) {
   const { id, input } = useControl(p);
   const t = useEmrTheme();
+  const labels = useEmrLabels();
+  const mode = p.mode ?? 'decimal';
+  const size = p.size ?? 'md';
+  const showSteppers = p.showSteppers ?? true;
+  const effectiveStep = resolveQuantityStep({ mode, precision: p.precision, step: p.step });
+  const numericInvalid = Boolean(p.error || p.valueError);
+  const unitInvalid = Boolean(p.error || p.unitError);
+  const combinedError = [p.error, p.valueError, p.unitError].filter(Boolean).join(' · ') || undefined;
+  const maxWidth = size === 'sm' ? 300 : size === 'lg' ? 400 : 360;
+  const targetSize = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const canClear =
+    Boolean(p.clearable) &&
+    !p.disabled &&
+    !p.readOnly &&
+    (p.value !== null || (p.unit !== null && !p.unitReadOnly));
+
   return (
-    <Frame id={id} p={p}>
-      <View style={[styles.pair, { maxWidth: 320 }]}>
-        <NumberInput
-          {...input}
-          min={p.min}
-          max={p.max}
-          step={p.step}
-          integer={false}
-          value={p.value ?? undefined}
-          onNumber={p.onValueChange}
-        />
-        <View style={{ minWidth: t.controlHeight * 2.2 }}>
-          <EmrSelect
-            label={`${p.label} ${p.unitLabel ?? DEFAULTS.unitLabel}`}
-            options={p.units}
-            value={p.unit}
-            invalid={!!p.error}
-            readOnly={p.readOnly}
-            disabled={p.disabled}
-            onChange={p.onUnitChange}
+    <Frame id={id} p={{ ...p, error: combinedError, warning: combinedError ? undefined : p.warning }}>
+      <View style={[styles.pair, { flexWrap: 'wrap', alignItems: 'stretch', width: '100%', maxWidth }]}>
+        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 168, minWidth: 168 }}>
+          <NumberInput
+            {...input}
+            invalid={numericInvalid}
+            warning={!numericInvalid && Boolean(p.warning)}
+            min={p.min}
+            max={p.max}
+            step={effectiveStep}
+            precision={p.precision}
+            integer={mode === 'integer'}
+            showSteppers={showSteppers}
+            size={size}
+            maxWidth="none"
+            value={p.value ?? undefined}
+            onNumber={p.onValueChange}
+            onBlur={() => p.onBlurred?.()}
+            onSubmitted={p.onSubmitted}
           />
         </View>
+        <View style={{ flexGrow: 0, flexShrink: 1, flexBasis: 116, minWidth: 88 }}>
+          <EmrSelect
+            label={`${p.label} ${p.unitLabel ?? 'Unit'}`}
+            labelHidden
+            placeholder={p.unitPlaceholder ?? 'Unit'}
+            options={p.units}
+            value={p.unit}
+            required={p.unitRequired ?? p.required}
+            invalid={unitInvalid}
+            readOnly={Boolean(p.readOnly || p.unitReadOnly)}
+            disabled={p.disabled}
+            onChange={(next) => {
+              p.onUnitChange(next);
+            }}
+          />
+        </View>
+        {canClear ? (
+          <Pressable
+            role="button"
+            aria-label={`${p.clearLabel ?? labels.clear ?? 'Clear'} ${p.label || 'quantity'}`}
+            onPress={() => {
+              p.onValueChange(null);
+              if (!p.unitReadOnly && p.unit !== null) {
+                p.onUnitChange(null);
+              }
+              p.onCleared?.();
+            }}
+            style={({ pressed, hovered }: PressableStateCallbackType & { hovered?: boolean }) => ({
+              minWidth: targetSize,
+              minHeight: targetSize,
+              borderWidth: 1,
+              borderColor: hovered ? t.focus : t.border,
+              borderRadius: 8,
+              backgroundColor: pressed ? t.surfaceRaised : hovered ? t.surfaceSoft : t.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            })}
+          >
+            <SvgIcon name="close" size={14} color={t.textMuted} />
+          </Pressable>
+        ) : null}
       </View>
     </Frame>
   );
 }
 
 /** Two text inputs sharing one label (e.g. OD / OS), joined by `separator`. */
+export type PairedSideInputType = 'text' | 'integer' | 'decimal';
+
 export function EmrPairedInput(
   p: EmrFieldProps & {
     firstLabel: string;
     secondLabel: string;
     firstValue: string | null;
     secondValue: string | null;
+    firstPlaceholder?: string;
+    secondPlaceholder?: string;
+    inputType?: PairedSideInputType;
+    firstInputType?: PairedSideInputType;
+    secondInputType?: PairedSideInputType;
+    min?: number;
+    max?: number;
+    firstMin?: number;
+    firstMax?: number;
+    secondMin?: number;
+    secondMax?: number;
+    firstRequired?: boolean;
+    secondRequired?: boolean;
+    firstError?: string;
+    secondError?: string;
     separator?: string;
     onFirstValueChange: (value: string | null) => void;
     onSecondValueChange: (value: string | null) => void;
   },
 ) {
-  const { id, input } = useControl(p);
+  const combinedError = [p.error, p.firstError, p.secondError].filter(Boolean).join(' · ') || undefined;
+  const frameProps: EmrFieldProps = { ...p, error: combinedError };
+  const { id, input } = useControl(frameProps);
   const t = useEmrTheme();
   const { 'aria-labelledby': _labelledBy, placeholder: _placeholder, ...rest } = input;
-  const side = (key: 'first' | 'second', sideLabel: string, value: string | null, change: (value: string | null) => void) => (
+  const side = (
+    key: 'first' | 'second',
+    sideLabel: string,
+    value: string | null,
+    change: (value: string | null) => void,
+    sideType: PairedSideInputType,
+    sideError: string | undefined,
+    sideRequired: boolean | undefined,
+    sidePlaceholder: string | undefined,
+  ) => (
     <View style={styles.pair}>
       <Text aria-hidden style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
         {sideLabel}
@@ -294,6 +533,10 @@ export function EmrPairedInput(
         <ThemedInput
           {...rest}
           id={`${id}-${key}`}
+          placeholder={sidePlaceholder ?? p.placeholder}
+          invalid={Boolean(sideError || p.error)}
+          aria-required={sideRequired ?? p.required}
+          inputMode={sideType === 'integer' ? 'numeric' : sideType === 'decimal' ? 'decimal' : undefined}
           aria-label={`${p.label}, ${sideLabel}`}
           value={value ?? ''}
           onChangeText={text => change(text === '' ? null : text)}
@@ -302,18 +545,40 @@ export function EmrPairedInput(
     </View>
   );
   return (
-    <Frame id={id} p={p}>
+    <Frame id={id} p={frameProps}>
       <View
         role="group"
         aria-labelledby={p.labelHidden ? undefined : `${id}-label`}
         aria-label={input['aria-label']}
         style={[styles.pair, { maxWidth: 360 }]}
       >
-        <View style={styles.flex}>{side('first', p.firstLabel, p.firstValue, p.onFirstValueChange)}</View>
+        <View style={styles.flex}>
+          {side(
+            'first',
+            p.firstLabel,
+            p.firstValue,
+            p.onFirstValueChange,
+            p.firstInputType ?? p.inputType ?? 'text',
+            p.firstError,
+            p.firstRequired,
+            p.firstPlaceholder,
+          )}
+        </View>
         <Text aria-hidden style={{ color: t.textMuted, fontSize: t.textMd, fontFamily: fontFamily(t) }}>
           {p.separator ?? '/'}
         </Text>
-        <View style={styles.flex}>{side('second', p.secondLabel, p.secondValue, p.onSecondValueChange)}</View>
+        <View style={styles.flex}>
+          {side(
+            'second',
+            p.secondLabel,
+            p.secondValue,
+            p.onSecondValueChange,
+            p.secondInputType ?? p.inputType ?? 'text',
+            p.secondError,
+            p.secondRequired,
+            p.secondPlaceholder,
+          )}
+        </View>
       </View>
     </Frame>
   );

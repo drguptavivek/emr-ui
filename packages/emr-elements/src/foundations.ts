@@ -36,19 +36,19 @@ export const EMR_FONT_STACKS: Readonly<Record<EmrFontStackId, { label: string; s
     label: 'Inter Variable (Clinical I/l + Tabular)',
     sans: "'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, sans-serif",
     mono: "'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    features: '"cv05" 1, "cv08" 1, "ss03" 1, "zero" 1',
+    features: '"cv05" 1, "cv08" 1, "ss03" 1',
   },
   'ibm-plex': {
     label: 'IBM Plex Sans + IBM Plex Mono',
     sans: "'IBM Plex Sans', 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif",
     mono: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    features: '"zero" 1, "ss01" 1',
+    features: '"ss01" 1',
   },
   atkinson: {
     label: 'Atkinson Hyperlegible (Low-Vision / Ophthal)',
     sans: "'Atkinson Hyperlegible', 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif",
     mono: "'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
-    features: '"zero" 1',
+    features: 'normal',
   },
   system: {
     label: 'System UI Native',
@@ -303,11 +303,11 @@ const EMR_DEFAULT_ROOT_TOKENS_CSS = `:where(:root) {
   --emr-text-xl: 1.25rem;
   --emr-text-2xl: 1.5rem;
   --emr-weight-regular: 400;
-  --emr-weight-medium: 500;
+  --emr-weight-medium: 550;
   --emr-weight-semibold: 600;
   --emr-weight-bold: 700;
   --emr-leading-normal: 1.45;
-  --emr-leading-tight: 1.2;
+  --emr-leading-tight: 1.25;
 }`;
 
 let rootTokensInjected = false;
@@ -332,7 +332,7 @@ export const emrShadowStyles = css`
     box-sizing: border-box;
     color: var(--emr-text, #263847);
     font-family: var(--emr-font-family, 'Inter Variable', Inter, system-ui, sans-serif);
-    font-feature-settings: var(--emr-font-features, "cv05" 1, "cv08" 1, "ss03" 1, "zero" 1);
+    font-feature-settings: var(--emr-font-features, "cv05" 1, "cv08" 1, "ss03" 1);
     font-variant-numeric: tabular-nums;
     line-height: var(--emr-leading-normal, 1.45);
   }
@@ -387,6 +387,18 @@ export const emrShadowStyles = css`
     color: var(--emr-text-muted, #5c6c78);
   }
 
+  .emr-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .emr-control {
     min-height: var(--emr-control-height, 44px);
     height: var(--emr-control-height, 44px);
@@ -399,6 +411,29 @@ export const emrShadowStyles = css`
     font-size: var(--emr-text-md, 0.875rem);
     font-variant-numeric: tabular-nums;
     width: 100%;
+    box-sizing: border-box;
+  }
+
+  .emr-control:hover:not(:disabled):not([readonly]) {
+    border-color: var(--emr-border-strong, var(--emr-primary-border, #8fb0c2));
+  }
+
+  .emr-control[readonly] {
+    border-style: dashed;
+    background: var(--emr-surface-soft, #eef2f5);
+  }
+
+  .emr-control[aria-invalid="true"] {
+    border-color: var(--emr-danger, #c62828);
+  }
+
+  .emr-control[aria-invalid="true"]:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--emr-danger, #c62828) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  .emr-control[data-warning="true"] {
+    border-color: var(--emr-warning, #b45309);
   }
 
   textarea.emr-control {
@@ -410,8 +445,8 @@ export const emrShadowStyles = css`
   .emr-control:focus-visible,
   .emr-btn:focus-visible,
   .emr-chip:focus-visible {
-    outline: 2px solid var(--emr-focus, #5f7f92);
-    outline-offset: -2px;
+    outline: 3px solid color-mix(in srgb, var(--emr-focus, #5f7f92) 70%, transparent);
+    outline-offset: 2px;
   }
 
   .emr-btn {
@@ -424,8 +459,8 @@ export const emrShadowStyles = css`
     background: var(--emr-primary-soft, #e3ebef);
     color: var(--emr-primary-contrast, #344b5a);
     font: inherit;
-    font-size: var(--emr-text-sm, 0.8125rem);
-    font-weight: var(--emr-weight-semibold, 600);
+    font-size: var(--emr-text-md, 0.875rem);
+    font-weight: 700;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -444,7 +479,7 @@ export const emrShadowStyles = css`
   }
 
   .emr-btn--secondary {
-    background: var(--emr-surface-soft, #f1f4f5);
+    background: var(--emr-surface-blue, #e8eef3);
     color: var(--emr-text, #263847);
     border-color: var(--emr-border, #c7d3da);
   }
@@ -468,7 +503,12 @@ export const emrShadowStyles = css`
   .emr-btn--danger {
     background: var(--emr-danger-soft, #fcecec);
     color: var(--emr-danger, #a44949);
-    border-color: var(--emr-danger, #a44949);
+    border-color: color-mix(in srgb, var(--emr-danger, #a44949) 45%, var(--emr-border, #c7d3da));
+  }
+  .emr-btn--danger:hover:not(:disabled) {
+    background: var(--emr-danger-hover, #8f3434);
+    color: var(--emr-danger-hover-text, #ffffff);
+    border-color: var(--emr-danger-hover, #8f3434);
   }
 
   .emr-btn--sm,
@@ -476,22 +516,54 @@ export const emrShadowStyles = css`
     min-height: var(--emr-control-height, 44px);
     height: var(--emr-control-height, 44px);
     padding: 0 12px;
-    font-size: var(--emr-text-xs, 0.75rem);
+    font-size: var(--emr-text-sm, 0.8125rem);
   }
 
   .emr-btn--lg {
     min-height: 48px;
     height: 48px;
-    padding: 0 22px;
-    font-size: var(--emr-text-md, 0.875rem);
+    padding: 0 20px;
+    font-size: var(--emr-text-lg, 1rem);
   }
 
   .emr-btn--block {
     width: 100%;
     display: flex;
   }
+  .emr-btn--pill {
+    border-radius: 999px;
+  }
 
-  .emr-badge,
+  .emr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 24px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: var(--emr-neutral-soft, #e8eef1);
+    color: var(--emr-text, #263847);
+    font-size: var(--emr-text-xs, 0.75rem);
+    line-height: 1;
+    white-space: nowrap;
+    font-weight: var(--emr-weight-bold, 700);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .emr-badge--sm {
+    min-height: 20px;
+    padding: 2px 8px;
+    font-size: var(--emr-text-2xs, 0.6875rem);
+    gap: 4px;
+  }
+  .emr-badge--rounded { border-radius: 6px; }
+  .emr-badge--dot-only { width: 10px; height: 10px; min-height: 10px; min-width: 10px; padding: 0; border-radius: 999px; }
+  .emr-badge--sm.emr-badge--dot-only { width: 8px; height: 8px; min-height: 8px; min-width: 8px; }
+  .emr-badge__dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor; flex-shrink: 0; }
+  .emr-badge--sm .emr-badge__dot { width: 6px; height: 6px; }
+  .emr-badge__count { font-variant-numeric: tabular-nums; }
   .emr-chip {
     display: inline-flex;
     align-items: center;
@@ -505,11 +577,27 @@ export const emrShadowStyles = css`
     font-weight: var(--emr-weight-semibold, 600);
   }
 
-  .emr-badge--neutral { background: var(--emr-neutral-soft, #e8eef1); color: var(--emr-text, #263847); border-color: var(--emr-border, #c7d3da); }
-  .emr-badge--info { background: var(--emr-info-soft, #e8f0f4); color: var(--emr-info, #486f86); border-color: var(--emr-info, #486f86); }
-  .emr-badge--success { background: var(--emr-success-soft, #e8f5ec); color: var(--emr-success, #2b7650); border-color: var(--emr-success, #2b7650); }
-  .emr-badge--warning { background: var(--emr-warning-soft, #fbf4de); color: var(--emr-warning, #8a651f); border-color: var(--emr-warning, #8a651f); }
-  .emr-badge--danger { background: var(--emr-danger-soft, #fcecec); color: var(--emr-danger, #a44949); border-color: var(--emr-danger, #a44949); }
+  .emr-badge--neutral { background: var(--emr-neutral-soft, #e8eef1); color: var(--emr-text, #263847); border-color: transparent; }
+  .emr-badge--info { background: var(--emr-info-soft, #e8f0f4); color: var(--emr-info, #486f86); border-color: transparent; }
+  .emr-badge--success { background: var(--emr-success-soft, #e8f5ec); color: var(--emr-success, #2b7650); border-color: transparent; }
+  .emr-badge--warning { background: var(--emr-warning-soft, #fbf4de); color: var(--emr-warning, #8a651f); border-color: transparent; }
+  .emr-badge--danger { background: var(--emr-danger-soft, #fcecec); color: var(--emr-danger, #a44949); border-color: transparent; }
+  .emr-chip.emr-badge--neutral { border-color: var(--emr-border, #c7d3da); }
+  .emr-chip.emr-badge--info { border-color: var(--emr-info, #486f86); }
+  .emr-chip.emr-badge--success { border-color: var(--emr-success, #2b7650); }
+  .emr-chip.emr-badge--warning { border-color: var(--emr-warning, #8a651f); }
+  .emr-chip.emr-badge--danger { border-color: var(--emr-danger, #a44949); }
+  .emr-badge--outline { background: transparent; border-color: currentColor; }
+  .emr-badge--outline.emr-badge--neutral { background: transparent; border-color: var(--emr-border, #c7d3da); color: var(--emr-text, #263847); }
+  .emr-badge--solid.emr-badge--neutral { background: var(--emr-text, #263847); color: var(--emr-surface, #fffefa); }
+  .emr-badge--solid.emr-badge--info { background: var(--emr-info, #486f86); color: #ffffff; }
+  .emr-badge--solid.emr-badge--success { background: var(--emr-success, #2b7650); color: #ffffff; }
+  .emr-badge--solid.emr-badge--warning { background: var(--emr-warning, #8a651f); color: #ffffff; }
+  .emr-badge--solid.emr-badge--danger { background: var(--emr-danger, #a44949); color: #ffffff; }
+  :host-context(.emr-theme-dark) .emr-badge--solid.emr-badge--info,
+  :host-context(.emr-theme-dark) .emr-badge--solid.emr-badge--success,
+  :host-context(.emr-theme-dark) .emr-badge--solid.emr-badge--warning,
+  :host-context(.emr-theme-dark) .emr-badge--solid.emr-badge--danger { color: var(--emr-surface, #0f172a); }
 
   .emr-field {
     display: grid;

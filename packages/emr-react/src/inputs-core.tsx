@@ -14,7 +14,23 @@ import {
   type KeyboardTypeOptions,
   type PressableStateCallbackType,
 } from 'react-native';
-import type { ClinicalFieldValue } from '@drguptavivek/emr-controller';
+import {
+  formatTimeDisplay,
+  isDateTimeOutOfBounds,
+  isTimeOutOfBounds,
+  joinDateTimeParts,
+  parseTimeText as parseControllerTimeText,
+  resolveQuantityStep,
+  resolveTimePlaceholder,
+  sanitizeTimeText as sanitizeControllerTimeText,
+  splitDateTimeParts,
+  stepQuantityValue,
+  type ClinicalFieldValue,
+  type EmrDateTimeWireFormat,
+  type EmrQuantitySize,
+  type EmrTimeHourCycle,
+  type EmrTimeSize,
+} from '@drguptavivek/emr-controller';
 import { SvgIcon } from './icons';
 import { useEmrLabels } from './labels';
 import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';
@@ -56,11 +72,19 @@ export type ThemedInputProps = React.ComponentProps<typeof TextInput> & { invali
 export function ThemedInput({ invalid, ...props }: ThemedInputProps) {
   const t = useEmrTheme();
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const canHover = Platform.OS === 'web' && props.editable !== false && !props.readOnly;
   const lines = props.numberOfLines ?? 1;
   return (
     <TextInput
       {...props}
       {...(invalid ? ({ 'aria-invalid': true } as object) : null)}
+      {...(Platform.OS === 'web'
+        ? ({
+            onMouseEnter: () => setHovered(true),
+            onMouseLeave: () => setHovered(false),
+          } as object)
+        : null)}
       placeholderTextColor={t.textMuted}
       textAlignVertical={props.multiline ? 'top' : 'center'}
       onFocus={e => {
@@ -75,7 +99,7 @@ export function ThemedInput({ invalid, ...props }: ThemedInputProps) {
         styles.input,
         {
           minHeight: props.multiline ? Math.max(88, lines * t.textMd * t.leadingNormal + 18) : t.controlHeight,
-          borderColor: focused ? t.focus : invalid ? t.danger : t.border,
+          borderColor: focused ? t.focus : invalid ? t.danger : hovered && canHover ? t.focus : t.border,
           borderWidth: 1,
           backgroundColor:
             props.editable === false && !props.readOnly
@@ -102,7 +126,13 @@ export function NumberInput({
   min,
   max,
   step,
+  precision,
+  showSteppers = true,
+  size = 'md',
+  warning,
+  maxWidth,
   onNumber,
+  onSubmitted,
   ...props
 }: Omit<ThemedInputProps, 'value'> & {
   value: ClinicalFieldValue | undefined;
@@ -111,7 +141,13 @@ export function NumberInput({
   min?: number;
   max?: number;
   step?: number;
+  precision?: number;
+  showSteppers?: boolean;
+  size?: EmrQuantitySize;
+  warning?: boolean;
+  maxWidth?: number | 'none';
   onNumber: (value: number | null) => void;
+  onSubmitted?: () => void;
 }) {
   const t = useEmrTheme();
   const external = numberTextOf(value);
@@ -144,37 +180,99 @@ export function NumberInput({
   const keyboardType: KeyboardTypeOptions = integer ? 'number-pad' : 'decimal-pad';
   const parsedCurrent = parseNumberDraft(displayed);
   const currentNum = parsedCurrent.complete ? parsedCurrent.value : null;
-  const effectiveStep = step ?? (integer ? 1 : 0.5);
-  const targetSize = Math.max(44, t.controlHeight);
+  const effectiveStep =
+    step ??
+    (precision !== undefined
+      ? resolveQuantityStep({ mode: integer ? 'integer' : 'decimal', precision })
+      : integer
+        ? 1
+        : 0.5);
+  const targetSize = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
 
   const canDec = canEdit && (min === undefined || currentNum === null || currentNum - effectiveStep >= min - 1e-9);
   const canInc = canEdit && (max === undefined || currentNum === null || currentNum + effectiveStep <= max + 1e-9);
 
   const nudge = (dir: -1 | 1) => {
     if (!canEdit) return;
-    const base = currentNum ?? (dir > 0 ? (min ?? 0) - effectiveStep : (max ?? 0) + effectiveStep);
-    let next = Number((base + dir * effectiveStep).toFixed(6));
-    if (integer) next = Math.round(next);
-    if (min !== undefined && next < min) next = min;
-    if (max !== undefined && next > max) next = max;
+    const next = stepQuantityValue({
+      current: currentNum,
+      delta: dir,
+      mode: integer ? 'integer' : 'decimal',
+      precision,
+      step: effectiveStep,
+      min,
+      max,
+    });
     setFocused(false);
     onNumber(next);
   };
 
+  const resolvedMaxWidth = maxWidth === 'none' ? undefined : (maxWidth ?? (unit ? 284 : 224));
+  const resolvedBorderColor = props.invalid ? t.danger : warning ? t.warning : t.border;
+  const resolvedBg =
+    props.editable === false && !props.readOnly
+      ? t.surfaceRaised
+      : props.readOnly
+        ? t.surfaceSoft
+        : t.surface;
+
+  if (!showSteppers) {
+    return (
+      <View style={[styles.numberRow, resolvedMaxWidth !== undefined ? { maxWidth: resolvedMaxWidth } : { width: '100%' }]}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <ThemedInput
+            {...props}
+            aria-disabled={props.editable === false && !props.readOnly ? true : undefined}
+            value={displayed}
+            keyboardType={keyboardType}
+            returnKeyType={onSubmitted ? 'done' : props.returnKeyType}
+            onSubmitEditing={() => {
+              onSubmitted?.();
+            }}
+            style={[
+              {
+                minHeight: targetSize,
+                borderColor: resolvedBorderColor,
+                borderStyle: props.readOnly ? 'dashed' : 'solid',
+                backgroundColor: resolvedBg,
+              },
+              Platform.OS === 'web' ? ({ fontVariantNumeric: 'tabular-nums' } as unknown as object) : null,
+            ]}
+            onFocus={(e) => {
+              setFocused(true);
+              setDraft(external);
+              props.onFocus?.(e);
+            }}
+            onChangeText={(text) => {
+              if (!canEdit) return;
+              const clean = sanitizeNumberText(text, integer);
+              setDraft(clean);
+              const parsed = parseNumberDraft(clean);
+              if (parsed.complete) {
+                onNumber(parsed.value);
+              }
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              setDraft(external);
+              props.onBlur?.(e);
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View style={[styles.numberRow, { maxWidth: unit ? 284 : 224 }]}>
+    <View style={[styles.numberRow, resolvedMaxWidth !== undefined ? { maxWidth: resolvedMaxWidth } : { width: '100%' }]}>
       <View
         style={[
           styles.stepperGroup,
           {
             minHeight: targetSize,
-            borderColor: props.invalid ? t.danger : t.border,
-            backgroundColor:
-              props.editable === false && !props.readOnly
-                ? t.surfaceRaised
-                : props.readOnly
-                  ? t.surfaceSoft
-                  : t.surface,
+            borderColor: resolvedBorderColor,
+            borderStyle: props.readOnly ? 'dashed' : 'solid',
+            backgroundColor: resolvedBg,
           },
         ]}
       >
@@ -184,7 +282,7 @@ export function NumberInput({
           aria-disabled={!canDec}
           disabled={!canDec}
           onPress={() => nudge(-1)}
-          style={({ pressed, focused: btnFocused }: PressState) => [
+          style={({ pressed, hovered, focused: btnFocused }: PressState & { hovered?: boolean }) => [
             styles.stepBtn,
             focusRing(t, btnFocused),
             {
@@ -192,7 +290,7 @@ export function NumberInput({
               minHeight: targetSize,
               borderRightWidth: 1,
               borderColor: t.border,
-              backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft,
+              backgroundColor: pressed ? t.surfaceRaised : hovered && canDec ? t.primaryHover : t.surfaceSoft,
               opacity: canDec ? 1 : 0.4,
             },
           ]}
@@ -202,6 +300,7 @@ export function NumberInput({
 
         <ThemedInput
           {...props}
+          aria-disabled={props.editable === false && !props.readOnly ? true : undefined}
           aria-valuemin={min}
           aria-valuemax={max}
           value={displayed}
@@ -233,7 +332,7 @@ export function NumberInput({
           aria-disabled={!canInc}
           disabled={!canInc}
           onPress={() => nudge(1)}
-          style={({ pressed, focused: btnFocused }: PressState) => [
+          style={({ pressed, hovered, focused: btnFocused }: PressState & { hovered?: boolean }) => [
             styles.stepBtn,
             focusRing(t, btnFocused),
             {
@@ -241,7 +340,7 @@ export function NumberInput({
               minHeight: targetSize,
               borderLeftWidth: 1,
               borderColor: t.border,
-              backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft,
+              backgroundColor: pressed ? t.surfaceRaised : hovered && canInc ? t.primaryHover : t.surfaceSoft,
               opacity: canInc ? 1 : 0.4,
             },
           ]}
@@ -911,25 +1010,49 @@ export function EmrTypedText({
   mode,
   min,
   max,
+  step,
+  hourCycle = '24',
+  size = 'md',
+  clearable,
+  warning,
   invalid,
   onValueChange,
+  onCleared,
   ...props
 }: Omit<ThemedInputProps, 'value'> & {
   value: string | null;
   mode: TextMode;
   min?: string;
   max?: string;
+  step?: number;
+  hourCycle?: EmrTimeHourCycle;
+  size?: EmrTimeSize;
+  clearable?: boolean;
+  warning?: boolean;
   onValueChange: (value: string | null) => void;
+  onCleared?: () => void;
 }) {
   const t = useEmrTheme();
   const canEdit = props.editable !== false && !props.readOnly;
   const isTime = isTimeMode(mode);
+  const timePrecision = mode === 'time-seconds' ? 'second' : 'minute';
   const isYearOnly = mode === 'yyyy';
   const isMonthOnly = mode === 'yyyy-mm' || mode === 'mm-yyyy';
   const datePrecision: DatePrecision = isYearOnly ? 'year' : isMonthOnly ? 'month' : 'day';
 
+  const formatForMode = (val: string | null): string =>
+    isTime ? formatTimeDisplay(val, { precision: timePrecision, hourCycle }) : formatDate(val, mode as DateDisplayFormat);
+
+  const parseForMode = (raw: string): TextParse => {
+    if (!isTime) return parseDateText(raw, mode as DateDisplayFormat);
+    const r = parseControllerTimeText(raw, { precision: timePrecision, hourCycle });
+    if (r.kind === 'empty') return { status: 'empty' };
+    if (r.kind === 'valid') return { status: 'valid', value: r.value };
+    return { status: 'draft' };
+  };
+
   const [focused, setFocused] = useState(false);
-  const [draft, setDraft] = useState(() => formatText(value, mode));
+  const [draft, setDraft] = useState(() => formatForMode(value));
   const [left, setLeft] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
@@ -939,7 +1062,7 @@ export function EmrTypedText({
 
   useEffect(() => {
     if (!canEdit) {
-      setDraft(formatText(value, mode));
+      setDraft(formatForMode(value));
       setLeft(false);
       setCalOpen(false);
       setTimeOpen(false);
@@ -947,33 +1070,36 @@ export function EmrTypedText({
     }
     if (!focused) {
       setDraft(current => {
-        const parsed = parseText(current, mode);
-        return parsed.status === 'draft' ? current : formatText(value, mode);
+        const parsed = parseForMode(current);
+        return parsed.status === 'draft' ? current : formatForMode(value);
       });
       return;
     }
     setDraft(current => {
-      const parsed = parseText(current, mode);
-      return parsed.status === 'draft' || valueOf(parsed) === value ? current : formatText(value, mode);
+      const parsed = parseForMode(current);
+      const pv = parsed.status === 'valid' ? parsed.value : null;
+      return parsed.status === 'draft' || pv === value ? current : formatForMode(value);
     });
-  }, [value, mode, canEdit, focused]);
+  }, [value, mode, hourCycle, canEdit, focused]);
 
-  const displayed = resolveControlledTemporalDraft({
-    draft,
-    value,
-    mode,
-    focused,
-    editable: canEdit,
-    min,
-    max,
-  });
+  const displayed = !canEdit
+    ? formatForMode(value)
+    : focused
+      ? draft
+      : (() => {
+          const parsed = parseForMode(draft);
+          if (parsed.status === 'draft') return draft;
+          return formatForMode(value);
+        })();
 
-  const parsedDraft = parseText(displayed, mode);
+  const parsedDraft = parseForMode(displayed);
   const outOfBounds =
-    !isTime && parsedDraft.status === 'valid' && isIsoDateOutOfBounds(parsedDraft.value, min, max, datePrecision);
+    parsedDraft.status === 'valid' &&
+    (isTime ? isTimeOutOfBounds(parsedDraft.value, min, max) : isIsoDateOutOfBounds(parsedDraft.value, min, max, datePrecision));
   const isInvalid = invalid || (canEdit && left && (parsedDraft.status === 'draft' || outOfBounds));
-  const targetSize = Math.max(44, t.controlHeight);
-  const maxWidth = isYearOnly ? 148 : isMonthOnly ? 184 : isTime ? (mode === 'time-seconds' ? 196 : 168) : 232;
+  const targetSize = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const baseTimeWidth = mode === 'time-seconds' || hourCycle === '12' ? 210 : 176;
+  const maxWidth = isYearOnly ? 148 : isMonthOnly ? 184 : isTime ? (clearable ? baseTimeWidth + 36 : baseTimeWidth) : 232;
   const pickerOpen = calOpen || timeOpen;
 
   const openPicker = () => {
@@ -1018,7 +1144,8 @@ export function EmrTypedText({
         {
           maxWidth,
           minHeight: targetSize,
-          borderColor: pickerOpen ? t.primary : isInvalid ? t.danger : t.border,
+          borderStyle: props.readOnly ? 'dashed' : 'solid',
+          borderColor: pickerOpen ? t.primary : isInvalid ? t.danger : warning ? t.warning : t.border,
           backgroundColor:
             props.editable === false && !props.readOnly
               ? t.surfaceRaised
@@ -1043,22 +1170,25 @@ export function EmrTypedText({
           setFocused(false);
           setLeft(true);
           setDraft(d => {
-            const p = parseText(d, mode);
+            const p = parseForMode(d);
             if (p.status === 'draft') return d;
-            return formatText(value, mode);
+            return formatForMode(value);
           });
           props.onBlur?.(e);
         }}
         onChangeText={text => {
           if (!canEdit) return;
-          const clean = isTime ? sanitizeTimeText(text, mode === 'time-seconds') : sanitizeDateText(text, mode);
+          const clean = isTime ? sanitizeControllerTimeText(text, { hourCycle }) : sanitizeDateText(text, mode as DateDisplayFormat);
           setDraft(clean);
           setLeft(false);
-          const parsed = parseText(clean, mode);
+          const parsed = parseForMode(clean);
           if (parsed.status === 'empty') {
             onValueChange(null);
           } else if (parsed.status === 'valid') {
-            if (!isTime && isIsoDateOutOfBounds(parsed.value, min, max, datePrecision)) {
+            const oob = isTime
+              ? isTimeOutOfBounds(parsed.value, min, max)
+              : isIsoDateOutOfBounds(parsed.value, min, max, datePrecision);
+            if (oob) {
               setLeft(true);
               return;
             }
@@ -1066,6 +1196,31 @@ export function EmrTypedText({
           }
         }}
       />
+      {isTime && clearable && value && canEdit ? (
+        <Pressable
+          role="button"
+          aria-label={`Clear ${props['aria-label'] || 'time'}`}
+          onPress={() => {
+            setDraft('');
+            setLeft(false);
+            onValueChange(null);
+            onCleared?.();
+          }}
+          style={({ pressed, hovered, focused: clearFocused }: PressState & { hovered?: boolean }) => [
+            styles.temporalBtn,
+            focusRing(t, clearFocused),
+            {
+              minWidth: targetSize,
+              minHeight: targetSize,
+              borderLeftWidth: 1,
+              borderColor: t.border,
+              backgroundColor: pressed ? t.surfaceRaised : hovered ? t.primaryHover : 'transparent',
+            },
+          ]}
+        >
+          <SvgIcon name="close" size={14} color={t.textMuted} />
+        </Pressable>
+      ) : null}
       <Pressable
         role="button"
         aria-label={isTime ? 'Choose time' : 'Choose date'}
@@ -1074,7 +1229,7 @@ export function EmrTypedText({
         aria-disabled={!canEdit}
         disabled={!canEdit}
         onPress={openPicker}
-        style={({ pressed, focused: btnFocused }: PressState) => [
+        style={({ pressed, hovered, focused: btnFocused }: PressState & { hovered?: boolean }) => [
           styles.temporalBtn,
           focusRing(t, btnFocused),
           {
@@ -1082,7 +1237,13 @@ export function EmrTypedText({
             minHeight: targetSize,
             borderLeftWidth: 1,
             borderColor: t.border,
-            backgroundColor: pickerOpen ? t.primarySoft : pressed ? t.surfaceRaised : t.surfaceSoft,
+            backgroundColor: pickerOpen
+              ? t.primarySoft
+              : pressed
+                ? t.surfaceRaised
+                : hovered && canEdit
+                  ? t.primaryHover
+                  : t.surfaceSoft,
             opacity: canEdit ? 1 : 0.5,
           },
         ]}
@@ -1098,7 +1259,9 @@ export function EmrTypedText({
                 } | null;
               },
               type: 'time',
-              step: mode === 'time-seconds' ? 1 : undefined,
+              min,
+              max,
+              step: step ?? (mode === 'time-seconds' ? 1 : 60),
               value: value ?? '',
               tabIndex: -1,
               'aria-hidden': 'true',
@@ -1110,7 +1273,8 @@ export function EmrTypedText({
                   onValueChange(null);
                   return;
                 }
-                const normalized = mode === 'time-seconds' ? formatTime(raw, true) : raw;
+                if (isTimeOutOfBounds(raw, min, max)) return;
+                const normalized = mode === 'time-seconds' ? formatTime(raw, true) : raw.slice(0, 5);
                 setFocused(false);
                 setLeft(false);
                 onValueChange(normalized);
@@ -1182,8 +1346,15 @@ export function EmrTypedText({
  */
 export function EmrDateTimeText({
   value,
-  format,
+  format = 'dd-mm-yyyy',
   timePrecision = 'minute',
+  hourCycle = '24',
+  wireFormat = 'utc',
+  min,
+  max,
+  size = 'md',
+  clearable,
+  warning,
   label,
   dateLabel,
   timeLabel,
@@ -1191,11 +1362,21 @@ export function EmrDateTimeText({
   readOnly,
   editable,
   onFocus,
+  onBlur,
+  onCleared,
+  onSubmit,
   onValueChange,
 }: {
   value: string | null;
   format: DateDisplayFormat;
   timePrecision?: 'minute' | 'second';
+  hourCycle?: EmrTimeHourCycle;
+  wireFormat?: EmrDateTimeWireFormat;
+  min?: string;
+  max?: string;
+  size?: EmrTimeSize;
+  clearable?: boolean;
+  warning?: boolean;
   label: string;
   dateLabel: string;
   timeLabel: string;
@@ -1203,38 +1384,45 @@ export function EmrDateTimeText({
   readOnly?: boolean;
   editable?: boolean;
   onFocus?: () => void;
+  onBlur?: () => void;
+  onCleared?: () => void;
+  onSubmit?: () => void;
   onValueChange: (value: string | null) => void;
 }) {
-  const withSeconds = timePrecision === 'second';
+  const t = useEmrTheme();
   const canEdit = editable !== false && !readOnly;
   const [focusCount, setFocusCount] = useState(0);
+  const [leftInvalid, setLeftInvalid] = useState(false);
   const focused = focusCount > 0;
-  const [parts, setParts] = useState(() => splitDateTime(value, withSeconds));
+  const [parts, setParts] = useState<{ date: string | null; time: string | null }>(() => ({
+    ...splitDateTimeParts(value, timePrecision),
+  }));
 
   useEffect(() => {
     if (!canEdit) {
-      setParts(splitDateTime(value, withSeconds));
+      setParts({ ...splitDateTimeParts(value, timePrecision) });
+      setLeftInvalid(false);
       return;
     }
     setParts(current => {
       const halfTyped = (current.date !== null) !== (current.time !== null);
       if (halfTyped) return current;
-      if (focused && sameInstant(joinDateTime(current.date, current.time), value)) return current;
-      return splitDateTime(value, withSeconds);
+      const joined = joinDateTimeParts(current.date, current.time, wireFormat, timePrecision);
+      if (focused && sameInstant(joined, value)) return current;
+      return { ...splitDateTimeParts(value, timePrecision) };
     });
-  }, [value, withSeconds, canEdit, focused]);
+  }, [value, timePrecision, wireFormat, canEdit, focused]);
 
-  const displayedParts = resolveControlledDateTimeParts({
-    parts,
-    value,
-    withSeconds,
-    focused,
-    editable: canEdit,
-  });
+  const displayedParts = !canEdit
+    ? splitDateTimeParts(value, timePrecision)
+    : focused || (parts.date !== null) !== (parts.time !== null)
+      ? parts
+      : splitDateTimeParts(value, timePrecision);
 
-  const change = (next: typeof parts) => {
+  const change = (next: { date: string | null; time: string | null }) => {
     if (!canEdit) return;
     setParts(next);
+    setLeftInvalid(false);
     const bothEmpty = next.date === null && next.time === null;
     const bothPresent = next.date !== null && next.time !== null;
     if (bothEmpty) {
@@ -1242,22 +1430,49 @@ export function EmrDateTimeText({
       return;
     }
     if (bothPresent) {
-      const joined = joinDateTime(next.date, next.time);
+      const joined = joinDateTimeParts(next.date, next.time, wireFormat, timePrecision);
+      if (!joined) return;
+      if (isDateTimeOutOfBounds(joined, min, max, wireFormat)) {
+        setLeftInvalid(true);
+        return;
+      }
       if (!sameInstant(joined, value)) onValueChange(joined);
     }
   };
 
   const handleHalfFocus = () => {
-    setFocusCount(c => c + 1);
-    onFocus?.();
+    setFocusCount(c => {
+      if (c === 0) onFocus?.();
+      return c + 1;
+    });
   };
   const handleHalfBlur = () => {
-    setFocusCount(c => Math.max(0, c - 1));
+    setFocusCount(c => {
+      const next = Math.max(0, c - 1);
+      if (next === 0) {
+        const halfTyped = (parts.date !== null) !== (parts.time !== null);
+        if (canEdit && halfTyped) setLeftInvalid(true);
+        onBlur?.();
+      }
+      return next;
+    });
   };
 
-  const common = { invalid, readOnly, editable, onFocus: handleHalfFocus, onBlur: handleHalfBlur };
-  const timeMode: TextMode = withSeconds ? 'time-seconds' : 'time';
-  const timePlaceholder = withSeconds ? 'hh:mm:ss' : 'hh:mm';
+  const common = {
+    invalid: Boolean(invalid || leftInvalid),
+    warning,
+    size,
+    readOnly,
+    editable,
+    onFocus: handleHalfFocus,
+    onBlur: handleHalfBlur,
+    onSubmitEditing: () => {
+      if (canEdit) onSubmit?.();
+    },
+  };
+  const timeMode: TextMode = timePrecision === 'second' ? 'time-seconds' : 'time';
+  const timePlaceholder = resolveTimePlaceholder(timePrecision, hourCycle);
+  const targetSize = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
   return (
     <View role="group" aria-label={label} style={styles.pair}>
       <EmrTypedText
@@ -1267,17 +1482,45 @@ export function EmrDateTimeText({
         placeholder={format}
         mode={format}
         value={displayedParts.date}
-        onValueChange={date => change({ ...displayedParts, date })}
+        onValueChange={date => change({ date, time: displayedParts.time })}
       />
       <EmrTypedText
-        key={timeMode}
+        key={`${timeMode}-${hourCycle}`}
         {...common}
         aria-label={`${label}, ${timeLabel}`}
         placeholder={timePlaceholder}
         mode={timeMode}
+        hourCycle={hourCycle}
         value={displayedParts.time}
-        onValueChange={time => change({ ...displayedParts, time })}
+        onValueChange={time => change({ date: displayedParts.date, time })}
       />
+      {clearable && value && canEdit ? (
+        <Pressable
+          role="button"
+          aria-label={`Clear ${label}`}
+          onPress={() => {
+            setParts({ date: null, time: null });
+            setLeftInvalid(false);
+            onValueChange(null);
+            onCleared?.();
+          }}
+          style={({ pressed, focused: clrFocus }: PressState) => [
+            focusRing(t, clrFocus),
+            {
+              minWidth: 44,
+              minHeight: targetSize,
+              borderWidth: 1,
+              borderRadius: 8,
+              borderColor: t.border,
+              backgroundColor: pressed ? t.surfaceRaised : t.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+        >
+          <SvgIcon name="close" size={14} color={t.textMuted} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }

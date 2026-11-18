@@ -44,6 +44,7 @@ export type EmrIdentityLabels = typeof DEFAULTS;
 // ---- Models and intents (pre-resolved strings; the controller owns every rule) ----
 
 export type EmrBarcodeScanFieldProps = IdentifierEntryView & {
+  controlId?: string;
   onValueChange: (raw: string) => void;
   /** Keyboard "done"/Enter: the app treats it as "use this value" (e.g. add the card). */
   onSubmit?: () => void;
@@ -69,6 +70,7 @@ function useText() {
 
 /** L2 backwards-compatible flat-prop wrapper delegating to canonical `EmrIdentifierEntry`. */
 export function EmrBarcodeScanField({
+  controlId,
   value,
   onValueChange,
   onSubmit,
@@ -78,6 +80,11 @@ export function EmrBarcodeScanField({
   label,
   hint,
   readOnly,
+  required,
+  placeholder,
+  clearable,
+  maxLength,
+  messages,
   typeOptions,
   selectedType,
   labels,
@@ -85,6 +92,8 @@ export function EmrBarcodeScanField({
 }: EmrBarcodeScanFieldProps) {
   return (
     <EmrIdentifierEntry
+      controlId={controlId}
+      readOnly={readOnly}
       model={{
         label,
         value,
@@ -93,6 +102,11 @@ export function EmrBarcodeScanField({
         warning,
         hint,
         readOnly,
+        required,
+        placeholder,
+        clearable,
+        maxLength,
+        messages,
         typeOptions,
         selectedType,
       }}
