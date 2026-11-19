@@ -221,6 +221,8 @@ export function resolveEmrThemeVariables(config: EmrCustomThemeConfig): Record<s
     '--emr-primary-soft': pal.primarySoft,
     '--emr-primary-border': pal.primaryBorder,
     '--emr-focus': pal.focus,
+    '--emr-surface-accent': effectiveScheme === 'dark' ? '#263946' : '#e8eef2',
+    '--emr-surface-slate': effectiveScheme === 'dark' ? '#1e293b' : '#edf1f3',
     '--emr-font-family': font.sans,
     '--emr-font-mono': font.mono,
     '--emr-font-features': font.features,
@@ -237,7 +239,7 @@ export function resolveEmrThemeVariables(config: EmrCustomThemeConfig): Record<s
     '--emr-text-xl': rem(1.25),
     '--emr-text-2xl': rem(1.5),
     '--emr-weight-regular': '400',
-    '--emr-weight-medium': '500',
+    '--emr-weight-medium': '550',
     '--emr-weight-semibold': '600',
     '--emr-weight-bold': '700',
   };
@@ -269,6 +271,8 @@ const EMR_DEFAULT_ROOT_TOKENS_CSS = `:where(:root) {
   --emr-surface: #fffefa;
   --emr-surface-soft: #f1f4f5;
   --emr-surface-raised: #ffffff;
+  --emr-surface-accent: #e8eef2;
+  --emr-surface-slate: #edf1f3;
   --emr-border: #c7d3da;
   --emr-text: #263847;
   --emr-text-muted: #5c6c78;
@@ -601,6 +605,7 @@ export const emrShadowStyles = css`
 
   .emr-field {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     min-width: 0;
   }

@@ -786,7 +786,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Two side-by-side text inputs (e.g. right/left eye) sharing one label and a configurable separator glyph.",
+      "description": "Two side-by-side text inputs or dropdowns (e.g. right/left eye) sharing one label and a configurable separator glyph.",
       "stories": [
         "foundations-primitives--controls"
       ],
@@ -795,10 +795,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "react-native-web"
       ],
       "registryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-select"
       ],
       "transitiveRegistryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-select"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-paired-input",
@@ -2970,7 +2972,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
-          "structures/emr-section-card.component.ts"
+          "structures/emr-section-card.component.ts",
+          "structures/emr-section-card.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -2980,6 +2983,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrSectionCard",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -3019,6 +3023,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrSectionCard",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -3079,7 +3084,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 43
+      "fileCount": 45
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3107,7 +3112,8 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "registryDependencies": [
         "foundations",
-        "emr-typed-field"
+        "emr-typed-field",
+        "emr-badge"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
@@ -3134,7 +3140,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-slider",
         "emr-masked-input",
         "emr-otp-input",
-        "emr-signature-capture-field"
+        "emr-signature-capture-field",
+        "emr-badge"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-repeatable-group",
@@ -3170,7 +3177,8 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-formatted.component.ts",
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
-          "structures/emr-repeatable-group.component.ts"
+          "structures/emr-repeatable-group.component.ts",
+          "structures/emr-repeatable-group.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -3277,7 +3285,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 63
+      "fileCount": 64
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3317,12 +3325,14 @@ export const EMR_REGISTRY_MANIFEST = {
       "registryDependencies": [
         "foundations",
         "emr-section-card",
+        "emr-repeatable-group",
         "emr-typed-field"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
         "emr-section-card",
         "emr-badge",
+        "emr-repeatable-group",
         "emr-typed-field",
         "emr-field-frame",
         "emr-textarea",
@@ -3383,7 +3393,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
-          "structures/emr-section-card.component.ts"
+          "structures/emr-clinical-form.logic.ts",
+          "structures/emr-repeatable-group.component.ts",
+          "structures/emr-repeatable-group.logic.ts",
+          "structures/emr-section-card.component.ts",
+          "structures/emr-section-card.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -3393,6 +3407,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrClinicalForm",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -3432,6 +3447,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrClinicalForm",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -3492,7 +3508,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 65
+      "fileCount": 70
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3509,7 +3525,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Generic titled list of ClinicalListItem rows with add/edit/remove actions, used as the base rendering surface for the four domain lists.",
+      "description": "Generic titled list of ClinicalListItem rows with selection, loading/error/empty states, add/edit/remove actions, and surface variants.",
       "stories": [
         "emr-patient-and-navigation--clinical-list-empty-read-only"
       ],
@@ -3518,10 +3534,14 @@ export const EMR_REGISTRY_MANIFEST = {
         "react-native-web"
       ],
       "registryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-badge",
+        "emr-state-message"
       ],
       "transitiveRegistryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-badge",
+        "emr-state-message"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-clinical-list",
@@ -3534,7 +3554,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrClinicalListComponent",
         "selector": "emr-clinical-list",
         "files": [
-          "structures/emr-clinical-list.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-list.component.ts",
+          "structures/emr-clinical-list.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -3547,10 +3570,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3571,10 +3594,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3613,7 +3636,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 26
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3641,17 +3664,20 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-assessment-ophthalmology--retinal-assessment",
         "emr-clinical-assessment-ophthalmology--visual-acuity",
         "emr-clinical-assessment-ophthalmology--intraocular-pressure",
-        "emr-clinical-assessment-ophthalmology--refraction"
+        "emr-clinical-assessment-ophthalmology--refraction",
+        "emr-clinical-assessment--custom-cell-renderer"
       ],
       "dependencies": [
         "@drguptavivek/emr-controller",
         "react-native-web"
       ],
       "registryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-badge"
       ],
       "transitiveRegistryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-badge"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-clinical-matrix",
@@ -3664,7 +3690,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrClinicalMatrixComponent",
         "selector": "emr-clinical-matrix",
         "files": [
-          "structures/emr-clinical-matrix.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-matrix.component.ts",
+          "structures/emr-clinical-matrix.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -3677,10 +3706,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3701,10 +3730,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3743,7 +3772,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 26
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3761,7 +3790,9 @@ export const EMR_REGISTRY_MANIFEST = {
       "kind": "directive",
       "status": "stable",
       "description": "Structural template directive (ng-template[emrClinicalCellRenderer]) that registers a custom per-row cell renderer for emr-clinical-matrix.",
-      "stories": [],
+      "stories": [
+        "emr-clinical-assessment--custom-cell-renderer"
+      ],
       "dependencies": [
         "@drguptavivek/emr-controller",
         "react-native-web"
@@ -3783,7 +3814,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrClinicalCellRendererDirective",
         "selector": "",
         "files": [
-          "structures/emr-clinical-matrix.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-matrix.component.ts",
+          "structures/emr-clinical-matrix.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -3796,10 +3830,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3820,10 +3854,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3862,7 +3896,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 26
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3894,7 +3928,9 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-clinical-list"
+        "emr-clinical-list",
+        "emr-badge",
+        "emr-state-message"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-medication-list",
@@ -3907,7 +3943,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMedicationListComponent",
         "selector": "emr-medication-list",
         "files": [
-          "structures/emr-clinical-list.component.ts"
+          "domain/emr-clinical-lists.component.ts",
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-list.component.ts",
+          "structures/emr-clinical-list.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -3920,10 +3960,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3944,10 +3984,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -3998,7 +4038,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 38
+      "fileCount": 42
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4030,7 +4070,9 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-clinical-list"
+        "emr-clinical-list",
+        "emr-badge",
+        "emr-state-message"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-allergy-list",
@@ -4043,7 +4085,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAllergyListComponent",
         "selector": "emr-allergy-list",
         "files": [
-          "structures/emr-clinical-list.component.ts"
+          "domain/emr-clinical-lists.component.ts",
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-list.component.ts",
+          "structures/emr-clinical-list.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -4056,10 +4102,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -4080,10 +4126,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -4134,7 +4180,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 38
+      "fileCount": 42
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4165,7 +4211,9 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-clinical-list"
+        "emr-clinical-list",
+        "emr-badge",
+        "emr-state-message"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-chronic-disease-list",
@@ -4178,7 +4226,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrChronicDiseaseListComponent",
         "selector": "emr-chronic-disease-list",
         "files": [
-          "structures/emr-clinical-list.component.ts"
+          "domain/emr-clinical-lists.component.ts",
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-list.component.ts",
+          "structures/emr-clinical-list.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -4191,10 +4243,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -4215,10 +4267,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -4269,7 +4321,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 38
+      "fileCount": 42
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4300,7 +4352,9 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-clinical-list"
+        "emr-clinical-list",
+        "emr-badge",
+        "emr-state-message"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-personal-history-list",
@@ -4313,7 +4367,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrPersonalHistoryListComponent",
         "selector": "emr-personal-history-list",
         "files": [
-          "structures/emr-clinical-list.component.ts"
+          "domain/emr-clinical-lists.component.ts",
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-clinical-list.component.ts",
+          "structures/emr-clinical-list.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -4326,10 +4384,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -4350,10 +4408,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -4404,7 +4462,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 38
+      "fileCount": 42
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5252,6 +5310,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrStagedChecklist",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -5293,6 +5352,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrStagedChecklist",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -5347,7 +5407,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 36
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5385,6 +5445,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-form",
         "emr-section-card",
         "emr-badge",
+        "emr-repeatable-group",
         "emr-typed-field",
         "emr-field-frame",
         "emr-textarea",
@@ -5446,7 +5507,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
-          "structures/emr-section-card.component.ts"
+          "structures/emr-clinical-form.logic.ts",
+          "structures/emr-repeatable-group.component.ts",
+          "structures/emr-repeatable-group.logic.ts",
+          "structures/emr-section-card.component.ts",
+          "structures/emr-section-card.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -5456,6 +5521,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrPacChecklist",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -5497,6 +5563,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrPacChecklist",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -5551,7 +5618,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 60
+      "fileCount": 65
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5606,6 +5673,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrFamilyPedigree",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -5647,6 +5715,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrFamilyPedigree",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -5701,7 +5770,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6684,7 +6753,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "domain/emr-clinical-annotation-canvas.component.ts",
           "structures/emr-annotation-list.component.ts",
-          "structures/emr-annotation-toolbar.component.ts"
+          "structures/emr-annotation-list.logic.ts",
+          "structures/emr-annotation-toolbar.component.ts",
+          "structures/emr-annotation-toolbar.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -6787,7 +6858,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 36
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7258,6 +7329,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldGeneratorComponent",
         "selector": "emr-field-generator",
         "files": [
+          "authoring/emr-authoring.logic.ts",
           "authoring/emr-field-generator.component.ts",
           "authoring/emr-terminology-search.component.ts",
           "authoring/emr-validation-rule-editor.component.ts",
@@ -7293,6 +7365,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrFieldGenerator",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7335,6 +7408,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrFieldGenerator",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7378,8 +7452,17 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldGeneratorElement",
         "selector": "emr-field-generator",
         "files": [
+          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
+          "l1-primitives-extra.ts",
+          "l1-primitives-wave2.ts",
+          "l1-primitives.ts",
+          "l2-fields-extra.ts",
+          "l2-fields.ts",
+          "l3-structures.ts",
+          "l3-workstation.ts",
           "l6-authoring-surfaces.ts"
         ],
         "dependencies": [
@@ -7390,7 +7473,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 61
+      "fileCount": 72
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7432,6 +7515,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTerminologySearchComponent",
         "selector": "emr-terminology-search",
         "files": [
+          "authoring/emr-authoring.logic.ts",
           "authoring/emr-terminology-search.component.ts"
         ],
         "dependencies": [
@@ -7442,6 +7526,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTerminologySearch",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7484,6 +7569,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTerminologySearch",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7527,8 +7613,17 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTerminologySearchElement",
         "selector": "emr-terminology-search",
         "files": [
+          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
+          "l1-primitives-extra.ts",
+          "l1-primitives-wave2.ts",
+          "l1-primitives.ts",
+          "l2-fields-extra.ts",
+          "l2-fields.ts",
+          "l3-structures.ts",
+          "l3-workstation.ts",
           "l6-authoring-surfaces.ts"
         ],
         "dependencies": [
@@ -7539,7 +7634,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 36
+      "fileCount": 47
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7581,6 +7676,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrValidationRuleEditorComponent",
         "selector": "emr-validation-rule-editor",
         "files": [
+          "authoring/emr-authoring.logic.ts",
           "authoring/emr-validation-rule-editor.component.ts"
         ],
         "dependencies": [
@@ -7591,6 +7687,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrValidationRuleEditor",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7633,6 +7730,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrValidationRuleEditor",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7676,8 +7774,17 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrValidationRuleEditorElement",
         "selector": "emr-validation-rule-editor",
         "files": [
+          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
+          "l1-primitives-extra.ts",
+          "l1-primitives-wave2.ts",
+          "l1-primitives.ts",
+          "l2-fields-extra.ts",
+          "l2-fields.ts",
+          "l3-structures.ts",
+          "l3-workstation.ts",
           "l6-authoring-surfaces.ts"
         ],
         "dependencies": [
@@ -7688,7 +7795,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 36
+      "fileCount": 47
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7730,6 +7837,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldLibraryPickerComponent",
         "selector": "emr-field-library-picker",
         "files": [
+          "authoring/emr-authoring.logic.ts",
           "authoring/emr-field-library-picker.component.ts"
         ],
         "dependencies": [
@@ -7740,6 +7848,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrFieldLibraryPicker",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7782,6 +7891,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrFieldLibraryPicker",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7825,8 +7935,17 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldLibraryPickerElement",
         "selector": "emr-field-library-picker",
         "files": [
+          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
+          "l1-primitives-extra.ts",
+          "l1-primitives-wave2.ts",
+          "l1-primitives.ts",
+          "l2-fields-extra.ts",
+          "l2-fields.ts",
+          "l3-structures.ts",
+          "l3-workstation.ts",
           "l6-authoring-surfaces.ts"
         ],
         "dependencies": [
@@ -7837,7 +7956,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 36
+      "fileCount": 47
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7879,6 +7998,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-form",
         "emr-section-card",
         "emr-badge",
+        "emr-repeatable-group",
         "emr-typed-field",
         "emr-field-frame",
         "emr-textarea",
@@ -7915,6 +8035,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplateComposerComponent",
         "selector": "emr-template-composer",
         "files": [
+          "authoring/emr-authoring.logic.ts",
           "authoring/emr-field-library-picker.component.ts",
           "authoring/emr-template-composer.component.ts",
           "authoring/emr-template-preview.component.ts",
@@ -7942,7 +8063,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
-          "structures/emr-section-card.component.ts"
+          "structures/emr-clinical-form.logic.ts",
+          "structures/emr-repeatable-group.component.ts",
+          "structures/emr-repeatable-group.logic.ts",
+          "structures/emr-section-card.component.ts",
+          "structures/emr-section-card.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -7952,6 +8077,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTemplateComposer",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -7994,6 +8120,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTemplateComposer",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -8037,8 +8164,17 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplateComposerElement",
         "selector": "emr-template-composer",
         "files": [
+          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
+          "l1-primitives-extra.ts",
+          "l1-primitives-wave2.ts",
+          "l1-primitives.ts",
+          "l2-fields-extra.ts",
+          "l2-fields.ts",
+          "l3-structures.ts",
+          "l3-workstation.ts",
           "l6-authoring-surfaces.ts"
         ],
         "dependencies": [
@@ -8049,7 +8185,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 63
+      "fileCount": 78
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8087,6 +8223,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-clinical-form",
         "emr-section-card",
         "emr-badge",
+        "emr-repeatable-group",
         "emr-typed-field",
         "emr-field-frame",
         "emr-textarea",
@@ -8123,6 +8260,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplatePreviewComponent",
         "selector": "emr-template-preview",
         "files": [
+          "authoring/emr-authoring.logic.ts",
           "authoring/emr-template-preview.component.ts",
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
@@ -8148,7 +8286,11 @@ export const EMR_REGISTRY_MANIFEST = {
           "primitives/emr-wave2-inputs.component.ts",
           "primitives/emr-wave2.logic.ts",
           "structures/emr-clinical-form.component.ts",
-          "structures/emr-section-card.component.ts"
+          "structures/emr-clinical-form.logic.ts",
+          "structures/emr-repeatable-group.component.ts",
+          "structures/emr-repeatable-group.logic.ts",
+          "structures/emr-section-card.component.ts",
+          "structures/emr-section-card.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -8158,6 +8300,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "react": {
         "component": "EmrTemplatePreview",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -8200,6 +8343,7 @@ export const EMR_REGISTRY_MANIFEST = {
       "expo": {
         "component": "EmrTemplatePreview",
         "files": [
+          "clinical-form.logic.ts",
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
@@ -8243,8 +8387,17 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTemplatePreviewElement",
         "selector": "emr-template-preview",
         "files": [
+          "calendar.logic.ts",
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
+          "l1-primitives-extra.ts",
+          "l1-primitives-wave2.ts",
+          "l1-primitives.ts",
+          "l2-fields-extra.ts",
+          "l2-fields.ts",
+          "l3-structures.ts",
+          "l3-workstation.ts",
           "l6-authoring-surfaces.ts"
         ],
         "dependencies": [
@@ -8255,7 +8408,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 61
+      "fileCount": 76
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8423,7 +8576,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAnnotationToolbarComponent",
         "selector": "emr-annotation-toolbar",
         "files": [
-          "structures/emr-annotation-toolbar.component.ts"
+          "structures/emr-annotation-toolbar.component.ts",
+          "structures/emr-annotation-toolbar.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -8530,7 +8684,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8578,7 +8732,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAnnotationListComponent",
         "selector": "emr-annotation-list",
         "files": [
-          "structures/emr-annotation-list.component.ts"
+          "structures/emr-annotation-list.component.ts",
+          "structures/emr-annotation-list.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -8685,7 +8840,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10176,7 +10331,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageTemplatePickerComponent",
         "selector": "emr-image-template-picker",
         "files": [
-          "structures/emr-image-template-picker.component.ts"
+          "structures/emr-image-template-picker.component.ts",
+          "structures/emr-image-template-picker.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -10283,7 +10439,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11097,7 +11253,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTimeAxisComponent",
         "selector": "emr-time-axis",
         "files": [
-          "structures/emr-time-axis.component.ts"
+          "structures/emr-time-axis.component.ts",
+          "structures/emr-time-axis.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -11110,10 +11267,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -11134,10 +11291,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "inputs-core.tsx",
           "l1-controller.logic.ts",
+          "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
-          "l1-interactive.logic.ts",
           "l1-wave2.logic.ts",
           "l3-structures.logic.ts",
           "l3-structures.tsx",
@@ -11176,7 +11333,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 26
+      "fileCount": 27
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11193,24 +11350,25 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Controlled tabular data grid with sortable columns, optional search, row selection, per-row actions, pagination and loading/empty/error states.",
+      "description": "Controlled tabular data grid with active filter chips, saved-filter menu, bulk actions, density switcher, sortable columns, row selection, pagination, readOnly gating, and loading/empty/error states.",
       "stories": [
-        "emr-structures-data-table--default-table",
-        "emr-structures-data-table--with-row-selection-and-actions",
-        "emr-structures-data-table--empty-state",
-        "emr-structures-data-table--loading-state",
-        "emr-structures-data-table--error-state",
-        "emr-structures-data-table--mobile"
+        "emr-structures-data-table--populated",
+        "emr-structures-data-table--compact-density",
+        "emr-structures-data-table--empty",
+        "emr-structures-data-table--loading",
+        "emr-structures-data-table--error-state"
       ],
       "dependencies": [
         "@drguptavivek/emr-controller",
         "react-native-web"
       ],
       "registryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-badge"
       ],
       "transitiveRegistryDependencies": [
-        "foundations"
+        "foundations",
+        "emr-badge"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-data-table",
@@ -11223,7 +11381,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrDataTableComponent",
         "selector": "emr-data-table",
         "files": [
-          "structures/emr-data-table.component.ts"
+          "primitives/emr-feedback.component.ts",
+          "primitives/emr-feedback.logic.ts",
+          "structures/emr-data-table.component.ts",
+          "structures/emr-data-table.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -11305,7 +11466,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 28
+      "fileCount": 31
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18917,11 +19078,13 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "registryDependencies": [
         "foundations",
-        "emr-field-frame"
+        "emr-field-frame",
+        "emr-select"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-field-frame"
+        "emr-field-frame",
+        "emr-select"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-paired-field",
@@ -22486,7 +22649,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Multi-pane split clinical workstation container with presets (50/50, 33/67, 67/33, 33/34/33), keyboard splitter nudging, pane collapse/pinning, and tabbed mobile fallback.",
+      "description": "Multi-pane split clinical workstation container with layout presets (2-pane 50/50, 40/60, 3-pane, focus-primary), minWidthPct-bounded keyboard splitter resizing, pane collapse, @container mobile tabs, and unclipped .emr-print output.",
       "stories": [
         "emr-structures-workstation-containers--split-workspace"
       ],
@@ -22511,7 +22674,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSplitWorkspaceComponent",
         "selector": "emr-split-workspace",
         "files": [
-          "structures/emr-workstation-containers.component.ts"
+          "structures/emr-workstation-containers.component.ts",
+          "structures/emr-workstation-containers.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -22570,6 +22734,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
           "l3-workstation.ts"
         ],
         "dependencies": [
@@ -22580,7 +22745,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22599,7 +22764,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Cmd/Ctrl+K clinical command palette and omnibox with scope pills (All, Patients, Orders, Navigation, Templates, Actions), recent chips, keyboard navigation, and slash-command hints.",
+      "description": "Cmd/Ctrl+K clinical command palette and omnibox supporting modal/inline presentation, WAI-ARIA combobox/listbox navigation, category scope tabs (All, Orders, Navigation, SmartPhrases, Calculators, Actions), and Pinned/Recent sections.",
       "stories": [
         "emr-structures-workstation-containers--command-palette"
       ],
@@ -22624,7 +22789,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCommandPaletteComponent",
         "selector": "emr-command-palette",
         "files": [
-          "structures/emr-workstation-containers.component.ts"
+          "structures/emr-workstation-containers.component.ts",
+          "structures/emr-workstation-containers.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -22683,6 +22849,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
           "l3-workstation.ts"
         ],
         "dependencies": [
@@ -22693,7 +22860,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22714,7 +22881,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Master-detail triage and inbox container with filter chips, multi-select batch toolbar, severity badges, keyboard Next/Prev item traversal, and responsive detail view.",
+      "description": "Master-detail triage and inbox container with filter chips, search, non-nested multi-select batch toolbar, severity badges, and @container responsive mobileDetailOpen Back-to-list navigation.",
       "stories": [
         "emr-structures-workstation-containers--master-detail-inbox"
       ],
@@ -22739,7 +22906,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMasterDetailComponent",
         "selector": "emr-master-detail",
         "files": [
-          "structures/emr-workstation-containers.component.ts"
+          "structures/emr-workstation-containers.component.ts",
+          "structures/emr-workstation-containers.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -22798,6 +22966,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
           "l3-workstation.ts"
         ],
         "dependencies": [
@@ -22808,7 +22977,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22828,7 +22997,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Synchronized multi-track time axis and crosshair scrubber aligning vitals, labs, medications, and clinical events along a shared time window with zoom presets.",
+      "description": "Synchronized multi-track clinical time grid with sticky 124px lead column, 108px scrollable time columns, zoom presets (15m, 1h, 4h, 24h), gated Earlier/Later stepping, sparkline bars, cell notes/badges, and 5 abnormal tones.",
       "stories": [
         "emr-structures-workstation-containers--synchronized-time-grid"
       ],
@@ -22853,7 +23022,8 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSynchronizedTimeGridComponent",
         "selector": "emr-synchronized-time-grid",
         "files": [
-          "structures/emr-workstation-containers.component.ts"
+          "structures/emr-workstation-containers.component.ts",
+          "structures/emr-workstation-containers.logic.ts"
         ],
         "dependencies": [
           "@drguptavivek/emr-controller"
@@ -22912,6 +23082,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "controlled-rendering.ts",
           "foundations.ts",
+          "icons.ts",
           "l3-workstation.ts"
         ],
         "dependencies": [
@@ -22922,7 +23093,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",

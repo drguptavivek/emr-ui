@@ -31,6 +31,17 @@ export const VALIDATION_RULE_KINDS: readonly FieldValidationRule['kind'][] = [
   'custom',
 ];
 
+export const resolveAuthoringId = (prefix: string, id: string): string => {
+  const clean = prefix.trim();
+  return clean ? `${clean}-${id}` : id;
+};
+
+export const isValidIsoDateInput = (value: string): boolean => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+};
+
 /** Checks whether the current rule draft in EmrValidationRuleEditor is complete enough to add. */
 export const canAddValidationRule = (
   kind: FieldValidationRule['kind'],
@@ -40,14 +51,23 @@ export const canAddValidationRule = (
   const trimmed = value.trim();
   if (!trimmed) return false;
   if (kind === 'custom') return message.trim().length > 0;
-  if (
-    kind === 'min-length' ||
-    kind === 'max-length' ||
-    kind === 'minimum' ||
-    kind === 'maximum' ||
-    kind === 'precision'
-  ) {
+  if (kind === 'minimum' || kind === 'maximum') {
     return Number.isFinite(Number(trimmed));
+  }
+  if (kind === 'min-length' || kind === 'max-length' || kind === 'precision') {
+    const n = Number(trimmed);
+    return Number.isInteger(n) && n >= 0;
+  }
+  if (kind === 'pattern') {
+    try {
+      new RegExp(trimmed);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  if (kind === 'earliest-date' || kind === 'latest-date') {
+    return isValidIsoDateInput(trimmed);
   }
   if (kind === 'allowed-values') {
     return trimmed.split(',').some(item => item.trim().length > 0);
@@ -192,5 +212,5 @@ export const deriveTemplatePreview = (template: EhrTemplateDefinition): Clinical
       else fields[placement.id] = { value: null };
     }
   }
-  return { schema, fields, repeatableGroups };
+  return { schema, fields, repeatableGroups, readOnly: true };
 };

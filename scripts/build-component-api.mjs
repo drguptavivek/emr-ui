@@ -31,8 +31,16 @@ function collectCatalogEntries(node) {
         }
       }
     }
-    if (props.id && props.selector && props.file) {
-      entries.push(props);
+    if (props.id && props.file) {
+      const slug =
+        props.selector ||
+        props.id
+          .replace(/(?:Component|Directive)$/, '')
+          .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+          .toLowerCase();
+      if (props.selector || props.id === 'EmrClinicalCellRendererDirective') {
+        entries.push({ ...props, selector: slug });
+      }
     }
   }
   ts.forEachChild(node, collectCatalogEntries);

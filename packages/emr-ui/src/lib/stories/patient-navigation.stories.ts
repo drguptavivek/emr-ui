@@ -6,7 +6,8 @@ import { EmrLeftNavComponent } from '../domain/emr-left-nav.component';
 import { EmrRightFlyoutComponent } from '../domain/emr-right-flyout.component';
 import { EmrPatientBannerComponent } from '../domain/emr-patient-banner.component';
 import { EmrPatientListComponent } from '../domain/emr-patient-list.component';
-import { EmrClinicalListComponent, EmrAllergyListComponent, EmrChronicDiseaseListComponent, EmrMedicationListComponent, EmrPersonalHistoryListComponent } from '../structures/emr-clinical-list.component';
+import { EmrClinicalListComponent } from '../structures/emr-clinical-list.component';
+import { EmrAllergyListComponent, EmrChronicDiseaseListComponent, EmrMedicationListComponent, EmrPersonalHistoryListComponent } from '../domain/emr-clinical-lists.component';
 import { EmrFavouritesPanelComponent } from '../domain/emr-favourites-panel.component';
 import { navItems, patientBanner, patientList, clinicalItems, emptyClinicalItems, favouritesState } from './fixtures';
 
@@ -98,5 +99,38 @@ export const ApplicationShellDark: Story = { render: () => ({ template: `<emr-ap
 
 export const RightFlyout: Story = { render: () => ({ template: `<div class="emr-story-flyout-host"><emr-right-flyout [open]="true" title="My favourites" [showFooter]="true"><emr-favourites-panel [model]="state" /><div emrFlyoutFooter class="emr-button-row"><emr-button>Apply selected</emr-button></div></emr-right-flyout></div>`, props: { state: favouritesState } }) };
 
-export const ClinicalLists: Story = { render: () => ({ template: `<div class="emr-story-grid emr-story-grid--two"><emr-medication-list [items]="items" /><emr-allergy-list [items]="allergies" /><emr-chronic-disease-list [items]="diseases" /><emr-personal-history-list [items]="history" /></div>`, props: { items: clinicalItems, allergies: [{ id: 'a1', title: 'Penicillin', subtitle: 'Rash', badges: [{ label: 'Severe', tone: 'danger' }] }, { id: 'a2', title: 'Latex', subtitle: 'Contact dermatitis' }], diseases: [{ id: 'd1', title: 'Type 2 diabetes', subtitle: 'Diagnosed 2013', badges: [{ label: 'Active', tone: 'info' }] }, { id: 'd2', title: 'Hypertension', subtitle: 'Controlled' }], history: [{ id: 'h1', title: 'Former smoker', detail: 'Stopped in 2018' }, { id: 'h2', title: 'Cataract surgery', detail: 'Right eye · 2021', readOnly: true }] } }) };
-export const ClinicalListEmptyReadOnly: Story = { render: () => ({ template: `<div class="emr-story-grid emr-story-grid--two"><emr-clinical-list title="Allergies" emptyMessage="Allergy status has not been supplied." [items]="items" /><emr-clinical-list title="Medication reconciliation" [items]="readonlyItems" [allowAdd]="false" /></div>`, props: { items: emptyClinicalItems, readonlyItems: clinicalItems.map(item => ({ ...item, readOnly: true })) } }) };
+export const ClinicalLists: Story = {
+  render: () => ({
+    template: `<div class="emr-story-grid emr-story-grid--two"><emr-medication-list [model]="medsModel" /><emr-allergy-list [model]="allergiesModel" /><emr-chronic-disease-list [model]="diseasesModel" /><emr-personal-history-list [model]="historyModel" /></div>`,
+    props: {
+      medsModel: { items: clinicalItems, selectedId: 'm1' },
+      allergiesModel: {
+        items: [
+          { id: 'a1', title: 'Penicillin', subtitle: 'Rash', tone: 'danger', badges: [{ label: 'Severe', tone: 'danger' }] },
+          { id: 'a2', title: 'Latex', subtitle: 'Contact dermatitis', tone: 'warning' },
+        ],
+      },
+      diseasesModel: {
+        items: [
+          { id: 'd1', title: 'Type 2 diabetes', subtitle: 'Diagnosed 2013', badges: [{ label: 'Active', tone: 'info' }] },
+          { id: 'd2', title: 'Hypertension', subtitle: 'Controlled' },
+        ],
+      },
+      historyModel: {
+        items: [
+          { id: 'h1', title: 'Former smoker', detail: 'Stopped in 2018' },
+          { id: 'h2', title: 'Cataract surgery', detail: 'Right eye · 2021', readOnly: true },
+        ],
+      },
+    },
+  }),
+};
+export const ClinicalListEmptyReadOnly: Story = {
+  render: () => ({
+    template: `<div class="emr-story-grid emr-story-grid--two"><emr-clinical-list [model]="emptyModel" /><emr-clinical-list [model]="readonlyModel" /></div>`,
+    props: {
+      emptyModel: { title: 'Allergies', emptyMessage: 'Allergy status has not been supplied.', items: emptyClinicalItems },
+      readonlyModel: { title: 'Medication reconciliation', items: clinicalItems.map(item => ({ ...item, readOnly: true })), allowAdd: false, readOnly: true },
+    },
+  }),
+};

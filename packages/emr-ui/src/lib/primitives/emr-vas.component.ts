@@ -7,7 +7,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import type { EmrTone, EmrVasAnchor, EmrVasAnchorsProp, EmrVasOrientation, EmrVasSize } from '@drguptavivek/emr-controller';
+import type { EmrTone, EmrVasAnchor, EmrVasAnchorsProp, EmrVasOrientation, EmrVasPrecision, EmrVasSize } from '@drguptavivek/emr-controller';
 import {
   EMR_VAS_TRACK_INSET_PX,
   canMutateVas,
@@ -119,7 +119,7 @@ let nextVasId = 0;
 
             @if (percent() !== null) {
               <span class="emr-vas__mark" [style.--emr-vas-pos.%]="percent()" aria-hidden="true"></span>
-              <span class="emr-vas__thumb" [style.--emr-vas-pos.%]="percent()" aria-hidden="true"></span>
+              <span class="emr-vas__thumb" [style.--emr-vas-pos.%]="percent()" aria-hidden="true">{{ formattedValue() }}</span>
             }
           </div>
         </div>
@@ -165,10 +165,11 @@ export class EmrVasComponent {
   readonly value = input<number | null>(null);
   /** Snap granularity. `0` records the raw continuous position. */
   readonly step = input<number | undefined>(undefined);
+  readonly precision = input<EmrVasPrecision>('integer');
   /** Labelled marker interval — the numbers printed along the ruler. */
   readonly majorInterval = input<number>(10);
   /** Unlabelled marker interval between the major ones. */
-  readonly minorInterval = input<number>(2);
+  readonly minorInterval = input<number | undefined>(undefined);
   readonly orientation = input<EmrVasOrientation>('horizontal');
   readonly size = input<EmrVasSize>('md');
   readonly anchors = input<EmrVasAnchorsProp>([]);
@@ -193,7 +194,9 @@ export class EmrVasComponent {
   private readonly fallbackId = `emr-vas-${++nextVasId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
 
-  protected readonly resolvedStep = computed(() => resolveVasStep(this.min(), this.max(), this.step()));
+  protected readonly resolvedStep = computed(() =>
+    resolveVasStep(this.min(), this.max(), this.step(), this.precision()),
+  );
   protected readonly isInvalid = computed(() => Boolean(this.invalid() || this.error()));
 
   protected readonly showClear = computed(
@@ -237,9 +240,11 @@ export class EmrVasComponent {
     resolveVasAnchors(this.anchors(), this.min(), this.max()),
   );
 
-  protected readonly ticks = computed(() =>
-    resolveVasTicks(this.min(), this.max(), this.majorInterval(), this.minorInterval()),
-  );
+  protected readonly ticks = computed(() => {
+    const span = Math.abs(this.max() - this.min());
+    const effMinor = this.minorInterval() ?? (this.precision() === 'integer' && span <= 20 ? 1 : span <= 20 ? 0.5 : 2);
+    return resolveVasTicks(this.min(), this.max(), this.majorInterval(), effMinor);
+  });
 
   protected onPointerDown(event: PointerEvent): void {
     if (!this.interactive()) return;

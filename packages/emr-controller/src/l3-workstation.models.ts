@@ -69,12 +69,67 @@ export function resolveSplitWorkspacePresetSizes(
   return [40, 40, 20];
 }
 
-/** Steps a divider by `deltaPct` (e.g. ±5%), respecting minimum pane widths (default 15%). */
+export interface EmrSplitWorkspaceLabels {
+  readonly tag?: string;
+  readonly defaultTitle?: string;
+  readonly presetsLabel?: string;
+  readonly mobileTabsLabel?: string;
+  readonly collapse?: string;
+  readonly expand?: string;
+  readonly resizeDividerLabel?: string;
+  readonly shrinkPaneLabel?: string;
+  readonly growPaneLabel?: string;
+}
+
+/** Returns panes visible under the active layout preset (3 for 3-pane, 2 otherwise). */
+export function visibleSplitWorkspacePanes(
+  panes: readonly EmrSplitWorkspacePane[],
+  preset: EmrSplitWorkspacePreset,
+): readonly EmrSplitWorkspacePane[] {
+  return preset === '3-pane' ? panes.slice(0, 3) : panes.slice(0, 2);
+}
+
+/** Resolves min/max/current percentage bounds for a split-workspace divider. */
+export function resolveSplitWorkspaceDividerBounds(
+  sizes: readonly number[],
+  dividerIndex: number,
+  minPctOrPanes: number | readonly Pick<EmrSplitWorkspacePane, 'minWidthPct'>[] = 15,
+  defaultMinPct = 15,
+): { readonly min: number; readonly max: number; readonly now: number } {
+  if (dividerIndex < 0 || dividerIndex >= sizes.length - 1) {
+    return { min: 0, max: 100, now: 50 };
+  }
+  const left = sizes[dividerIndex]!;
+  const right = sizes[dividerIndex + 1]!;
+  const combined = left + right;
+  const rawLeftMin = Array.isArray(minPctOrPanes)
+    ? (minPctOrPanes[dividerIndex]?.minWidthPct ?? defaultMinPct)
+    : (typeof minPctOrPanes === 'number' ? minPctOrPanes : defaultMinPct);
+  const rawRightMin = Array.isArray(minPctOrPanes)
+    ? (minPctOrPanes[dividerIndex + 1]?.minWidthPct ?? defaultMinPct)
+    : (typeof minPctOrPanes === 'number' ? minPctOrPanes : defaultMinPct);
+
+  let leftMin = Math.max(0, rawLeftMin);
+  let rightMin = Math.max(0, rawRightMin);
+  if (leftMin + rightMin > combined) {
+    const total = leftMin + rightMin;
+    leftMin = total > 0 ? Math.round((leftMin / total) * combined) : combined / 2;
+    rightMin = combined - leftMin;
+  }
+  return {
+    min: leftMin,
+    max: Math.max(leftMin, combined - rightMin),
+    now: left,
+  };
+}
+
+/** Steps a divider by `deltaPct` (e.g. ±5%), respecting per-pane `minWidthPct` (default 15%). */
 export function stepSplitWorkspacePaneSizes(
   sizes: readonly number[],
   dividerIndex: number,
   deltaPct: number,
-  minPct = 15,
+  minPctOrPanes: number | readonly Pick<EmrSplitWorkspacePane, 'minWidthPct'>[] = 15,
+  defaultMinPct = 15,
 ): readonly number[] {
   if (dividerIndex < 0 || dividerIndex >= sizes.length - 1) {
     return [...sizes];
@@ -82,14 +137,34 @@ export function stepSplitWorkspacePaneSizes(
   const left = sizes[dividerIndex]!;
   const right = sizes[dividerIndex + 1]!;
   const combined = left + right;
-  const clampedMin = Math.min(minPct, combined / 2);
-  const nextLeft = Math.max(clampedMin, Math.min(combined - clampedMin, Math.round(left + deltaPct)));
+  const bounds = resolveSplitWorkspaceDividerBounds(sizes, dividerIndex, minPctOrPanes, defaultMinPct);
+  const nextLeft = Math.max(bounds.min, Math.min(bounds.max, Math.round(left + deltaPct)));
   const nextRight = combined - nextLeft;
   return sizes.map((v, idx) => {
     if (idx === dividerIndex) return nextLeft;
     if (idx === dividerIndex + 1) return nextRight;
     return v;
   });
+}
+
+export function resolveSplitWorkspaceId(workspaceId: string, idPrefix = ''): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  const cleanId = workspaceId.trim() || 'split-workspace';
+  return prefix ? `${prefix}-emr-split-ws-${cleanId}` : `emr-split-ws-${cleanId}`;
+}
+
+export function resolveSplitWorkspaceHeadingId(
+  workspaceId: string,
+  idPrefix = '',
+  headingId?: string | null,
+): string {
+  const explicit = headingId?.trim();
+  if (explicit) return explicit;
+  return `${resolveSplitWorkspaceId(workspaceId, idPrefix)}-heading`;
+}
+
+export function canMutateSplitWorkspace(model: Pick<EmrSplitWorkspaceViewModel, 'readOnly'>): boolean {
+  return !model.readOnly;
 }
 
 // ===========================================================================
@@ -118,9 +193,12 @@ export interface EmrCommandItem {
   readonly disabled?: boolean;
 }
 
+export type EmrCommandPalettePresentation = 'modal' | 'inline';
+
 export interface EmrCommandPaletteViewModel {
   readonly id: string;
   readonly title?: string;
+  readonly presentation?: EmrCommandPalettePresentation;
   readonly open: boolean;
   readonly query: string;
   readonly placeholder?: string;
@@ -129,6 +207,18 @@ export interface EmrCommandPaletteViewModel {
   readonly items: readonly EmrCommandItem[];
   readonly emptyMessage?: string;
   readonly readOnly?: boolean;
+}
+
+export interface EmrCommandPaletteLabels {
+  readonly defaultTitle?: string;
+  readonly defaultPlaceholder?: string;
+  readonly closeLabel?: string;
+  readonly searchLabel?: string;
+  readonly categoriesLabel?: string;
+  readonly resultsLabel?: string;
+  readonly emptyMessage?: string;
+  readonly pinnedLabel?: string;
+  readonly recentLabel?: string;
 }
 
 export type EmrCommandPaletteIntent =
@@ -209,12 +299,53 @@ export function stepCommandPaletteIndex(
 ): number {
   const count = items.length;
   if (count === 0) return -1;
-  let next = currentIndex;
+  let next = currentIndex < 0 ? (delta === 1 ? -1 : 0) : currentIndex;
   for (let i = 0; i < count; i++) {
     next = (((next + delta) % count) + count) % count;
     if (!items[next]?.disabled) return next;
   }
   return -1;
+}
+
+export function resolveCommandPalettePresentation(
+  model: Pick<EmrCommandPaletteViewModel, 'presentation'>,
+): EmrCommandPalettePresentation {
+  return model.presentation === 'inline' ? 'inline' : 'modal';
+}
+
+export function resolveCommandPaletteId(paletteId: string, idPrefix = ''): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  const cleanId = paletteId.trim() || 'command-palette';
+  return prefix ? `${prefix}-emr-cmd-${cleanId}` : `emr-cmd-${cleanId}`;
+}
+
+export function resolveCommandPaletteHeadingId(
+  paletteId: string,
+  idPrefix = '',
+  headingId?: string | null,
+): string {
+  const explicit = headingId?.trim();
+  if (explicit) return explicit;
+  return `${resolveCommandPaletteId(paletteId, idPrefix)}-heading`;
+}
+
+export function resolveCommandPaletteListboxId(paletteId: string, idPrefix = ''): string {
+  return `${resolveCommandPaletteId(paletteId, idPrefix)}-listbox`;
+}
+
+export function resolveCommandPaletteOptionId(
+  paletteId: string,
+  itemId: string,
+  idPrefix = '',
+): string {
+  return `${resolveCommandPaletteId(paletteId, idPrefix)}-opt-${itemId}`;
+}
+
+export function canExecuteCommandItem(
+  model: Pick<EmrCommandPaletteViewModel, 'readOnly'>,
+  item?: Pick<EmrCommandItem, 'disabled'>,
+): boolean {
+  return !model.readOnly && Boolean(item && !item.disabled);
 }
 
 // ===========================================================================
@@ -275,6 +406,18 @@ export type EmrMasterDetailIntent =
   | { readonly type: 'batchSelectionToggled'; readonly itemId: string; readonly checkedIds: readonly string[] }
   | { readonly type: 'actionTriggered'; readonly actionId: string; readonly itemIds: readonly string[] };
 
+export interface EmrMasterDetailLabels {
+  readonly searchPlaceholder?: string;
+  readonly searchLabel?: string;
+  readonly filtersLabel?: string;
+  readonly listLabelSuffix?: string;
+  readonly detailLabel?: string;
+  readonly backToList?: string;
+  readonly unreadLabel?: string;
+  readonly emptyListMessage?: string;
+  readonly emptyDetailMessage?: string;
+}
+
 /** Filters master-detail items by activeFilterId ('all' matches everything) and searchQuery. */
 export function filterMasterDetailItems(
   items: readonly EmrMasterDetailItem[],
@@ -302,6 +445,26 @@ export function toggleMasterDetailCheckedId(
   return checkedIds.includes(itemId)
     ? checkedIds.filter((id) => id !== itemId)
     : [...checkedIds, itemId];
+}
+
+export function resolveMasterDetailId(masterDetailId: string, idPrefix = ''): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  const cleanId = masterDetailId.trim() || 'master-detail';
+  return prefix ? `${prefix}-emr-md-${cleanId}` : `emr-md-${cleanId}`;
+}
+
+export function resolveMasterDetailHeadingId(
+  masterDetailId: string,
+  idPrefix = '',
+  headingId?: string | null,
+): string {
+  const explicit = headingId?.trim();
+  if (explicit) return explicit;
+  return `${resolveMasterDetailId(masterDetailId, idPrefix)}-heading`;
+}
+
+export function canMutateMasterDetail(model: Pick<EmrMasterDetailViewModel, 'readOnly'>): boolean {
+  return !model.readOnly;
 }
 
 // ===========================================================================
@@ -391,6 +554,15 @@ export const TIME_GRID_RESOLUTIONS: readonly {
   { id: '24h', label: '24h' },
 ];
 
+export interface EmrSynchronizedTimeGridLabels {
+  readonly resolutionGroupLabel?: string;
+  readonly scrollGroupLabel?: string;
+  readonly earlier?: string;
+  readonly later?: string;
+  readonly timeAxisPrefix?: string;
+  readonly nowBadge?: string;
+}
+
 /** Clamps horizontal column offset so visible window stays within `columns.length`. */
 export function clampTimeGridScrollOffset(
   offset: number,
@@ -399,4 +571,44 @@ export function clampTimeGridScrollOffset(
 ): number {
   const maxOffset = Math.max(0, totalColumns - Math.max(1, visibleColumnCount));
   return Math.max(0, Math.min(maxOffset, Math.round(offset)));
+}
+
+/** Returns true when the synchronized time grid can step earlier (-1) or later (+1). */
+export function canStepTimeGridScroll(
+  scrollOffset: number,
+  totalColumns: number,
+  visibleColumnCount: number | undefined,
+  delta: -1 | 1,
+): boolean {
+  const count = Math.max(1, visibleColumnCount ?? totalColumns);
+  const maxOffset = Math.max(0, totalColumns - count);
+  const current = Math.max(0, Math.min(maxOffset, Math.round(scrollOffset)));
+  return delta < 0 ? current > 0 : current < maxOffset;
+}
+
+/** Slices the visible time columns according to `scrollOffset` and `visibleColumnCount`. */
+export function resolveTimeGridVisibleColumns(
+  columns: readonly EmrTimeGridColumn[],
+  scrollOffset: number,
+  visibleColumnCount?: number,
+): readonly EmrTimeGridColumn[] {
+  const count = visibleColumnCount ?? columns.length;
+  const start = clampTimeGridScrollOffset(scrollOffset, columns.length, count);
+  return columns.slice(start, start + count);
+}
+
+export function resolveSynchronizedTimeGridId(gridId: string, idPrefix = ''): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  const cleanId = gridId.trim() || 'time-grid';
+  return prefix ? `${prefix}-emr-stg-${cleanId}` : `emr-stg-${cleanId}`;
+}
+
+export function resolveSynchronizedTimeGridHeadingId(
+  gridId: string,
+  idPrefix = '',
+  headingId?: string | null,
+): string {
+  const explicit = headingId?.trim();
+  if (explicit) return explicit;
+  return `${resolveSynchronizedTimeGridId(gridId, idPrefix)}-heading`;
 }

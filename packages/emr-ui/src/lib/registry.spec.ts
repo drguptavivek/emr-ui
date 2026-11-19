@@ -222,8 +222,17 @@ describe('EMR shadcn-compatible component registry & CLI', () => {
 
     const fieldGenerator = byName.get('emr-field-generator');
     expect(fieldGenerator.lit.files).toEqual([
+      'calendar.logic.ts',
       'controlled-rendering.ts',
       'foundations.ts',
+      'icons.ts',
+      'l1-primitives-extra.ts',
+      'l1-primitives-wave2.ts',
+      'l1-primitives.ts',
+      'l2-fields-extra.ts',
+      'l2-fields.ts',
+      'l3-structures.ts',
+      'l3-workstation.ts',
       'l6-authoring-surfaces.ts',
     ]);
     expect(fieldGenerator.lit.files).not.toContain('l6-authoring.ts');

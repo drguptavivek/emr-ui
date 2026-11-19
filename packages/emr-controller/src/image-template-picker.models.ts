@@ -49,6 +49,78 @@ export type ImageTemplatePickerIntent =
   | { readonly type: 'favouriteToggleRequested'; readonly templateId: string; readonly favourite: boolean }
   | { readonly type: 'closeRequested' };
 
+export interface EmrImageTemplatePickerLabels {
+  readonly close?: string;
+  readonly searchPlaceholder?: string;
+  readonly searchAria?: (title: string) => string;
+  readonly clearSearch?: string;
+  readonly filterAria?: (title: string) => string;
+  readonly favourites?: string;
+  readonly all?: string;
+  readonly allTemplates?: string;
+  readonly starHint?: string;
+  readonly showAll?: string;
+  readonly resetFilters?: string;
+  readonly addFavourite?: (label: string) => string;
+  readonly removeFavourite?: (label: string) => string;
+}
+
+export function canSelectImageTemplate(
+  readOnly: boolean | undefined,
+  option: Pick<ImageTemplateOption, 'id'> | undefined | null,
+): boolean {
+  return !readOnly && Boolean(option && option.id);
+}
+
+export function canToggleTemplateFavourite(
+  model: Pick<ImageTemplatePickerViewModel, 'readOnly' | 'canEditFavourites'>,
+  option: Pick<ImageTemplateOption, 'id'> | undefined | null,
+  readOnlyOverride?: boolean,
+): boolean {
+  return !readOnlyOverride && !model.readOnly && Boolean(model.canEditFavourites) && Boolean(option && option.id);
+}
+
+export function resolveImageTemplatePickerId(
+  idPrefix = '',
+  headingId?: string | null,
+  fallbackId = 'emr-image-template-picker',
+): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  if (prefix) return `${prefix}-emr-image-template-picker`;
+  const heading = headingId?.trim();
+  if (heading) return `${heading}-picker`;
+  return fallbackId;
+}
+
+export function resolveImageTemplatePickerHeadingId(
+  idPrefix = '',
+  headingId?: string | null,
+  fallbackId = 'emr-image-template-picker-heading',
+): string {
+  const heading = headingId?.trim();
+  if (heading) return heading;
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  if (prefix) return `${prefix}-emr-image-template-picker-heading`;
+  return fallbackId;
+}
+
+export function resolveImageTemplateSearchId(
+  idPrefix = '',
+  headingId?: string | null,
+  fallbackId?: string,
+): string {
+  return `${resolveImageTemplatePickerId(idPrefix, headingId, fallbackId)}-q`;
+}
+
+export function resolveImageTemplateSectionId(
+  section: 'fav' | 'all',
+  idPrefix = '',
+  headingId?: string | null,
+  fallbackId?: string,
+): string {
+  return `${resolveImageTemplatePickerId(idPrefix, headingId, fallbackId)}-${section}`;
+}
+
 /**
  * Pure helper so hosts do not reimplement filtering. The query matches case-insensitively on label,
  * badges and group label. `groupId` narrows to one group; the reserved `'favourites'` id keeps only

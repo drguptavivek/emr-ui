@@ -1292,8 +1292,7 @@ export function EmrBreadcrumbs({
               styles.ellipsisBtn,
               focusRing(t, focused),
               {
-                backgroundColor: hovered ? t.surfaceRaised : t.surfaceSoft,
-                borderColor: t.border,
+                backgroundColor: hovered ? t.surfaceRaised : 'transparent',
                 borderRadius: 6,
               },
             ]}
@@ -1912,7 +1911,8 @@ const styles = StyleSheet.create({
   ellipsisBtn: {
     minWidth: 44,
     minHeight: 44,
-    borderWidth: 1,
+    paddingHorizontal: 6,
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },

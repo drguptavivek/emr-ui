@@ -30,7 +30,9 @@ async function mount<T extends HTMLElement & { updateComplete: Promise<boolean> 
 }
 
 function button(el: HTMLElement, text: string): HTMLButtonElement {
-  const match = [...el.shadowRoot!.querySelectorAll('button')].find((item) => item.textContent?.includes(text));
+  const match = [...el.shadowRoot!.querySelectorAll('button')].find(
+    (item) => item.textContent?.includes(text) || item.getAttribute('aria-label')?.includes(text),
+  );
   if (!match) throw new Error(`Missing ${text} button`);
   return match;
 }

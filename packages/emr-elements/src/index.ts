@@ -130,6 +130,25 @@ import type {
   EmrVisualAcuityFieldElement,
 } from './l2-fields-extra.js';
 import type {
+  EmrAnnotationListElement,
+  EmrAnnotationToolbarElement,
+  EmrClinicalCellRendererElement,
+  EmrClinicalFormElement,
+  EmrClinicalListElement,
+  EmrClinicalMatrixElement,
+  EmrDataTableElement,
+  EmrImageTemplatePickerElement,
+  EmrRepeatableGroupElement,
+  EmrSectionCardElement,
+  EmrTimeAxisElement,
+} from './l3-structures.js';
+import type {
+  EmrAllergyListElement,
+  EmrChronicDiseaseListElement,
+  EmrMedicationListElement,
+  EmrPersonalHistoryListElement,
+} from './l4-domain.js';
+import type {
   EmrCommandPaletteElement,
   EmrMasterDetailElement,
   EmrSplitWorkspaceElement,
@@ -140,6 +159,14 @@ import type {
   EmrLogicRuleBuilderElement,
   EmrScoreBuilderElement,
 } from './l6-builders.js';
+import type {
+  EmrFieldGeneratorElement,
+  EmrFieldLibraryPickerElement,
+  EmrTemplateComposerElement,
+  EmrTemplatePreviewElement,
+  EmrTerminologySearchElement,
+  EmrValidationRuleEditorElement,
+} from './l6-authoring-surfaces.js';
 import type {
   EmrGonioscopyChartElement,
   EmrHessScreenChartElement,
@@ -234,6 +261,21 @@ declare global {
     'emr-scale-field': EmrScaleFieldElement;
     'emr-signature-capture-field': EmrSignatureCaptureFieldElement;
     'emr-visual-acuity-field': EmrVisualAcuityFieldElement;
+    'emr-clinical-form': EmrClinicalFormElement;
+    'emr-clinical-list': EmrClinicalListElement;
+    'emr-clinical-matrix': EmrClinicalMatrixElement;
+    'emr-clinical-cell-renderer': EmrClinicalCellRendererElement;
+    'emr-annotation-toolbar': EmrAnnotationToolbarElement;
+    'emr-annotation-list': EmrAnnotationListElement;
+    'emr-image-template-picker': EmrImageTemplatePickerElement;
+    'emr-medication-list': EmrMedicationListElement;
+    'emr-allergy-list': EmrAllergyListElement;
+    'emr-chronic-disease-list': EmrChronicDiseaseListElement;
+    'emr-personal-history-list': EmrPersonalHistoryListElement;
+    'emr-repeatable-group': EmrRepeatableGroupElement;
+    'emr-section-card': EmrSectionCardElement;
+    'emr-time-axis': EmrTimeAxisElement;
+    'emr-data-table': EmrDataTableElement;
     'emr-split-workspace': EmrSplitWorkspaceElement;
     'emr-command-palette': EmrCommandPaletteElement;
     'emr-master-detail': EmrMasterDetailElement;
@@ -241,6 +283,12 @@ declare global {
     'emr-logic-rule-builder': EmrLogicRuleBuilderElement;
     'emr-score-builder': EmrScoreBuilderElement;
     'emr-fhir-questionnaire-mapper': EmrFhirQuestionnaireMapperElement;
+    'emr-field-generator': EmrFieldGeneratorElement;
+    'emr-terminology-search': EmrTerminologySearchElement;
+    'emr-validation-rule-editor': EmrValidationRuleEditorElement;
+    'emr-field-library-picker': EmrFieldLibraryPickerElement;
+    'emr-template-composer': EmrTemplateComposerElement;
+    'emr-template-preview': EmrTemplatePreviewElement;
     'emr-gonioscopy-chart': EmrGonioscopyChartElement;
     'emr-visual-field-summary': EmrVisualFieldSummaryElement;
     'emr-hess-screen-chart': EmrHessScreenChartElement;

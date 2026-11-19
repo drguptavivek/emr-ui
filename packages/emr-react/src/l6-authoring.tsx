@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
+import { useRef, useState, type ComponentRef } from 'react';
+import { Platform, Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
   ClinicalFieldType,
   ClinicalOption,
@@ -32,7 +32,9 @@ import type {
   ValidationRuleEditorViewModel,
 } from '@drguptavivek/emr-controller';
 import { EmrClinicalForm } from './clinical-form';
+import { SvgIcon } from './icons';
 import { NumberInput, ThemedInput } from './inputs-core';
+import { webProps } from './l1-interactive-shared';
 import { EmrColumns } from './l1-display';
 import {
   TERMINOLOGY_ROLES,
@@ -41,6 +43,7 @@ import {
   canAcceptTemplateImport,
   canAddValidationRule,
   filterBindingsByRole,
+  resolveAuthoringId,
   summarizeFieldTerminology,
   summarizeValidationRule,
   toPreviewFieldDefinition,
@@ -50,6 +53,38 @@ import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';
 import { EmrTypedField } from './typed-field';
 
 type PressState = PressableStateCallbackType & { focused?: boolean };
+
+const RESOLVED_MONO_FONT = (webMono: string): string | undefined =>
+  Platform.OS === 'web'
+    ? webMono
+    : Platform.select({ ios: 'Menlo', android: 'monospace', default: webMono });
+
+function containsDomNode(container: unknown, target: unknown): boolean {
+  const el = container as { contains?: (n: unknown) => boolean } | null | undefined;
+  return Boolean(el && typeof el.contains === 'function' && el.contains(target));
+}
+
+function useFocusWithinHandlers(onFocus?: () => void, onBlur?: () => void) {
+  const containerRef = useRef<ComponentRef<typeof View> | null>(null);
+  const focusWithinRef = useRef(false);
+
+  const handleFocusIn = () => {
+    if (!focusWithinRef.current) {
+      focusWithinRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleFocusOut = (ev: { relatedTarget?: unknown }) => {
+    if (ev.relatedTarget && containsDomNode(containerRef.current, ev.relatedTarget)) return;
+    if (focusWithinRef.current) {
+      focusWithinRef.current = false;
+      onBlur?.();
+    }
+  };
+
+  return { containerRef, handleFocusIn, handleFocusOut };
+}
 
 export type {
   FieldLibraryPickerIntent,
@@ -202,6 +237,8 @@ export const FIELD_GENERATOR_DEFAULTS = {
     { value: 'integer', label: 'Integer' },
     { value: 'decimal', label: 'Decimal' },
     { value: 'date', label: 'Date' },
+    { value: 'time', label: 'Time' },
+    { value: 'datetime', label: 'Date & time' },
     { value: 'select', label: 'Single choice' },
     { value: 'multiselect', label: 'Multiple choice' },
     { value: 'boolean', label: 'Boolean' },
@@ -309,21 +346,29 @@ export const TEMPLATE_COMPOSER_DEFAULTS = {
 export function EmrTerminologySearch({
   model,
   headingId = 'emr-terminology-heading',
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: TerminologySearchViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof TERMINOLOGY_SEARCH_DEFAULTS>;
   onIntent: (intent: TerminologySearchIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const l = { ...TERMINOLOGY_SEARCH_DEFAULTS, ...labels };
   const font = fontFamily(t);
   const readOnly = !!model.readOnly;
   const search = model.search;
+  const resolvedHeadingId = resolveAuthoringId(idPrefix, headingId);
   const roleLabel = l.roleLabels[model.role] ?? model.role;
   const placeholder = model.role === 'unit' ? l.searchUcumPlaceholder : l.searchRolePlaceholder(roleLabel);
+  const { containerRef, handleFocusIn, handleFocusOut } = useFocusWithinHandlers(onFocus, onBlur);
 
   const sourceOptions: ClinicalOption[] = model.sources.map(s => ({
     value: s.id,
@@ -333,8 +378,10 @@ export function EmrTerminologySearch({
 
   return (
     <View
+      ref={containerRef}
       role="region"
-      aria-labelledby={headingId}
+      aria-labelledby={resolvedHeadingId}
+      {...webProps({ onFocus: handleFocusIn, onBlur: handleFocusOut })}
       style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
     >
       <View style={styles.cardHeader}>
@@ -343,7 +390,7 @@ export function EmrTerminologySearch({
           <Text
             role="heading"
             aria-level={3}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
           >
             {roleLabel}
@@ -363,6 +410,7 @@ export function EmrTerminologySearch({
           </Text>
           <EmrSelect
             label={`${roleLabel} ${l.sourceLabel}`}
+            labelHidden
             options={sourceOptions}
             value={search?.sourceId ?? null}
             readOnly={readOnly}
@@ -377,9 +425,9 @@ export function EmrTerminologySearch({
             {l.searchLabel}
           </Text>
           <View style={styles.inlineRow}>
-            <View style={styles.flex}>
+            <View style={styles.flexInput}>
               <ThemedInput
-                id={`${headingId}-query`}
+                id={`${resolvedHeadingId}-query`}
                 aria-label={`${roleLabel} ${l.searchLabel}`}
                 value={search?.query ?? ''}
                 placeholder={placeholder}
@@ -394,7 +442,9 @@ export function EmrTerminologySearch({
               label={l.searchButton}
               disabled={readOnly || !search?.sourceId || !!search?.loading}
               onPress={() => onIntent({ type: 'terminologySearchRequested', role: model.role })}
-            />
+            >
+              <SvgIcon name="search" size={14} color={t.primary} />
+            </EmrButton>
           </View>
         </View>
       </View>
@@ -408,7 +458,9 @@ export function EmrTerminologySearch({
             label={l.retry}
             disabled={readOnly}
             onPress={() => onIntent({ type: 'terminologyRetryRequested', role: model.role })}
-          />
+          >
+            <SvgIcon name="refresh" size={14} color={t.text} />
+          </EmrButton>
         </View>
       ) : search && !search.loading && search.sourceId && search.query && search.options.length === 0 ? (
         <View role="status" style={[styles.messageBox, { backgroundColor: t.surfaceRaised }]}>
@@ -439,7 +491,7 @@ export function EmrTerminologySearch({
                   styles.resultItem,
                   focusRing(t, focused),
                   {
-                    minHeight: t.controlHeight,
+                    minHeight: Math.max(44, t.controlHeight),
                     borderColor: t.border,
                     backgroundColor: pressed ? t.surfaceRaised : t.surface,
                     opacity: readOnly || inactive ? 0.6 : 1,
@@ -471,14 +523,18 @@ export function EmrTerminologySearch({
                 label={l.previous}
                 disabled={readOnly || search.page <= 1}
                 onPress={() => onIntent({ type: 'terminologyPageChanged', role: model.role, page: search.page - 1 })}
-              />
+              >
+                <SvgIcon name="chevron-left" size={14} color={t.text} />
+              </EmrButton>
               <EmrButton
                 small
                 variant="ghost"
                 label={l.next}
                 disabled={readOnly || search.page * search.pageSize >= search.total}
                 onPress={() => onIntent({ type: 'terminologyPageChanged', role: model.role, page: search.page + 1 })}
-              />
+              >
+                <SvgIcon name="chevron-right" size={14} color={t.text} />
+              </EmrButton>
             </View>
           ) : null}
         </View>
@@ -505,6 +561,7 @@ export function EmrTerminologySearch({
               <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: font }}>{l.bindingStrength}</Text>
               <EmrSelect
                 label={l.bindingStrength}
+                labelHidden
                 options={l.strengthOptions}
                 value={binding.strength ?? 'preferred'}
                 readOnly={readOnly}
@@ -526,6 +583,7 @@ export function EmrTerminologySearch({
                 <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: font }}>{l.relationship}</Text>
                 <EmrSelect
                   label={l.relationship}
+                  labelHidden
                   options={l.relationshipOptions}
                   value={binding.mappingRelationship ?? 'related-to'}
                   readOnly={readOnly}
@@ -549,7 +607,9 @@ export function EmrTerminologySearch({
               label={l.remove}
               disabled={readOnly}
               onPress={() => onIntent({ type: 'terminologyBindingRemoved', bindingId: binding.id })}
-            />
+            >
+              <SvgIcon name="trash" size={14} color={t.text} />
+            </EmrButton>
           </View>
         </View>
       ))}
@@ -565,18 +625,26 @@ export function EmrTerminologySearch({
 export function EmrValidationRuleEditor({
   model,
   headingId = 'emr-validation-heading',
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: ValidationRuleEditorViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof VALIDATION_EDITOR_DEFAULTS>;
   onIntent: (intent: ValidationRuleEditorIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const l = { ...VALIDATION_EDITOR_DEFAULTS, ...labels };
   const font = fontFamily(t);
   const readOnly = !!model.readOnly;
+  const resolvedHeadingId = resolveAuthoringId(idPrefix, headingId);
+  const { containerRef, handleFocusIn, handleFocusOut } = useFocusWithinHandlers(onFocus, onBlur);
 
   const [kind, setKind] = useState<FieldValidationRule['kind']>('minimum');
   const [value, setValue] = useState('');
@@ -608,8 +676,10 @@ export function EmrValidationRuleEditor({
 
   return (
     <View
+      ref={containerRef}
       role="region"
-      aria-labelledby={headingId}
+      aria-labelledby={resolvedHeadingId}
+      {...webProps({ onFocus: handleFocusIn, onBlur: handleFocusOut })}
       style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
     >
       <View style={styles.cardHeader}>
@@ -618,7 +688,7 @@ export function EmrValidationRuleEditor({
           <Text
             role="heading"
             aria-level={3}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
           >
             {l.heading}
@@ -636,6 +706,7 @@ export function EmrValidationRuleEditor({
           </Text>
           <EmrSelect
             label={l.ruleTypeLabel}
+            labelHidden
             options={kindOptions}
             value={kind}
             readOnly={readOnly}
@@ -653,7 +724,7 @@ export function EmrValidationRuleEditor({
             {valueFieldMeta.label}
           </Text>
           <ThemedInput
-            id={`${headingId}-rule-value`}
+            id={`${resolvedHeadingId}-rule-value`}
             aria-label={valueFieldMeta.label}
             value={value}
             placeholder={valueFieldMeta.placeholder}
@@ -668,7 +739,7 @@ export function EmrValidationRuleEditor({
             {l.messageLabel}
           </Text>
           <ThemedInput
-            id={`${headingId}-rule-message`}
+            id={`${resolvedHeadingId}-rule-message`}
             aria-label={l.messageLabel}
             value={message}
             placeholder={l.messagePlaceholder}
@@ -691,7 +762,9 @@ export function EmrValidationRuleEditor({
           label={l.addRule}
           disabled={readOnly || !canAddValidationRule(kind, value, message)}
           onPress={handleAdd}
-        />
+        >
+          <SvgIcon name="plus" size={14} color={t.primary} />
+        </EmrButton>
       </View>
 
       {model.rules.length > 0 ? (
@@ -721,7 +794,9 @@ export function EmrValidationRuleEditor({
                 label={l.remove}
                 disabled={readOnly}
                 onPress={() => onIntent({ type: 'validationRuleRemoved', ruleId: rule.id })}
-              />
+              >
+                <SvgIcon name="trash" size={14} color={t.text} />
+              </EmrButton>
             </View>
           ))}
         </View>
@@ -738,19 +813,27 @@ export function EmrValidationRuleEditor({
 export function EmrFieldGenerator({
   model,
   headingId = 'emr-field-generator-heading',
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: FieldGeneratorViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof FIELD_GENERATOR_DEFAULTS>;
   onIntent: (intent: FieldGeneratorIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const l = { ...FIELD_GENERATOR_DEFAULTS, ...labels };
   const font = fontFamily(t);
   const readOnly = !!model.readOnly;
   const draft = model.draft;
+  const resolvedHeadingId = resolveAuthoringId(idPrefix, headingId);
+  const { containerRef, handleFocusIn, handleFocusOut } = useFocusWithinHandlers(onFocus, onBlur);
 
   const [optionValue, setOptionValue] = useState('');
   const [optionLabel, setOptionLabel] = useState('');
@@ -774,16 +857,28 @@ export function EmrFieldGenerator({
   };
 
   const errorEntries = Object.entries(model.validationErrors ?? {});
+  const fieldErr = (...keys: string[]): string | undefined => {
+    for (const k of keys) {
+      if (model.validationErrors?.[k]) return model.validationErrors[k];
+    }
+    return undefined;
+  };
 
   return (
-    <View role="region" aria-labelledby={headingId} style={styles.surfaceStack}>
+    <View
+      ref={containerRef}
+      role="region"
+      aria-labelledby={resolvedHeadingId}
+      {...webProps({ onFocus: handleFocusIn, onBlur: handleFocusOut })}
+      style={styles.surfaceStack}
+    >
       <View style={styles.topHeader}>
         <View style={styles.flex}>
           <Text style={[styles.eyebrow, { color: t.textMuted, fontSize: t.text2xs, fontFamily: font }]}>{l.eyebrow}</Text>
           <Text
             role="heading"
             aria-level={2}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{ color: t.text, fontSize: t.text2xl, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
           >
             {l.heading}
@@ -798,7 +893,9 @@ export function EmrFieldGenerator({
             label={model.saving ? l.saving : l.saveField}
             disabled={readOnly || model.saving}
             onPress={() => emit({ type: 'saveRequested' })}
-          />
+          >
+            <SvgIcon name="check" size={14} color={t.primaryContrast} />
+          </EmrButton>
         </View>
       </View>
 
@@ -820,7 +917,7 @@ export function EmrFieldGenerator({
                 <Text
                   role="heading"
                   aria-level={3}
-                  nativeID={`${headingId}-identity`}
+                  nativeID={`${resolvedHeadingId}-identity`}
                   style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                 >
                   {l.identityHeading}
@@ -833,33 +930,45 @@ export function EmrFieldGenerator({
                   {l.fieldIdLabel}
                 </Text>
                 <ThemedInput
-                  id={`${headingId}-field-id`}
+                  id={`${resolvedHeadingId}-field-id`}
                   aria-label={l.fieldIdLabel}
                   value={draft.id}
+                  invalid={Boolean(fieldErr('field-id', 'id'))}
                   readOnly={readOnly}
                   editable={!readOnly}
                   onChangeText={val => patch('id', val)}
                 />
+                {fieldErr('field-id', 'id') ? (
+                  <Text role="alert" style={{ color: t.danger, fontSize: t.textXs, fontFamily: font }}>
+                    {fieldErr('field-id', 'id')}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.fieldRow}>
                 <Text style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(600), fontFamily: font }}>
                   {l.labelLabel}
                 </Text>
                 <ThemedInput
-                  id={`${headingId}-field-label`}
+                  id={`${resolvedHeadingId}-field-label`}
                   aria-label={l.labelLabel}
                   value={draft.label}
+                  invalid={Boolean(fieldErr('field-label', 'label'))}
                   readOnly={readOnly}
                   editable={!readOnly}
                   onChangeText={val => patch('label', val)}
                 />
+                {fieldErr('field-label', 'label') ? (
+                  <Text role="alert" style={{ color: t.danger, fontSize: t.textXs, fontFamily: font }}>
+                    {fieldErr('field-label', 'label')}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.fieldRow}>
                 <Text style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(600), fontFamily: font }}>
                   {l.descriptionLabel}
                 </Text>
                 <ThemedInput
-                  id={`${headingId}-field-description`}
+                  id={`${resolvedHeadingId}-field-description`}
                   aria-label={l.descriptionLabel}
                   multiline
                   numberOfLines={2}
@@ -874,7 +983,7 @@ export function EmrFieldGenerator({
                   {l.instructionsLabel}
                 </Text>
                 <ThemedInput
-                  id={`${headingId}-field-instructions`}
+                  id={`${resolvedHeadingId}-field-instructions`}
                   aria-label={l.instructionsLabel}
                   multiline
                   numberOfLines={2}
@@ -889,7 +998,7 @@ export function EmrFieldGenerator({
                   {l.placeholderLabel}
                 </Text>
                 <ThemedInput
-                  id={`${headingId}-field-placeholder`}
+                  id={`${resolvedHeadingId}-field-placeholder`}
                   aria-label={l.placeholderLabel}
                   value={draft.placeholder ?? ''}
                   readOnly={readOnly}
@@ -910,7 +1019,7 @@ export function EmrFieldGenerator({
                 <Text
                   role="heading"
                   aria-level={3}
-                  nativeID={`${headingId}-behaviour`}
+                  nativeID={`${resolvedHeadingId}-behaviour`}
                   style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                 >
                   {l.behaviourHeading}
@@ -924,6 +1033,7 @@ export function EmrFieldGenerator({
                 </Text>
                 <EmrSelect
                   label={l.valueTypeLabel}
+                  labelHidden
                   options={l.typeOptions}
                   value={draft.type}
                   readOnly={readOnly}
@@ -938,6 +1048,7 @@ export function EmrFieldGenerator({
                 </Text>
                 <EmrSelect
                   label={l.gridSpanLabel}
+                  labelHidden
                   options={l.spanOptions}
                   value={String(draft.span ?? 12)}
                   readOnly={readOnly}
@@ -951,7 +1062,7 @@ export function EmrFieldGenerator({
                   {l.textRowsLabel}
                 </Text>
                 <NumberInput
-                  id={`${headingId}-field-rows`}
+                  id={`${resolvedHeadingId}-field-rows`}
                   aria-label={l.textRowsLabel}
                   integer
                   value={draft.rows}
@@ -965,7 +1076,7 @@ export function EmrFieldGenerator({
                   {l.precisionLabel}
                 </Text>
                 <NumberInput
-                  id={`${headingId}-field-precision`}
+                  id={`${resolvedHeadingId}-field-precision`}
                   aria-label={l.precisionLabel}
                   integer
                   value={draft.precision}
@@ -1011,7 +1122,7 @@ export function EmrFieldGenerator({
                   <Text
                     role="heading"
                     aria-level={3}
-                    nativeID={`${headingId}-unit`}
+                    nativeID={`${resolvedHeadingId}-unit`}
                     style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                   >
                     {l.measurementHeading}
@@ -1024,7 +1135,7 @@ export function EmrFieldGenerator({
                     {l.displayUnitLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-field-unit`}
+                    id={`${resolvedHeadingId}-field-unit`}
                     aria-label={l.displayUnitLabel}
                     value={draft.unit ?? ''}
                     placeholder={l.displayUnitPlaceholder}
@@ -1038,28 +1149,40 @@ export function EmrFieldGenerator({
                     {l.unitSystemLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-field-unit-system`}
+                    id={`${resolvedHeadingId}-field-unit-system`}
                     aria-label={l.unitSystemLabel}
                     value={draft.unitSystem ?? ''}
                     placeholder={l.unitSystemPlaceholder}
+                    invalid={Boolean(fieldErr('unitSystem'))}
                     readOnly={readOnly}
                     editable={!readOnly}
                     onChangeText={val => patch('unitSystem', val)}
                   />
+                  {fieldErr('unitSystem') ? (
+                    <Text role="alert" style={{ color: t.danger, fontSize: t.textXs, fontFamily: font }}>
+                      {fieldErr('unitSystem')}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(600), fontFamily: font }}>
                     {l.unitCodeLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-field-unit-code`}
+                    id={`${resolvedHeadingId}-field-unit-code`}
                     aria-label={l.unitCodeLabel}
                     value={draft.unitCode ?? ''}
                     placeholder={l.unitCodePlaceholder}
+                    invalid={Boolean(fieldErr('unitCode'))}
                     readOnly={readOnly}
                     editable={!readOnly}
                     onChangeText={val => patch('unitCode', val)}
                   />
+                  {fieldErr('unitCode') ? (
+                    <Text role="alert" style={{ color: t.danger, fontSize: t.textXs, fontFamily: font }}>
+                      {fieldErr('unitCode')}
+                    </Text>
+                  ) : null}
                 </View>
               </View>
             </View>
@@ -1076,7 +1199,7 @@ export function EmrFieldGenerator({
                   <Text
                     role="heading"
                     aria-level={3}
-                    nativeID={`${headingId}-options`}
+                    nativeID={`${resolvedHeadingId}-options`}
                     style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                   >
                     {l.optionsHeading}
@@ -1092,7 +1215,7 @@ export function EmrFieldGenerator({
                     {l.optionValueLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-option-value`}
+                    id={`${resolvedHeadingId}-option-value`}
                     aria-label={l.optionValueLabel}
                     value={optionValue}
                     readOnly={readOnly}
@@ -1105,7 +1228,7 @@ export function EmrFieldGenerator({
                     {l.optionLabelLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-option-label`}
+                    id={`${resolvedHeadingId}-option-label`}
                     aria-label={l.optionLabelLabel}
                     value={optionLabel}
                     readOnly={readOnly}
@@ -1119,14 +1242,28 @@ export function EmrFieldGenerator({
                     label={l.addOption}
                     disabled={readOnly || !optionValue.trim() || !optionLabel.trim()}
                     onPress={handleAddOption}
-                  />
+                  >
+                    <SvgIcon name="plus" size={14} color={t.primary} />
+                  </EmrButton>
                 </View>
+                {fieldErr('options') ? (
+                  <Text role="alert" style={{ color: t.danger, fontSize: t.textXs, fontFamily: font }}>
+                    {fieldErr('options')}
+                  </Text>
+                ) : null}
                 {draft.options?.length ? (
                   <View style={styles.flagsRow}>
                     {draft.options.map(option => (
                       <View
                         key={option.value}
-                        style={[styles.optionPill, { borderColor: t.border, backgroundColor: t.surfaceRaised }]}
+                        style={[
+                          styles.optionPill,
+                          {
+                            minHeight: Math.max(44, t.controlHeight),
+                            borderColor: t.border,
+                            backgroundColor: t.surfaceRaised,
+                          },
+                        ]}
                       >
                         <Text style={{ color: t.text, fontSize: t.textSm, fontFamily: font }}>
                           {option.label}{' '}
@@ -1144,7 +1281,9 @@ export function EmrFieldGenerator({
                               (draft.options ?? []).filter(o => o.value !== option.value),
                             )
                           }
-                        />
+                        >
+                          <SvgIcon name="trash" size={14} color={t.text} />
+                        </EmrButton>
                       </View>
                     ))}
                   </View>
@@ -1155,7 +1294,7 @@ export function EmrFieldGenerator({
 
           {/* Validation rules */}
           <EmrValidationRuleEditor
-            headingId={`${headingId}-validation`}
+            headingId={`${resolvedHeadingId}-validation`}
             model={{ rules: draft.validationRules, readOnly }}
             onIntent={emit}
           />
@@ -1170,7 +1309,7 @@ export function EmrFieldGenerator({
                 <Text
                   role="heading"
                   aria-level={3}
-                  nativeID={`${headingId}-terminology`}
+                  nativeID={`${resolvedHeadingId}-terminology`}
                   style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                 >
                   {l.terminologyHeading}
@@ -1184,7 +1323,7 @@ export function EmrFieldGenerator({
               {TERMINOLOGY_ROLES.map(role => (
                 <EmrTerminologySearch
                   key={role}
-                  headingId={`${headingId}-terminology-${role}`}
+                  headingId={`${resolvedHeadingId}-terminology-${role}`}
                   model={{
                     role,
                     sources: model.sources,
@@ -1210,7 +1349,7 @@ export function EmrFieldGenerator({
                 <Text
                   role="heading"
                   aria-level={3}
-                  nativeID={`${headingId}-preview`}
+                  nativeID={`${resolvedHeadingId}-preview`}
                   style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                 >
                   {l.previewHeading}
@@ -1221,7 +1360,7 @@ export function EmrFieldGenerator({
             <EmrTypedField
               definition={toPreviewFieldDefinition(draft, l.untitledField)}
               model={{ value: draft.defaultValue ?? null }}
-              controlId={`${headingId}-generated-field-preview`}
+              controlId={`${resolvedHeadingId}-generated-field-preview`}
               readOnly
               onValueChange={() => {}}
               onStatusChange={() => {}}
@@ -1239,9 +1378,9 @@ export function EmrFieldGenerator({
               {l.statusEyebrow}
             </Text>
             {errorEntries.length > 0 ? (
-              <View role="list" style={styles.fieldStack}>
+              <View role="alert" style={styles.fieldStack}>
                 {errorEntries.map(([key, errMsg]) => (
-                  <View key={key} role="listitem">
+                  <View key={key}>
                     <Text style={{ color: t.danger, fontSize: t.textSm, fontFamily: font }}>
                       <Text style={{ fontWeight: fontWeight(t.weightBold) }}>{key}:</Text> {errMsg}
                     </Text>
@@ -1275,23 +1414,33 @@ export function EmrFieldGenerator({
 export function EmrFieldLibraryPicker({
   model,
   headingId = 'emr-field-library-heading',
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: FieldLibraryPickerViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof FIELD_LIBRARY_DEFAULTS>;
   onIntent: (intent: FieldLibraryPickerIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const l = { ...FIELD_LIBRARY_DEFAULTS, ...labels };
   const font = fontFamily(t);
   const readOnly = !!model.readOnly;
+  const resolvedHeadingId = resolveAuthoringId(idPrefix, headingId);
+  const { containerRef, handleFocusIn, handleFocusOut } = useFocusWithinHandlers(onFocus, onBlur);
 
   return (
     <View
+      ref={containerRef}
       role="region"
-      aria-labelledby={headingId}
+      aria-labelledby={resolvedHeadingId}
+      {...webProps({ onFocus: handleFocusIn, onBlur: handleFocusOut })}
       style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
     >
       <View style={styles.cardHeader}>
@@ -1300,7 +1449,7 @@ export function EmrFieldLibraryPicker({
           <Text
             role="heading"
             aria-level={2}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
           >
             {l.heading}
@@ -1317,7 +1466,7 @@ export function EmrFieldLibraryPicker({
           {l.searchLabel}
         </Text>
         <ThemedInput
-          id={`${headingId}-search`}
+          id={`${resolvedHeadingId}-search`}
           aria-label={l.searchLabel}
           value={model.query}
           placeholder={l.searchPlaceholder}
@@ -1374,7 +1523,9 @@ export function EmrFieldLibraryPicker({
                       });
                     }
                   }}
-                />
+                >
+                  <SvgIcon name="plus" size={14} color={t.primary} />
+                </EmrButton>
               </View>
             );
           })}
@@ -1404,18 +1555,27 @@ const ARTIFACT_FORMATS: readonly TemplateArtifactFormat[] = [
 export function EmrTemplatePreview({
   model,
   headingId = 'emr-template-preview-heading',
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: TemplatePreviewViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof TEMPLATE_PREVIEW_DEFAULTS>;
   onIntent: (intent: TemplatePreviewIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const l = { ...TEMPLATE_PREVIEW_DEFAULTS, ...labels };
   const font = fontFamily(t);
+  const monoFont = RESOLVED_MONO_FONT(t.fontMono);
   const readOnly = !!model.readOnly;
+  const resolvedHeadingId = resolveAuthoringId(idPrefix, headingId);
+  const { containerRef, handleFocusIn, handleFocusOut } = useFocusWithinHandlers(onFocus, onBlur);
 
   const [format, setFormat] = useState<TemplateArtifactFormat>('fhir-r4-questionnaire');
   const [serialized, setSerialized] = useState('');
@@ -1430,14 +1590,20 @@ export function EmrTemplatePreview({
   };
 
   return (
-    <View role="region" aria-labelledby={headingId} style={styles.columnStack}>
+    <View
+      ref={containerRef}
+      role="region"
+      aria-labelledby={resolvedHeadingId}
+      {...webProps({ onFocus: handleFocusIn, onBlur: handleFocusOut })}
+      style={styles.columnStack}
+    >
       <View style={styles.cardHeader}>
         <View style={styles.flex}>
           <Text style={[styles.eyebrow, { color: t.textMuted, fontSize: t.text2xs, fontFamily: font }]}>{l.eyebrow}</Text>
           <Text
             role="heading"
             aria-level={2}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{ color: t.text, fontSize: t.textXl, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
           >
             {model.template.title || l.untitledTemplate}
@@ -1450,12 +1616,16 @@ export function EmrTemplatePreview({
       </View>
 
       <View style={[styles.previewSurface, { borderColor: t.border, backgroundColor: t.surfaceRaised }]}>
-        <EmrClinicalForm model={model.preview} idPrefix={headingId} onIntent={() => {}} />
+        <EmrClinicalForm
+          model={{ ...model.preview, readOnly: true }}
+          idPrefix={resolvedHeadingId}
+          onIntent={() => {}}
+        />
       </View>
 
       <View
         role="region"
-        aria-labelledby={`${headingId}-artifact`}
+        aria-labelledby={`${resolvedHeadingId}-artifact`}
         style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
       >
         <View style={styles.cardHeader}>
@@ -1466,7 +1636,7 @@ export function EmrTemplatePreview({
             <Text
               role="heading"
               aria-level={3}
-              nativeID={`${headingId}-artifact`}
+              nativeID={`${resolvedHeadingId}-artifact`}
               style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
             >
               {l.interopHeading}
@@ -1480,24 +1650,32 @@ export function EmrTemplatePreview({
           ) : null}
         </View>
 
-        <View style={styles.inlineRow}>
-          <View style={styles.flex}>
-            <EmrSelect
-              label={l.formatLabel}
-              options={formatOptions}
-              value={format}
-              readOnly={readOnly || model.loading}
-              onChange={next => {
-                if (next) setFormat(next as TemplateArtifactFormat);
-              }}
-            />
+        <View style={styles.fieldRow}>
+          <Text style={{ color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(600), fontFamily: font }}>
+            {l.formatLabel}
+          </Text>
+          <View style={styles.inlineRow}>
+            <View style={styles.flexInput}>
+              <EmrSelect
+                label={l.formatLabel}
+                labelHidden
+                options={formatOptions}
+                value={format}
+                readOnly={readOnly || model.loading}
+                onChange={next => {
+                  if (next) setFormat(next as TemplateArtifactFormat);
+                }}
+              />
+            </View>
+            <EmrButton
+              variant="outline"
+              label={l.exportButton}
+              disabled={readOnly || model.loading}
+              onPress={() => emit({ type: 'artifactExportRequested', format })}
+            >
+              <SvgIcon name="download" size={14} color={t.primary} />
+            </EmrButton>
           </View>
-          <EmrButton
-            variant="outline"
-            label={l.exportButton}
-            disabled={readOnly || model.loading}
-            onPress={() => emit({ type: 'artifactExportRequested', format })}
-          />
         </View>
 
         <View style={styles.fieldRow}>
@@ -1505,7 +1683,7 @@ export function EmrTemplatePreview({
             {l.serializedLabel}
           </Text>
           <ThemedInput
-            id={`${headingId}-serialized`}
+            id={`${resolvedHeadingId}-serialized`}
             aria-label={l.serializedLabel}
             multiline
             numberOfLines={6}
@@ -1525,14 +1703,18 @@ export function EmrTemplatePreview({
             onPress={() => {
               if (serialized.trim()) emit({ type: 'artifactImportRequested', format, serialized });
             }}
-          />
+          >
+            <SvgIcon name="upload" size={14} color={t.primary} />
+          </EmrButton>
           {canAcceptTemplateImport(model.importIssues) ? (
             <EmrButton
               variant="outline"
               label={l.acceptImportButton}
               disabled={readOnly || model.loading}
               onPress={() => emit({ type: 'importAccepted' })}
-            />
+            >
+              <SvgIcon name="check" size={14} color={t.primary} />
+            </EmrButton>
           ) : null}
         </View>
 
@@ -1548,7 +1730,7 @@ export function EmrTemplatePreview({
             <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: font }}>
               {l.artifactMeta(model.artifact.serialized.length, model.artifact.issues.length)}
             </Text>
-            <Text style={{ color: t.text, fontSize: t.textXs, fontFamily: t.fontMono }}>
+            <Text style={{ color: t.text, fontSize: t.textXs, fontFamily: monoFont }}>
               {model.artifact.serialized}
             </Text>
           </View>
@@ -1559,11 +1741,17 @@ export function EmrTemplatePreview({
             role="alert"
             style={[styles.artifactBox, { borderColor: t.warning, backgroundColor: t.warningSoft }]}
           >
-            <Text style={{ color: t.warning, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
-              {l.reviewIssuesHeading}
-            </Text>
-            {model.importIssues.map(issue => (
-              <Text key={`${issue.code}:${issue.path ?? ''}`} style={{ color: t.warning, fontSize: t.textSm, fontFamily: font }}>
+            <View style={styles.issueHeader}>
+              <SvgIcon name="warning" size={15} color={t.warning} />
+              <Text style={{ color: t.warning, fontSize: t.textSm, fontWeight: fontWeight(t.weightBold), fontFamily: font }}>
+                {l.reviewIssuesHeading}
+              </Text>
+            </View>
+            {model.importIssues.map((issue, idx) => (
+              <Text
+                key={`${idx}-${issue.code}-${issue.path ?? ''}`}
+                style={{ color: t.warning, fontSize: t.textSm, fontFamily: font }}
+              >
                 <Text style={{ fontWeight: fontWeight(t.weightBold) }}>{issue.severity}</Text> · {issue.message}
                 {issue.path ? ` · ${issue.path}` : ''}
               </Text>
@@ -1589,23 +1777,37 @@ export function EmrTemplatePreview({
 export function EmrTemplateComposer({
   model,
   headingId = 'emr-template-composer-heading',
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: TemplateComposerViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof TEMPLATE_COMPOSER_DEFAULTS>;
   onIntent: (intent: TemplateComposerIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const l = { ...TEMPLATE_COMPOSER_DEFAULTS, ...labels };
   const font = fontFamily(t);
   const readOnly = !!model.readOnly;
+  const resolvedHeadingId = resolveAuthoringId(idPrefix, headingId);
+  const { containerRef, handleFocusIn, handleFocusOut } = useFocusWithinHandlers(onFocus, onBlur);
 
   const [newSectionLabel, setNewSectionLabel] = useState('');
 
   const emit = (intent: TemplateComposerIntent) => {
-    if (!readOnly || intent.type === 'sectionSelected') onIntent(intent);
+    if (
+      !readOnly ||
+      intent.type === 'sectionSelected' ||
+      intent.type === 'placementSelected'
+    ) {
+      onIntent(intent);
+    }
   };
 
   const selectedSection: EhrTemplateSection | undefined = model.template.sections.find(
@@ -1620,14 +1822,20 @@ export function EmrTemplateComposer({
   };
 
   return (
-    <View role="region" aria-labelledby={headingId} style={styles.surfaceStack}>
+    <View
+      ref={containerRef}
+      role="region"
+      aria-labelledby={resolvedHeadingId}
+      {...webProps({ onFocus: handleFocusIn, onBlur: handleFocusOut })}
+      style={styles.surfaceStack}
+    >
       <View style={styles.topHeader}>
         <View style={styles.flex}>
           <Text style={[styles.eyebrow, { color: t.textMuted, fontSize: t.text2xs, fontFamily: font }]}>{l.eyebrow}</Text>
           <Text
             role="heading"
             aria-level={1}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{ color: t.text, fontSize: t.text2xl, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
           >
             {model.template.title || l.untitledTemplate}
@@ -1642,7 +1850,9 @@ export function EmrTemplateComposer({
             label={model.saving ? l.saving : l.saveTemplate}
             disabled={readOnly || model.saving}
             onPress={() => emit({ type: 'saveRequested' })}
-          />
+          >
+            <SvgIcon name="check" size={14} color={t.primaryContrast} />
+          </EmrButton>
         </View>
       </View>
 
@@ -1655,7 +1865,7 @@ export function EmrTemplateComposer({
       {/* Template metadata */}
       <View
         role="region"
-        aria-labelledby={`${headingId}-identity`}
+        aria-labelledby={`${resolvedHeadingId}-identity`}
         style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
       >
         <View style={styles.cardHeader}>
@@ -1666,7 +1876,7 @@ export function EmrTemplateComposer({
             <Text
               role="heading"
               aria-level={2}
-              nativeID={`${headingId}-identity`}
+              nativeID={`${resolvedHeadingId}-identity`}
               style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
             >
               {l.metadataHeading}
@@ -1683,7 +1893,7 @@ export function EmrTemplateComposer({
               {l.titleLabel}
             </Text>
             <ThemedInput
-              id={`${headingId}-template-title`}
+              id={`${resolvedHeadingId}-template-title`}
               aria-label={l.titleLabel}
               value={model.template.title}
               readOnly={readOnly}
@@ -1696,7 +1906,7 @@ export function EmrTemplateComposer({
               {l.descriptionLabel}
             </Text>
             <ThemedInput
-              id={`${headingId}-template-description`}
+              id={`${resolvedHeadingId}-template-description`}
               aria-label={l.descriptionLabel}
               multiline
               numberOfLines={2}
@@ -1711,7 +1921,7 @@ export function EmrTemplateComposer({
               {l.localeLabel}
             </Text>
             <ThemedInput
-              id={`${headingId}-template-locale`}
+              id={`${resolvedHeadingId}-template-locale`}
               aria-label={l.localeLabel}
               value={model.template.locale}
               readOnly={readOnly}
@@ -1725,6 +1935,7 @@ export function EmrTemplateComposer({
             </Text>
             <EmrSelect
               label={l.statusLabel}
+              labelHidden
               options={l.statusOptions}
               value={model.template.status}
               readOnly={readOnly}
@@ -1741,7 +1952,7 @@ export function EmrTemplateComposer({
         <View style={styles.columnStack}>
           <View
             role="region"
-            aria-labelledby={`${headingId}-sections`}
+            aria-labelledby={`${resolvedHeadingId}-sections`}
             style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
           >
             <View style={styles.cardHeader}>
@@ -1752,7 +1963,7 @@ export function EmrTemplateComposer({
                 <Text
                   role="heading"
                   aria-level={2}
-                  nativeID={`${headingId}-sections`}
+                  nativeID={`${resolvedHeadingId}-sections`}
                   style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                 >
                   {l.sectionsHeading}
@@ -1764,9 +1975,9 @@ export function EmrTemplateComposer({
             </View>
 
             <View style={styles.inlineRow}>
-              <View style={styles.flex}>
+              <View style={styles.flexInput}>
                 <ThemedInput
-                  id={`${headingId}-new-section`}
+                  id={`${resolvedHeadingId}-new-section`}
                   aria-label={l.newSectionPlaceholder}
                   value={newSectionLabel}
                   placeholder={l.newSectionPlaceholder}
@@ -1780,7 +1991,9 @@ export function EmrTemplateComposer({
                 label={l.addSection}
                 disabled={readOnly || !newSectionLabel.trim()}
                 onPress={handleAddSection}
-              />
+              >
+                <SvgIcon name="plus" size={14} color={t.primary} />
+              </EmrButton>
             </View>
 
             {model.template.sections.length > 0 ? (
@@ -1806,7 +2019,7 @@ export function EmrTemplateComposer({
                           styles.flex,
                           styles.sectionSelectBtn,
                           focusRing(t, focused),
-                          { minHeight: t.controlHeight },
+                          { minHeight: Math.max(44, t.controlHeight) },
                         ]}
                       >
                         <Text
@@ -1831,7 +2044,9 @@ export function EmrTemplateComposer({
                           accessibilityLabel={l.moveItemUp(section.label)}
                           disabled={readOnly || index === 0}
                           onPress={() => emit({ type: 'sectionMoved', sectionId: section.id, direction: 'up' })}
-                        />
+                        >
+                          <SvgIcon name="chevron-up" size={14} color={t.text} />
+                        </EmrButton>
                         <EmrButton
                           small
                           variant="ghost"
@@ -1839,7 +2054,9 @@ export function EmrTemplateComposer({
                           accessibilityLabel={l.moveItemDown(section.label)}
                           disabled={readOnly || index === model.template.sections.length - 1}
                           onPress={() => emit({ type: 'sectionMoved', sectionId: section.id, direction: 'down' })}
-                        />
+                        >
+                          <SvgIcon name="chevron-down" size={14} color={t.text} />
+                        </EmrButton>
                       </View>
                     </View>
                   );
@@ -1853,7 +2070,7 @@ export function EmrTemplateComposer({
           </View>
 
           <EmrFieldLibraryPicker
-            headingId={`${headingId}-field-library`}
+            headingId={`${resolvedHeadingId}-field-library`}
             model={{
               fields: model.fieldLibrary,
               query: model.fieldLibraryQuery,
@@ -1869,7 +2086,7 @@ export function EmrTemplateComposer({
           {selectedSection ? (
             <View
               role="region"
-              aria-labelledby={`${headingId}-section-editor`}
+              aria-labelledby={`${resolvedHeadingId}-section-editor`}
               style={[styles.card, { borderColor: t.border, backgroundColor: t.surface }]}
             >
               <View style={styles.cardHeader}>
@@ -1880,7 +2097,7 @@ export function EmrTemplateComposer({
                   <Text
                     role="heading"
                     aria-level={2}
-                    nativeID={`${headingId}-section-editor`}
+                    nativeID={`${resolvedHeadingId}-section-editor`}
                     style={{ color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: font }}
                   >
                     {selectedSection.label}
@@ -1892,7 +2109,9 @@ export function EmrTemplateComposer({
                   label={l.removeSection}
                   disabled={readOnly}
                   onPress={() => emit({ type: 'sectionRemoved', sectionId: selectedSection.id })}
-                />
+                >
+                  <SvgIcon name="trash" size={14} color={t.primary} />
+                </EmrButton>
               </View>
 
               <View style={styles.fieldStack}>
@@ -1901,7 +2120,7 @@ export function EmrTemplateComposer({
                     {l.sectionLabelLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-section-label-${selectedSection.id}`}
+                    id={`${resolvedHeadingId}-section-label-${selectedSection.id}`}
                     aria-label={l.sectionLabelLabel}
                     value={selectedSection.label}
                     readOnly={readOnly}
@@ -1916,7 +2135,7 @@ export function EmrTemplateComposer({
                     {l.sectionDescriptionLabel}
                   </Text>
                   <ThemedInput
-                    id={`${headingId}-section-description-${selectedSection.id}`}
+                    id={`${resolvedHeadingId}-section-description-${selectedSection.id}`}
                     aria-label={l.sectionDescriptionLabel}
                     multiline
                     numberOfLines={2}
@@ -1948,12 +2167,19 @@ export function EmrTemplateComposer({
                       >
                         <Pressable
                           role="button"
-                          onPress={() => emit({ type: 'sectionSelected', sectionId: selectedSection.id })}
+                          aria-current={selected ? true : undefined}
+                          onPress={() =>
+                            emit({
+                              type: 'placementSelected',
+                              sectionId: selectedSection.id,
+                              placementId: placement.id,
+                            })
+                          }
                           style={({ focused }: PressState) => [
                             styles.flex,
                             styles.sectionSelectBtn,
                             focusRing(t, focused),
-                            { minHeight: t.controlHeight },
+                            { minHeight: Math.max(44, t.controlHeight) },
                           ]}
                         >
                           <Text
@@ -1986,7 +2212,9 @@ export function EmrTemplateComposer({
                                 direction: 'up',
                               })
                             }
-                          />
+                          >
+                            <SvgIcon name="chevron-up" size={14} color={t.text} />
+                          </EmrButton>
                           <EmrButton
                             small
                             variant="ghost"
@@ -2001,7 +2229,9 @@ export function EmrTemplateComposer({
                                 direction: 'down',
                               })
                             }
-                          />
+                          >
+                            <SvgIcon name="chevron-down" size={14} color={t.text} />
+                          </EmrButton>
                           <EmrButton
                             small
                             variant="ghost"
@@ -2015,7 +2245,9 @@ export function EmrTemplateComposer({
                                 placementId: placement.id,
                               })
                             }
-                          />
+                          >
+                            <SvgIcon name="trash" size={14} color={t.text} />
+                          </EmrButton>
                         </View>
                       </View>
                     );
@@ -2035,7 +2267,7 @@ export function EmrTemplateComposer({
             </View>
           )}
 
-          <EmrTemplatePreview headingId={`${headingId}-preview`} model={model} onIntent={emit} />
+          <EmrTemplatePreview headingId={`${resolvedHeadingId}-preview`} model={model} onIntent={emit} />
         </View>
       </EmrColumns>
     </View>
@@ -2044,38 +2276,40 @@ export function EmrTemplateComposer({
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
+  flexInput: { flexGrow: 1, flexShrink: 1, flexBasis: 160, minWidth: 0 },
   // Text column in a wrapping row: keeps a readable width and lets the controls wrap below on a phone.
   wrapText: { flexGrow: 1, flexShrink: 1, flexBasis: 180, minWidth: 0 },
-  surfaceStack: { gap: 18, minWidth: 0 },
-  columnStack: { gap: 16, minWidth: 0 },
+  surfaceStack: { gap: 18, minWidth: 0, maxWidth: '100%' },
+  columnStack: { gap: 16, minWidth: 0, maxWidth: '100%' },
   topHeader: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  card: { borderWidth: 1, borderRadius: 12, padding: 16, gap: 14, minWidth: 0 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  headerActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 },
+  card: { borderWidth: 1, borderRadius: 12, padding: 16, gap: 14, minWidth: 0, maxWidth: '100%' },
+  cardHeader: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   eyebrow: { fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 2 },
-  fieldStack: { gap: 10 },
-  fieldRow: { gap: 4, minWidth: 0 },
-  inlineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'flex-start' },
+  fieldStack: { gap: 10, minWidth: 0 },
+  fieldRow: { gap: 4, minWidth: 0, maxWidth: '100%' },
+  inlineRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, minWidth: 0 },
+  buttonRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' },
   flagsRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
-  optionPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 12, paddingRight: 4, paddingVertical: 2, borderWidth: 1, borderRadius: 999 },
-  messageBox: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8 },
-  errorRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  resultsList: { gap: 6 },
-  resultItem: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderRadius: 8 },
-  paginationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-  bindingCard: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: 12, borderWidth: 1, borderRadius: 8 },
+  optionPill: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, paddingLeft: 12, paddingRight: 4, paddingVertical: 2, borderWidth: 1, borderRadius: 999, maxWidth: '100%' },
+  messageBox: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, minWidth: 0 },
+  errorRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  resultsList: { gap: 6, minWidth: 0 },
+  resultItem: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderRadius: 8, minWidth: 0 },
+  paginationRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 4 },
+  bindingCard: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: 12, borderWidth: 1, borderRadius: 8, minWidth: 0 },
   bindingControls: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', gap: 8 },
-  selectWrap: { gap: 4, minWidth: 140 },
-  rulesList: { gap: 8 },
-  ruleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderRadius: 8 },
+  selectWrap: { gap: 4, minWidth: 140, maxWidth: '100%' },
+  rulesList: { gap: 8, minWidth: 0 },
+  ruleRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderRadius: 8, minWidth: 0 },
   previewFooter: { borderTopWidth: 1, paddingTop: 12, gap: 4 },
-  libraryList: { gap: 8 },
-  libraryItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderRadius: 8 },
-  previewSurface: { borderWidth: 1, borderRadius: 12, padding: 16 },
-  artifactBox: { borderWidth: 1, borderRadius: 8, padding: 12, gap: 6 },
-  sectionsList: { gap: 8 },
-  sectionItem: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 6, padding: 6, borderWidth: 1, borderRadius: 8 },
-  sectionSelectBtn: { justifyContent: 'center', paddingHorizontal: 8, paddingVertical: 4, gap: 2 },
-  itemActions: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  libraryList: { gap: 8, minWidth: 0 },
+  libraryItem: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderRadius: 8, minWidth: 0 },
+  previewSurface: { borderWidth: 1, borderRadius: 12, padding: 16, minWidth: 0 },
+  artifactBox: { borderWidth: 1, borderRadius: 8, padding: 12, gap: 6, minWidth: 0 },
+  issueHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  sectionsList: { gap: 8, minWidth: 0 },
+  sectionItem: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 6, padding: 6, borderWidth: 1, borderRadius: 8, minWidth: 0 },
+  sectionSelectBtn: { justifyContent: 'center', paddingHorizontal: 8, paddingVertical: 4, gap: 2, minWidth: 120 },
+  itemActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 2 },
 });

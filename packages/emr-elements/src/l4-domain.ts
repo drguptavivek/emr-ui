@@ -106,16 +106,20 @@ const l4Styles = css`
 `;
 
 export class EmrMedicationListElement extends EmrClinicalListElement {
-  override title = 'Medications';
+  protected override defaultTitle = 'Medications';
+  protected override defaultHeadingId = 'emr-medication-list-title';
 }
 export class EmrAllergyListElement extends EmrClinicalListElement {
-  override title = 'Allergies';
+  protected override defaultTitle = 'Allergies';
+  protected override defaultHeadingId = 'emr-allergy-list-title';
 }
 export class EmrChronicDiseaseListElement extends EmrClinicalListElement {
-  override title = 'Chronic diseases';
+  protected override defaultTitle = 'Chronic diseases';
+  protected override defaultHeadingId = 'emr-chronic-list-title';
 }
 export class EmrPersonalHistoryListElement extends EmrClinicalListElement {
-  override title = 'Significant personal history';
+  protected override defaultTitle = 'Significant personal history';
+  protected override defaultHeadingId = 'emr-history-list-title';
 }
 
 export class EmrPatientBannerElement extends EmrLitElement {

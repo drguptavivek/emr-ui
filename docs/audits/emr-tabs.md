@@ -1,8 +1,8 @@
 # Audit Report: `emr-tabs`
 
-- **Date:** 2026-11-18
+- **Date:** 2026-11-19
 - **Layer:** L1
-- **Verdict:** PASS
+- **Verdict:** PASS (`neon-supervisor` Sign-Off #100)
 - **Verified Renderers:** Angular · React Web · Lit Web Component · (Expo typecheck)
 
 ## 1. Props, Events & Validation Parity
@@ -12,7 +12,7 @@
 ## 2. Visual & Interactive Parity (Light & Dark, Desktop & 390px)
 - [x] Flush underline tabs (`underline` default, full-width track + `4px` gap), `pill` segmented tabs, `soft` tabs, `vertical` orientation, and `fitted` equal-width tabs match across React, Lit, and Angular
 - [x] Font (`Inter Variable`), sizes (`13px` sm / `14px` md / `16px` lg), `>=44px` (`48px` lg) heights, and `tabular-nums` badge pills match across all 3 renderers
-- [x] Light & Dark theme contrast and horizontal scroll behavior verified
+- [x] Light & Dark theme contrast and horizontal narrow-screen (`390px`) scrolling with `>=44px` monochrome chevron scroll buttons (`data-emr-print="hide"`) verified across React Web, Lit, and Angular (`0px` host overflow; native horizontal touch scroll on Expo)
 
 ## 3. Website & Registry Docs
 - [x] `http://localhost:3300/#emr-tabs` 1:1 preview cards + bidirectional Active Props sync (`active`, `variant`, `size`, `orientation`, `fitted`, `disabled`) verified across React, Lit, and Angular

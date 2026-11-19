@@ -19,7 +19,7 @@ import type {
 } from './ehr-template.models.js';
 
 type PendingImport = { template: EhrTemplateDefinition; issues: readonly TemplateArtifactIssue[] };
-const clinicalFieldTypes = new Set(['text', 'multiline', 'integer', 'decimal', 'date', 'select', 'multiselect', 'boolean', 'quantity', 'custom']);
+const clinicalFieldTypes = new Set(['text', 'multiline', 'integer', 'decimal', 'date', 'time', 'datetime', 'select', 'multiselect', 'boolean', 'quantity', 'custom']);
 
 function copy<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
@@ -93,7 +93,7 @@ export function derivePreview(template: EhrTemplateDefinition): ClinicalFormView
       else fields[placement.id] = { value: null };
     }
   }
-  return { schema, fields, repeatableGroups };
+  return { schema, fields, repeatableGroups, readOnly: true };
 }
 
 function validStatus(value: unknown): value is EhrTemplateDefinition['status'] {
@@ -204,7 +204,29 @@ export class EhrTemplateController extends StateController<EhrTemplateViewModel,
     switch (intent.type) {
       case 'templatePatched': this.patchTemplate(intent.changes); return;
       case 'fieldLibraryQueryChanged': this.setState(state => ({ ...state, fieldLibraryQuery: intent.query })); return;
-      case 'sectionSelected': if (this.section(intent.sectionId)) this.setState(state => ({ ...state, selectedSectionId: intent.sectionId, error: undefined })); return;
+      case 'sectionSelected':
+        if (this.section(intent.sectionId)) {
+          const targetSection = this.section(intent.sectionId);
+          this.setState(state => ({
+            ...state,
+            selectedSectionId: intent.sectionId,
+            selectedPlacementId: targetSection?.fields.some(field => field.id === state.selectedPlacementId)
+              ? state.selectedPlacementId
+              : undefined,
+            error: undefined,
+          }));
+        }
+        return;
+      case 'placementSelected':
+        if (this.section(intent.sectionId)?.fields.some(field => field.id === intent.placementId)) {
+          this.setState(state => ({
+            ...state,
+            selectedSectionId: intent.sectionId,
+            selectedPlacementId: intent.placementId,
+            error: undefined,
+          }));
+        }
+        return;
       case 'sectionAdded': this.addSection(intent.section); return;
       case 'sectionPatched': this.patchSection(intent.sectionId, intent.changes); return;
       case 'sectionMoved': this.moveSection(intent.sectionId, intent.direction); return;

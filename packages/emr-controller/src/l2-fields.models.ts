@@ -1,4 +1,4 @@
-import type { ClinicalAssessmentStatus, ClinicalOption, EmrBadge, EmrTone } from './models.js';
+import type { ClinicalAssessmentStatus, ClinicalOption, EmrBadge, EmrOption, EmrTone } from './models.js';
 import type { ClinicalAssessmentStatusOption } from './clinical-form.models.js';
 import type { EmrFieldDefinition, EmrPartialDate } from './field-contract.models.js';
 import {
@@ -276,7 +276,7 @@ export type AttachmentFieldIntent =
   | { readonly type: 'statusChangeRequested'; readonly status: ClinicalAssessmentStatus | undefined };
 
 // 4. EmrPairedField (BP Systolic/Diastolic, C/D ratio, OD/OS paired entry)
-export type PairedFieldMode = 'text' | 'decimal' | 'integer';
+export type PairedFieldMode = 'text' | 'decimal' | 'integer' | 'select';
 
 export interface EmrPairedFieldValue {
   readonly first: string | number | null;
@@ -289,6 +289,9 @@ export interface PairedFieldViewModel {
   readonly mode?: PairedFieldMode;
   readonly firstMode?: PairedFieldMode;
   readonly secondMode?: PairedFieldMode;
+  readonly options?: readonly EmrOption[];
+  readonly firstOptions?: readonly EmrOption[];
+  readonly secondOptions?: readonly EmrOption[];
   readonly firstLabel: string;
   readonly secondLabel: string;
   readonly firstPlaceholder?: string;
@@ -379,10 +382,10 @@ export function resolvePairedSideMode(
   groupMode?: PairedFieldMode,
   definition?: EmrFieldDefinition,
 ): PairedFieldMode {
-  if (explicitMode === 'text' || explicitMode === 'decimal' || explicitMode === 'integer') {
+  if (explicitMode === 'text' || explicitMode === 'decimal' || explicitMode === 'integer' || explicitMode === 'select') {
     return explicitMode;
   }
-  if (groupMode === 'text' || groupMode === 'decimal' || groupMode === 'integer') {
+  if (groupMode === 'text' || groupMode === 'decimal' || groupMode === 'integer' || groupMode === 'select') {
     return groupMode;
   }
   const vt = definition?.contract?.valueType;

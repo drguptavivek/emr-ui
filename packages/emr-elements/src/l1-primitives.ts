@@ -133,6 +133,9 @@ import {
   type EmrDateTimeSize,
   type EmrDateTimeWireFormat,
   type EmrLikertAnchor,
+  type EmrLikertOption,
+  type EmrLikertSize,
+  type EmrVasPrecision,
   type EmrMatchHighlightSegment,
   type EmrScoredOption,
   type EmrSearchSelectFilterMode,
@@ -151,7 +154,6 @@ import {
   type EmrVasAnchorsProp,
   type EmrVasOrientation,
   type EmrVasSize,
-  type EmrLikertSize,
   type EmrOption,
   type EmrOptionGroup,
   type EmrRadioGroupLabelPlacement,
@@ -215,8 +217,14 @@ export type EmrScaleAnchorsProp =
   | readonly EmrScaleAnchorItem[];
 
 const l1Styles = css`
+  :host {
+    min-width: 0;
+    max-width: 100%;
+  }
   .number-row {
-    display: inline-flex;
+    display: flex;
+    width: 100%;
+    min-width: 0;
     align-items: center;
     gap: 8px;
     max-width: 100%;
@@ -224,7 +232,9 @@ const l1Styles = css`
   .stepper-wrap {
     display: inline-flex;
     align-items: center;
-    width: 216px;
+    flex: 0 1 216px;
+    width: auto;
+    min-width: 0;
     max-width: 100%;
     height: var(--emr-control-height);
     min-height: 44px;
@@ -301,7 +311,7 @@ const l1Styles = css`
   }
   .date-text-input {
     flex: 1;
-    min-width: 96px;
+    min-width: 0;
     border: 0;
     padding: 0 10px;
     background: transparent;
@@ -309,6 +319,7 @@ const l1Styles = css`
     font: inherit;
     font-size: var(--emr-text-md);
     font-variant-numeric: tabular-nums;
+    text-align: left;
     outline: none;
   }
   .date-icon-box {
@@ -565,6 +576,113 @@ const l1Styles = css`
   }
   .cal-footer-btn:hover:not(:disabled) {
     background: var(--emr-primary-hover);
+  }
+  .time-cols {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+  }
+  .time-col {
+    flex: 1;
+    min-width: 72px;
+    border: 1px solid var(--emr-border);
+    border-radius: var(--emr-radius);
+    overflow: hidden;
+    background: var(--emr-surface);
+  }
+  .time-col-label {
+    text-align: center;
+    padding: 6px 4px;
+    font-size: var(--emr-text-xs);
+    font-weight: var(--emr-weight-bold);
+    color: var(--emr-text-muted);
+    border-bottom: 1px solid var(--emr-border);
+    background: var(--emr-surface-soft);
+  }
+  .time-scroll {
+    max-height: 204px;
+    overflow-y: auto;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .time-cell {
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: var(--emr-radius);
+    background: transparent;
+    color: var(--emr-text);
+    font: inherit;
+    font-family: var(--emr-font-mono);
+    font-size: var(--emr-text-md);
+    font-weight: var(--emr-weight-medium);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .time-cell:hover:not(:disabled) {
+    background: var(--emr-primary-soft);
+  }
+  .time-cell--selected,
+  .time-cell--selected:hover:not(:disabled) {
+    background: var(--emr-primary);
+    border-color: var(--emr-primary);
+    color: var(--emr-on-primary);
+    font-weight: var(--emr-weight-bold);
+  }
+  .time-cell:focus-visible {
+    outline: 2px solid var(--emr-focus);
+    outline-offset: -2px;
+  }
+  .toast-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--emr-border);
+    background: var(--emr-surface);
+    color: var(--emr-text);
+    font-size: var(--emr-text-md);
+    box-sizing: border-box;
+  }
+  .toast-box--info {
+    background: var(--emr-info-soft);
+    border-color: var(--emr-info);
+    color: var(--emr-info);
+  }
+  .toast-box--success {
+    background: var(--emr-success-soft);
+    border-color: var(--emr-success);
+    color: var(--emr-success);
+  }
+  .toast-box--warning {
+    background: var(--emr-warning-soft);
+    border-color: var(--emr-warning);
+    color: var(--emr-warning);
+  }
+  .toast-box--danger {
+    background: var(--emr-danger-soft);
+    border-color: var(--emr-danger);
+    color: var(--emr-danger);
+  }
+  .toast-msg {
+    flex: 1 1 160px;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+  .container-host {
+    container-type: inline-size;
+    width: 100%;
+    min-width: 0;
   }
   .select-root {
     position: relative;
@@ -1271,16 +1389,60 @@ const l1Styles = css`
     font-size: var(--emr-text-xs);
     font-weight: var(--emr-weight-semibold);
   }
+  .emr-tabs-scroll {
+    display: flex;
+    align-items: center;
+    max-width: 100%;
+    min-width: 0;
+    position: relative;
+  }
+  .emr-tabs-scroll--vertical {
+    display: block;
+  }
+  .emr-tabs-scroll > .emr-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .emr-tabs-nav-btn {
+    flex-shrink: 0;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    height: var(--emr-control-height);
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--emr-border);
+    background: var(--emr-surface);
+    color: var(--emr-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 140ms ease, background-color 140ms ease;
+  }
+  .emr-tabs-nav-btn:hover {
+    color: var(--emr-text);
+    background: var(--emr-surface-soft);
+  }
+  .emr-tabs-nav-btn:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--emr-focus) 70%, transparent);
+    outline-offset: -3px;
+  }
   .emr-tabs {
     display: flex;
     gap: 4px;
     overflow-x: auto;
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scroll-behavior: smooth;
     border-bottom: 1px solid var(--emr-border);
     padding-block: 3px;
   }
   .emr-tabs::-webkit-scrollbar {
-    display: none;
+    height: 4px;
+  }
+  .emr-tabs::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--emr-text-muted) 35%, transparent);
+    border-radius: 999px;
   }
   .emr-tabs--vertical {
     flex-direction: column;
@@ -1585,6 +1747,19 @@ const l1Styles = css`
     width: auto;
     min-width: 44px;
     justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    font-weight: var(--emr-weight-bold);
+    text-align: center;
+  }
+  .likert-pip--text {
+    padding: 8px 12px;
+  }
+  .likert-desc {
+    font-size: var(--emr-text-xs);
+    font-weight: var(--emr-weight-medium);
+    color: var(--emr-text-muted);
+    line-height: 1.25;
   }
   .scale-anchors {
     display: flex;
@@ -1719,11 +1894,18 @@ const l1Styles = css`
     position: absolute;
     top: 19px;
     left: calc(14px + (100% - 28px) * var(--vas-pct, 0) / 100);
-    width: 18px;
-    height: 18px;
+    width: 28px;
+    height: 28px;
     border-radius: 999px;
     border: 2px solid var(--emr-surface);
     background: var(--emr-primary);
+    color: var(--emr-on-primary);
+    font-size: var(--emr-text-2xs);
+    font-weight: var(--emr-weight-bold);
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: var(--emr-shadow);
     transform: translate(-50%, -50%);
     pointer-events: none;
@@ -1827,6 +2009,27 @@ const l1Styles = css`
   .fvr-row[data-tone="warning"] .fvr-value:not(.fvr-placeholder) { color: var(--emr-warning); font-weight: 600; }
   .fvr-row[data-tone="danger"] .fvr-value:not(.fvr-placeholder) { color: var(--emr-danger); font-weight: 600; }
   @media (max-width: 768px) {
+    .fvr-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .fvr-cell {
+      border-left: 0;
+      border-top: 1px solid var(--emr-border);
+    }
+    .fvr-field {
+      border-top: 0;
+    }
+    .fvr-cell::before {
+      content: attr(data-label) ": ";
+      font-weight: 700;
+      color: var(--emr-text-muted);
+      margin-right: 6px;
+    }
+    .fvr-row--heading {
+      display: none;
+    }
+  }
+  @container (max-width: 400px) {
     .fvr-row {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -2011,6 +2214,16 @@ const l1Styles = css`
     flex-shrink: 0;
   }
   @media (max-width: 640px) {
+    .stage-item {
+      flex-basis: 100%;
+      border-inline-end: 0;
+      border-bottom: 1px solid var(--emr-border);
+    }
+    .stage-item:last-child {
+      border-bottom: 0;
+    }
+  }
+  @container (max-width: 560px) {
     .stage-item {
       flex-basis: 100%;
       border-inline-end: 0;
@@ -2654,6 +2867,310 @@ export class EmrNumberInputElement extends EmrLitElement {
   }
 }
 
+const LIT_HOURS_24 = Array.from({ length: 24 }, (_, i) => i);
+const LIT_HOURS_12 = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+const LIT_MINUTES_60 = Array.from({ length: 60 }, (_, i) => i);
+const litPad2 = (n: number): string => String(n).padStart(2, '0');
+const litPad4 = (n: number): string => String(n).padStart(4, '0');
+
+function extractLitTimeParts(value: string | null | undefined): { hour: number; minute: number; second: number } {
+  const m = value ? /^(\d{2}):(\d{2})(?::(\d{2}))?/.exec(value) : null;
+  if (m) {
+    return {
+      hour: Math.min(23, Math.max(0, Number(m[1]))),
+      minute: Math.min(59, Math.max(0, Number(m[2]))),
+      second: Math.min(59, Math.max(0, Number(m[3] ?? '0'))),
+    };
+  }
+  const now = new Date();
+  return { hour: now.getHours(), minute: now.getMinutes(), second: now.getSeconds() };
+}
+
+function formatLitTime24(hour: number, minute: number, second: number, precision: EmrTimePrecision): string {
+  return precision === 'second'
+    ? `${litPad2(hour)}:${litPad2(minute)}:${litPad2(second)}`
+    : `${litPad2(hour)}:${litPad2(minute)}`;
+}
+
+function nowLitTime24(precision: EmrTimePrecision): string {
+  const now = new Date();
+  return formatLitTime24(now.getHours(), now.getMinutes(), now.getSeconds(), precision);
+}
+
+function renderSharedLitCalendarPopover(opts: {
+  value: string | null;
+  precision: LitDatePrecision;
+  subView: 'days' | 'months' | 'years';
+  viewYear: number;
+  viewMonth: number;
+  popoverStyle: string;
+  isOutOfBounds: (iso: string) => boolean;
+  onStepHeader: (dir: -1 | 1) => void;
+  onCycleSubView: () => void;
+  onPickMonth: (month: number, ymIso: string) => void;
+  onPickYear: (year: number, yIso: string) => void;
+  onSelectIso: (iso: string | null) => void;
+}) {
+  const today = todayLitCalendarParts();
+  const parsed = parseLitIsoParts(opts.value);
+  const yearPage = buildLitYearPage(opts.viewYear);
+  const headerTitle =
+    opts.subView === 'days'
+      ? `${LIT_CALENDAR_MONTH_NAMES[opts.viewMonth - 1]} ${opts.viewYear}`
+      : opts.subView === 'months'
+        ? `${opts.viewYear}`
+        : `${yearPage.startYear} – ${yearPage.endYear}`;
+  const prevLabel =
+    opts.subView === 'days' ? 'Previous month' : opts.subView === 'months' ? 'Previous year' : 'Previous 12 years';
+  const nextLabel =
+    opts.subView === 'days' ? 'Next month' : opts.subView === 'months' ? 'Next year' : 'Next 12 years';
+
+  const cells =
+    opts.subView === 'days'
+      ? buildLitCalendarMonthGrid(opts.viewYear, opts.viewMonth, opts.value, today.isoDay)
+      : [];
+  const weeks: (typeof cells)[] = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7));
+  }
+  const todayIso = opts.precision === 'year' ? today.isoYear : opts.precision === 'month' ? today.isoMonth : today.isoDay;
+  const todayDisabled = opts.isOutOfBounds(todayIso);
+
+  return html`<div class="cal-popover" popover="manual" part="calendar" role="dialog" aria-label="Choose date" style=${opts.popoverStyle}>
+    <div class="cal-header">
+      <button type="button" class="cal-nav-btn" aria-label=${prevLabel} @click=${() => opts.onStepHeader(-1)}>
+        ${renderEmrSvgIcon('chevron-left', 16)}
+      </button>
+      <button
+        type="button"
+        class="cal-title-btn"
+        aria-label=${opts.subView === 'days'
+          ? `Select month or year, currently ${headerTitle}`
+          : opts.subView === 'months'
+            ? `Select year, currently ${headerTitle}`
+            : headerTitle}
+        ?disabled=${opts.subView === 'years' && opts.precision === 'year'}
+        @click=${opts.onCycleSubView}
+      >
+        <span>${headerTitle}</span>
+        ${!(opts.subView === 'years' && opts.precision === 'year')
+          ? renderEmrSvgIcon(opts.subView === 'years' ? 'chevron-up' : 'chevron-down', 14)
+          : nothing}
+      </button>
+      <button type="button" class="cal-nav-btn" aria-label=${nextLabel} @click=${() => opts.onStepHeader(1)}>
+        ${renderEmrSvgIcon('chevron-right', 16)}
+      </button>
+    </div>
+
+    ${opts.subView === 'days'
+      ? html`<div class="cal-body" role="grid" aria-label=${headerTitle}>
+          <div class="cal-weekdays" role="row">
+            ${LIT_CALENDAR_WEEKDAYS.map(wd => html`<span class="cal-weekday" role="columnheader">${wd}</span>`)}
+          </div>
+          <div class="cal-grid">
+            ${weeks.map(
+              week => html`<div class="cal-row" role="row">
+                ${week.map(cell => {
+                  const outOfBounds = opts.isOutOfBounds(cell.iso);
+                  const cls = [
+                    'cal-day',
+                    !cell.inMonth ? 'cal-day--outside' : '',
+                    cell.isToday ? 'cal-day--today' : '',
+                    cell.isSelected ? 'cal-day--selected' : '',
+                  ].filter(Boolean).join(' ');
+                  return html`<span role="gridcell">
+                    <button
+                      type="button"
+                      class=${cls}
+                      aria-label=${cell.ariaLabel}
+                      aria-pressed=${cell.isSelected}
+                      aria-current=${cell.isToday ? 'date' : nothing}
+                      ?disabled=${outOfBounds}
+                      @click=${() => opts.onSelectIso(cell.iso)}
+                    >${cell.day}</button>
+                  </span>`;
+                })}
+              </div>`,
+            )}
+          </div>
+        </div>`
+      : opts.subView === 'months'
+        ? html`<div class="cal-tile-grid">
+            ${LIT_CALENDAR_MONTH_SHORT.map((mName, idx) => {
+              const mNum = idx + 1;
+              const ymIso = `${litPad4(opts.viewYear)}-${litPad2(mNum)}`;
+              const outOfBounds = opts.isOutOfBounds(ymIso);
+              const isSelected = opts.precision === 'month'
+                ? opts.value === ymIso
+                : parsed?.year === opts.viewYear && parsed?.month === mNum;
+              const isCurrent = today.year === opts.viewYear && today.month === mNum;
+              const cls = [
+                'cal-tile-btn',
+                isCurrent ? 'cal-tile-btn--current' : '',
+                isSelected ? 'cal-tile-btn--selected' : '',
+              ].filter(Boolean).join(' ');
+              return html`<button
+                type="button"
+                class=${cls}
+                aria-label=${`${LIT_CALENDAR_MONTH_NAMES[idx]} ${opts.viewYear}`}
+                aria-pressed=${isSelected}
+                ?disabled=${outOfBounds}
+                @click=${() => opts.onPickMonth(mNum, ymIso)}
+              >${mName}</button>`;
+            })}
+          </div>`
+        : html`<div class="cal-tile-grid">
+            ${yearPage.years.map(yr => {
+              const yIso = litPad4(yr);
+              const outOfBounds = opts.isOutOfBounds(yIso);
+              const isSelected = opts.precision === 'year' ? opts.value === yIso : parsed?.year === yr;
+              const isCurrent = today.year === yr;
+              const cls = [
+                'cal-tile-btn',
+                isCurrent ? 'cal-tile-btn--current' : '',
+                isSelected ? 'cal-tile-btn--selected' : '',
+              ].filter(Boolean).join(' ');
+              return html`<button
+                type="button"
+                class=${cls}
+                aria-label=${String(yr)}
+                aria-pressed=${isSelected}
+                ?disabled=${outOfBounds}
+                @click=${() => opts.onPickYear(yr, yIso)}
+              >${yr}</button>`;
+            })}
+          </div>`}
+
+    <div class="cal-footer">
+      <button
+        type="button"
+        class="cal-footer-btn cal-footer-btn--today"
+        aria-label=${opts.precision === 'year' ? 'Select current year' : opts.precision === 'month' ? 'Select current month' : 'Select today'}
+        ?disabled=${todayDisabled}
+        @click=${() => opts.onSelectIso(todayIso)}
+      >${opts.precision === 'year' ? 'This year' : opts.precision === 'month' ? 'This month' : 'Today'}</button>
+      <button type="button" class="cal-footer-btn" aria-label="Clear date" @click=${() => opts.onSelectIso(null)}>Clear</button>
+    </div>
+  </div>`;
+}
+
+function renderSharedLitTimePopover(opts: {
+  hour: number;
+  minute: number;
+  second: number;
+  precision: EmrTimePrecision;
+  hourCycle: EmrTimeHourCycle;
+  popoverStyle: string;
+  previewDisplay: string;
+  nowDisabled: boolean;
+  confirmDisabled: boolean;
+  onChangeHour: (hour24: number) => void;
+  onChangeMinute: (minute: number) => void;
+  onChangeSecond: (second: number) => void;
+  onNow: () => void;
+  onClear: () => void;
+  onDone: () => void;
+}) {
+  const is12h = opts.hourCycle === '12';
+  const currentPeriod: 'AM' | 'PM' = opts.hour >= 12 ? 'PM' : 'AM';
+  const current12Hour = opts.hour % 12 === 0 ? 12 : opts.hour % 12;
+
+  return html`<div class="cal-popover" popover="manual" part="time-popover" role="dialog" aria-label="Choose time" style=${opts.popoverStyle}>
+    <div class="cal-header">
+      <span style="font-weight:var(--emr-weight-bold);font-size:var(--emr-text-md);">Choose time</span>
+      <span style="font-family:var(--emr-font-mono);font-weight:var(--emr-weight-bold);color:var(--emr-primary);font-size:var(--emr-text-md);">
+        ${opts.previewDisplay}
+      </span>
+    </div>
+    <div class="time-cols">
+      <div class="time-col">
+        <div class="time-col-label">Hour</div>
+        <div class="time-scroll">
+          ${(is12h ? LIT_HOURS_12 : LIT_HOURS_24).map(h => {
+            const active = is12h ? h === current12Hour : h === opts.hour;
+            const target24 = is12h ? ((h % 12) + (currentPeriod === 'PM' ? 12 : 0)) : h;
+            return html`<button
+              type="button"
+              class=${`time-cell${active ? ' time-cell--selected' : ''}`}
+              aria-label=${`Hour ${litPad2(h)}`}
+              aria-pressed=${active}
+              @click=${() => opts.onChangeHour(target24)}
+            >${litPad2(h)}</button>`;
+          })}
+        </div>
+      </div>
+      <div class="time-col">
+        <div class="time-col-label">Min</div>
+        <div class="time-scroll">
+          ${LIT_MINUTES_60.map(m => {
+            const active = m === opts.minute;
+            return html`<button
+              type="button"
+              class=${`time-cell${active ? ' time-cell--selected' : ''}`}
+              aria-label=${`Min ${litPad2(m)}`}
+              aria-pressed=${active}
+              @click=${() => opts.onChangeMinute(m)}
+            >${litPad2(m)}</button>`;
+          })}
+        </div>
+      </div>
+      ${opts.precision === 'second'
+        ? html`<div class="time-col">
+            <div class="time-col-label">Sec</div>
+            <div class="time-scroll">
+              ${LIT_MINUTES_60.map(s => {
+                const active = s === opts.second;
+                return html`<button
+                  type="button"
+                  class=${`time-cell${active ? ' time-cell--selected' : ''}`}
+                  aria-label=${`Sec ${litPad2(s)}`}
+                  aria-pressed=${active}
+                  @click=${() => opts.onChangeSecond(s)}
+                >${litPad2(s)}</button>`;
+              })}
+            </div>
+          </div>`
+        : nothing}
+      ${is12h
+        ? html`<div class="time-col" style="min-width:64px;flex:0.75;">
+            <div class="time-col-label">AM/PM</div>
+            <div class="time-scroll">
+              ${(['AM', 'PM'] as const).map(mer => {
+                const active = mer === currentPeriod;
+                const next24 = (opts.hour % 12) + (mer === 'PM' ? 12 : 0);
+                return html`<button
+                  type="button"
+                  class=${`time-cell${active ? ' time-cell--selected' : ''}`}
+                  aria-pressed=${active}
+                  @click=${() => opts.onChangeHour(next24)}
+                >${mer}</button>`;
+              })}
+            </div>
+          </div>`
+        : nothing}
+    </div>
+    <div class="cal-footer">
+      <button
+        type="button"
+        class="cal-footer-btn cal-footer-btn--today"
+        aria-label="Select current time"
+        ?disabled=${opts.nowDisabled}
+        @click=${opts.onNow}
+      >Now</button>
+      <div style="display:inline-flex;gap:6px;">
+        <button type="button" class="cal-footer-btn" aria-label="Clear time" @click=${opts.onClear}>Clear</button>
+        <button
+          type="button"
+          class="cal-footer-btn cal-footer-btn--today"
+          aria-label="Done choosing time"
+          ?disabled=${opts.confirmDisabled}
+          @click=${opts.onDone}
+        >Done</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 export class EmrDateInputElement extends EmrLitElement {
   static override styles = [emrShadowStyles, l1Styles];
 
@@ -2804,171 +3321,42 @@ export class EmrDateInputElement extends EmrLitElement {
 
   private renderCalendarPopover() {
     if (!this.calOpen || !this.canEdit) return nothing;
-    const today = todayLitCalendarParts();
-    const parsed = parseLitIsoParts(this.value);
-    const yearPage = buildLitYearPage(this.viewYear);
-    const headerTitle =
-      this.subView === 'days'
-        ? `${LIT_CALENDAR_MONTH_NAMES[this.viewMonth - 1]} ${this.viewYear}`
-        : this.subView === 'months'
-          ? `${this.viewYear}`
-          : `${yearPage.startYear} – ${yearPage.endYear}`;
-    const prevLabel =
-      this.subView === 'days' ? 'Previous month' : this.subView === 'months' ? 'Previous year' : 'Previous 12 years';
-    const nextLabel =
-      this.subView === 'days' ? 'Next month' : this.subView === 'months' ? 'Next year' : 'Next 12 years';
-    const pad2 = (n: number) => String(n).padStart(2, '0');
-    const pad4 = (n: number) => String(n).padStart(4, '0');
-
-    const cells =
-      this.subView === 'days'
-        ? buildLitCalendarMonthGrid(this.viewYear, this.viewMonth, this.value, today.isoDay)
-        : [];
-    const weeks: (typeof cells)[] = [];
-    for (let i = 0; i < cells.length; i += 7) {
-      weeks.push(cells.slice(i, i + 7));
-    }
-    const todayIso = this.precision === 'year' ? today.isoYear : this.precision === 'month' ? today.isoMonth : today.isoDay;
-    const todayDisabled = this.isIsoOutOfBounds(todayIso);
-
-    return html`<div class="cal-popover" popover="manual" part="calendar" role="dialog" aria-label="Choose date" style=${this.popoverStyle}>
-      <div class="cal-header">
-        <button type="button" class="cal-nav-btn" aria-label=${prevLabel} @click=${() => this.stepHeader(-1)}>
-          ${renderEmrSvgIcon('chevron-left', 16)}
-        </button>
-        <button
-          type="button"
-          class="cal-title-btn"
-          aria-label=${this.subView === 'days'
-            ? `Select month or year, currently ${headerTitle}`
-            : this.subView === 'months'
-              ? `Select year, currently ${headerTitle}`
-              : headerTitle}
-          ?disabled=${this.subView === 'years' && this.precision === 'year'}
-          @click=${() => {
-            if (this.subView === 'days') this.subView = 'months';
-            else if (this.subView === 'months') this.subView = 'years';
-            else if (this.precision === 'month') this.subView = 'months';
-            else if (this.precision === 'day') this.subView = 'days';
-            this.syncPopoverPosition();
-          }}
-        >
-          <span>${headerTitle}</span>
-          ${!(this.subView === 'years' && this.precision === 'year')
-            ? renderEmrSvgIcon(this.subView === 'years' ? 'chevron-up' : 'chevron-down', 14)
-            : nothing}
-        </button>
-        <button type="button" class="cal-nav-btn" aria-label=${nextLabel} @click=${() => this.stepHeader(1)}>
-          ${renderEmrSvgIcon('chevron-right', 16)}
-        </button>
-      </div>
-
-      ${this.subView === 'days'
-        ? html`<div class="cal-body" role="grid" aria-label=${headerTitle}>
-            <div class="cal-weekdays" role="row">
-              ${LIT_CALENDAR_WEEKDAYS.map(wd => html`<span class="cal-weekday" role="columnheader">${wd}</span>`)}
-            </div>
-            <div class="cal-grid">
-              ${weeks.map(
-                week => html`<div class="cal-row" role="row">
-                  ${week.map(cell => {
-                    const outOfBounds = this.isIsoOutOfBounds(cell.iso);
-                    const cls = [
-                      'cal-day',
-                      !cell.inMonth ? 'cal-day--outside' : '',
-                      cell.isToday ? 'cal-day--today' : '',
-                      cell.isSelected ? 'cal-day--selected' : '',
-                    ].filter(Boolean).join(' ');
-                    return html`<span role="gridcell">
-                      <button
-                        type="button"
-                        class=${cls}
-                        aria-label=${cell.ariaLabel}
-                        aria-pressed=${cell.isSelected}
-                        aria-current=${cell.isToday ? 'date' : nothing}
-                        ?disabled=${outOfBounds}
-                        @click=${() => this.selectIso(cell.iso)}
-                      >${cell.day}</button>
-                    </span>`;
-                  })}
-                </div>`,
-              )}
-            </div>
-          </div>`
-        : this.subView === 'months'
-          ? html`<div class="cal-tile-grid">
-              ${LIT_CALENDAR_MONTH_SHORT.map((mName, idx) => {
-                const mNum = idx + 1;
-                const ymIso = `${pad4(this.viewYear)}-${pad2(mNum)}`;
-                const outOfBounds = this.isIsoOutOfBounds(ymIso);
-                const isSelected = this.precision === 'month'
-                  ? this.value === ymIso
-                  : parsed?.year === this.viewYear && parsed?.month === mNum;
-                const isCurrent = today.year === this.viewYear && today.month === mNum;
-                const cls = [
-                  'cal-tile-btn',
-                  isCurrent ? 'cal-tile-btn--current' : '',
-                  isSelected ? 'cal-tile-btn--selected' : '',
-                ].filter(Boolean).join(' ');
-                return html`<button
-                  type="button"
-                  class=${cls}
-                  aria-label=${`${LIT_CALENDAR_MONTH_NAMES[idx]} ${this.viewYear}`}
-                  aria-pressed=${isSelected}
-                  ?disabled=${outOfBounds}
-                  @click=${() => {
-                    if (this.precision === 'month') {
-                      this.selectIso(ymIso);
-                    } else {
-                      this.viewMonth = mNum;
-                      this.subView = 'days';
-                      this.syncPopoverPosition();
-                    }
-                  }}
-                >${mName}</button>`;
-              })}
-            </div>`
-          : html`<div class="cal-tile-grid">
-              ${yearPage.years.map(yr => {
-                const yIso = pad4(yr);
-                const outOfBounds = this.isIsoOutOfBounds(yIso);
-                const isSelected = this.precision === 'year' ? this.value === yIso : parsed?.year === yr;
-                const isCurrent = today.year === yr;
-                const cls = [
-                  'cal-tile-btn',
-                  isCurrent ? 'cal-tile-btn--current' : '',
-                  isSelected ? 'cal-tile-btn--selected' : '',
-                ].filter(Boolean).join(' ');
-                return html`<button
-                  type="button"
-                  class=${cls}
-                  aria-label=${String(yr)}
-                  aria-pressed=${isSelected}
-                  ?disabled=${outOfBounds}
-                  @click=${() => {
-                    if (this.precision === 'year') {
-                      this.selectIso(yIso);
-                    } else {
-                      this.viewYear = yr;
-                      this.subView = 'months';
-                      this.syncPopoverPosition();
-                    }
-                  }}
-                >${yr}</button>`;
-              })}
-            </div>`}
-
-      <div class="cal-footer">
-        <button
-          type="button"
-          class="cal-footer-btn cal-footer-btn--today"
-          aria-label=${this.precision === 'year' ? 'Select current year' : this.precision === 'month' ? 'Select current month' : 'Select today'}
-          ?disabled=${todayDisabled}
-          @click=${() => this.selectIso(todayIso)}
-        >${this.precision === 'year' ? 'This year' : this.precision === 'month' ? 'This month' : 'Today'}</button>
-        <button type="button" class="cal-footer-btn" aria-label="Clear date" @click=${() => this.selectIso(null)}>Clear</button>
-      </div>
-    </div>`;
+    return renderSharedLitCalendarPopover({
+      value: this.value,
+      precision: this.precision,
+      subView: this.subView,
+      viewYear: this.viewYear,
+      viewMonth: this.viewMonth,
+      popoverStyle: this.popoverStyle,
+      isOutOfBounds: iso => this.isIsoOutOfBounds(iso),
+      onStepHeader: dir => this.stepHeader(dir),
+      onCycleSubView: () => {
+        if (this.subView === 'days') this.subView = 'months';
+        else if (this.subView === 'months') this.subView = 'years';
+        else if (this.precision === 'month') this.subView = 'months';
+        else if (this.precision === 'day') this.subView = 'days';
+        this.syncPopoverPosition();
+      },
+      onPickMonth: (mNum, ymIso) => {
+        if (this.precision === 'month') {
+          this.selectIso(ymIso);
+        } else {
+          this.viewMonth = mNum;
+          this.subView = 'days';
+          this.syncPopoverPosition();
+        }
+      },
+      onPickYear: (yr, yIso) => {
+        if (this.precision === 'year') {
+          this.selectIso(yIso);
+        } else {
+          this.viewYear = yr;
+          this.subView = 'months';
+          this.syncPopoverPosition();
+        }
+      },
+      onSelectIso: iso => this.selectIso(iso),
+    });
   }
 
   override render() {
@@ -3082,6 +3470,11 @@ export class EmrTimeInputElement extends EmrLitElement {
   private readonly fallbackId = nextL1Id('emr-time-input');
   @state() private draftText: string | null = null;
   @state() private leftInvalid = false;
+  @state() private timeOpen = false;
+  @state() private pickHour = 9;
+  @state() private pickMinute = 0;
+  @state() private pickSecond = 0;
+  @state() private popoverStyle = '';
 
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
@@ -3110,7 +3503,106 @@ export class EmrTimeInputElement extends EmrLitElement {
     return this.readOnly || this.disabled;
   }
 
+  private onOutsidePointerDown = (event: Event): void => {
+    if (!this.timeOpen) return;
+    if (!event.composedPath().includes(this)) {
+      this.closeTimePopover();
+    }
+  };
+
+  private onGlobalKeyDown = (event: KeyboardEvent): void => {
+    if (this.timeOpen && event.key === 'Escape') {
+      event.stopPropagation();
+      this.closeTimePopover();
+      this.shadowRoot?.querySelector<HTMLButtonElement>('[data-time-trigger="true"]')?.focus();
+    }
+  };
+
+  private onViewportMove = (): void => {
+    if (this.timeOpen) this.syncPopoverPosition();
+  };
+
+  override disconnectedCallback(): void {
+    this.detachPopoverListeners();
+    super.disconnectedCallback();
+  }
+
+  private attachPopoverListeners(): void {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('pointerdown', this.onOutsidePointerDown, true);
+      document.addEventListener('keydown', this.onGlobalKeyDown, true);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', this.onViewportMove, true);
+      window.addEventListener('resize', this.onViewportMove);
+    }
+  }
+
+  private detachPopoverListeners(): void {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('pointerdown', this.onOutsidePointerDown, true);
+      document.removeEventListener('keydown', this.onGlobalKeyDown, true);
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.onViewportMove, true);
+      window.removeEventListener('resize', this.onViewportMove);
+    }
+  }
+
+  private syncPopoverPosition(): void {
+    const anchor = this.shadowRoot?.querySelector<HTMLElement>('.date-wrap');
+    const estWidth = this.precision === 'second' || this.hourCycle === '12' ? 320 : 272;
+    this.popoverStyle = computeFixedPopoverStyle(anchor, estWidth, 320, false);
+  }
+
+  private openTimePopover(): void {
+    if (this.locked) return;
+    const p = extractLitTimeParts(this.value);
+    this.pickHour = p.hour;
+    this.pickMinute = p.minute;
+    this.pickSecond = p.second;
+    this.timeOpen = true;
+    this.syncPopoverPosition();
+    this.attachPopoverListeners();
+    void this.updateComplete.then(() => {
+      const pop = this.shadowRoot?.querySelector<HTMLElement & { showPopover?: () => void }>('.cal-popover');
+      try {
+        pop?.showPopover?.();
+      } catch {
+        // Unsupported or already open
+      }
+    });
+  }
+
+  private closeTimePopover(): void {
+    if (!this.timeOpen) return;
+    this.timeOpen = false;
+    this.detachPopoverListeners();
+  }
+
+  private toggleTimePopover(): void {
+    if (this.timeOpen) this.closeTimePopover();
+    else this.openTimePopover();
+  }
+
+  private commitPickedTime(next24: string | null): void {
+    if (this.locked) return;
+    if (next24 === null) {
+      this.draftText = null;
+      this.leftInvalid = false;
+      this.closeTimePopover();
+      this.emitValueChange(null);
+      return;
+    }
+    if (isTimeOutOfBounds(next24, this.min || undefined, this.max || undefined)) return;
+    this.draftText = null;
+    this.leftInvalid = false;
+    this.closeTimePopover();
+    if (next24 !== this.value) this.emitValueChange(next24);
+  }
+
   override render() {
+    if (this.locked && this.timeOpen) this.closeTimePopover();
     const id = this.controlId || this.fallbackId;
     const msgId = `${id}-message`;
     const isInvalid = Boolean(this.invalid || this.error || this.leftInvalid);
@@ -3118,131 +3610,139 @@ export class EmrTimeInputElement extends EmrLitElement {
     const resolvedPlaceholder = resolveTimePlaceholder(this.precision, this.hourCycle, this.placeholder);
     const baseWidth = this.precision === 'second' || this.hourCycle === '12' ? 210 : 176;
     const maxWidth = this.clearable ? baseWidth + 36 : baseWidth;
-    const resolvedStep = this.step ?? (this.precision === 'second' ? 1 : 60);
     const showClear = Boolean(this.clearable && this.value && !this.locked);
 
     const wrapCls = [
       'date-wrap',
+      this.timeOpen ? 'date-wrap--open' : '',
       isInvalid ? 'date-wrap--invalid' : this.warning ? 'date-wrap--warning' : '',
       this.readOnly ? 'date-wrap--readonly' : '',
     ].filter(Boolean).join(' ');
 
-    const control = html`<div
-      class=${wrapCls}
-      style=${`width: 100%; ${this.fullWidth ? '' : `max-width: ${maxWidth}px; `}min-height: ${this.size === 'lg' ? 48 : 44}px;`}
-      part="control"
-    >
-      <input
-        id=${id}
-        class="stepper-input"
-        type="text"
-        inputmode="numeric"
-        autocomplete="off"
-        .value=${this.locked ? live(displayed) : (this.draftText ?? displayed)}
-        placeholder=${resolvedPlaceholder}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        ?required=${this.required}
-        aria-label=${this.ariaLabel || (this.labelHidden && this.label ? this.label : nothing)}
-        aria-required=${this.required ? 'true' : nothing}
-        aria-readonly=${this.readOnly ? 'true' : nothing}
-        aria-invalid=${isInvalid ? 'true' : nothing}
-        aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
-        @focus=${() => {
-          if (this.disabled) return;
-          this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
-        }}
-        @keydown=${(e: KeyboardEvent) => {
-          if (!this.locked && e.key === 'Enter') {
-            this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
-          }
-        }}
-        @blur=${(e: Event) => {
-          const el = e.target as HTMLInputElement;
-          const raw = this.draftText ?? el.value;
-          const parsed = parseTimeText(raw, { precision: this.precision, hourCycle: this.hourCycle });
-          const oob = parsed.kind === 'valid' && isTimeOutOfBounds(parsed.value, this.min || undefined, this.max || undefined);
-          if (!this.locked && (parsed.kind === 'draft' || oob)) {
-            this.leftInvalid = true;
-          } else {
-            this.leftInvalid = false;
-            this.draftText = null;
-            el.value = formatTimeDisplay(this.value, { precision: this.precision, hourCycle: this.hourCycle });
-          }
-          this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
-        }}
-        @input=${(e: Event) => {
-          const el = e.target as HTMLInputElement;
-          if (this.locked) {
-            el.value = displayed;
-            return;
-          }
-          const cleaned = sanitizeTimeText(el.value, { precision: this.precision, hourCycle: this.hourCycle });
-          if (el.value !== cleaned) el.value = cleaned;
-          this.draftText = cleaned;
-          this.leftInvalid = false;
-          const parsed = parseTimeText(cleaned, { precision: this.precision, hourCycle: this.hourCycle });
-          if (parsed.kind === 'empty') {
-            this.emitValueChange(null);
-            return;
-          }
-          if (parsed.kind === 'valid' && !isTimeOutOfBounds(parsed.value, this.min || undefined, this.max || undefined)) {
-            if (parsed.value !== this.value) {
-              this.emitValueChange(parsed.value);
+    const preview24 = formatLitTime24(this.pickHour, this.pickMinute, this.pickSecond, this.precision);
+    const nowVal24 = nowLitTime24(this.precision);
+    const nowDisabled = isTimeOutOfBounds(nowVal24, this.min || undefined, this.max || undefined);
+    const confirmDisabled = isTimeOutOfBounds(preview24, this.min || undefined, this.max || undefined);
+    const previewDisplay = formatTimeDisplay(preview24, { precision: this.precision, hourCycle: this.hourCycle });
+
+    const control = html`<div class="date-anchor">
+      <div
+        class=${wrapCls}
+        style=${`width: 100%; ${this.fullWidth ? '' : `max-width: ${maxWidth}px; `}min-height: ${this.size === 'lg' ? 48 : 44}px;`}
+        part="control"
+      >
+        <input
+          id=${id}
+          class="date-text-input"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          .value=${this.locked ? live(displayed) : (this.draftText ?? displayed)}
+          placeholder=${resolvedPlaceholder}
+          ?readonly=${this.readOnly}
+          ?disabled=${this.disabled}
+          ?required=${this.required}
+          aria-label=${this.ariaLabel || (this.labelHidden && this.label ? this.label : nothing)}
+          aria-required=${this.required ? 'true' : nothing}
+          aria-readonly=${this.readOnly ? 'true' : nothing}
+          aria-invalid=${isInvalid ? 'true' : nothing}
+          aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
+          @focus=${() => {
+            if (this.disabled) return;
+            this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+          }}
+          @keydown=${(e: KeyboardEvent) => {
+            if (!this.locked && e.key === 'Enter') {
+              this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
             }
-          }
-        }}
-      />
-      ${showClear
-        ? html`<button
-            type="button"
-            class="date-icon-box"
-            style="border:0;border-left:1px solid var(--emr-border);background:transparent;cursor:pointer;min-width:44px;min-height:44px;"
-            aria-label=${`Clear ${this.ariaLabel || this.label || 'time'}`}
-            @click=${() => {
-              if (this.locked) return;
-              this.draftText = null;
+          }}
+          @blur=${(e: Event) => {
+            const el = e.target as HTMLInputElement;
+            const raw = this.draftText ?? el.value;
+            const parsed = parseTimeText(raw, { precision: this.precision, hourCycle: this.hourCycle });
+            const oob = parsed.kind === 'valid' && isTimeOutOfBounds(parsed.value, this.min || undefined, this.max || undefined);
+            if (!this.locked && (parsed.kind === 'draft' || oob)) {
+              this.leftInvalid = true;
+            } else {
               this.leftInvalid = false;
+              this.draftText = null;
+              el.value = formatTimeDisplay(this.value, { precision: this.precision, hourCycle: this.hourCycle });
+            }
+            this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+          }}
+          @input=${(e: Event) => {
+            const el = e.target as HTMLInputElement;
+            if (this.locked) {
+              el.value = displayed;
+              return;
+            }
+            const cleaned = sanitizeTimeText(el.value, { precision: this.precision, hourCycle: this.hourCycle });
+            if (el.value !== cleaned) el.value = cleaned;
+            this.draftText = cleaned;
+            this.leftInvalid = false;
+            const parsed = parseTimeText(cleaned, { precision: this.precision, hourCycle: this.hourCycle });
+            if (parsed.kind === 'empty') {
               this.emitValueChange(null);
-              this.dispatchEvent(new CustomEvent('cleared', { bubbles: true, composed: true }));
-            }}
-          >${renderEmrSvgIcon('close', 14)}</button>`
-        : nothing}
-      <span class="date-icon-box" style="position:relative;cursor:pointer;" aria-hidden="true">
-        ${renderEmrSvgIcon('clock', 16)}
-        ${!this.locked
-          ? html`<input
-              type="time"
-              tabindex="-1"
-              aria-hidden="true"
-              style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;"
-              .value=${this.value ?? ''}
-              min=${this.min || nothing}
-              max=${this.max || nothing}
-              step=${String(resolvedStep)}
-              @change=${(e: Event) => {
+              return;
+            }
+            if (parsed.kind === 'valid' && !isTimeOutOfBounds(parsed.value, this.min || undefined, this.max || undefined)) {
+              if (parsed.value !== this.value) {
+                this.emitValueChange(parsed.value);
+              }
+            }
+          }}
+        />
+        ${showClear
+          ? html`<button
+              type="button"
+              class="date-icon-box"
+              style="border:0;border-left:1px solid var(--emr-border);background:transparent;cursor:pointer;min-width:44px;min-height:44px;"
+              aria-label=${`Clear ${this.ariaLabel || this.label || 'time'}`}
+              @click=${() => {
                 if (this.locked) return;
-                const raw = (e.target as HTMLInputElement).value;
-                if (!raw) {
-                  this.draftText = null;
-                  this.leftInvalid = false;
-                  this.emitValueChange(null);
-                  return;
-                }
-                if (isTimeOutOfBounds(raw, this.min || undefined, this.max || undefined)) return;
-                const normalized =
-                  this.precision === 'second' && raw.length === 5
-                    ? `${raw}:00`
-                    : this.precision === 'minute'
-                      ? raw.slice(0, 5)
-                      : raw;
                 this.draftText = null;
                 this.leftInvalid = false;
-                this.emitValueChange(normalized);
+                this.emitValueChange(null);
+                this.dispatchEvent(new CustomEvent('cleared', { bubbles: true, composed: true }));
               }}
-            />`
+            >${renderEmrSvgIcon('close', 14)}</button>`
           : nothing}
-      </span>
+        <button
+          type="button"
+          data-time-trigger="true"
+          class=${`date-icon-btn${this.timeOpen ? ' date-icon-btn--open' : ''}`}
+          aria-label="Choose time"
+          aria-haspopup="dialog"
+          aria-expanded=${this.timeOpen}
+          ?disabled=${this.locked}
+          @click=${() => this.toggleTimePopover()}
+        >${renderEmrSvgIcon('clock', 16)}</button>
+      </div>
+      ${this.timeOpen && !this.locked
+        ? renderSharedLitTimePopover({
+            hour: this.pickHour,
+            minute: this.pickMinute,
+            second: this.pickSecond,
+            precision: this.precision,
+            hourCycle: this.hourCycle,
+            popoverStyle: this.popoverStyle,
+            previewDisplay,
+            nowDisabled,
+            confirmDisabled,
+            onChangeHour: h => {
+              this.pickHour = h;
+            },
+            onChangeMinute: m => {
+              this.pickMinute = m;
+            },
+            onChangeSecond: s => {
+              this.pickSecond = s;
+            },
+            onNow: () => this.commitPickedTime(nowLitTime24(this.precision)),
+            onClear: () => this.commitPickedTime(null),
+            onDone: () => this.commitPickedTime(preview24),
+          })
+        : nothing}
     </div>`;
 
     if (this.labelHidden) return control;
@@ -3270,6 +3770,15 @@ export class EmrDateTimeInputElement extends EmrLitElement {
   @state() private dateDraft: string | null = null;
   @state() private timeDraft: string | null = null;
   @state() private leftInvalid = false;
+  @state() private calOpen = false;
+  @state() private calSubView: 'days' | 'months' | 'years' = 'days';
+  @state() private calViewYear = new Date().getFullYear();
+  @state() private calViewMonth = new Date().getMonth() + 1;
+  @state() private timeOpen = false;
+  @state() private pickHour = 9;
+  @state() private pickMinute = 0;
+  @state() private pickSecond = 0;
+  @state() private popoverStyle = '';
   private focusInside = false;
 
   @property({ type: String }) controlId = '';
@@ -3304,6 +3813,106 @@ export class EmrDateTimeInputElement extends EmrLitElement {
 
   private get effectivePrecision(): EmrDateTimePrecision {
     return this.precision ?? this.timePrecision;
+  }
+
+  private onOutsidePointerDown = (event: Event): void => {
+    if (!this.calOpen && !this.timeOpen) return;
+    if (!event.composedPath().includes(this)) {
+      this.closePopovers();
+    }
+  };
+
+  private onGlobalKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || (!this.calOpen && !this.timeOpen)) return;
+    event.stopPropagation();
+    const wasCal = this.calOpen;
+    this.closePopovers();
+    this.shadowRoot?.querySelector<HTMLButtonElement>(wasCal ? '[data-date-trigger="true"]' : '[data-time-trigger="true"]')?.focus();
+  };
+
+  private onViewportMove = (): void => {
+    if (this.calOpen || this.timeOpen) this.syncPopoverPosition();
+  };
+
+  override disconnectedCallback(): void {
+    this.detachPopoverListeners();
+    super.disconnectedCallback();
+  }
+
+  private attachPopoverListeners(): void {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('pointerdown', this.onOutsidePointerDown, true);
+      document.addEventListener('keydown', this.onGlobalKeyDown, true);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', this.onViewportMove, true);
+      window.addEventListener('resize', this.onViewportMove);
+    }
+  }
+
+  private detachPopoverListeners(): void {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('pointerdown', this.onOutsidePointerDown, true);
+      document.removeEventListener('keydown', this.onGlobalKeyDown, true);
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.onViewportMove, true);
+      window.removeEventListener('resize', this.onViewportMove);
+    }
+  }
+
+  private syncPopoverPosition(): void {
+    const sel = this.calOpen ? '[part="date-control"]' : '[part="time-control"]';
+    const anchor = this.shadowRoot?.querySelector<HTMLElement>(sel);
+    const estWidth = this.calOpen ? 328 : (this.effectivePrecision === 'second' || this.hourCycle === '12' ? 320 : 272);
+    const estHeight = this.calOpen ? (this.calSubView === 'days' ? 404 : 300) : 320;
+    this.popoverStyle = computeFixedPopoverStyle(anchor, estWidth, estHeight, false);
+  }
+
+  private closePopovers(): void {
+    if (!this.calOpen && !this.timeOpen) return;
+    this.calOpen = false;
+    this.timeOpen = false;
+    this.detachPopoverListeners();
+  }
+
+  private openCalendarPopover(currentDateIso: string | null): void {
+    if (this.locked) return;
+    const parts = parseLitIsoParts(currentDateIso);
+    const today = todayLitCalendarParts();
+    this.calViewYear = parts?.year ?? today.year;
+    this.calViewMonth = parts?.month ?? today.month;
+    this.calSubView = 'days';
+    this.timeOpen = false;
+    this.calOpen = true;
+    this.syncPopoverPosition();
+    this.attachPopoverListeners();
+    void this.updateComplete.then(() => {
+      try {
+        this.shadowRoot?.querySelector<HTMLElement & { showPopover?: () => void }>('.cal-popover')?.showPopover?.();
+      } catch {
+        // Unsupported or already open
+      }
+    });
+  }
+
+  private openTimePopover(currentTime24: string | null): void {
+    if (this.locked) return;
+    const p = extractLitTimeParts(currentTime24);
+    this.pickHour = p.hour;
+    this.pickMinute = p.minute;
+    this.pickSecond = p.second;
+    this.calOpen = false;
+    this.timeOpen = true;
+    this.syncPopoverPosition();
+    this.attachPopoverListeners();
+    void this.updateComplete.then(() => {
+      try {
+        this.shadowRoot?.querySelector<HTMLElement & { showPopover?: () => void }>('.cal-popover')?.showPopover?.();
+      } catch {
+        // Unsupported or already open
+      }
+    });
   }
 
   private tryCommit(nextDateIso: string | null, nextTime24: string | null, dateEmpty: boolean, timeEmpty: boolean): void {
@@ -3387,169 +3996,240 @@ export class EmrDateTimeInputElement extends EmrLitElement {
           this.emitValueChange(this.wireFormat === 'local' ? raw : localDateTimeToUtcIso(raw));
         }}
       />
-      <div class=${wrapCls} style=${`flex:1 1 156px;max-width:184px;min-height:${minHeight}px;`} part="date-control">
-        <input
-          id=${`${id}-date`}
-          class="stepper-input"
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          .value=${this.locked ? live(displayedDate) : (this.dateDraft ?? displayedDate)}
-          placeholder=${this.displayFormat}
-          ?readonly=${this.readOnly}
-          ?disabled=${this.disabled}
-          ?required=${this.required}
-          aria-label=${`${this.ariaLabel || this.label || 'Date and time'}, ${this.dateLabel}`}
-          aria-required=${this.required ? 'true' : nothing}
-          aria-readonly=${this.readOnly ? 'true' : nothing}
-          aria-invalid=${isInvalid ? 'true' : nothing}
-          aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
-          @keydown=${(e: KeyboardEvent) => {
-            if (!this.locked && e.key === 'Enter') {
-              this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
-            }
-          }}
-          @blur=${(e: Event) => {
-            const el = e.target as HTMLInputElement;
-            const dp = parseDateDisplayText(this.dateDraft ?? el.value, this.displayFormat);
-            const tp = parseTimeText(this.timeDraft ?? displayedTime, { precision: effPrecision, hourCycle: this.hourCycle });
-            const halfTyped = (dp.kind === 'valid' && tp.kind === 'empty') || (dp.kind === 'empty' && tp.kind === 'valid');
-            if (!this.locked && (dp.kind === 'draft' || halfTyped)) {
-              this.leftInvalid = true;
-            } else if (dp.kind === 'empty' && tp.kind === 'empty') {
+      <div class="date-anchor" style="flex:1 1 156px;max-width:184px;">
+        <div class=${wrapCls} style=${`width:100%;min-height:${minHeight}px;`} part="date-control">
+          <input
+            id=${`${id}-date`}
+            class="date-text-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            .value=${this.locked ? live(displayedDate) : (this.dateDraft ?? displayedDate)}
+            placeholder=${this.displayFormat}
+            ?readonly=${this.readOnly}
+            ?disabled=${this.disabled}
+            ?required=${this.required}
+            aria-label=${`${this.ariaLabel || this.label || 'Date and time'}, ${this.dateLabel}`}
+            aria-required=${this.required ? 'true' : nothing}
+            aria-readonly=${this.readOnly ? 'true' : nothing}
+            aria-invalid=${isInvalid ? 'true' : nothing}
+            aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
+            @keydown=${(e: KeyboardEvent) => {
+              if (!this.locked && e.key === 'Enter') {
+                this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
+              }
+            }}
+            @blur=${(e: Event) => {
+              const el = e.target as HTMLInputElement;
+              const dp = parseDateDisplayText(this.dateDraft ?? el.value, this.displayFormat);
+              const tp = parseTimeText(this.timeDraft ?? displayedTime, { precision: effPrecision, hourCycle: this.hourCycle });
+              const halfTyped = (dp.kind === 'valid' && tp.kind === 'empty') || (dp.kind === 'empty' && tp.kind === 'valid');
+              if (!this.locked && (dp.kind === 'draft' || halfTyped)) {
+                this.leftInvalid = true;
+              } else if (dp.kind === 'empty' && tp.kind === 'empty') {
+                this.leftInvalid = false;
+                this.dateDraft = null;
+                el.value = '';
+              } else if (dp.kind === 'valid') {
+                this.dateDraft = null;
+                el.value = formatIsoDateDisplay(dp.value, this.displayFormat);
+              }
+            }}
+            @input=${(e: Event) => {
+              const el = e.target as HTMLInputElement;
+              if (this.locked) {
+                el.value = displayedDate;
+                return;
+              }
+              const clean = sanitizeDateDisplayText(el.value, this.displayFormat);
+              if (el.value !== clean) el.value = clean;
+              this.dateDraft = clean;
               this.leftInvalid = false;
-              this.dateDraft = null;
-              el.value = '';
-            } else if (dp.kind === 'valid') {
-              this.dateDraft = null;
-              el.value = formatIsoDateDisplay(dp.value, this.displayFormat);
-            }
-          }}
-          @input=${(e: Event) => {
-            const el = e.target as HTMLInputElement;
-            if (this.locked) {
-              el.value = displayedDate;
-              return;
-            }
-            const clean = sanitizeDateDisplayText(el.value, this.displayFormat);
-            if (el.value !== clean) el.value = clean;
-            this.dateDraft = clean;
-            this.leftInvalid = false;
-            const dp = parseDateDisplayText(clean, this.displayFormat);
-            const tp = parseTimeText(this.timeDraft ?? displayedTime, { precision: effPrecision, hourCycle: this.hourCycle });
-            this.tryCommit(
-              dp.kind === 'valid' ? dp.value : null,
-              tp.kind === 'valid' ? tp.value : null,
-              dp.kind === 'empty',
-              tp.kind === 'empty',
-            );
-          }}
-        />
-        <span class="date-icon-box" style="position:relative;cursor:pointer;" aria-hidden="true">
-          ${renderEmrSvgIcon('calendar', 16)}
-          ${!this.locked
-            ? html`<input
-                type="date"
-                tabindex="-1"
-                aria-hidden="true"
-                style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;"
-                .value=${parts.date ?? ''}
-                @change=${(e: Event) => {
-                  if (this.locked) return;
-                  const picked = (e.target as HTMLInputElement).value;
-                  if (!picked) {
-                    this.dateDraft = '';
-                    this.tryCommit(null, null, true, true);
-                    return;
-                  }
-                  this.dateDraft = null;
-                  const tVal = parts.time ?? (effPrecision === 'second' ? '09:00:00' : '09:00');
-                  this.tryCommit(picked, tVal, false, false);
-                }}
-              />`
-            : nothing}
-        </span>
+              const dp = parseDateDisplayText(clean, this.displayFormat);
+              const tp = parseTimeText(this.timeDraft ?? displayedTime, { precision: effPrecision, hourCycle: this.hourCycle });
+              this.tryCommit(
+                dp.kind === 'valid' ? dp.value : null,
+                tp.kind === 'valid' ? tp.value : null,
+                dp.kind === 'empty',
+                tp.kind === 'empty',
+              );
+            }}
+          />
+          <button
+            type="button"
+            data-date-trigger="true"
+            class=${`date-icon-btn${this.calOpen ? ' date-icon-btn--open' : ''}`}
+            aria-label="Choose date"
+            aria-haspopup="dialog"
+            aria-expanded=${this.calOpen}
+            ?disabled=${this.locked}
+            @click=${() => (this.calOpen ? this.closePopovers() : this.openCalendarPopover(parts.date))}
+          >${renderEmrSvgIcon('calendar', 16)}</button>
+        </div>
+        ${this.calOpen && !this.locked
+          ? renderSharedLitCalendarPopover({
+              value: parts.date,
+              precision: 'day',
+              subView: this.calSubView,
+              viewYear: this.calViewYear,
+              viewMonth: this.calViewMonth,
+              popoverStyle: this.popoverStyle,
+              isOutOfBounds: () => false,
+              onStepHeader: dir => {
+                if (this.calSubView === 'days') {
+                  const next = stepLitCalendarMonth(this.calViewYear, this.calViewMonth, dir);
+                  this.calViewYear = next.year;
+                  this.calViewMonth = next.month;
+                } else if (this.calSubView === 'months') {
+                  this.calViewYear = Math.max(1, this.calViewYear + dir);
+                } else {
+                  this.calViewYear = Math.max(1, this.calViewYear + dir * 12);
+                }
+              },
+              onCycleSubView: () => {
+                this.calSubView = this.calSubView === 'days' ? 'months' : this.calSubView === 'months' ? 'years' : 'days';
+                this.syncPopoverPosition();
+              },
+              onPickMonth: mNum => {
+                this.calViewMonth = mNum;
+                this.calSubView = 'days';
+                this.syncPopoverPosition();
+              },
+              onPickYear: yr => {
+                this.calViewYear = yr;
+                this.calSubView = 'months';
+                this.syncPopoverPosition();
+              },
+              onSelectIso: iso => {
+                this.closePopovers();
+                if (!iso) {
+                  this.dateDraft = '';
+                  this.tryCommit(null, null, true, true);
+                  return;
+                }
+                this.dateDraft = null;
+                const tVal = parts.time ?? (effPrecision === 'second' ? '09:00:00' : '09:00');
+                this.tryCommit(iso, tVal, false, false);
+              },
+            })
+          : nothing}
       </div>
 
-      <div class=${wrapCls} style=${`flex:1 1 140px;max-width:${timeMaxWidth}px;min-height:${minHeight}px;`} part="time-control">
-        <input
-          id=${`${id}-time`}
-          class="stepper-input"
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          .value=${this.locked ? live(displayedTime) : (this.timeDraft ?? displayedTime)}
-          placeholder=${timePlaceholder}
-          ?readonly=${this.readOnly}
-          ?disabled=${this.disabled}
-          ?required=${this.required}
-          aria-label=${`${this.ariaLabel || this.label || 'Date and time'}, ${this.timeLabel}`}
-          aria-required=${this.required ? 'true' : nothing}
-          aria-readonly=${this.readOnly ? 'true' : nothing}
-          aria-invalid=${isInvalid ? 'true' : nothing}
-          aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
-          @keydown=${(e: KeyboardEvent) => {
-            if (!this.locked && e.key === 'Enter') {
-              this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
-            }
-          }}
-          @blur=${(e: Event) => {
-            const el = e.target as HTMLInputElement;
-            const tp = parseTimeText(this.timeDraft ?? el.value, { precision: effPrecision, hourCycle: this.hourCycle });
-            const dp = parseDateDisplayText(this.dateDraft ?? displayedDate, this.displayFormat);
-            const halfTyped = (dp.kind === 'valid' && tp.kind === 'empty') || (dp.kind === 'empty' && tp.kind === 'valid');
-            if (!this.locked && (tp.kind === 'draft' || halfTyped)) {
-              this.leftInvalid = true;
-            } else if (dp.kind === 'empty' && tp.kind === 'empty') {
+      <div class="date-anchor" style=${`flex:1 1 140px;max-width:${timeMaxWidth}px;`}>
+        <div class=${wrapCls} style=${`width:100%;min-height:${minHeight}px;`} part="time-control">
+          <input
+            id=${`${id}-time`}
+            class="date-text-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            .value=${this.locked ? live(displayedTime) : (this.timeDraft ?? displayedTime)}
+            placeholder=${timePlaceholder}
+            ?readonly=${this.readOnly}
+            ?disabled=${this.disabled}
+            ?required=${this.required}
+            aria-label=${`${this.ariaLabel || this.label || 'Date and time'}, ${this.timeLabel}`}
+            aria-required=${this.required ? 'true' : nothing}
+            aria-readonly=${this.readOnly ? 'true' : nothing}
+            aria-invalid=${isInvalid ? 'true' : nothing}
+            aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
+            @keydown=${(e: KeyboardEvent) => {
+              if (!this.locked && e.key === 'Enter') {
+                this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
+              }
+            }}
+            @blur=${(e: Event) => {
+              const el = e.target as HTMLInputElement;
+              const tp = parseTimeText(this.timeDraft ?? el.value, { precision: effPrecision, hourCycle: this.hourCycle });
+              const dp = parseDateDisplayText(this.dateDraft ?? displayedDate, this.displayFormat);
+              const halfTyped = (dp.kind === 'valid' && tp.kind === 'empty') || (dp.kind === 'empty' && tp.kind === 'valid');
+              if (!this.locked && (tp.kind === 'draft' || halfTyped)) {
+                this.leftInvalid = true;
+              } else if (dp.kind === 'empty' && tp.kind === 'empty') {
+                this.leftInvalid = false;
+                this.timeDraft = null;
+                el.value = '';
+              } else if (tp.kind === 'valid') {
+                this.timeDraft = null;
+                el.value = formatTimeDisplay(tp.value, { precision: effPrecision, hourCycle: this.hourCycle });
+              }
+            }}
+            @input=${(e: Event) => {
+              const el = e.target as HTMLInputElement;
+              if (this.locked) {
+                el.value = displayedTime;
+                return;
+              }
+              const clean = sanitizeTimeText(el.value, { precision: effPrecision, hourCycle: this.hourCycle });
+              if (el.value !== clean) el.value = clean;
+              this.timeDraft = clean;
               this.leftInvalid = false;
-              this.timeDraft = null;
-              el.value = '';
-            } else if (tp.kind === 'valid') {
-              this.timeDraft = null;
-              el.value = formatTimeDisplay(tp.value, { precision: effPrecision, hourCycle: this.hourCycle });
-            }
-          }}
-          @input=${(e: Event) => {
-            const el = e.target as HTMLInputElement;
-            if (this.locked) {
-              el.value = displayedTime;
-              return;
-            }
-            const clean = sanitizeTimeText(el.value, { precision: effPrecision, hourCycle: this.hourCycle });
-            if (el.value !== clean) el.value = clean;
-            this.timeDraft = clean;
-            this.leftInvalid = false;
-            const tp = parseTimeText(clean, { precision: effPrecision, hourCycle: this.hourCycle });
-            const dp = parseDateDisplayText(this.dateDraft ?? displayedDate, this.displayFormat);
-            this.tryCommit(
-              dp.kind === 'valid' ? dp.value : null,
-              tp.kind === 'valid' ? tp.value : null,
-              dp.kind === 'empty',
-              tp.kind === 'empty',
-            );
-          }}
-        />
-        <span class="date-icon-box" style="position:relative;cursor:pointer;" aria-hidden="true">
-          ${renderEmrSvgIcon('clock', 16)}
-          ${!this.locked
-            ? html`<input
-                type="time"
-                tabindex="-1"
-                aria-hidden="true"
-                style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;"
-                .value=${parts.time ?? ''}
-                step=${effPrecision === 'second' ? '1' : '60'}
-                @change=${(e: Event) => {
-                  if (this.locked) return;
-                  const picked = (e.target as HTMLInputElement).value;
-                  if (!picked) return;
-                  this.timeDraft = null;
-                  const norm = effPrecision === 'second' && picked.length === 5 ? `${picked}:00` : effPrecision === 'minute' ? picked.slice(0, 5) : picked;
-                  if (parts.date) this.tryCommit(parts.date, norm, false, false);
-                }}
-              />`
-            : nothing}
-        </span>
+              const tp = parseTimeText(clean, { precision: effPrecision, hourCycle: this.hourCycle });
+              const dp = parseDateDisplayText(this.dateDraft ?? displayedDate, this.displayFormat);
+              this.tryCommit(
+                dp.kind === 'valid' ? dp.value : null,
+                tp.kind === 'valid' ? tp.value : null,
+                dp.kind === 'empty',
+                tp.kind === 'empty',
+              );
+            }}
+          />
+          <button
+            type="button"
+            data-time-trigger="true"
+            class=${`date-icon-btn${this.timeOpen ? ' date-icon-btn--open' : ''}`}
+            aria-label="Choose time"
+            aria-haspopup="dialog"
+            aria-expanded=${this.timeOpen}
+            ?disabled=${this.locked}
+            @click=${() => (this.timeOpen ? this.closePopovers() : this.openTimePopover(parts.time))}
+          >${renderEmrSvgIcon('clock', 16)}</button>
+        </div>
+        ${this.timeOpen && !this.locked
+          ? renderSharedLitTimePopover({
+              hour: this.pickHour,
+              minute: this.pickMinute,
+              second: this.pickSecond,
+              precision: effPrecision,
+              hourCycle: this.hourCycle,
+              popoverStyle: this.popoverStyle,
+              previewDisplay: formatTimeDisplay(formatLitTime24(this.pickHour, this.pickMinute, this.pickSecond, effPrecision), {
+                precision: effPrecision,
+                hourCycle: this.hourCycle,
+              }),
+              nowDisabled: false,
+              confirmDisabled: false,
+              onChangeHour: h => {
+                this.pickHour = h;
+              },
+              onChangeMinute: m => {
+                this.pickMinute = m;
+              },
+              onChangeSecond: s => {
+                this.pickSecond = s;
+              },
+              onNow: () => {
+                this.closePopovers();
+                this.dateDraft = null;
+                this.timeDraft = null;
+                const dVal = parts.date ?? todayLitCalendarParts().isoDay;
+                this.tryCommit(dVal, nowLitTime24(effPrecision), false, false);
+              },
+              onClear: () => {
+                this.closePopovers();
+                this.dateDraft = null;
+                this.timeDraft = null;
+                this.tryCommit(null, null, true, true);
+              },
+              onDone: () => {
+                this.closePopovers();
+                this.timeDraft = null;
+                const dVal = parts.date ?? todayLitCalendarParts().isoDay;
+                const tVal = formatLitTime24(this.pickHour, this.pickMinute, this.pickSecond, effPrecision);
+                this.tryCommit(dVal, tVal, false, false);
+              },
+            })
+          : nothing}
       </div>
 
       ${showClear
@@ -4498,9 +5178,12 @@ export class EmrPairedInputElement extends EmrLitElement {
   @property({ type: String }) secondValue: string | null = '';
   @property({ type: String }) firstPlaceholder = '';
   @property({ type: String }) secondPlaceholder = '';
-  @property({ type: String }) inputType: 'text' | 'integer' | 'decimal' = 'text';
-  @property({ type: String }) firstInputType?: 'text' | 'integer' | 'decimal';
-  @property({ type: String }) secondInputType?: 'text' | 'integer' | 'decimal';
+  @property({ type: String }) inputType: 'text' | 'integer' | 'decimal' | 'select' = 'text';
+  @property({ type: String }) firstInputType?: 'text' | 'integer' | 'decimal' | 'select';
+  @property({ type: String }) secondInputType?: 'text' | 'integer' | 'decimal' | 'select';
+  @property({ attribute: false }) options: readonly EmrOption[] = [];
+  @property({ attribute: false }) firstOptions: readonly EmrOption[] = [];
+  @property({ attribute: false }) secondOptions: readonly EmrOption[] = [];
   @property({ type: Number }) min?: number;
   @property({ type: Number }) max?: number;
   @property({ type: Number }) firstMin?: number;
@@ -4533,66 +5216,118 @@ export class EmrPairedInputElement extends EmrLitElement {
 
     const pairRow = html`<div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;width:100%;">
       ${this.firstLabel ? html`<strong class="emr-muted" style="flex-shrink:0;">${this.firstLabel}</strong>` : nothing}
-      <input
-        id=${`${id}-first`}
-        class="emr-control"
-        style="flex:1 1 0;min-width:0;max-width:132px;"
-        inputmode=${firstMode === 'integer' ? 'numeric' : firstMode === 'decimal' ? 'decimal' : nothing}
-        placeholder=${this.firstPlaceholder}
-        aria-label=${this.firstLabel ? `${this.label ? `${this.label}, ` : ''}${this.firstLabel}` : this.label || 'First value'}
-        aria-invalid=${firstInvalid ? 'true' : nothing}
-        ?required=${this.firstRequired ?? this.required}
-        .value=${this.locked ? live(this.firstValue ?? '') : this.firstValue ?? ''}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        @blur=${(e: Event) => {
-          (e.target as HTMLInputElement).value = this.firstValue ?? '';
-        }}
-        @input=${(e: Event) => {
-          if (this.locked) {
-            (e.target as HTMLInputElement).value = this.firstValue ?? '';
-            return;
-          }
-          this.dispatchEvent(
-            new CustomEvent('firstValueChange', {
-              detail: (e.target as HTMLInputElement).value || null,
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        }}
-      />
+      ${firstMode === 'select'
+        ? html`<emr-select
+            style="flex:1 1 0;min-width:0;max-width:180px;"
+            .controlId=${`${id}-first`}
+            .label=${this.firstLabel ? `${this.label ? `${this.label}, ` : ''}${this.firstLabel}` : this.label || 'First value'}
+            ?labelHidden=${true}
+            .options=${this.firstOptions.length ? this.firstOptions : this.options}
+            .value=${this.firstValue}
+            .placeholder=${this.firstPlaceholder || 'Select…'}
+            ?required=${this.firstRequired ?? this.required}
+            ?invalid=${firstInvalid}
+            ?readOnly=${this.readOnly}
+            ?disabled=${this.disabled}
+            @valueChange=${(e: Event) => {
+              e.stopPropagation();
+              if (this.locked) return;
+              const detail = (e as CustomEvent<EmrSelectValue>).detail;
+              this.dispatchEvent(
+                new CustomEvent('firstValueChange', {
+                  detail: typeof detail === 'string' ? detail : null,
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
+            }}
+          ></emr-select>`
+        : html`<input
+            id=${`${id}-first`}
+            class="emr-control"
+            style="flex:1 1 0;min-width:0;max-width:132px;"
+            inputmode=${firstMode === 'integer' ? 'numeric' : firstMode === 'decimal' ? 'decimal' : nothing}
+            placeholder=${this.firstPlaceholder}
+            aria-label=${this.firstLabel ? `${this.label ? `${this.label}, ` : ''}${this.firstLabel}` : this.label || 'First value'}
+            aria-invalid=${firstInvalid ? 'true' : nothing}
+            ?required=${this.firstRequired ?? this.required}
+            .value=${this.locked ? live(this.firstValue ?? '') : this.firstValue ?? ''}
+            ?readonly=${this.readOnly}
+            ?disabled=${this.disabled}
+            @blur=${(e: Event) => {
+              (e.target as HTMLInputElement).value = this.firstValue ?? '';
+            }}
+            @input=${(e: Event) => {
+              if (this.locked) {
+                (e.target as HTMLInputElement).value = this.firstValue ?? '';
+                return;
+              }
+              this.dispatchEvent(
+                new CustomEvent('firstValueChange', {
+                  detail: (e.target as HTMLInputElement).value || null,
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
+            }}
+          />`}
       <span class="emr-muted" aria-hidden="true" style="flex-shrink:0;">${this.separator}</span>
       ${this.secondLabel ? html`<strong class="emr-muted" style="flex-shrink:0;">${this.secondLabel}</strong>` : nothing}
-      <input
-        id=${`${id}-second`}
-        class="emr-control"
-        style="flex:1 1 0;min-width:0;max-width:132px;"
-        inputmode=${secondMode === 'integer' ? 'numeric' : secondMode === 'decimal' ? 'decimal' : nothing}
-        placeholder=${this.secondPlaceholder}
-        aria-label=${this.secondLabel ? `${this.label ? `${this.label}, ` : ''}${this.secondLabel}` : this.label || 'Second value'}
-        aria-invalid=${secondInvalid ? 'true' : nothing}
-        ?required=${this.secondRequired ?? this.required}
-        .value=${this.locked ? live(this.secondValue ?? '') : this.secondValue ?? ''}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        @blur=${(e: Event) => {
-          (e.target as HTMLInputElement).value = this.secondValue ?? '';
-        }}
-        @input=${(e: Event) => {
-          if (this.locked) {
-            (e.target as HTMLInputElement).value = this.secondValue ?? '';
-            return;
-          }
-          this.dispatchEvent(
-            new CustomEvent('secondValueChange', {
-              detail: (e.target as HTMLInputElement).value || null,
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        }}
-      />
+      ${secondMode === 'select'
+        ? html`<emr-select
+            style="flex:1 1 0;min-width:0;max-width:180px;"
+            .controlId=${`${id}-second`}
+            .label=${this.secondLabel ? `${this.label ? `${this.label}, ` : ''}${this.secondLabel}` : this.label || 'Second value'}
+            ?labelHidden=${true}
+            .options=${this.secondOptions.length ? this.secondOptions : this.options}
+            .value=${this.secondValue}
+            .placeholder=${this.secondPlaceholder || 'Select…'}
+            ?required=${this.secondRequired ?? this.required}
+            ?invalid=${secondInvalid}
+            ?readOnly=${this.readOnly}
+            ?disabled=${this.disabled}
+            @valueChange=${(e: Event) => {
+              e.stopPropagation();
+              if (this.locked) return;
+              const detail = (e as CustomEvent<EmrSelectValue>).detail;
+              this.dispatchEvent(
+                new CustomEvent('secondValueChange', {
+                  detail: typeof detail === 'string' ? detail : null,
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
+            }}
+          ></emr-select>`
+        : html`<input
+            id=${`${id}-second`}
+            class="emr-control"
+            style="flex:1 1 0;min-width:0;max-width:132px;"
+            inputmode=${secondMode === 'integer' ? 'numeric' : secondMode === 'decimal' ? 'decimal' : nothing}
+            placeholder=${this.secondPlaceholder}
+            aria-label=${this.secondLabel ? `${this.label ? `${this.label}, ` : ''}${this.secondLabel}` : this.label || 'Second value'}
+            aria-invalid=${secondInvalid ? 'true' : nothing}
+            ?required=${this.secondRequired ?? this.required}
+            .value=${this.locked ? live(this.secondValue ?? '') : this.secondValue ?? ''}
+            ?readonly=${this.readOnly}
+            ?disabled=${this.disabled}
+            @blur=${(e: Event) => {
+              (e.target as HTMLInputElement).value = this.secondValue ?? '';
+            }}
+            @input=${(e: Event) => {
+              if (this.locked) {
+                (e.target as HTMLInputElement).value = this.secondValue ?? '';
+                return;
+              }
+              this.dispatchEvent(
+                new CustomEvent('secondValueChange', {
+                  detail: (e.target as HTMLInputElement).value || null,
+                  bubbles: true,
+                  composed: true,
+                }),
+              );
+            }}
+          />`}
     </div>`;
 
     if (this.labelHidden) return pairRow;
@@ -5334,6 +6069,7 @@ export class EmrStateMessageElement extends EmrLitElement {
         ? html`<button
             type="button"
             class="emr-state-message__action"
+            data-emr-print="hide"
             ?disabled=${this.actionDisabled}
             @click=${() => {
               if (!this.actionDisabled) {
@@ -5950,6 +6686,9 @@ export class EmrTabsElement extends EmrLitElement {
 
   private readonly fallbackId = nextL1Id('emr-tabs');
   private hasFocus = false;
+  private tabsResizeObserver: ResizeObserver | null = null;
+  @state() private canScrollLeft = false;
+  @state() private canScrollRight = false;
 
   @property({ type: String, attribute: 'control-id' }) controlId = '';
   @property({ attribute: false }) tabs: readonly EmrTabOption[] = [];
@@ -5981,6 +6720,44 @@ export class EmrTabsElement extends EmrLitElement {
     this.emitValueChange(value);
   }
 
+  private updateTabScrollState(): void {
+    const el = this.shadowRoot?.querySelector<HTMLElement>('.emr-tabs');
+    if (!el || this.orientation !== 'horizontal') {
+      if (this.canScrollLeft) this.canScrollLeft = false;
+      if (this.canScrollRight) this.canScrollRight = false;
+      return;
+    }
+    const left = el.scrollLeft > 2;
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+    if (left !== this.canScrollLeft) this.canScrollLeft = left;
+    if (right !== this.canScrollRight) this.canScrollRight = right;
+  }
+
+  private scrollTabsBy(dir: -1 | 1): void {
+    const el = this.shadowRoot?.querySelector<HTMLElement>('.emr-tabs');
+    if (!el) return;
+    el.scrollBy?.({ left: dir * Math.max(140, Math.round(el.clientWidth * 0.65)), behavior: 'smooth' });
+  }
+
+  override firstUpdated(): void {
+    const el = this.shadowRoot?.querySelector<HTMLElement>('.emr-tabs');
+    if (el && typeof ResizeObserver !== 'undefined') {
+      this.tabsResizeObserver = new ResizeObserver(() => this.updateTabScrollState());
+      this.tabsResizeObserver.observe(el);
+    }
+    this.updateTabScrollState();
+  }
+
+  override updated(): void {
+    queueMicrotask(() => this.updateTabScrollState());
+  }
+
+  override disconnectedCallback(): void {
+    this.tabsResizeObserver?.disconnect();
+    this.tabsResizeObserver = null;
+    super.disconnectedCallback();
+  }
+
   override render() {
     const id = this.controlId || this.fallbackId;
     const resolvedActive = resolveActiveTabValue(this.tabs, this.value, this.active);
@@ -5996,16 +6773,27 @@ export class EmrTabsElement extends EmrLitElement {
       .filter(Boolean)
       .join(' ');
 
-    return html`<div
-      id=${id}
-      role="tablist"
-      aria-orientation=${this.orientation}
-      aria-label=${this.ariaLabelledBy ? nothing : this.ariaLabel || 'Sections'}
-      aria-labelledby=${this.ariaLabelledBy || nothing}
-      aria-readonly=${this.readOnly ? 'true' : nothing}
-      aria-disabled=${this.disabled ? 'true' : nothing}
-      class=${cls}
-      @focusin=${() => {
+    return html`<div class=${`emr-tabs-scroll${this.orientation === 'vertical' ? ' emr-tabs-scroll--vertical' : ''}`}>
+      ${this.orientation === 'horizontal' && this.canScrollLeft
+        ? html`<button
+            type="button"
+            class="emr-tabs-nav-btn"
+            data-emr-print="hide"
+            aria-label="Scroll tabs left"
+            @click=${() => this.scrollTabsBy(-1)}
+          >${renderEmrSvgIcon('chevron-left', 16)}</button>`
+        : nothing}
+      <div
+        id=${id}
+        role="tablist"
+        aria-orientation=${this.orientation}
+        aria-label=${this.ariaLabelledBy ? nothing : this.ariaLabel || 'Sections'}
+        aria-labelledby=${this.ariaLabelledBy || nothing}
+        aria-readonly=${this.readOnly ? 'true' : nothing}
+        aria-disabled=${this.disabled ? 'true' : nothing}
+        class=${cls}
+        @scroll=${() => this.updateTabScrollState()}
+        @focusin=${() => {
         if (!this.hasFocus) {
           this.hasFocus = true;
           this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
@@ -6081,6 +6869,16 @@ export class EmrTabsElement extends EmrLitElement {
             : nothing}
         </button>`;
       })}
+      </div>
+      ${this.orientation === 'horizontal' && this.canScrollRight
+        ? html`<button
+            type="button"
+            class="emr-tabs-nav-btn"
+            data-emr-print="hide"
+            aria-label="Scroll tabs right"
+            @click=${() => this.scrollTabsBy(1)}
+          >${renderEmrSvgIcon('chevron-right', 16)}</button>`
+        : nothing}
     </div>`;
   }
 }
@@ -6154,6 +6952,8 @@ export class EmrLikertElement extends EmrLitElement {
   @property({ type: Boolean }) fullWidth = false;
   @property({ type: Number }) value: number | null = null;
   @property({ attribute: false }) anchors?: EmrScaleAnchorsProp;
+  @property({ attribute: false }) options: readonly EmrLikertOption[] = [];
+  @property({ type: Boolean }) showOptionLabels = false;
   @property({ attribute: false }) optionTones?: Readonly<Record<number, EmrTone>>;
   @property({ type: String }) tone?: EmrTone;
   @property({ type: Boolean }) clearable = false;
@@ -6191,6 +6991,8 @@ export class EmrLikertElement extends EmrLitElement {
       step: this.step,
       value: this.value,
       anchors: anchorArray,
+      options: this.options,
+      showOptionLabels: this.showOptionLabels,
       tone: this.tone,
       optionTones: this.optionTones,
     });
@@ -6259,7 +7061,8 @@ export class EmrLikertElement extends EmrLitElement {
         }}
       >
         ${pts.map((pt, idx) => {
-          const cls = `option-tile likert-pip${this.readOnly ? ' option-tile--readonly' : ''}`;
+          const hasText = Boolean(pt.description || pt.label.length > 3);
+          const cls = `option-tile likert-pip${hasText ? ' likert-pip--text' : ''}${this.readOnly ? ' option-tile--readonly' : ''}`;
           const borderCol = isInvalid
             ? 'var(--emr-danger)'
             : isWarning
@@ -6269,7 +7072,7 @@ export class EmrLikertElement extends EmrLitElement {
             type="button"
             role="radio"
             class=${cls}
-            style="min-width:${pipMinH};min-height:${pipMinH};font-size:${pipFont};font-variant-numeric:tabular-nums;${this.fullWidth ? 'flex:1 1 0;' : ''}${borderCol ? `border-color:${borderCol};` : ''}"
+            style="min-width:${pipMinH};min-height:${pipMinH};font-size:${hasText ? 'var(--emr-text-sm)' : pipFont};font-variant-numeric:tabular-nums;${this.fullWidth ? 'flex:1 1 0;' : ''}${borderCol ? `border-color:${borderCol};` : ''}"
             tabindex=${idx === stopIdx ? '0' : '-1'}
             data-tone=${pt.selected ? (pt.tone ?? nothing) : nothing}
             aria-label=${pt.assistiveLabel}
@@ -6279,7 +7082,7 @@ export class EmrLikertElement extends EmrLitElement {
             @click=${() => {
               if (interactive) this.emitValueChange(pt.value);
             }}
-          >${pt.label}</button>`;
+          ><span>${pt.label}</span>${pt.description ? html`<span class="likert-desc">${pt.description}</span>` : nothing}</button>`;
         })}
       </div>
       ${hasAnchors
@@ -6326,6 +7129,7 @@ export class EmrVasElement extends EmrLitElement {
   @property({ type: Number }) min = 0;
   @property({ type: Number }) max = 100;
   @property({ type: Number }) step?: number;
+  @property({ type: String }) precision: EmrVasPrecision = 'integer';
   @property({ type: Number }) majorInterval = 10;
   @property({ type: Number }) minorInterval?: number;
   @property({ type: String }) orientation: EmrVasOrientation = 'horizontal';
@@ -6347,7 +7151,7 @@ export class EmrVasElement extends EmrLitElement {
   @property({ type: String }) error = '';
 
   private get resolvedStep(): number {
-    return resolveVasStep(this.min, this.max, this.step);
+    return resolveVasStep(this.min, this.max, this.step, this.precision);
   }
 
   private get canInteract(): boolean {
@@ -6409,7 +7213,7 @@ export class EmrVasElement extends EmrLitElement {
     const isInvalid = Boolean(this.invalid || this.error);
     const pct = this.value === null || this.value === undefined ? null : vasPercent(this.value, this.min, this.max);
     const span = Math.abs(this.max - this.min);
-    const effectiveMinor = this.minorInterval ?? (span <= 20 ? 0.5 : 2);
+    const effectiveMinor = this.minorInterval ?? (this.precision === 'integer' && span <= 20 ? 1 : span <= 20 ? 0.5 : 2);
     const ticks = resolveVasTicks(this.min, this.max, this.majorInterval, effectiveMinor);
     const resolvedAnchors = resolveVasAnchors(this.anchors, this.min, this.max);
     const hasAnchors = !!(resolvedAnchors.minLabel || resolvedAnchors.midLabel || resolvedAnchors.maxLabel);
@@ -6515,7 +7319,7 @@ export class EmrVasElement extends EmrLitElement {
               class=${`vas-thumb vas-thumb--${this.tone}`}
               style=${`--vas-pct: ${pct};`}
               aria-hidden="true"
-            ></span>`
+            >${formatVasValue(this.value, this.resolvedStep, this.unmarkedLabel)}</span>`
           : nothing}
       </div>
       ${hasAnchors
@@ -6531,11 +7335,11 @@ export class EmrVasElement extends EmrLitElement {
     if (this.labelHidden) return rulerFrame;
 
     return html`<div class="emr-field">
-      <div class="emr-header">
+      <div class="emr-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
         ${this.label
-          ? html`<span id=${labelId} class="emr-label">${this.label}${this.required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}</span>`
+          ? html`<span id=${labelId} class="emr-label" style="min-width:0;flex:1 1 auto;">${this.label}${this.required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}</span>`
           : html`<span></span>`}
-        <div class="emr-row">
+        <div class="emr-row" style="flex-wrap:nowrap;flex-shrink:0;">
           ${this.showValue
             ? html`<span class=${`emr-badge emr-badge--${this.value === null ? 'neutral' : this.tone}`}>
                 ${formatVasValue(this.value, this.resolvedStep, this.unmarkedLabel)}
@@ -6697,7 +7501,7 @@ export class EmrColumnsElement extends EmrLitElement {
 }
 
 export class EmrFieldValueRowElement extends EmrLitElement {
-  static override styles = [emrShadowStyles, l1Styles];
+  static override styles = [emrShadowStyles, l1Styles, css`:host { display: block; width: 100%; }`];
   @property({ type: String }) controlId = '';
   @property({ type: String }) field = '';
   @property({ attribute: false }) value: string | number | null | undefined = '';
@@ -6728,7 +7532,8 @@ export class EmrFieldValueRowElement extends EmrLitElement {
   override render() {
     const resolvedSize = normalizeEmrFieldValueRowSize(this.size);
     const resolvedTone = normalizeEmrFieldValueRowTone(this.tone);
-    const resolvedVal = resolveEmrFieldValueRowValue(this.value, this.heading, this.placeholder || '—');
+    const rawValue = this.hasAttribute('value') && this.value === '' ? this.getAttribute('value') : this.value;
+    const resolvedVal = resolveEmrFieldValueRowValue(rawValue, this.heading, this.placeholder || '—');
     const cls = [
       'fvr-row',
       this.heading ? 'fvr-row--heading' : '',
@@ -6741,21 +7546,23 @@ export class EmrFieldValueRowElement extends EmrLitElement {
       .join(' ');
     const cellRole = this.heading ? 'columnheader' : 'cell';
     const fieldRole = this.heading ? 'columnheader' : 'rowheader';
-    return html`<div
-      id=${this.controlId || nothing}
-      class=${cls}
-      role="row"
-      data-tone=${resolvedTone}
-      tabindex=${this.interactive ? '0' : nothing}
-      aria-label=${this.ariaLabel || nothing}
-      aria-readonly=${this.interactive && this.readOnly ? 'true' : nothing}
-      @click=${this.onActivate}
-      @keydown=${this.onKeyActivate}
-    >
-      <div class="fvr-cell fvr-field" role=${fieldRole} data-label="Field">${this.field}</div>
-      <div class=${`fvr-cell fvr-value${resolvedVal.isPlaceholder ? ' fvr-placeholder' : ''}`} role=${cellRole} data-label="Value">${resolvedVal.text}</div>
-      <div class="fvr-cell fvr-remarks" role=${cellRole} data-label="Remarks">${this.remarks ?? ''}</div>
-      <div class="fvr-cell fvr-notes" role=${cellRole} data-label="Notes">${this.notes ?? ''}</div>
+    return html`<div class="container-host">
+      <div
+        id=${this.controlId || nothing}
+        class=${cls}
+        role="row"
+        data-tone=${resolvedTone}
+        tabindex=${this.interactive ? '0' : nothing}
+        aria-label=${this.ariaLabel || nothing}
+        aria-readonly=${this.interactive && this.readOnly ? 'true' : nothing}
+        @click=${this.onActivate}
+        @keydown=${this.onKeyActivate}
+      >
+        <div class="fvr-cell fvr-field" role=${fieldRole} data-label="Field">${this.field}</div>
+        <div class=${`fvr-cell fvr-value${resolvedVal.isPlaceholder ? ' fvr-placeholder' : ''}`} role=${cellRole} data-label="Value">${resolvedVal.text}</div>
+        <div class="fvr-cell fvr-remarks" role=${cellRole} data-label="Remarks">${this.remarks ?? ''}</div>
+        <div class="fvr-cell fvr-notes" role=${cellRole} data-label="Notes">${this.notes ?? ''}</div>
+      </div>
     </div>`;
   }
 }
@@ -6951,8 +7758,9 @@ export class EmrStageStepperElement extends EmrLitElement {
       .join(' ');
     const tabStopId = resolveStageStepperTabStopId(this.stages, this.focusedId || null, this.activeId || null, this.disabled);
 
-    return html`<nav id=${this.controlId || nothing} aria-label=${this.ariaLabel || 'Stages'} data-orientation=${orientation}>
-      <ol class=${listCls} @keydown=${this.onKeyDown}>
+    return html`<div class="container-host">
+      <nav id=${this.controlId || nothing} aria-label=${this.ariaLabel || 'Stages'} data-orientation=${orientation}>
+        <ol class=${listCls} @keydown=${this.onKeyDown}>
         ${this.stages.map((s, idx) => {
           const isActive = s.id === this.activeId;
           const isCompleted = this.completedIds.includes(s.id);
@@ -7001,8 +7809,9 @@ export class EmrStageStepperElement extends EmrLitElement {
             </button>
           </li>`;
         })}
-      </ol>
-    </nav>`;
+        </ol>
+      </nav>
+    </div>`;
   }
 }
 
@@ -7100,17 +7909,24 @@ export class EmrToastElement extends EmrLitElement {
     const resolvedAction = m?.actionLabel ?? this.actionLabel;
     if (!m && !resolvedMessage) return nothing;
 
-    return html`<div class="emr-card toast-row" part="toast">
-      <span
-        class=${`emr-badge emr-badge--${resolvedTone}`}
-        role=${resolvedTone === 'warning' || resolvedTone === 'danger' ? 'alert' : 'status'}
-      >
-        ${resolvedMessage}
+    const toneIcon =
+      resolvedTone === 'success' ? 'check' : resolvedTone === 'warning' ? 'warning' : resolvedTone === 'danger' ? 'danger' : 'info';
+    const urgent = resolvedTone === 'warning' || resolvedTone === 'danger';
+
+    return html`<div
+      class=${`toast-box toast-box--${resolvedTone}`}
+      role=${urgent ? 'alert' : 'status'}
+      part="toast"
+    >
+      <span class="toast-msg">
+        ${renderEmrSvgIcon(toneIcon, 16)}
+        <span>${resolvedMessage}</span>
       </span>
       ${resolvedAction
         ? html`<button
             type="button"
-            class="emr-btn emr-btn--secondary"
+            class="emr-btn emr-btn--outline emr-btn--sm"
+            style="background:var(--emr-surface);"
             @click=${() => {
               if (this.model && (this.model.id !== resolvedId || !this.model.actionLabel)) return;
               this.emitIntent<EmrToastIntent>({ type: 'actionPressed', id: resolvedId });
@@ -7120,13 +7936,15 @@ export class EmrToastElement extends EmrLitElement {
         : nothing}
       <button
         type="button"
-        class="emr-btn emr-btn--ghost"
+        class="emr-btn emr-btn--ghost emr-btn--sm"
+        style="min-width:44px;color:inherit;"
+        aria-label=${this.dismissLabel}
         @click=${() => {
           if (this.model && this.model.id !== resolvedId) return;
           this.emitIntent<EmrToastIntent>({ type: 'dismissed', id: resolvedId });
           this.dispatchEvent(new CustomEvent('dismissRequested', { bubbles: true, composed: true }));
         }}
-      >${this.dismissLabel}</button>
+      >${renderEmrSvgIcon('close', 14)}</button>
     </div>`;
   }
 }

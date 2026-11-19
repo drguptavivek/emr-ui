@@ -13,6 +13,7 @@ import type {
   EmrDurationUnit,
   EmrDurationValue,
   EmrFieldDefinition,
+  EmrOption,
   EmrPairedFieldValue,
   EmrPartialDate,
   EmrQuantityNumericMode,
@@ -80,6 +81,7 @@ export type {
   EmrDurationUnit,
   EmrDurationValue,
   EmrFieldDefinition,
+  EmrOption,
   EmrPairedFieldValue,
   EmrRangeKind,
   EmrRangeValue,
@@ -687,7 +689,8 @@ export function EmrPairedField({
     sideKey: 'first' | 'second';
     sideLabel: string;
     sidePlaceholder: string | undefined;
-    sideMode: 'text' | 'decimal' | 'integer';
+    sideMode: 'text' | 'decimal' | 'integer' | 'select';
+    sideOptions?: readonly EmrOption[];
     sideMin: number | undefined;
     sideMax: number | undefined;
     sideStep: number | undefined;
@@ -705,6 +708,7 @@ export function EmrPairedField({
       sideLabel,
       sidePlaceholder,
       sideMode,
+      sideOptions,
       sideMin,
       sideMax,
       sideStep,
@@ -718,6 +722,7 @@ export function EmrPairedField({
       emit,
     } = params;
     const isNumeric = sideMode === 'decimal' || sideMode === 'integer';
+    const isSelect = sideMode === 'select';
     const numericVal =
       typeof val === 'number'
         ? val
@@ -739,7 +744,25 @@ export function EmrPairedField({
             <Text style={{ color: t.danger, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}> *</Text>
           ) : null}
         </Text>
-        {isNumeric ? (
+        {isSelect ? (
+          <EmrSelect
+            controlId={`${id}-${sideKey}`}
+            label={`${resolvedLabel}, ${sideLabel}`}
+            labelHidden
+            placeholder={sidePlaceholder ?? 'Select…'}
+            options={sideOptions ?? []}
+            value={val == null ? null : String(val)}
+            size={resolvedSize}
+            required={sideRequired}
+            invalid={sideInvalid}
+            hasWarning={!sideInvalid && sideWarning}
+            readOnly={sideLocked}
+            clearable={false}
+            onChange={(next) => {
+              if (!sideLocked) emit(next);
+            }}
+          />
+        ) : isNumeric ? (
           <NumberInput
             id={`${id}-${sideKey}`}
             aria-label={`${resolvedLabel}, ${sideLabel}`}
@@ -825,6 +848,7 @@ export function EmrPairedField({
             sideLabel: model.firstLabel,
             sidePlaceholder: model.firstPlaceholder,
             sideMode: firstMode,
+            sideOptions: model.firstOptions ?? model.options,
             sideMin: model.firstMin ?? model.min,
             sideMax: model.firstMax ?? model.max,
             sideStep: model.firstStep ?? model.step,
@@ -857,6 +881,7 @@ export function EmrPairedField({
             sideLabel: model.secondLabel,
             sidePlaceholder: model.secondPlaceholder,
             sideMode: secondMode,
+            sideOptions: model.secondOptions ?? model.options,
             sideMin: model.secondMin ?? model.min,
             sideMax: model.secondMax ?? model.max,
             sideStep: model.secondStep ?? model.step,

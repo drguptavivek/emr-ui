@@ -820,14 +820,20 @@ function extractTimeParts(value: string | null): { hour: number; minute: number;
   return { hour: now.getHours(), minute: now.getMinutes(), second: now.getSeconds() };
 }
 
+const HOURS_12 = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+
 /**
- * Cross-platform L1 Time Picker Sheet for Expo / React Native (`Platform.OS !== 'web'`).
- * Provides >=44px hour/minute(/second) selection buttons plus Now, Clear, and Done.
+ * Cross-platform L1 Time Picker Popover / Sheet (Web & Expo Native).
+ * Provides >=44px hour/minute(/second)(/AM-PM) selection buttons plus Now, Clear, and Done.
  */
 function EmrTimePickerModal({
   open,
   value,
   withSeconds,
+  hourCycle = '24',
+  min,
+  max,
+  anchor,
   onConfirm,
   onClear,
   onClose,
@@ -835,13 +841,17 @@ function EmrTimePickerModal({
   open: boolean;
   value: string | null;
   withSeconds: boolean;
+  hourCycle?: EmrTimeHourCycle;
+  min?: string;
+  max?: string;
+  anchor?: { x: number; y: number; width: number; height: number } | null;
   onConfirm: (formatted: string) => void;
   onClear: () => void;
   onClose: () => void;
 }) {
   const t = useEmrTheme();
   const labels = useEmrLabels();
-  const { width: winW } = useWindowDimensions();
+  const { width: winW, height: winH } = useWindowDimensions();
   const initial = extractTimeParts(value);
   const [hour, setHour] = useState(initial.hour);
   const [minute, setMinute] = useState(initial.minute);
@@ -855,16 +865,52 @@ function EmrTimePickerModal({
     setSecond(p.second);
   }, [open, value]);
 
+  useEffect(() => {
+    if (!open || Platform.OS !== 'web') return;
+    const g = globalThis as {
+      addEventListener?: (type: string, fn: (e: { key?: string }) => void) => void;
+      removeEventListener?: (type: string, fn: (e: { key?: string }) => void) => void;
+    };
+    const onKey = (e: { key?: string }) => {
+      if (e.key === 'Escape') onClose();
+    };
+    g.addEventListener?.('keydown', onKey);
+    return () => g.removeEventListener?.('keydown', onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const pad2 = (n: number) => String(n).padStart(2, '0');
-  const preview = withSeconds ? `${pad2(hour)}:${pad2(minute)}:${pad2(second)}` : `${pad2(hour)}:${pad2(minute)}`;
+  const preview24 = withSeconds ? `${pad2(hour)}:${pad2(minute)}:${pad2(second)}` : `${pad2(hour)}:${pad2(minute)}`;
+  const previewDisplay = formatTimeDisplay(preview24, { precision: withSeconds ? 'second' : 'minute', hourCycle });
+  const nowObj = new Date();
+  const now24 = withSeconds
+    ? `${pad2(nowObj.getHours())}:${pad2(nowObj.getMinutes())}:${pad2(nowObj.getSeconds())}`
+    : `${pad2(nowObj.getHours())}:${pad2(nowObj.getMinutes())}`;
+  const nowDisabled = isTimeOutOfBounds(now24, min, max);
+  const confirmDisabled = isTimeOutOfBounds(preview24, min, max);
+
+  const is12h = hourCycle === '12';
+  const currentPeriod: 'AM' | 'PM' = hour >= 12 ? 'PM' : 'AM';
+  const current12Hour = hour % 12 === 0 ? 12 : hour % 12;
+
+  const cardWidth = withSeconds || is12h ? 344 : 284;
+  const estHeight = 328;
+  const useAnchored = Boolean(anchor && Platform.OS === 'web' && winW >= 520);
+  const flipUp = Boolean(anchor && anchor.y + anchor.height + estHeight + 12 > winH && anchor.y > estHeight);
+  const anchoredLeft = anchor ? Math.max(12, Math.min(anchor.x, winW - cardWidth - 12)) : 0;
+  const anchoredTop = anchor
+    ? flipUp
+      ? Math.max(12, anchor.y - estHeight - 6)
+      : anchor.y + anchor.height + 6
+    : 0;
 
   const renderColumn = (
     colLabel: string,
     items: readonly number[],
     selected: number,
     onPick: (v: number) => void,
+    formatItem: (n: number) => string = pad2,
   ) => (
     <View style={[styles.timeCol, { borderColor: t.border }]}>
       <Text
@@ -883,7 +929,7 @@ function EmrTimePickerModal({
         <View style={styles.timeColInner}>
           {items.map(num => {
             const active = num === selected;
-            const text = pad2(num);
+            const text = formatItem(num);
             return (
               <Pressable
                 key={num}
@@ -920,14 +966,25 @@ function EmrTimePickerModal({
 
   return (
     <Modal visible={open} transparent statusBarTranslucent navigationBarTranslucent animationType="fade" onRequestClose={onClose}>
-      <Pressable aria-label={labels.close} style={styles.calModalBackdrop} onPress={onClose}>
+      <Pressable
+        aria-label={labels.close}
+        style={useAnchored ? styles.calAnchoredBackdrop : styles.calModalBackdrop}
+        onPress={onClose}
+      >
         <Pressable
           role="dialog"
           aria-label="Choose time"
           style={[
             styles.calCard,
+            useAnchored
+              ? {
+                  position: 'absolute',
+                  left: anchoredLeft,
+                  top: anchoredTop,
+                  width: cardWidth,
+                }
+              : { width: Math.min(cardWidth, winW - 24) },
             {
-              width: Math.min(withSeconds ? 356 : 296, winW - 24),
               backgroundColor: t.surface,
               borderColor: t.border,
             },
@@ -938,21 +995,74 @@ function EmrTimePickerModal({
               Choose time
             </Text>
             <Text style={{ color: t.primary, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold), fontFamily: t.fontMono }}>
-              {preview}
+              {previewDisplay}
             </Text>
           </View>
 
           <View style={styles.timeColumnsRow}>
-            {renderColumn('Hour', HOURS_24, hour, setHour)}
+            {is12h
+              ? renderColumn('Hour', HOURS_12, current12Hour, h12 => setHour((h12 % 12) + (currentPeriod === 'PM' ? 12 : 0)))
+              : renderColumn('Hour', HOURS_24, hour, setHour)}
             {renderColumn('Min', MINUTES_60, minute, setMinute)}
             {withSeconds ? renderColumn('Sec', MINUTES_60, second, setSecond) : null}
+            {is12h ? (
+              <View style={[styles.timeCol, { flex: 0.85, borderColor: t.border }]}>
+                <Text
+                  style={{
+                    color: t.textMuted,
+                    fontSize: t.textXs,
+                    fontWeight: fontWeight(t.weightBold),
+                    fontFamily: fontFamily(t),
+                    textAlign: 'center',
+                    paddingVertical: 6,
+                  }}
+                >
+                  AM/PM
+                </Text>
+                <View style={styles.timeColInner}>
+                  {(['AM', 'PM'] as const).map(mer => {
+                    const active = mer === currentPeriod;
+                    return (
+                      <Pressable
+                        key={mer}
+                        role="button"
+                        aria-pressed={active}
+                        onPress={() => setHour((hour % 12) + (mer === 'PM' ? 12 : 0))}
+                        style={({ pressed, focused }: PressState) => [
+                          styles.timeCell,
+                          focusRing(t, focused),
+                          {
+                            backgroundColor: active ? t.primary : pressed ? t.primarySoft : 'transparent',
+                            borderColor: active ? t.primary : 'transparent',
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={{
+                            color: active ? t.surface : t.text,
+                            fontSize: t.textMd,
+                            fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+                            fontFamily: fontFamily(t),
+                          }}
+                        >
+                          {mer}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
           </View>
 
           <View style={[styles.calFooter, { borderColor: t.border }]}>
             <Pressable
               role="button"
               aria-label="Select current time"
+              aria-disabled={nowDisabled}
+              disabled={nowDisabled}
               onPress={() => {
+                if (nowDisabled) return;
                 const now = new Date();
                 const next = withSeconds
                   ? `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`
@@ -962,43 +1072,57 @@ function EmrTimePickerModal({
               style={({ pressed, focused }: PressState) => [
                 styles.calFooterBtn,
                 focusRing(t, focused),
-                { backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft, borderColor: t.border },
+                {
+                  backgroundColor: pressed ? t.primaryHover : t.primarySoft,
+                  borderColor: t.primaryBorder,
+                  opacity: nowDisabled ? 0.45 : 1,
+                },
               ]}
             >
-              <Text style={{ color: t.text, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+              <Text style={{ color: t.primaryContrast, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
                 Now
               </Text>
             </Pressable>
 
-            <Pressable
-              role="button"
-              aria-label="Clear time"
-              onPress={onClear}
-              style={({ pressed, focused }: PressState) => [
-                styles.calFooterBtn,
-                focusRing(t, focused),
-                { backgroundColor: pressed ? t.surfaceRaised : 'transparent', borderColor: t.border },
-              ]}
-            >
-              <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
-                Clear
-              </Text>
-            </Pressable>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Pressable
+                role="button"
+                aria-label="Clear time"
+                onPress={onClear}
+                style={({ pressed, focused }: PressState) => [
+                  styles.calFooterBtn,
+                  focusRing(t, focused),
+                  { backgroundColor: pressed ? t.surfaceRaised : 'transparent', borderColor: t.border },
+                ]}
+              >
+                <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                  Clear
+                </Text>
+              </Pressable>
 
-            <Pressable
-              role="button"
-              aria-label="Done choosing time"
-              onPress={() => onConfirm(preview)}
-              style={({ pressed, focused }: PressState) => [
-                styles.calFooterBtn,
-                focusRing(t, focused),
-                { backgroundColor: pressed ? t.primaryHover : t.primarySoft, borderColor: t.primaryBorder },
-              ]}
-            >
-              <Text style={{ color: t.primaryContrast, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
-                Done
-              </Text>
-            </Pressable>
+              <Pressable
+                role="button"
+                aria-label="Done choosing time"
+                aria-disabled={confirmDisabled}
+                disabled={confirmDisabled}
+                onPress={() => {
+                  if (!confirmDisabled) onConfirm(preview24);
+                }}
+                style={({ pressed, focused }: PressState) => [
+                  styles.calFooterBtn,
+                  focusRing(t, focused),
+                  {
+                    backgroundColor: pressed ? t.primaryHover : t.primarySoft,
+                    borderColor: t.primaryBorder,
+                    opacity: confirmDisabled ? 0.45 : 1,
+                  },
+                ]}
+              >
+                <Text style={{ color: t.primaryContrast, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
+                  Done
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </Pressable>
       </Pressable>
@@ -1110,35 +1234,18 @@ export function EmrTypedText({
 
   const openPicker = () => {
     if (!canEdit) return;
-    if (!isTime) {
-      if (groupWrapRef.current && typeof groupWrapRef.current.measureInWindow === 'function') {
-        groupWrapRef.current.measureInWindow((x, y, width, height) => {
-          if (width > 0 && height > 0) setCalAnchor({ x, y, width, height });
-          else setCalAnchor(null);
-          setCalOpen(true);
-        });
-      } else {
-        setCalAnchor(null);
-        setCalOpen(true);
-      }
-      return;
+    if (groupWrapRef.current && typeof groupWrapRef.current.measureInWindow === 'function') {
+      groupWrapRef.current.measureInWindow((x, y, width, height) => {
+        if (width > 0 && height > 0) setCalAnchor({ x, y, width, height });
+        else setCalAnchor(null);
+        if (isTime) setTimeOpen(true);
+        else setCalOpen(true);
+      });
+    } else {
+      setCalAnchor(null);
+      if (isTime) setTimeOpen(true);
+      else setCalOpen(true);
     }
-    if (Platform.OS === 'web') {
-      if (nativeTimePickerRef.current) {
-        if (typeof nativeTimePickerRef.current.showPicker === 'function') {
-          try {
-            nativeTimePickerRef.current.showPicker();
-            return;
-          } catch {
-            // Fall through to click/focus
-          }
-        }
-        nativeTimePickerRef.current.click?.();
-        nativeTimePickerRef.current.focus?.();
-      }
-      return;
-    }
-    setTimeOpen(true);
   };
 
   return (
@@ -1230,8 +1337,8 @@ export function EmrTypedText({
       <Pressable
         role="button"
         aria-label={isTime ? 'Choose time' : 'Choose date'}
-        aria-expanded={Platform.OS !== 'web' || !isTime ? pickerOpen : undefined}
-        aria-haspopup={Platform.OS !== 'web' || !isTime ? 'dialog' : undefined}
+        aria-expanded={pickerOpen}
+        aria-haspopup="dialog"
         aria-disabled={!canEdit}
         disabled={!canEdit}
         onPress={openPicker}
@@ -1255,49 +1362,6 @@ export function EmrTypedText({
         ]}
       >
         <SvgIcon name={isTime ? 'clock' : 'calendar'} size={16} color={pickerOpen ? t.primary : t.textMuted} />
-        {isTime && Platform.OS === 'web' && canEdit
-          ? createElement('input' as unknown as React.ComponentType<Record<string, unknown>>, {
-              ref: (el: unknown) => {
-                nativeTimePickerRef.current = el as {
-                  showPicker?: () => void;
-                  click?: () => void;
-                  focus?: () => void;
-                } | null;
-              },
-              type: 'time',
-              min,
-              max,
-              step: step ?? (mode === 'time-seconds' ? 1 : 60),
-              value: value ?? '',
-              tabIndex: -1,
-              'aria-hidden': 'true',
-              onChange: (e: { target?: { value?: string } }) => {
-                const raw = e?.target?.value ?? '';
-                if (!raw) {
-                  setFocused(false);
-                  setLeft(false);
-                  onValueChange(null);
-                  return;
-                }
-                if (isTimeOutOfBounds(raw, min, max)) return;
-                const normalized = mode === 'time-seconds' ? formatTime(raw, true) : raw.slice(0, 5);
-                setFocused(false);
-                setLeft(false);
-                onValueChange(normalized);
-              },
-              style: {
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                opacity: 0,
-                cursor: 'pointer',
-                border: 0,
-                padding: 0,
-                margin: 0,
-              },
-            })
-          : null}
       </Pressable>
       {!isTime ? (
         <EmrCalendarPopover
@@ -1322,11 +1386,15 @@ export function EmrTypedText({
             if (value !== null) onValueChange(null);
           }}
         />
-      ) : Platform.OS !== 'web' ? (
+      ) : (
         <EmrTimePickerModal
           open={timeOpen}
           value={value}
           withSeconds={mode === 'time-seconds'}
+          hourCycle={hourCycle}
+          min={min}
+          max={max}
+          anchor={calAnchor}
           onClose={() => setTimeOpen(false)}
           onConfirm={formatted => {
             setTimeOpen(false);
@@ -1341,7 +1409,7 @@ export function EmrTypedText({
             if (value !== null) onValueChange(null);
           }}
         />
-      ) : null}
+      )}
     </View>
   );
 }
@@ -1490,27 +1558,31 @@ export function EmrDateTimeText({
   const targetSize = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
   return (
     <View role="group" aria-label={label} style={styles.pair}>
-      <EmrTypedText
-        key={format}
-        {...common}
-        id={id ? `${id}-date` : undefined}
-        aria-label={`${label}, ${dateLabel}`}
-        placeholder={format}
-        mode={format}
-        value={displayedParts.date}
-        onValueChange={date => change({ date, time: displayedParts.time })}
-      />
-      <EmrTypedText
-        key={`${timeMode}-${hourCycle}`}
-        {...common}
-        id={id ? `${id}-time` : undefined}
-        aria-label={`${label}, ${timeLabel}`}
-        placeholder={timePlaceholder}
-        mode={timeMode}
-        hourCycle={hourCycle}
-        value={displayedParts.time}
-        onValueChange={time => change({ date: displayedParts.date, time })}
-      />
+      <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 156, minWidth: 140, maxWidth: 184 }}>
+        <EmrTypedText
+          key={format}
+          {...common}
+          id={id ? `${id}-date` : undefined}
+          aria-label={`${label}, ${dateLabel}`}
+          placeholder={format}
+          mode={format}
+          value={displayedParts.date}
+          onValueChange={date => change({ date, time: displayedParts.time })}
+        />
+      </View>
+      <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 140, minWidth: 120, maxWidth: timeMode === 'time-seconds' || hourCycle === '12' ? 200 : 168 }}>
+        <EmrTypedText
+          key={`${timeMode}-${hourCycle}`}
+          {...common}
+          id={id ? `${id}-time` : undefined}
+          aria-label={`${label}, ${timeLabel}`}
+          placeholder={timePlaceholder}
+          mode={timeMode}
+          hourCycle={hourCycle}
+          value={displayedParts.time}
+          onValueChange={time => change({ date: displayedParts.date, time })}
+        />
+      </View>
       {clearable && value && canEdit ? (
         <Pressable
           role="button"

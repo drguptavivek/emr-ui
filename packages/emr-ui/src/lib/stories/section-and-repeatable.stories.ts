@@ -31,7 +31,7 @@ export const SectionCardCollapsible: Story = {
         [status]="status"
         [collapsible]="true"
         [collapsed]="collapsed"
-        (toggleRequested)="collapsed = !collapsed"
+        (intent)="collapsed = !collapsed"
       >
         <p style="margin: 0;">Cornea clear, anterior chamber deep and quiet in both eyes.</p>
       </emr-section-card>

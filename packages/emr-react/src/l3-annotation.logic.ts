@@ -1,13 +1,59 @@
-import type {
-  AnnotationLayerRecord,
-  AnnotationListItem,
-  AnnotationListViewModel,
-  AnnotationToolbarViewModel,
-  ImageTemplateGroup,
-  ImageTemplateOption,
-  ImageTemplatePickerViewModel,
-  ToolbarTool,
+import {
+  canAddRepeatableItem,
+  canMoveAnnotationLayer,
+  canOpenToolbarPen,
+  canRemoveAnnotationLayer,
+  canRemoveRepeatableItem,
+  canSelectImageTemplate,
+  canSelectToolbarTool,
+  canToggleAnnotationLayerLock,
+  canToggleAnnotationLayerVisibility,
+  canToggleTemplateFavourite,
+  canTriggerAnnotationListIntent,
+  canTriggerToolbarIntent,
+  resolveAnnotationListId,
+  resolveAnnotationToolbarPanelId,
+  resolveImageTemplatePickerHeadingId,
+  resolveImageTemplatePickerId,
+  resolveImageTemplateSearchId,
+  resolveImageTemplateSectionId,
+  resolveRepeatableControlId,
+  resolveRepeatableHeadingId,
+  type AnnotationLayerRecord,
+  type AnnotationListItem,
+  type AnnotationListViewModel,
+  type AnnotationToolbarViewModel,
+  type ImageTemplateGroup,
+  type ImageTemplateOption,
+  type ImageTemplatePickerViewModel,
+  type RepeatableGroupDefinition,
+  type RepeatableItemState,
+  type ToolbarTool,
 } from '@drguptavivek/emr-controller';
+import type { EmrIconName } from './icons';
+
+export {
+  canAddRepeatableItem,
+  canMoveAnnotationLayer,
+  canOpenToolbarPen,
+  canRemoveAnnotationLayer,
+  canRemoveRepeatableItem,
+  canSelectImageTemplate,
+  canSelectToolbarTool,
+  canToggleAnnotationLayerLock,
+  canToggleAnnotationLayerVisibility,
+  canToggleTemplateFavourite,
+  canTriggerAnnotationListIntent,
+  canTriggerToolbarIntent,
+  resolveAnnotationListId,
+  resolveAnnotationToolbarPanelId,
+  resolveImageTemplatePickerHeadingId,
+  resolveImageTemplatePickerId,
+  resolveImageTemplateSearchId,
+  resolveImageTemplateSectionId,
+  resolveRepeatableControlId,
+  resolveRepeatableHeadingId,
+};
 
 /** Reserved group id: "only my favourites", in `favouriteIds` order. */
 export const FAVOURITES_GROUP_ID = 'favourites';
@@ -45,8 +91,22 @@ export function repeatableFieldSpanPercent(span: number | undefined, stacked: bo
 }
 
 export function repeatableControlId(groupId: string, itemId: string, fieldId: string, idPrefix = ''): string {
-  const base = `${groupId}-${itemId}-${fieldId}`;
-  return idPrefix ? `${idPrefix}-${base}` : base;
+  return resolveRepeatableControlId(groupId, itemId, fieldId, idPrefix);
+}
+
+export function repeatableHeadingId(groupId: string, idPrefix = '', headingId?: string): string {
+  return resolveRepeatableHeadingId(groupId, idPrefix, headingId);
+}
+
+export function repeatableMaxItemsHint(
+  definition: Pick<RepeatableGroupDefinition, 'maxItems'>,
+  items: readonly RepeatableItemState[],
+  readOnly = false,
+): string | undefined {
+  if (readOnly || definition.maxItems === undefined || items.length < definition.maxItems) {
+    return undefined;
+  }
+  return `Maximum ${definition.maxItems} entries`;
 }
 
 export function repeatableFocusFieldId(groupId: string, itemId: string, fieldId: string): string {
@@ -88,6 +148,39 @@ const TOOL_ICON_GLYPHS: Readonly<Record<string, string>> = {
   heroCircleStack: '◯',
   heroBars3BottomLeft: 'T',
 };
+
+const TOOL_SVG_ICONS: Readonly<Record<string, EmrIconName>> = {
+  'shape-line': 'shape-line',
+  'shape-arrow': 'shape-arrow',
+  'shape-curve': 'shape-curve',
+  'shape-rect': 'shape-rect',
+  'shape-ellipse': 'shape-ellipse',
+  'shape-polygon': 'shape-polygon',
+  'shape-freehand': 'shape-freehand',
+  'shape-text': 'shape-text',
+  'shape-eraser': 'shape-eraser',
+  'shape-callout': 'shape-callout',
+  'shape-suture': 'shape-suture',
+  'shape-hatch': 'shape-hatch',
+  'shape-lattice': 'shape-lattice',
+  heroCursorArrowRays: 'cursor',
+  heroArrowsPointingOut: 'arrows-out',
+  heroHandRaised: 'hand',
+  heroBackspace: 'backspace',
+  heroPencil: 'pen',
+  heroPencilSquare: 'pen',
+  heroMinus: 'shape-line',
+  heroArrowLongRight: 'shape-arrow',
+  heroArrowTrendingUp: 'shape-curve',
+  heroSquare2Stack: 'copy',
+  heroStop: 'shape-rect',
+  heroCircleStack: 'shape-ellipse',
+  heroBars3BottomLeft: 'shape-text',
+};
+
+export function toolbarToolIconName(tool: Pick<ToolbarTool, 'icon'>): EmrIconName | null {
+  return TOOL_SVG_ICONS[tool.icon] ?? null;
+}
 
 export function isKnownToolIcon(icon: string): boolean {
   return Object.prototype.hasOwnProperty.call(TOOL_ICON_GLYPHS, icon);
@@ -185,6 +278,15 @@ export function annotationLayerGlyphId(tool: AnnotationLayerRecord['tool']): str
   return LAYER_TOOL_GLYPH_ID[tool];
 }
 
+export function annotationLayerIconName(tool: AnnotationLayerRecord['tool']): EmrIconName {
+  return (LAYER_TOOL_GLYPH_ID[tool] as EmrIconName) ?? 'pen';
+}
+
+export function resolveAnnotationListRowId(idPrefix: string, layerId: string): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  return prefix ? `${prefix}-al-row-${layerId}` : `emr-al-row-${layerId}`;
+}
+
 export function annotationLayerGlyph(tool: AnnotationLayerRecord['tool']): string {
   return TOOL_ICON_GLYPHS[LAYER_TOOL_GLYPH_ID[tool]] ?? '✎';
 }
@@ -248,20 +350,28 @@ export function partitionImageTemplates(
 
 export function canEditTemplateFavourites(
   model: Pick<ImageTemplatePickerViewModel, 'canEditFavourites' | 'readOnly'>,
+  readOnlyOverride = false,
 ): boolean {
-  return !!model.canEditFavourites && !model.readOnly;
+  return !readOnlyOverride && !!model.canEditFavourites && !model.readOnly;
 }
 
 export function showFavouritesFilterChip(
   model: Pick<ImageTemplatePickerViewModel, 'favouriteIds' | 'canEditFavourites' | 'readOnly'>,
+  readOnlyOverride = false,
 ): boolean {
-  return !!(model.favouriteIds && model.favouriteIds.length > 0) || canEditTemplateFavourites(model);
+  return !!(model.favouriteIds && model.favouriteIds.length > 0) || canEditTemplateFavourites(model, readOnlyOverride);
 }
 
 export function showFavouritePinHint(
   model: Pick<ImageTemplatePickerViewModel, 'favouriteIds' | 'canEditFavourites' | 'readOnly'>,
+  readOnlyOverride = false,
 ): boolean {
-  return canEditTemplateFavourites(model) && !(model.favouriteIds && model.favouriteIds.length > 0);
+  return canEditTemplateFavourites(model, readOnlyOverride) && !(model.favouriteIds && model.favouriteIds.length > 0);
+}
+
+export function templateGridColumns(containerWidth: number, tileMinWidth = 120, tileGap = 8): number {
+  if (containerWidth <= 0) return 3;
+  return Math.max(1, Math.floor((containerWidth + tileGap) / (tileMinWidth + tileGap)));
 }
 
 export function isTemplateFavourite(

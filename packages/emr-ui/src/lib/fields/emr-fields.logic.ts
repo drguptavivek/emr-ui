@@ -78,10 +78,10 @@ export function resolvePairedSideMode(
   groupMode?: PairedFieldMode,
   definition?: EmrFieldDefinition,
 ): PairedFieldMode {
-  if (explicitMode === 'text' || explicitMode === 'decimal' || explicitMode === 'integer') {
+  if (explicitMode === 'text' || explicitMode === 'decimal' || explicitMode === 'integer' || explicitMode === 'select') {
     return explicitMode;
   }
-  if (groupMode === 'text' || groupMode === 'decimal' || groupMode === 'integer') {
+  if (groupMode === 'text' || groupMode === 'decimal' || groupMode === 'integer' || groupMode === 'select') {
     return groupMode;
   }
   const vt = definition?.contract?.valueType;

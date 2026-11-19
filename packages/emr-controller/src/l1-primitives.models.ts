@@ -3008,11 +3008,20 @@ export interface EmrLikertAnchor {
   readonly assistiveLabel?: string;
 }
 
+export interface EmrLikertOption {
+  readonly value: number;
+  readonly label: string;
+  readonly description?: string;
+  readonly assistiveLabel?: string;
+  readonly tone?: EmrTone;
+}
+
 export type EmrLikertSize = 'sm' | 'md' | 'lg';
 
 export interface EmrLikertPoint {
   readonly value: number;
   readonly label: string;
+  readonly description?: string;
   readonly assistiveLabel: string;
   readonly selected: boolean;
   readonly tone: EmrTone | undefined;
@@ -3031,27 +3040,49 @@ export function buildLikertPoints(options: {
   readonly step?: number;
   readonly value?: number | null;
   readonly anchors?: readonly EmrLikertAnchor[];
+  readonly options?: readonly EmrLikertOption[];
+  readonly showOptionLabels?: boolean;
   readonly tone?: EmrTone;
   readonly optionTones?: Readonly<Record<number, EmrTone>>;
   readonly maxPoints?: number;
 }): readonly EmrLikertPoint[] {
-  const min = Number.isFinite(options.min) ? Math.trunc(options.min!) : 0;
-  const max = Number.isFinite(options.max) ? Math.trunc(options.max!) : 10;
-  if (max < min) return [];
-  const step = Number.isFinite(options.step) && options.step! >= 1 ? Math.trunc(options.step!) : 1;
-  const cap = options.maxPoints ?? 101;
   const anchorMap = new Map<number, EmrLikertAnchor>();
   for (const a of options.anchors ?? []) {
     anchorMap.set(a.value, a);
   }
+  const cap = options.maxPoints ?? 101;
+  if (options.options && options.options.length > 0) {
+    return options.options.slice(0, cap).map((opt) => {
+      const anchor = anchorMap.get(opt.value);
+      const showLabel = options.showOptionLabels !== false;
+      const label = showLabel ? opt.label : String(opt.value);
+      const description = opt.description ?? (showLabel ? undefined : opt.label);
+      const spokenBase = opt.assistiveLabel ?? (description ? `${label} — ${description}` : label);
+      return {
+        value: opt.value,
+        label,
+        description,
+        assistiveLabel: spokenBase,
+        selected: options.value === opt.value,
+        tone: opt.tone ?? options.optionTones?.[opt.value] ?? options.tone,
+        anchorLabel: anchor?.label,
+      };
+    });
+  }
+  const min = Number.isFinite(options.min) ? Math.trunc(options.min!) : 0;
+  const max = Number.isFinite(options.max) ? Math.trunc(options.max!) : 10;
+  if (max < min) return [];
+  const step = Number.isFinite(options.step) && options.step! >= 1 ? Math.trunc(options.step!) : 1;
   const points: EmrLikertPoint[] = [];
   for (let n = min; n <= max && points.length < cap; n += step) {
     const anchor = anchorMap.get(n);
     const label = String(n);
+    const description = options.showOptionLabels && anchor ? anchor.label : undefined;
     const assistiveText = anchor ? (anchor.assistiveLabel ?? anchor.label) : '';
     points.push({
       value: n,
       label,
+      description,
       assistiveLabel: assistiveText ? `${label} — ${assistiveText}` : label,
       selected: options.value === n,
       tone: options.optionTones?.[n] ?? options.tone,
@@ -3121,6 +3152,7 @@ export function canMutateLikert(disabled: boolean, readOnly: boolean): boolean {
 
 export type EmrVasOrientation = 'horizontal' | 'vertical';
 export type EmrVasSize = 'sm' | 'md' | 'lg';
+export type EmrVasPrecision = 'integer' | 'decimal';
 
 export interface EmrVasAnchor {
   readonly value: number;
@@ -3151,9 +3183,15 @@ export interface EmrVasTick {
   readonly label: string | null;
 }
 
-export function resolveVasStep(min: number, max: number, step?: number): number {
+export function resolveVasStep(
+  min: number,
+  max: number,
+  step?: number,
+  precision: EmrVasPrecision = 'integer',
+): number {
   if (typeof step === 'number' && Number.isFinite(step) && step >= 0) return step;
-  return Math.abs(max - min) <= 20 ? 0.1 : 1;
+  if (precision === 'decimal') return Math.abs(max - min) <= 20 ? 0.1 : 0.5;
+  return 1;
 }
 
 export function vasPercent(value: number, min: number, max: number): number {
@@ -3234,6 +3272,8 @@ export function formatVasValue(
 export function canMutateVas(disabled: boolean, readOnly: boolean): boolean {
   return !disabled && !readOnly;
 }
+
+export type EmrPairedSideInputType = 'text' | 'integer' | 'decimal' | 'select';
 
 export function resolveVasTicks(
   min: number,

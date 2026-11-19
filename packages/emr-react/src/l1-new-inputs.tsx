@@ -251,8 +251,10 @@ export function EmrIconButton({
           styles.iconButton,
           focusRing(t, focused),
           {
+            width: dim,
             minWidth: dim,
             minHeight: dim,
+            alignSelf: 'flex-start',
             backgroundColor: toggledPressed && variant === 'ghost' ? t.primarySoft : palette.backgroundColor,
             borderColor: toggledPressed ? t.primary : palette.borderColor,
             opacity: disabled ? 0.6 : 1,
@@ -1821,8 +1823,6 @@ export function EmrCheckboxGroup({
               focusRing(t, focused),
               {
                 minHeight: Math.max(44, t.controlHeight),
-                borderColor: selectAllState !== 'none' ? t.primary : t.border,
-                backgroundColor: selectAllState === 'all' ? t.primarySoft : t.surfaceSoft,
                 opacity: disabled ? 0.6 : 1,
               },
             ]}
@@ -2356,8 +2356,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
+    paddingHorizontal: 2,
+    borderWidth: 0,
     borderRadius: 8,
     alignSelf: 'flex-start',
   },
@@ -2412,12 +2412,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+    width: '100%',
+    maxWidth: '100%',
   },
   paginationControls: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
+    maxWidth: '100%',
   },
   pageSizeWrap: {
     minWidth: 124,

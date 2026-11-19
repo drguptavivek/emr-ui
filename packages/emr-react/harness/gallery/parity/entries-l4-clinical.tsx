@@ -5,7 +5,7 @@ import type {
   CaptureStatusBarIntent,
   CaptureStatusBarViewModel,
   ClinicalListIntent,
-  ClinicalListItem,
+  ClinicalListViewModel,
   ClinicalNoteWorkspaceIntent,
   ClinicalNoteWorkspaceViewModel,
   DiagnosticResultIntent,
@@ -198,6 +198,7 @@ import {
 import { PRESCRIBING_PRESETS } from '../prescribing-formulary.fixture';
 import { makeSpecialtyExamFixture, reduceSpecialtyExamFixture } from '../specialty-exam.fixture';
 import { LitElementHost } from './lit-element-host';
+import { reduceClinicalListParity } from './entries-l3-l6';
 import { defineParityEntry, type ParityEntry } from './types';
 
 function BodyNote({ text }: { text: string }) {
@@ -1946,7 +1947,9 @@ export const PARITY_ENTRIES_L4_CLINICAL: readonly ParityEntry[] = [
       {
         selector: 'emr-medication-list',
         Component: EmrMedicationList,
+        title: 'Medications',
         emptyMessage: 'No active medications.',
+        selectedId: 'm1',
         seed: [
           { id: 'm1', title: 'Latanoprost 0.005% eye drops', subtitle: '1 drop OU at bedtime', badges: [{ label: 'Active', tone: 'success' as const }] },
           { id: 'm2', title: 'Metformin 500 mg tablet', subtitle: 'Twice daily after food', badges: [{ label: 'Systemic', tone: 'info' as const }] },
@@ -1955,7 +1958,9 @@ export const PARITY_ENTRIES_L4_CLINICAL: readonly ParityEntry[] = [
       {
         selector: 'emr-allergy-list',
         Component: EmrAllergyList,
+        title: 'Allergies',
         emptyMessage: 'No known drug allergies recorded.',
+        selectedId: 'a1',
         seed: [
           { id: 'a1', title: 'Penicillin', subtitle: 'Anaphylaxis (verified 2025)', badges: [{ label: 'Severe', tone: 'danger' as const }] },
           { id: 'a2', title: 'Sulfonamides', subtitle: 'Maculopapular rash', badges: [{ label: 'Moderate', tone: 'warning' as const }] },
@@ -1964,7 +1969,9 @@ export const PARITY_ENTRIES_L4_CLINICAL: readonly ParityEntry[] = [
       {
         selector: 'emr-chronic-disease-list',
         Component: EmrChronicDiseaseList,
+        title: 'Chronic diseases',
         emptyMessage: 'No chronic conditions recorded.',
+        selectedId: 'd1',
         seed: [
           { id: 'd1', title: 'Primary Open-Angle Glaucoma (OU)', subtitle: 'Since 2022', badges: [{ label: 'On therapy', tone: 'info' as const }] },
           { id: 'd2', title: 'Type 2 Diabetes Mellitus', subtitle: 'HbA1c 7.6%', badges: [{ label: 'Active', tone: 'warning' as const }] },
@@ -1973,45 +1980,55 @@ export const PARITY_ENTRIES_L4_CLINICAL: readonly ParityEntry[] = [
       {
         selector: 'emr-personal-history-list',
         Component: EmrPersonalHistoryList,
+        title: 'Significant personal history',
         emptyMessage: 'No personal/social history recorded.',
+        selectedId: 'p1',
         seed: [
           { id: 'p1', title: 'Non-smoker, non-alcoholic', subtitle: 'Recorded at intake', badges: [{ label: 'Verified', tone: 'success' as const }] },
           { id: 'p2', title: 'High near-screen visual demand', subtitle: 'Accountant (8 hrs/day)', badges: [{ label: 'Occupational', tone: 'neutral' as const }] },
         ],
       },
     ] as const
-  ).map(({ selector, Component, emptyMessage, seed }) =>
-    defineParityEntry<readonly ClinicalListItem[]>({
+  ).map(({ selector, Component, title, emptyMessage, selectedId, seed }) =>
+    defineParityEntry<ClinicalListViewModel>({
       selector,
-      createInitialState: () => seed,
+      createInitialState: () => ({
+        title,
+        items: seed,
+        selectedId,
+        allowAdd: true,
+        readOnly: false,
+        loading: false,
+        error: '',
+        variant: 'outlined',
+        emptyMessage,
+      }),
       renderReact: ({ state, readOnly, update }) => (
         <Component
-          model={{ items: state, allowAdd: !readOnly, emptyMessage }}
+          model={{
+            ...state,
+            readOnly: readOnly || Boolean(state.readOnly),
+            error: state.error || undefined,
+          }}
           onIntent={(i: ClinicalListIntent) =>
-            update('react', i.type, i, (s) =>
-              i.type === 'removeRequested'
-                ? s.filter((x) => x.id !== i.id)
-                : i.type === 'addRequested'
-                  ? [...s, { id: `new-${s.length + 1}`, title: `Added entry ${s.length + 1}`, badges: [{ label: 'New', tone: 'info' }] }]
-                  : s,
-            )
+            update('react', i.type, i, (s) => reduceClinicalListParity(s, i))
           }
         />
       ),
       renderLit: ({ state, readOnly, update }) => (
         <LitElementHost
           tag={selector}
-          props={{ items: state, readOnly, allowAdd: !readOnly, emptyMessage }}
+          props={{
+            model: {
+              ...state,
+              readOnly: readOnly || Boolean(state.readOnly),
+              error: state.error || undefined,
+            },
+          }}
           events={{
             intent: (raw) => {
               const i = raw as ClinicalListIntent;
-              update('lit', i.type, i, (s) =>
-                i.type === 'removeRequested'
-                  ? s.filter((x) => x.id !== i.id)
-                  : i.type === 'addRequested'
-                    ? [...s, { id: `new-${s.length + 1}`, title: `Added entry ${s.length + 1}`, badges: [{ label: 'New', tone: 'info' }] }]
-                    : s,
-              );
+              update('lit', i.type, i, (s) => reduceClinicalListParity(s, i));
             },
           }}
         />

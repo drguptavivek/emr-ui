@@ -1,20 +1,46 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output, QueryList, ViewChildren, inject } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroCheck, heroMagnifyingGlass, heroStar, heroXMark } from '@ng-icons/heroicons/outline';
 import { heroStarSolid } from '@ng-icons/heroicons/solid';
-/** Mirrors the controller's FAVOURITES_GROUP_ID. A runtime import would put the controller in the UI bundle and break SSR, which loads the bundle without it. */
-const FAVOURITES_GROUP_ID = 'favourites';
-import type { ImageTemplateOption, ImageTemplatePickerIntent, ImageTemplatePickerViewModel } from '@drguptavivek/emr-controller';
+import type {
+  EmrImageTemplatePickerLabels,
+  ImageTemplateOption,
+  ImageTemplatePickerIntent,
+  ImageTemplatePickerViewModel,
+} from '@drguptavivek/emr-controller';
+import {
+  FAVOURITES_GROUP_ID,
+  canEditTemplateFavourites,
+  canSelectImageTemplate,
+  canToggleTemplateFavourite,
+  isTemplateFavourite,
+  partitionImageTemplates,
+  resolveImageTemplatePickerHeadingId,
+  resolveImageTemplatePickerId,
+  resolveImageTemplatePickerLabels,
+  resolveImageTemplateSearchId,
+  resolveImageTemplateSectionId,
+  resolvePickerTabStopId,
+  showFavouritePinHint,
+  showFavouritesFilterChip,
+  templateGridNextIndex,
+  templateTileLabel,
+} from './emr-image-template-picker.logic';
 
 let nextPickerId = 0;
-
-interface PickerView {
-  readonly model: ImageTemplatePickerViewModel;
-  readonly favs: readonly ImageTemplateOption[];
-  readonly rest: readonly ImageTemplateOption[];
-  readonly flat: readonly ImageTemplateOption[];
-}
 
 @Component({
   selector: 'emr-image-template-picker',
@@ -22,81 +48,210 @@ interface PickerView {
   imports: [NgIcon, NgTemplateOutlet],
   providers: [provideIcons({ heroCheck, heroMagnifyingGlass, heroStar, heroStarSolid, heroXMark })],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(focusin)': 'onHostFocusIn()',
+    '(focusout)': 'onHostFocusOut($event)',
+  },
   template: `
-    <section class="tp" [attr.aria-labelledby]="titleId()" (keydown.escape)="intent.emit({ type: 'closeRequested' })" (focusin)="onFocusIn($event)">
+    <section
+      class="tp"
+      data-emr-print="hide"
+      [id]="pickerId()"
+      [attr.aria-labelledby]="titleId()"
+      (keydown.escape)="onEscape($event)"
+      (focusin)="onPickerFocusIn($event)"
+    >
       <header class="tp__head">
         <div class="tp__title">
-          <h3 class="tp__name" [id]="titleId()">{{ model.title }}</h3>
-          @if (model.totalLabel) { <p class="tp__total" role="status">{{ model.totalLabel }}</p> }
+          <h3 class="tp__name" [id]="titleId()">{{ model().title }}</h3>
+          @if (model().totalLabel) {
+            <p class="tp__total" role="status">{{ model().totalLabel }}</p>
+          }
         </div>
-        <button type="button" class="emr-icon-button" aria-label="Close" title="Close" (click)="intent.emit({ type: 'closeRequested' })">
+        <button
+          type="button"
+          class="emr-icon-button tp__close"
+          [attr.aria-label]="resolvedLabels().close"
+          [attr.title]="resolvedLabels().close"
+          (click)="emitClose()"
+        >
           <ng-icon name="heroXMark" aria-hidden="true" />
         </button>
       </header>
 
       <div class="tp__search">
-        <label class="emr-sr-only" [for]="uid + '-q'">Search {{ model.title }}</label>
+        <label class="emr-sr-only" [for]="searchId()">{{ resolvedLabels().searchAria(model().title) }}</label>
         <ng-icon class="tp__glass" name="heroMagnifyingGlass" aria-hidden="true" />
-        <input class="emr-search-input tp__input" type="search" autocomplete="off" placeholder="Search by name, side or view" [id]="uid + '-q'" [value]="model.query"
-               (input)="onQuery($event)" />
+        <input
+          class="emr-search-input tp__input"
+          [class.tp__input--clearable]="!!model().query"
+          type="search"
+          autocomplete="off"
+          [placeholder]="resolvedLabels().searchPlaceholder"
+          [id]="searchId()"
+          [value]="model().query"
+          (input)="onQuery($event)"
+        />
+        @if (model().query) {
+          <button
+            type="button"
+            class="tp__clear"
+            [attr.aria-label]="resolvedLabels().clearSearch"
+            [attr.title]="resolvedLabels().clearSearch"
+            (click)="clearSearch()"
+          >
+            <ng-icon name="heroXMark" aria-hidden="true" />
+          </button>
+        }
       </div>
 
-      <div class="tp__chips" role="group" [attr.aria-label]="'Filter ' + model.title">
+      <div class="tp__chips" role="group" [attr.aria-label]="resolvedLabels().filterAria(model().title)">
         @if (showFavouritesChip()) {
-          <button type="button" class="tp__chip" [attr.aria-pressed]="model.selectedGroupId === favouritesId"
-                  (click)="intent.emit({ type: 'groupSelected', groupId: favouritesId })">
-            <ng-icon name="heroStarSolid" class="tp__chip-star" aria-hidden="true" />Favourites<span class="tp__n">{{ model.favouriteIds?.length ?? 0 }}</span>
+          <button
+            type="button"
+            class="tp__chip"
+            [attr.aria-pressed]="model().selectedGroupId === favouritesId"
+            (click)="selectGroup(favouritesId)"
+          >
+            <ng-icon name="heroStarSolid" class="tp__chip-star" aria-hidden="true" />
+            <span>{{ resolvedLabels().favourites }}</span>
+            <span class="tp__n">{{ model().favouriteIds?.length ?? 0 }}</span>
           </button>
         }
-        <button type="button" class="tp__chip" [attr.aria-pressed]="!model.selectedGroupId" (click)="intent.emit({ type: 'groupSelected', groupId: null })">All</button>
-        @for (g of model.groups; track g.id) {
-          <button type="button" class="tp__chip" [attr.aria-pressed]="model.selectedGroupId === g.id" (click)="intent.emit({ type: 'groupSelected', groupId: g.id })">
-            {{ g.label }}@if (g.count !== undefined) { <span class="tp__n">{{ g.count }}</span> }
+        <button
+          type="button"
+          class="tp__chip"
+          [attr.aria-pressed]="!model().selectedGroupId"
+          (click)="selectGroup(null)"
+        >
+          {{ resolvedLabels().all }}
+        </button>
+        @for (g of model().groups; track g.id) {
+          <button
+            type="button"
+            class="tp__chip"
+            [attr.aria-pressed]="model().selectedGroupId === g.id"
+            (click)="selectGroup(g.id)"
+          >
+            <span>{{ g.label }}</span>
+            @if (g.count !== undefined) {
+              <span class="tp__n">{{ g.count }}</span>
+            }
           </button>
         }
       </div>
 
-      @if (v.flat.length) {
-        @if (v.favs.length) {
-          <div class="tp__sec" role="group" [attr.aria-labelledby]="uid + '-fav'">
-            <h4 class="tp__sub" [id]="uid + '-fav'"><ng-icon name="heroStarSolid" class="tp__sub-star" aria-hidden="true" />Favourites <span class="tp__n">{{ v.favs.length }}</span></h4>
-            <ul class="tp__grid" role="list"><ng-container [ngTemplateOutlet]="tiles" [ngTemplateOutletContext]="{ $implicit: v.favs }" /></ul>
+      @if (view().flat.length) {
+        @if (view().favs.length) {
+          <div class="tp__sec" role="group" [attr.aria-labelledby]="favSectionId()">
+            <h4 class="tp__sub" [id]="favSectionId()">
+              <ng-icon name="heroStarSolid" class="tp__sub-star" aria-hidden="true" />
+              <span>{{ resolvedLabels().favourites }}</span>
+              <span class="tp__n">{{ view().favs.length }}</span>
+            </h4>
+            <ul class="tp__grid" role="list">
+              <ng-container [ngTemplateOutlet]="tiles" [ngTemplateOutletContext]="{ $implicit: view().favs }" />
+            </ul>
           </div>
         } @else if (showHint()) {
-          <p class="tp__hint">Star a template to pin it here.</p>
+          <p class="tp__hint">{{ resolvedLabels().starHint }}</p>
         }
-        @if (v.rest.length) {
-          <div class="tp__sec" [attr.role]="v.favs.length ? 'group' : null" [attr.aria-labelledby]="v.favs.length ? uid + '-all' : null">
-            @if (v.favs.length) { <h4 class="tp__sub" [id]="uid + '-all'">All templates <span class="tp__n">{{ v.rest.length }}</span></h4> }
-            <ul class="tp__grid" role="list"><ng-container [ngTemplateOutlet]="tiles" [ngTemplateOutletContext]="{ $implicit: v.rest }" /></ul>
+        @if (view().rest.length) {
+          <div
+            class="tp__sec"
+            [attr.role]="view().favs.length ? 'group' : null"
+            [attr.aria-labelledby]="view().favs.length ? allSectionId() : null"
+          >
+            @if (view().favs.length) {
+              <h4 class="tp__sub" [id]="allSectionId()">
+                <span>{{ resolvedLabels().allTemplates }}</span>
+                <span class="tp__n">{{ view().rest.length }}</span>
+              </h4>
+            }
+            <ul class="tp__grid" role="list">
+              <ng-container [ngTemplateOutlet]="tiles" [ngTemplateOutletContext]="{ $implicit: view().rest }" />
+            </ul>
           </div>
         }
       } @else {
-        <div class="emr-empty tp__empty">
-          <p class="tp__empty-msg">{{ model.emptyMessage }}</p>
+        <div class="emr-empty tp__empty" role="status">
+          <p class="tp__empty-msg">{{ model().emptyMessage }}</p>
           <div class="tp__empty-actions">
-            @if (model.query) { <button type="button" class="emr-button emr-button--outline emr-button--small" (click)="intent.emit({ type: 'queryChangeRequested', query: '' })">Clear search</button> }
-            @if (model.selectedGroupId) { <button type="button" class="emr-button emr-button--outline emr-button--small" (click)="intent.emit({ type: 'groupSelected', groupId: null })">Show all</button> }
+            @if (model().query) {
+              <button
+                type="button"
+                class="emr-button emr-button--outline emr-button--small tp__empty-btn"
+                (click)="clearSearch()"
+              >
+                {{ resolvedLabels().clearSearch }}
+              </button>
+            }
+            @if (model().selectedGroupId) {
+              <button
+                type="button"
+                class="emr-button emr-button--outline emr-button--small tp__empty-btn"
+                (click)="selectGroup(null)"
+              >
+                {{ resolvedLabels().showAll }}
+              </button>
+            }
+            @if (model().query && model().selectedGroupId) {
+              <button
+                type="button"
+                class="emr-button emr-button--outline emr-button--small tp__empty-btn"
+                (click)="resetFilters()"
+              >
+                {{ resolvedLabels().resetFilters }}
+              </button>
+            }
           </div>
         </div>
       }
 
       <ng-template #tiles let-list>
         @for (o of list; track o.id) {
-          <li class="tp__item" [class.tp__item--sel]="o.id === model.selectedId">
-            <button #tile type="button" class="tp__tile" [attr.data-id]="o.id" [attr.tabindex]="o.id === tabStopId ? 0 : -1"
-                    [attr.aria-pressed]="o.id === model.selectedId" [attr.aria-disabled]="model.readOnly ? 'true' : null" [attr.aria-label]="tileName(o)"
-                    (click)="select(o)" (keydown)="onKey($event, o.id)">
-              <span class="tp__frame"><img [src]="o.imageUrl" [alt]="o.altText ?? o.label" loading="lazy" decoding="async" /></span>
+          <li class="tp__item" [class.tp__item--sel]="o.id === model().selectedId">
+            <button
+              #tile
+              type="button"
+              class="tp__tile"
+              [attr.data-id]="o.id"
+              [attr.tabindex]="o.id === tabStopId() ? 0 : -1"
+              [attr.aria-pressed]="o.id === model().selectedId"
+              [attr.aria-disabled]="effectiveReadOnly() ? 'true' : null"
+              [attr.aria-label]="tileName(o)"
+              (click)="select(o)"
+              (keydown)="onKey($event, o.id)"
+            >
+              <span class="tp__frame">
+                <img [src]="o.imageUrl" [alt]="o.altText ?? o.label" loading="lazy" decoding="async" />
+              </span>
               <span class="tp__label" [attr.title]="o.label">{{ o.label }}</span>
-              @if (o.badges?.length) { <span class="tp__badges">@for (b of o.badges; track b) { <span class="tp__badge">{{ b }}</span> }</span> }
+              @if (o.badges?.length) {
+                <span class="tp__badges">
+                  @for (b of o.badges; track b) {
+                    <span class="tp__badge">{{ b }}</span>
+                  }
+                </span>
+              }
             </button>
-            @if (o.id === model.selectedId) { <span class="tp__check" aria-hidden="true"><ng-icon name="heroCheck" /></span> }
-            @if (canEditFavourites()) {
-              <button type="button" class="tp__star" [attr.data-star]="o.id" [attr.tabindex]="o.id === tabStopId ? 0 : -1"
-                      [attr.aria-pressed]="isFavourite(o.id)" [attr.aria-label]="(isFavourite(o.id) ? 'Remove ' : 'Add ') + o.label + (isFavourite(o.id) ? ' from favourites' : ' to favourites')"
-                      (click)="toggleFavourite(o.id)">
-                <span class="tp__star-bg"><ng-icon [name]="isFavourite(o.id) ? 'heroStarSolid' : 'heroStar'" aria-hidden="true" /></span>
+            @if (o.id === model().selectedId) {
+              <span class="tp__check" aria-hidden="true"><ng-icon name="heroCheck" /></span>
+            }
+            @if (canEditFavs()) {
+              <button
+                #star
+                type="button"
+                class="tp__star"
+                [attr.data-star]="o.id"
+                [attr.tabindex]="o.id === tabStopId() ? 0 : -1"
+                [attr.aria-pressed]="isFavourite(o.id)"
+                [attr.aria-label]="isFavourite(o.id) ? resolvedLabels().removeFavourite(o.label) : resolvedLabels().addFavourite(o.label)"
+                (click)="toggleFavourite(o)"
+              >
+                <span class="tp__star-bg">
+                  <ng-icon [name]="isFavourite(o.id) ? 'heroStarSolid' : 'heroStar'" aria-hidden="true" />
+                </span>
               </button>
             }
           </li>
@@ -111,11 +266,17 @@ interface PickerView {
     .tp__title{min-width:0}
     .tp__name{margin:0;font-size:var(--emr-text-xl);line-height:var(--emr-leading-tight);overflow-wrap:anywhere}
     .tp__total{margin:2px 0 0;font-size:var(--emr-text-sm);color:var(--emr-text-muted)}
+    .tp__close{width:44px;min-width:44px;min-height:44px;height:max(44px,var(--emr-control-height))}
     .tp__search{position:relative}
     .tp__glass{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--emr-text-muted);pointer-events:none;font-size:1.125rem}
-    .tp__input{padding-left:38px}
-    .tp__chips{display:flex;flex-wrap:wrap;gap:6px;padding:3px;margin:-3px;max-height:calc(3 * var(--emr-control-height) + 18px);overflow-y:auto}
-    .tp__chip{display:inline-flex;align-items:center;gap:6px;min-height:var(--emr-control-height);padding:0 12px;border:1px solid var(--emr-border);border-radius:999px;background:var(--emr-surface);color:var(--emr-text);font:inherit;font-size:var(--emr-text-sm);font-weight:var(--emr-weight-medium);cursor:pointer;white-space:nowrap}
+    .tp__input{min-height:max(44px,var(--emr-control-height));padding-left:38px}
+    .tp__input--clearable{padding-right:46px}
+    .tp__input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+    .tp__clear{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--emr-text-muted);cursor:pointer;font-size:1rem}
+    .tp__clear:hover{color:var(--emr-text);background:var(--emr-surface-soft)}
+    .tp__clear:focus-visible{outline:3px solid var(--emr-focus);outline-offset:-2px}
+    .tp__chips{display:flex;flex-wrap:wrap;gap:6px;padding:3px;margin:-3px;max-height:calc(3 * max(44px,var(--emr-control-height)) + 18px);overflow-y:auto}
+    .tp__chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:max(44px,var(--emr-control-height));padding:0 12px;border:1px solid var(--emr-border);border-radius:999px;background:var(--emr-surface);color:var(--emr-text);font:inherit;font-size:var(--emr-text-sm);font-weight:var(--emr-weight-medium);cursor:pointer;white-space:nowrap}
     .tp__chip:hover{background:var(--emr-surface-raised)}
     .tp__chip[aria-pressed="true"]{background:var(--emr-primary-soft);border-color:var(--emr-primary);box-shadow:inset 0 0 0 1px var(--emr-primary);color:var(--emr-primary-contrast);font-weight:var(--emr-weight-bold)}
     .tp__chip-star,.tp__sub-star{color:var(--emr-warning)}
@@ -126,7 +287,7 @@ interface PickerView {
     .tp__hint{margin:0;font-size:var(--emr-text-sm);color:var(--emr-text-muted)}
     .tp__grid{list-style:none;margin:0;padding:0;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(min(120px,100%),1fr))}
     .tp__item{position:relative;min-width:0;display:grid}
-    .tp__tile{display:grid;grid-template-rows:auto auto 1fr;align-content:start;gap:4px;width:100%;min-height:var(--emr-control-height);padding:6px;text-align:left;border:1px solid var(--emr-border);border-radius:8px;background:var(--emr-surface);color:var(--emr-text);font:inherit;cursor:pointer}
+    .tp__tile{display:grid;grid-template-rows:auto auto 1fr;align-content:start;gap:4px;width:100%;min-height:max(44px,var(--emr-control-height));padding:6px;text-align:left;border:1px solid var(--emr-border);border-radius:8px;background:var(--emr-surface);color:var(--emr-text);font:inherit;cursor:pointer}
     .tp__tile:hover{background:var(--emr-surface-raised)}
     .tp__tile[aria-disabled="true"]{cursor:default}
     .tp__tile[aria-disabled="true"]:hover{background:var(--emr-surface)}
@@ -137,39 +298,83 @@ interface PickerView {
     .tp__badges{display:flex;flex-wrap:wrap;align-content:flex-start;align-items:flex-start;gap:4px}
     .tp__badge{padding:2px 6px;border-radius:999px;background:var(--emr-neutral-soft);color:var(--emr-text);font-size:var(--emr-text-2xs);font-weight:var(--emr-weight-bold);line-height:1}
     .tp__check{position:absolute;top:10px;left:10px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--emr-primary-soft);color:var(--emr-primary-contrast);border:2px solid var(--emr-primary);font-size:.875rem;pointer-events:none}
-    .tp__star{position:absolute;top:2px;right:2px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--emr-text);cursor:pointer}
+    .tp__star{position:absolute;top:2px;right:2px;display:grid;place-items:center;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--emr-text);cursor:pointer}
     .tp__star-bg{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--emr-surface);border:1px solid var(--emr-border);font-size:1rem}
     .tp__star:hover .tp__star-bg{background:var(--emr-surface-raised)}
     .tp__star[aria-pressed="true"] .tp__star-bg{color:var(--emr-warning);border-color:var(--emr-warning);background:var(--emr-warning-soft)}
-    .tp__tile:focus-visible,.tp__star:focus-visible,.tp__chip:focus-visible{outline:3px solid var(--emr-focus);outline-offset:2px}
+    .tp__tile:focus-visible,.tp__star:focus-visible,.tp__chip:focus-visible,.tp__close:focus-visible{outline:3px solid var(--emr-focus);outline-offset:2px}
     .tp__empty{gap:8px;min-height:120px}
     .tp__empty-msg{margin:0}
     .tp__empty-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .tp__empty-btn{min-height:max(44px,var(--emr-control-height));min-width:44px}
     @media(max-width:480px){.tp{padding:12px}}
-    @media print{:host{display:none}.tp__chips{max-height:none;overflow:visible}}
+    :host-context(.emr-print){display:none !important}
+    :host-context(.emr-print) .tp{display:none !important}
+    @media print{:host,.tp{display:none !important}.tp__chips{max-height:none;overflow:visible}}
   `],
 })
-export class EmrImageTemplatePickerComponent implements OnChanges, AfterViewChecked {
-  @Input({ required: true }) model!: ImageTemplatePickerViewModel;
-  @Input() headingId?: string;
-  @Output() readonly intent = new EventEmitter<ImageTemplatePickerIntent>();
+export class EmrImageTemplatePickerComponent implements AfterViewChecked {
+  readonly model = input.required<ImageTemplatePickerViewModel>();
+  readonly headingId = input<string>();
+  readonly idPrefix = input<string>('');
+  readonly readOnly = input<boolean>(false);
+  readonly labels = input<EmrImageTemplatePickerLabels>();
 
-  @ViewChildren('tile') private readonly tileRefs!: QueryList<ElementRef<HTMLButtonElement>>;
+  readonly intent = output<ImageTemplatePickerIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
+  private readonly tileRefs = viewChildren<ElementRef<HTMLButtonElement>>('tile');
+  private readonly starRefs = viewChildren<ElementRef<HTMLButtonElement>>('star');
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
   protected readonly uid = `emr-tpl-${++nextPickerId}`;
   protected readonly favouritesId = FAVOURITES_GROUP_ID;
 
   /** Roving tab stop (focus bookkeeping only). */
-  private activeId?: string;
+  private readonly activeId = signal<string | null>(null);
+  private isFocusWithin = false;
   /** After starring, the tile jumps sections and is re-created: restore focus to its star once the model changes. */
   private refocusStarId?: string;
   private refocusReady = false;
-  private cache?: PickerView;
 
-  titleId(): string { return this.headingId ?? `${this.uid}-heading`; }
+  protected readonly resolvedLabels = computed(() => resolveImageTemplatePickerLabels(this.labels()));
+  protected readonly effectiveReadOnly = computed(() => !!(this.readOnly() || this.model().readOnly));
+  protected readonly pickerId = computed(() =>
+    resolveImageTemplatePickerId(this.idPrefix(), this.headingId(), this.uid),
+  );
+  protected readonly titleId = computed(() =>
+    resolveImageTemplatePickerHeadingId(this.idPrefix(), this.headingId(), `${this.uid}-heading`),
+  );
+  protected readonly searchId = computed(() =>
+    resolveImageTemplateSearchId(this.idPrefix(), this.headingId(), this.uid),
+  );
+  protected readonly favSectionId = computed(() =>
+    resolveImageTemplateSectionId('fav', this.idPrefix(), this.headingId(), this.uid),
+  );
+  protected readonly allSectionId = computed(() =>
+    resolveImageTemplateSectionId('all', this.idPrefix(), this.headingId(), this.uid),
+  );
+  protected readonly view = computed(() => partitionImageTemplates(this.model()));
+  protected readonly tabStopId = computed(() =>
+    resolvePickerTabStopId(this.view().flat, this.model().selectedId, this.activeId()),
+  );
+  protected readonly canEditFavs = computed(() =>
+    canEditTemplateFavourites(this.model(), this.readOnly()),
+  );
+  protected readonly showFavouritesChip = computed(() =>
+    showFavouritesFilterChip(this.model(), this.readOnly()),
+  );
+  protected readonly showHint = computed(() =>
+    showFavouritePinHint(this.model(), this.readOnly()),
+  );
 
-  ngOnChanges(): void { if (this.refocusStarId) this.refocusReady = true; }
+  constructor() {
+    effect(() => {
+      this.model();
+      if (this.refocusStarId) this.refocusReady = true;
+    });
+  }
 
   ngAfterViewChecked(): void {
     if (!this.refocusStarId || !this.refocusReady) return;
@@ -179,54 +384,100 @@ export class EmrImageTemplatePickerComponent implements OnChanges, AfterViewChec
     this.starEl(id)?.focus();
   }
 
-  protected get v(): PickerView {
-    if (this.cache?.model === this.model) return this.cache;
-    const options = this.model.options;
-    const byId = new Map(options.map((o) => [o.id, o]));
-    const favs = (this.model.favouriteIds ?? []).flatMap((id) => { const o = byId.get(id); return o ? [o] : []; });
-    const favSet = new Set(favs.map((o) => o.id));
-    const rest = options.filter((o) => !favSet.has(o.id));
-    return (this.cache = { model: this.model, favs, rest, flat: [...favs, ...rest] });
+  protected isFavourite(id: string): boolean {
+    return isTemplateFavourite(this.model(), id);
   }
 
-  protected get tabStopId(): string | undefined {
-    const flat = this.v.flat;
-    const pick = (id?: string) => (id && flat.some((o) => o.id === id) ? id : undefined);
-    return pick(this.activeId) ?? pick(this.model.selectedId) ?? flat[0]?.id;
+  protected tileName(o: ImageTemplateOption): string {
+    return templateTileLabel(o);
   }
 
-  protected canEditFavourites(): boolean { return !!this.model.canEditFavourites && !this.model.readOnly; }
-  protected showFavouritesChip(): boolean { return !!this.model.favouriteIds?.length || this.canEditFavourites(); }
-  protected showHint(): boolean { return this.canEditFavourites() && !this.model.favouriteIds?.length; }
-  protected isFavourite(id: string): boolean { return !!this.model.favouriteIds?.includes(id); }
+  protected emitClose(): void {
+    this.intent.emit({ type: 'closeRequested' });
+  }
 
-  protected tileName(o: ImageTemplateOption): string { return o.badges?.length ? `${o.label}, ${o.badges.join(', ')}` : o.label; }
+  protected onEscape(event: Event): void {
+    event.preventDefault();
+    if (this.model().query) {
+      this.clearSearch();
+    } else {
+      this.emitClose();
+    }
+  }
 
   protected onQuery(event: Event): void {
-    this.intent.emit({ type: 'queryChangeRequested', query: (event.target as HTMLInputElement).value });
+    this.intent.emit({
+      type: 'queryChangeRequested',
+      query: (event.target as HTMLInputElement).value,
+    });
+  }
+
+  protected clearSearch(): void {
+    this.intent.emit({ type: 'queryChangeRequested', query: '' });
+  }
+
+  protected selectGroup(groupId: string | null): void {
+    this.intent.emit({ type: 'groupSelected', groupId });
+  }
+
+  protected resetFilters(): void {
+    if (this.model().query) {
+      this.intent.emit({ type: 'queryChangeRequested', query: '' });
+    }
+    if (this.model().selectedGroupId) {
+      this.intent.emit({ type: 'groupSelected', groupId: null });
+    }
   }
 
   protected select(o: ImageTemplateOption): void {
-    if (!this.model.readOnly) this.intent.emit({ type: 'templateSelected', templateId: o.id });
+    if (canSelectImageTemplate(this.effectiveReadOnly(), o)) {
+      this.intent.emit({ type: 'templateSelected', templateId: o.id });
+    }
   }
 
-  protected toggleFavourite(id: string): void {
-    this.refocusStarId = id;
+  protected toggleFavourite(o: ImageTemplateOption): void {
+    if (!canToggleTemplateFavourite(this.model(), o, this.readOnly())) return;
+    this.refocusStarId = o.id;
     this.refocusReady = false;
-    this.intent.emit({ type: 'favouriteToggleRequested', templateId: id, favourite: !this.isFavourite(id) });
+    this.intent.emit({
+      type: 'favouriteToggleRequested',
+      templateId: o.id,
+      favourite: !this.isFavourite(o.id),
+    });
   }
 
-  protected onFocusIn(event: FocusEvent): void {
+  protected onHostFocusIn(): void {
+    if (!this.isFocusWithin) {
+      this.isFocusWithin = true;
+      this.focused.emit();
+    }
+  }
+
+  protected onHostFocusOut(e: FocusEvent): void {
+    const next = e.relatedTarget as Node | null;
+    if (next && this.host.nativeElement.contains(next)) return;
+    if (this.isFocusWithin) {
+      this.isFocusWithin = false;
+      this.blurred.emit();
+    }
+  }
+
+  protected onPickerFocusIn(event: FocusEvent): void {
     const el = event.target as HTMLElement;
-    if (el.dataset['id']) this.activeId = el.dataset['id'];
-    else if (el.dataset['star']) this.activeId = el.dataset['star'];
+    if (el.dataset['id']) this.activeId.set(el.dataset['id']);
+    else if (el.dataset['star']) this.activeId.set(el.dataset['star']);
     // Focus moving anywhere else cancels a pending star refocus.
-    if (this.refocusStarId && el.dataset['star'] !== this.refocusStarId) this.refocusStarId = undefined;
+    if (this.refocusStarId && el.dataset['star'] !== this.refocusStarId) {
+      this.refocusStarId = undefined;
+    }
   }
 
-  private tileEl(id: string): HTMLButtonElement | undefined { return this.tileRefs.find((r) => r.nativeElement.dataset['id'] === id)?.nativeElement; }
+  private tileEl(id: string): HTMLButtonElement | undefined {
+    return this.tileRefs().find((r) => r.nativeElement.dataset['id'] === id)?.nativeElement;
+  }
+
   private starEl(id: string): HTMLButtonElement | undefined {
-    return [...this.host.nativeElement.querySelectorAll<HTMLButtonElement>('.tp__star')].find((b) => b.dataset['star'] === id);
+    return this.starRefs().find((r) => r.nativeElement.dataset['star'] === id)?.nativeElement;
   }
 
   /** Columns in the row of the focused tile's own grid, measured from layout so it tracks the auto-fill width. */
@@ -237,29 +488,17 @@ export class EmrImageTemplatePickerComponent implements OnChanges, AfterViewChec
   }
 
   protected onKey(event: KeyboardEvent, id: string): void {
-    const { favs, flat } = this.v;
+    const { favs, flat } = this.view();
     const i = flat.findIndex((o) => o.id === id);
     if (i < 0) return;
-    const F = favs.length;
     const cols = this.columns(event.currentTarget as HTMLElement);
-    let t = i;
-    switch (event.key) {
-      case 'ArrowRight': t = Math.min(i + 1, flat.length - 1); break;
-      case 'ArrowLeft': t = Math.max(i - 1, 0); break;
-      case 'Home': t = 0; break;
-      case 'End': t = flat.length - 1; break;
-      case 'ArrowDown':
-        if (i < F) t = i + cols < F ? i + cols : F < flat.length ? F + Math.min(i % cols, flat.length - F - 1) : i;
-        else t = i + cols < flat.length ? i + cols : i;
-        break;
-      case 'ArrowUp':
-        if (i >= F && i - cols < F) t = F ? Math.min(Math.floor((F - 1) / cols) * cols + ((i - F) % cols), F - 1) : i;
-        else t = i - cols >= 0 ? i - cols : i;
-        break;
-      default: return;
-    }
+    const nextIdx = templateGridNextIndex(event.key, i, flat.length, favs.length, cols);
+    if (nextIdx === null) return;
     event.preventDefault();
-    this.activeId = flat[t].id;
-    this.tileEl(flat[t].id)?.focus();
+    const nextId = flat[nextIdx]?.id;
+    if (nextId) {
+      this.activeId.set(nextId);
+      this.tileEl(nextId)?.focus();
+    }
   }
 }

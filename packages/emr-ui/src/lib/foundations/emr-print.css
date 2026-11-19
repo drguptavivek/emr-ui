@@ -121,6 +121,8 @@
 /* @emr-print:scoped:begin */
   /* Interactive-only chrome carries no information on paper. */
   .emr-print .emr-button,
+  .emr-print .emr-section-card__toggle,
+  .emr-print .emr-clinical-form__correction[data-emr-print='hide'],
   .emr-print .emr-copy-button,
   .emr-print .emr-tab,
   .emr-print .emr-left-nav,
@@ -130,12 +132,16 @@
   }
 
   /* Nothing may stay hidden: a collapsed section on paper is missing data. */
-  .emr-print [hidden],
-  .emr-print .emr-section-card__content[hidden] {
+  .emr-print [hidden] {
     display: revert !important;
   }
+  .emr-print .emr-section-card__content[hidden],
   .emr-print .emr-accordion__panel[hidden] {
     display: block !important;
+  }
+  .emr-print .emr-section-card__actions:empty,
+  .emr-print .emr-section-card__footer:empty {
+    display: none !important;
   }
   .emr-print details,
   .emr-print details:not([open]) > * {
@@ -159,6 +165,20 @@
     display: revert !important;
   }
   .emr-print .emr-matrix table { min-width: 0 !important; }
+  .emr-print .emr-matrix__row-label { position: static !important; }
+  .emr-print .emr-matrix__na { min-height: 0 !important; }
+  .emr-print [data-emr-print='legend-row'] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    background: transparent !important;
+    border-left: none !important;
+  }
+  .emr-print [data-emr-print='unwrap'] {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    -webkit-line-clamp: unset !important;
+  }
   .emr-print .emr-patient-cards,
   .emr-print .emr-matrix-cards {
     display: none !important;
@@ -244,7 +264,9 @@
   /* Never split a clinical record across a page boundary mid-thought. */
   .emr-print .emr-card,
   .emr-print .emr-section-card,
+  .emr-print .emr-repeatable-group__item,
   .emr-print .emr-panel,
+  .emr-print .emr-list__item,
   .emr-print .emr-field-value-row,
   .emr-print .emr-signature-pad,
   .emr-print .emr-image-upload__card,
@@ -293,6 +315,8 @@
 /* @emr-print:media:begin */
   /* Interactive-only chrome carries no information on paper. */
   .emr-button,
+  .emr-section-card__toggle,
+  .emr-clinical-form__correction[data-emr-print='hide'],
   .emr-copy-button,
   .emr-tab,
   .emr-left-nav,
@@ -302,12 +326,16 @@
   }
 
   /* Nothing may stay hidden: a collapsed section on paper is missing data. */
-  [hidden],
-  .emr-section-card__content[hidden] {
+  [hidden] {
     display: revert !important;
   }
+  .emr-section-card__content[hidden],
   .emr-accordion__panel[hidden] {
     display: block !important;
+  }
+  .emr-section-card__actions:empty,
+  .emr-section-card__footer:empty {
+    display: none !important;
   }
   details,
   details:not([open]) > * {
@@ -331,6 +359,20 @@
     display: revert !important;
   }
   .emr-matrix table { min-width: 0 !important; }
+  .emr-matrix__row-label { position: static !important; }
+  .emr-matrix__na { min-height: 0 !important; }
+  [data-emr-print='legend-row'] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    background: transparent !important;
+    border-left: none !important;
+  }
+  [data-emr-print='unwrap'] {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    -webkit-line-clamp: unset !important;
+  }
   .emr-patient-cards,
   .emr-matrix-cards {
     display: none !important;
@@ -416,7 +458,9 @@
   /* Never split a clinical record across a page boundary mid-thought. */
   .emr-card,
   .emr-section-card,
+  .emr-repeatable-group__item,
   .emr-panel,
+  .emr-list__item,
   .emr-field-value-row,
   .emr-signature-pad,
   .emr-image-upload__card,

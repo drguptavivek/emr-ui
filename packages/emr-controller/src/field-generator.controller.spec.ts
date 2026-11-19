@@ -181,4 +181,46 @@ describe('FieldGeneratorController', () => {
     expect(searchSignal?.aborted).toBe(true);
     expect(saveSignal?.aborted).toBe(true);
   });
+
+  it('validates time and datetime field types cleanly', () => {
+    const timeOk = new FieldGeneratorController(
+      draft({ id: 'dilation-time', label: 'Dilation time', type: 'time', defaultValue: '09:30' }),
+      sources,
+      { terminology: { search: async () => ({ items: [], total: 0 }) } },
+    );
+    expect(timeOk.getSnapshot().validationErrors).toEqual({});
+
+    const timeBad = new FieldGeneratorController(
+      draft({ id: 'dilation-time', label: 'Dilation time', type: 'time', defaultValue: '25:99' }),
+      sources,
+      { terminology: { search: async () => ({ items: [], total: 0 }) } },
+    );
+    expect(timeBad.getSnapshot().validationErrors.defaultValue).toContain('HH:MM');
+
+    const dtOk = new FieldGeneratorController(
+      draft({
+        id: 'tonometry-at',
+        label: 'Tonometry timestamp',
+        type: 'datetime',
+        defaultValue: '2026-10-14T09:30:00Z',
+        validationRules: [{ id: 'min-dt', kind: 'earliest-date', value: '2026-01-01' }],
+      }),
+      sources,
+      { terminology: { search: async () => ({ items: [], total: 0 }) } },
+    );
+    expect(dtOk.getSnapshot().validationErrors).toEqual({});
+
+    const dtBoundFail = new FieldGeneratorController(
+      draft({
+        id: 'tonometry-at',
+        label: 'Tonometry timestamp',
+        type: 'datetime',
+        defaultValue: '2025-12-31T09:30:00Z',
+        validationRules: [{ id: 'min-dt', kind: 'earliest-date', value: '2026-01-01' }],
+      }),
+      sources,
+      { terminology: { search: async () => ({ items: [], total: 0 }) } },
+    );
+    expect(dtBoundFail.getSnapshot().validationErrors['min-dt']).toContain('on or after 2026-01-01');
+  });
 });

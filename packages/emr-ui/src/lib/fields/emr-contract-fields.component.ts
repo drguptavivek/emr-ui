@@ -58,6 +58,7 @@ import {
   EmrDateInputComponent,
   EmrDateTimeInputComponent,
   EmrQuantityInputComponent,
+  EmrSelectComponent,
   EmrTimeInputComponent,
 } from '../primitives/emr-inputs.component';
 import { emptyToNull } from '../primitives/emr-inputs.logic';
@@ -771,7 +772,7 @@ export class EmrAttachmentFieldComponent {
 @Component({
   selector: 'emr-paired-field',
   standalone: true,
-  imports: [EmrFieldFrameComponent],
+  imports: [EmrFieldFrameComponent, EmrSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
@@ -806,7 +807,25 @@ export class EmrAttachmentFieldComponent {
                 <span class="emr-field__required" aria-hidden="true">*</span>
               }
             </label>
-            @if (showSteppers() && firstMode() !== 'text') {
+            @if (firstMode() === 'select') {
+              <emr-select
+                [controlId]="resolvedId() + '-first'"
+                [label]="resolvedLabel() + ', ' + m.firstLabel"
+                [labelHidden]="true"
+                [options]="m.firstOptions ?? m.options ?? []"
+                [value]="firstDomValue() || null"
+                [placeholder]="m.firstPlaceholder ?? 'Select…'"
+                [size]="resolvedSize()"
+                [required]="firstReq()"
+                [invalid]="sv.firstHasError"
+                [hasWarning]="!sv.firstHasError && sv.firstHasWarning"
+                [readOnly]="firstLocked()"
+                [ariaDescribedBy]="describedBy()"
+                (valueChange)="intent.emit({ type: 'firstChangeRequested', value: typeof $event === 'string' ? $event : null })"
+                (focused)="onPartFocus()"
+                (blurred)="blurred.emit()"
+              />
+            } @else if (showSteppers() && firstMode() !== 'text') {
               <div
                 class="emr-input-affix pf-affix"
                 [attr.data-invalid]="sv.firstHasError ? 'true' : null"
@@ -895,7 +914,25 @@ export class EmrAttachmentFieldComponent {
                 <span class="emr-field__required" aria-hidden="true">*</span>
               }
             </label>
-            @if (showSteppers() && secondMode() !== 'text') {
+            @if (secondMode() === 'select') {
+              <emr-select
+                [controlId]="resolvedId() + '-second'"
+                [label]="resolvedLabel() + ', ' + m.secondLabel"
+                [labelHidden]="true"
+                [options]="m.secondOptions ?? m.options ?? []"
+                [value]="secondDomValue() || null"
+                [placeholder]="m.secondPlaceholder ?? 'Select…'"
+                [size]="resolvedSize()"
+                [required]="secondReq()"
+                [invalid]="sv.secondHasError"
+                [hasWarning]="!sv.secondHasError && sv.secondHasWarning"
+                [readOnly]="secondLocked()"
+                [ariaDescribedBy]="describedBy()"
+                (valueChange)="intent.emit({ type: 'secondChangeRequested', value: typeof $event === 'string' ? $event : null })"
+                (focused)="onPartFocus()"
+                (blurred)="blurred.emit()"
+              />
+            } @else if (showSteppers() && secondMode() !== 'text') {
               <div
                 class="emr-input-affix pf-affix"
                 [attr.data-invalid]="sv.secondHasError ? 'true' : null"
@@ -1191,7 +1228,7 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
 
   protected canDecrement(part: 'first' | 'second'): boolean {
     const mode = part === 'first' ? this.firstMode() : this.secondMode();
-    if (mode === 'text') return false;
+    if (mode !== 'integer' && mode !== 'decimal') return false;
     const min = part === 'first' ? this.firstMin() : this.secondMin();
     const cur = part === 'first' ? this.firstNumericValue() : this.secondNumericValue();
     if (min === undefined || cur === null) return true;
@@ -1205,7 +1242,7 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
 
   protected canIncrement(part: 'first' | 'second'): boolean {
     const mode = part === 'first' ? this.firstMode() : this.secondMode();
-    if (mode === 'text') return false;
+    if (mode !== 'integer' && mode !== 'decimal') return false;
     const max = part === 'first' ? this.firstMax() : this.secondMax();
     const cur = part === 'first' ? this.firstNumericValue() : this.secondNumericValue();
     if (max === undefined || cur === null) return true;
@@ -1220,7 +1257,7 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
   protected stepPart(part: 'first' | 'second', delta: -1 | 1): void {
     const locked = part === 'first' ? this.firstLocked() : this.secondLocked();
     const mode = part === 'first' ? this.firstMode() : this.secondMode();
-    if (locked || mode === 'text') return;
+    if (locked || (mode !== 'integer' && mode !== 'decimal')) return;
     const next = stepPairedNumber({
       current: part === 'first' ? this.firstNumericValue() : this.secondNumericValue(),
       delta,
@@ -1264,7 +1301,7 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
 
     const mode = part === 'first' ? this.firstMode() : this.secondMode();
     let parsedValue: string | number | null;
-    if (mode === 'text') {
+    if (mode !== 'integer' && mode !== 'decimal') {
       if (part === 'first') this.firstDrafting = false;
       else this.secondDrafting = false;
       parsedValue = emptyToNull(target.value);

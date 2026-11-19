@@ -116,26 +116,23 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
     selector: 'emr-icon-button',
     createInitialState: () => ({ pinned: true, clicks: 0 }),
     renderReact: ({ state, readOnly, update }) => (
-      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <EmrIconButton
-          ariaLabel="Pin patient banner"
-          icon="★"
-          variant="secondary"
-          pressed={state.pinned}
-          disabled={readOnly}
-          onPress={() =>
-            update('react', 'onPress', !state.pinned, (s) => ({ pinned: !s.pinned, clicks: s.clicks + 1 }))
-          }
-        />
-        <ParityNote>{`Pinned: ${state.pinned ? 'yes' : 'no'} · Clicks: ${state.clicks}`}</ParityNote>
-      </View>
+      <EmrIconButton
+        ariaLabel="Pin patient banner"
+        icon={state.pinned ? '★' : '☆'}
+        variant="secondary"
+        pressed={state.pinned}
+        disabled={readOnly}
+        onPress={() =>
+          update('react', 'onPress', !state.pinned, (s) => ({ pinned: !s.pinned, clicks: s.clicks + 1 }))
+        }
+      />
     ),
     renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-icon-button"
         props={{
           ariaLabel: 'Pin patient banner',
-          icon: '★',
+          icon: state.pinned ? 'star-filled' : 'star',
           variant: 'secondary',
           pressed: state.pinned,
           disabled: readOnly,
@@ -508,18 +505,25 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       </View>
     ),
     renderLit: ({ state, update }) => (
-      <LitElementHost
-        tag="emr-dialog"
-        props={{
-          open: state.open,
-          title: 'Confirm allergy override',
-          description: 'Document clinical rationale before signing order.',
-        }}
-        slotHtml="<p>Penicillin cross-reactivity reviewed with inpatient pharmacist.</p>"
-        events={{
-          closeRequested: () => update('lit', 'closeRequested', false, () => ({ open: false })),
-        }}
-      />
+      <View style={{ gap: 8 }}>
+        <EmrButton
+          variant="outline"
+          label={state.open ? 'Dialog open' : 'Open override dialog'}
+          onPress={() => update('lit', 'open', true, () => ({ open: true }))}
+        />
+        <LitElementHost
+          tag="emr-dialog"
+          props={{
+            open: state.open,
+            title: 'Confirm allergy override',
+            description: 'Document clinical rationale before signing order.',
+          }}
+          slotHtml="<p>Penicillin cross-reactivity reviewed with inpatient pharmacist.</p>"
+          events={{
+            closeRequested: () => update('lit', 'closeRequested', false, () => ({ open: false })),
+          }}
+        />
+      </View>
     ),
   }),
 
@@ -546,7 +550,7 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       <LitElementHost
         tag="emr-popover"
         props={{ open: state.open, label: 'Reference range details' }}
-        slotHtml="<button slot='trigger' type='button'>IOP reference</button><div>Adult reference range: 10–21 mmHg</div>"
+        slotHtml="<emr-button slot='trigger' variant='secondary' label='IOP reference'></emr-button><div>Adult reference range: 10–21 mmHg (Goldmann applanation)</div>"
         events={{
           openChange: (open) => update('lit', 'openChange', open, () => ({ open: Boolean(open) })),
         }}
@@ -566,7 +570,7 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       <LitElementHost
         tag="emr-tooltip"
         props={{ content: 'Goldmann applanation tonometry' }}
-        slotHtml="<button type='button'>GAT abbreviation</button>"
+        slotHtml="<emr-button variant='outline' label='GAT abbreviation'></emr-button>"
       />
     ),
   }),
@@ -611,7 +615,10 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       </View>
     ),
     renderLit: () => (
-      <LitElementHost tag="emr-avatar" props={{ name: 'Dr Meera Nair', tone: 'info', size: 'md' }} />
+      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <LitElementHost tag="emr-avatar" props={{ name: 'Dr Meera Nair', tone: 'info', size: 'md' }} />
+        <LitElementHost tag="emr-avatar" props={{ name: 'Raghav Sharma', initials: 'RS', tone: 'success', size: 'lg' }} />
+      </View>
     ),
   }),
 
@@ -855,7 +862,7 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
       readOnly: boolean;
       required: boolean;
       clearable: boolean;
-      mode: 'text' | 'decimal' | 'integer';
+      mode: 'text' | 'decimal' | 'integer' | 'select';
       size: 'sm' | 'md' | 'lg';
       layout: 'vertical' | 'horizontal' | 'inline';
       labelHidden: boolean;
@@ -893,51 +900,79 @@ export const PARITY_ENTRIES_L1_L2_BUILDING_BLOCKS: readonly ParityEntry[] = [
         { value: 'unknown', label: 'Unknown', tone: 'neutral' },
       ],
     }),
-    renderReact: ({ state, readOnly, update }) => (
-      <EmrPairedField
-        controlId="parity-paired-react"
-        labelHidden={state.labelHidden}
-        readOnly={state.readOnly || readOnly}
-        model={{ ...state, readOnly: state.readOnly || readOnly }}
-        onIntent={(i) =>
-          update('react', i.type, i, (s) => {
-            const cur = s.value ?? { first: null, second: null };
-            if (i.type === 'firstChangeRequested') return { ...s, value: { ...cur, first: i.value } };
-            if (i.type === 'secondChangeRequested') return { ...s, value: { ...cur, second: i.value } };
-            if (i.type === 'clearRequested') return { ...s, value: { first: null, second: null } };
-            return { ...s, status: i.status };
-          })
-        }
-      />
-    ),
-    renderLit: ({ state, readOnly, update }) => (
-      <LitElementHost
-        tag="emr-paired-field"
-        props={{
-          controlId: 'parity-paired-lit',
-          labelHidden: state.labelHidden,
-          readOnly: state.readOnly || readOnly,
-          model: { ...state, readOnly: state.readOnly || readOnly },
-        }}
-        events={{
-          intent: (raw) => {
-            const i = raw as {
-              type: string;
-              value?: string | number | null;
-              status?: PairedFieldViewModel['status'];
-            };
-            update('lit', i.type, i, (s) => {
+    renderReact: ({ state, readOnly, update }) => {
+      const lensOpts = [
+        { value: 'Clear', label: 'Clear' },
+        { value: 'NS I', label: 'NS I' },
+        { value: 'NS II', label: 'NS II' },
+        { value: 'NS III', label: 'NS III' },
+        { value: 'PSC', label: 'PSC' },
+        { value: 'PCIOL', label: 'PCIOL' },
+      ];
+      return (
+        <EmrPairedField
+          controlId="parity-paired-react"
+          labelHidden={state.labelHidden}
+          readOnly={state.readOnly || readOnly}
+          model={{
+            ...state,
+            options: state.mode === 'select' ? lensOpts : state.options,
+            readOnly: state.readOnly || readOnly,
+          }}
+          onIntent={(i) =>
+            update('react', i.type, i, (s) => {
               const cur = s.value ?? { first: null, second: null };
-              if (i.type === 'firstChangeRequested') return { ...s, value: { ...cur, first: i.value ?? null } };
-              if (i.type === 'secondChangeRequested') return { ...s, value: { ...cur, second: i.value ?? null } };
+              if (i.type === 'firstChangeRequested') return { ...s, value: { ...cur, first: i.value } };
+              if (i.type === 'secondChangeRequested') return { ...s, value: { ...cur, second: i.value } };
               if (i.type === 'clearRequested') return { ...s, value: { first: null, second: null } };
-              if (i.type === 'statusChangeRequested') return { ...s, status: i.status };
-              return s;
-            });
-          },
-        }}
-      />
-    ),
+              return { ...s, status: i.status };
+            })
+          }
+        />
+      );
+    },
+    renderLit: ({ state, readOnly, update }) => {
+      const lensOpts = [
+        { value: 'Clear', label: 'Clear' },
+        { value: 'NS I', label: 'NS I' },
+        { value: 'NS II', label: 'NS II' },
+        { value: 'NS III', label: 'NS III' },
+        { value: 'PSC', label: 'PSC' },
+        { value: 'PCIOL', label: 'PCIOL' },
+      ];
+      return (
+        <LitElementHost
+          tag="emr-paired-field"
+          props={{
+            controlId: 'parity-paired-lit',
+            labelHidden: state.labelHidden,
+            readOnly: state.readOnly || readOnly,
+            model: {
+              ...state,
+              options: state.mode === 'select' ? lensOpts : state.options,
+              readOnly: state.readOnly || readOnly,
+            },
+          }}
+          events={{
+            intent: (raw) => {
+              const i = raw as {
+                type: string;
+                value?: string | number | null;
+                status?: PairedFieldViewModel['status'];
+              };
+              update('lit', i.type, i, (s) => {
+                const cur = s.value ?? { first: null, second: null };
+                if (i.type === 'firstChangeRequested') return { ...s, value: { ...cur, first: i.value ?? null } };
+                if (i.type === 'secondChangeRequested') return { ...s, value: { ...cur, second: i.value ?? null } };
+                if (i.type === 'clearRequested') return { ...s, value: { first: null, second: null } };
+                if (i.type === 'statusChangeRequested') return { ...s, status: i.status };
+                return s;
+              });
+            },
+          }}
+        />
+      );
+    },
   }),
 
   defineParityEntry<

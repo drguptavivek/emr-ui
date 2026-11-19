@@ -1312,6 +1312,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
+    maxWidth: '100%',
+    minWidth: 0,
+    flexShrink: 1,
   },
   treeList: {
     padding: 6,

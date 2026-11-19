@@ -469,3 +469,156 @@ export function isDateTimeOutOfBounds(
   if (nMax && nVal > nMax) return true;
   return false;
 }
+
+// ── Shared Calendar & Time Popover Pure Helpers (Angular UI) ──
+
+export const EMR_UI_CALENDAR_MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+] as const;
+
+export const EMR_UI_CALENDAR_MONTH_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+] as const;
+
+export const EMR_UI_CALENDAR_WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] as const;
+export const EMR_UI_HOURS_24: readonly number[] = Array.from({ length: 24 }, (_, i) => i);
+export const EMR_UI_HOURS_12: readonly number[] = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+export const EMR_UI_MINUTES_60: readonly number[] = Array.from({ length: 60 }, (_, i) => i);
+
+export interface EmrUiCalendarDayCell {
+  readonly iso: string;
+  readonly day: number;
+  readonly inMonth: boolean;
+  readonly isSelected: boolean;
+  readonly isToday: boolean;
+  readonly ariaLabel: string;
+}
+
+function daysInMonthUi(year: number, month: number): number {
+  if (month === 2) return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28;
+  return [4, 6, 9, 11].includes(month) ? 30 : 31;
+}
+
+export function todayUiCalendarParts(): { year: number; month: number; day: number; isoDay: string; isoMonth: string; isoYear: string } {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  return {
+    year: y,
+    month: m,
+    day: d,
+    isoDay: `${pad4(y)}-${pad2(m)}-${pad2(d)}`,
+    isoMonth: `${pad4(y)}-${pad2(m)}`,
+    isoYear: pad4(y),
+  };
+}
+
+export function parseUiIsoParts(iso: string | null | undefined): { year: number; month?: number; day?: number } | null {
+  if (!iso) return null;
+  const m = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec(iso.trim());
+  if (!m) return null;
+  return {
+    year: Number(m[1]),
+    month: m[2] ? Number(m[2]) : undefined,
+    day: m[3] ? Number(m[3]) : undefined,
+  };
+}
+
+export function stepUiCalendarMonth(year: number, month: number, delta: -1 | 1): { year: number; month: number } {
+  let y = year;
+  let m = month + delta;
+  if (m < 1) {
+    m = 12;
+    y = Math.max(1, y - 1);
+  } else if (m > 12) {
+    m = 1;
+    y += 1;
+  }
+  return { year: y, month: m };
+}
+
+export function buildUiYearPage(centerYear: number): { startYear: number; endYear: number; years: readonly number[] } {
+  const base = Math.max(1, Math.floor((centerYear - 1) / 12) * 12 + 1);
+  return {
+    startYear: base,
+    endYear: base + 11,
+    years: Array.from({ length: 12 }, (_, i) => base + i),
+  };
+}
+
+export function buildUiCalendarMonthGrid(
+  viewYear: number,
+  viewMonth: number,
+  selectedIso: string | null | undefined,
+  todayIso: string,
+): readonly EmrUiCalendarDayCell[] {
+  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay();
+  const leading = (firstDow + 6) % 7;
+  const prev = stepUiCalendarMonth(viewYear, viewMonth, -1);
+  const prevDays = daysInMonthUi(prev.year, prev.month);
+  const curDays = daysInMonthUi(viewYear, viewMonth);
+  const next = stepUiCalendarMonth(viewYear, viewMonth, 1);
+
+  const cells: EmrUiCalendarDayCell[] = [];
+  for (let i = 0; i < 42; i++) {
+    let y = viewYear;
+    let m = viewMonth;
+    let d = 1;
+    let inMonth = true;
+    if (i < leading) {
+      y = prev.year;
+      m = prev.month;
+      d = prevDays - (leading - 1 - i);
+      inMonth = false;
+    } else if (i >= leading + curDays) {
+      y = next.year;
+      m = next.month;
+      d = i - (leading + curDays) + 1;
+      inMonth = false;
+    } else {
+      d = i - leading + 1;
+    }
+    const iso = `${pad4(y)}-${pad2(m)}-${pad2(d)}`;
+    cells.push({
+      iso,
+      day: d,
+      inMonth,
+      isSelected: selectedIso === iso,
+      isToday: todayIso === iso,
+      ariaLabel: `${d} ${EMR_UI_CALENDAR_MONTH_NAMES[m - 1]} ${y}`,
+    });
+  }
+  return cells;
+}
+
+export function extractUiTimeParts(value: string | null | undefined): { hour: number; minute: number; second: number } {
+  const m = value ? /^(\d{2}):(\d{2})(?::(\d{2}))?/.exec(value) : null;
+  if (m) {
+    return {
+      hour: Math.min(23, Math.max(0, Number(m[1]))),
+      minute: Math.min(59, Math.max(0, Number(m[2]))),
+      second: Math.min(59, Math.max(0, Number(m[3] ?? '0'))),
+    };
+  }
+  const now = new Date();
+  return { hour: now.getHours(), minute: now.getMinutes(), second: now.getSeconds() };
+}
+
+export function formatUiTime24(
+  hour: number,
+  minute: number,
+  second: number,
+  precision: 'minute' | 'second' = 'minute',
+): string {
+  return precision === 'second'
+    ? `${pad2(hour)}:${pad2(minute)}:${pad2(second)}`
+    : `${pad2(hour)}:${pad2(minute)}`;
+}
+
+export function nowUiTime24(precision: 'minute' | 'second' = 'minute'): string {
+  const now = new Date();
+  return formatUiTime24(now.getHours(), now.getMinutes(), now.getSeconds(), precision);
+}

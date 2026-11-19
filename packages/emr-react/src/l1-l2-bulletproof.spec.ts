@@ -736,6 +736,23 @@ describe('SSR HTML & ARIA smoke suite across all L1 primitives and L2 fields', (
     }
     expect(l2Htmls[12]).toContain('Clear status');
 
+    const pairedSelectHtml = renderToStaticMarkup(
+      createElement(EmrPairedField, {
+        model: {
+          label: 'Visual acuity',
+          mode: 'select',
+          firstLabel: 'OD',
+          secondLabel: 'OS',
+          firstOptions: [{ value: '6/6', label: '6/6' }],
+          secondOptions: [{ value: '6/9', label: '6/9' }],
+          value: { first: '6/6', second: '6/9' },
+        },
+        onIntent: noop,
+      })
+    );
+    expect(pairedSelectHtml).toContain('6/6');
+    expect(pairedSelectHtml).toContain('6/9');
+
     // Detailed EmrLateralityField parity assertions: optional clearable, scoped validation, zero duplicate alerts, lg size
     const latOptionalHtml = renderToStaticMarkup(
       createElement(EmrLateralityField, {

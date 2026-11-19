@@ -249,7 +249,15 @@ const l1ExtraStyles = css`
     color: var(--emr-text);
     font: inherit;
     font-size: var(--emr-text-md);
+    text-align: left;
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .input-bare::-webkit-search-cancel-button,
+  .input-bare::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
   }
   .input-affix-btn {
     min-width: 44px;
@@ -271,6 +279,27 @@ const l1ExtraStyles = css`
   }
   .input-affix-btn:hover:not(:disabled) {
     background: var(--emr-primary-hover);
+  }
+  .input-affix-btn--clear {
+    border-left: 0;
+    background: transparent;
+    color: var(--emr-text-muted);
+  }
+  .input-affix-btn--clear:hover:not(:disabled) {
+    background: transparent;
+    color: var(--emr-text);
+  }
+  .textarea-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .textarea-counter {
+    color: var(--emr-text-muted);
+    font-size: var(--emr-text-xs);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
   }
   .input-affix-btn:disabled {
     opacity: 0.5;
@@ -585,8 +614,8 @@ const l1ExtraStyles = css`
   }
   .page-btn[aria-current="page"] {
     border-color: var(--emr-primary);
-    background: var(--emr-primary);
-    color: var(--emr-on-primary);
+    background: var(--emr-primary-soft);
+    color: var(--emr-primary-contrast);
     font-weight: var(--emr-weight-bold);
   }
   .page-btn:disabled {
@@ -595,7 +624,17 @@ const l1ExtraStyles = css`
   }
   .page-size-select {
     width: auto;
-    min-width: 96px;
+    min-width: 112px;
+    min-height: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--emr-border);
+    border-radius: var(--emr-radius);
+    background: var(--emr-surface);
+    color: var(--emr-text);
+    font: inherit;
+    font-size: var(--emr-text-sm);
+    box-sizing: border-box;
   }
 
   .dialog-backdrop {
@@ -881,11 +920,16 @@ export class EmrTextareaElement extends EmrLitElement {
         ? html`<label class="emr-label" for=${id}>${this.label}${this.required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}</label>`
         : nothing}
       ${textarea}
-      ${this.error
-        ? html`<span id=${msgId} class="emr-error" role="alert">${this.error}</span>`
-        : this.hint
-          ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
+      <div class="textarea-footer">
+        ${this.error
+          ? html`<span id=${msgId} class="emr-error" role="alert">${this.error}</span>`
+          : this.hint
+            ? html`<span id=${msgId} class="emr-hint">${this.hint}</span>`
+            : html`<span></span>`}
+        ${this.maxLength !== undefined
+          ? html`<span class="textarea-counter">${currentText.length} / ${this.maxLength}</span>`
           : nothing}
+      </div>
     </div>`;
   }
 }
@@ -1242,7 +1286,7 @@ export class EmrSearchInputElement extends EmrLitElement {
       ${current.length > 0 && !this.locked
         ? html`<button
             type="button"
-            class="input-affix-btn"
+            class="input-affix-btn input-affix-btn--clear"
             aria-label="Clear search"
             @click=${() => {
               if (this.locked) return;
@@ -1658,7 +1702,7 @@ export class EmrCheckboxGroupElement extends EmrLitElement {
             type="button"
             role="checkbox"
             data-select-all="true"
-            class=${`checkbox-row-btn${this.readOnly ? ' checkbox-row-btn--readonly' : ''}${variantCls}${sizeCls}${placementCls}`}
+            class=${`checkbox-row-btn checkbox-row-btn--inline${this.readOnly ? ' checkbox-row-btn--readonly' : ''}${sizeCls}${placementCls}`}
             aria-checked=${selectAllState === 'mixed' ? 'mixed' : String(selectAllState === 'all')}
             aria-readonly=${this.readOnly ? 'true' : nothing}
             ?disabled=${this.disabled}
@@ -1819,7 +1863,7 @@ export class EmrPaginationElement extends EmrLitElement {
           aria-label="Previous page"
           ?disabled=${this.disabled || currentPage <= 1}
           @click=${() => this.emitPage(currentPage - 1)}
-        >Previous</button>
+        >${renderEmrSvgIcon('chevron-left', 16)}</button>
         ${pages.map(
           p => html`<button
             type="button"
@@ -1836,7 +1880,7 @@ export class EmrPaginationElement extends EmrLitElement {
           aria-label="Next page"
           ?disabled=${this.disabled || currentPage >= totalPages}
           @click=${() => this.emitPage(currentPage + 1)}
-        >Next</button>
+        >${renderEmrSvgIcon('chevron-right', 16)}</button>
       </div>
     </nav>`;
   }
@@ -2137,7 +2181,7 @@ export class EmrSpinnerElement extends EmrLitElement {
   override render() {
     return html`<span class="spinner-wrap" role="status" aria-label=${this.label}>
       <span class=${`spinner-ring spinner-ring--${this.size} spinner-ring--${this.tone}`} aria-hidden="true"></span>
-      <span class="sr-only">${this.label}</span>
+      <span>${this.label}</span>
     </span>`;
   }
 }

@@ -54,6 +54,7 @@ export interface ClinicalFieldDefinition {
   max?: number;
   step?: number;
   rows?: number;
+  maxLength?: number;
   options?: readonly ClinicalOption[];
   assessmentStatusOptions?: readonly ClinicalAssessmentStatusOption[];
   customRendererKey?: string;
@@ -65,6 +66,9 @@ export interface RepeatableGroupDefinition {
   label: string;
   description?: string;
   addLabel?: string;
+  emptyMessage?: string;
+  minItems?: number;
+  maxItems?: number;
   fields: readonly ClinicalFieldDefinition[];
 }
 
@@ -118,6 +122,7 @@ export interface ClinicalFieldState {
   hidden?: boolean;
   /** Resolved required-ness; overrides the definition's static `required` when present. */
   required?: boolean;
+  info?: string;
   warning?: string;
   error?: string;
 }
@@ -134,6 +139,9 @@ export interface RepeatableItemState {
   label?: string;
   fields: Readonly<Record<string, ClinicalFieldState>>;
   readOnly?: boolean;
+  badges?: readonly EmrBadge[];
+  warning?: string;
+  error?: string;
 }
 
 export interface ClinicalFormViewModel {
@@ -143,6 +151,7 @@ export interface ClinicalFormViewModel {
   collapsedSectionIds?: readonly string[];
   sectionStatuses?: Readonly<Record<string, EmrBadge>>;
   readOnly?: boolean;
+  emptyMessage?: string;
   /** Read-only record view: offer "Wrong patient? Request correction" (app-decided, app wording). */
   correction?: { label: string; description?: string };
 }

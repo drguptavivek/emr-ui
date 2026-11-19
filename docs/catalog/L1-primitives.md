@@ -496,6 +496,12 @@ interface EmrPairedInputProps extends EmrFieldProps {
   firstValue: string;  // default ''
   secondValue: string; // default ''
   separator: string;   // default '/'
+  inputType?: 'text' | 'integer' | 'decimal' | 'select';
+  firstInputType?: 'text' | 'integer' | 'decimal' | 'select';
+  secondInputType?: 'text' | 'integer' | 'decimal' | 'select';
+  options?: readonly EmrOption<string>[];
+  firstOptions?: readonly EmrOption<string>[];
+  secondOptions?: readonly EmrOption<string>[];
 }
 // @Output() firstValueChange: EventEmitter<string>
 // @Output() secondValueChange: EventEmitter<string>
@@ -508,6 +514,8 @@ interface EmrPairedInputProps extends EmrFieldProps {
 | firstLabel / secondLabel | `string` | `'First'` / `'Second'` | rendered as prefix glyphs and folded into each input's `aria-label` |
 | firstValue / secondValue | `string` | `''` | |
 | separator | `string` | `'/'` | rendered between the two inputs, `aria-hidden` |
+| inputType / firstInputType / secondInputType | `'text' \| 'integer' \| 'decimal' \| 'select'` | `'text'` | per-side text/numeric or `<emr-select>` dropdown mode |
+| options / firstOptions / secondOptions | `readonly EmrOption<string>[]` | `[]` | shared or per-side dropdown items when side mode is `'select'` |
 | firstValueChange / secondValueChange (outputs) | `EventEmitter<string>` | — | |
 
 Note: unlike the other five `EmrFieldBase` subclasses, `EmrPairedInput` does not use `inputId`/`placeholder`/`required` from the base in its template beyond deriving `${inputId}-first`/`${inputId}-second` ids, and it renders `hint`/`error` without wiring `aria-describedby`.

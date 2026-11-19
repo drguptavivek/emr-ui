@@ -250,6 +250,7 @@ export function normalizeTypedFieldState(
     requiredOverride: state.required,
     error: state.error,
     warning: state.warning,
+    info: state.info,
     messages: [],
     legacyState: state,
   };

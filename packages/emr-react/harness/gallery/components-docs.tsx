@@ -179,7 +179,9 @@ function ComponentsDocsInner({
   const items = useMemo<readonly CatalogComponentItem[]>(() => {
     const out: CatalogComponentItem[] = [];
     for (const raw of EMR_REGISTRY_MANIFEST.items as readonly Record<string, unknown>[]) {
-      const selector = typeof raw['selector'] === 'string' ? raw['selector'] : '';
+      const rawSelector = typeof raw['selector'] === 'string' ? raw['selector'] : '';
+      const rawName = typeof raw['name'] === 'string' ? raw['name'] : '';
+      const selector = rawSelector || (rawName === 'emr-clinical-cell-renderer' ? rawName : '');
       const layer = typeof raw['layer'] === 'number' ? raw['layer'] : 0;
       if (!selector || layer === 0 || layer === 5) continue;
       const reactName = typeof raw['reactName'] === 'string' ? raw['reactName'] : selector;
@@ -758,7 +760,14 @@ function ComponentsDocsInner({
                   Active Props:
                 </Text>
                 {Object.entries(currentState as Record<string, unknown>)
-                  .filter(([, v]) => v !== undefined && typeof v !== 'function')
+                  .filter(
+                    ([, v]) => {
+                      if (v === undefined || typeof v === 'function') return false;
+                      // Keep Active Props compact: omit raw JSON object/array payloads across all components
+                      if (typeof v === 'object' && v !== null) return false;
+                      return true;
+                    },
+                  )
                   .slice(0, 24)
                   .map(([k, v]) => {
                     const enumCycles: Record<string, readonly string[]> = {
@@ -779,7 +788,13 @@ function ComponentsDocsInner({
                                   ? ['default', 'outline', 'soft']
                                   : activeItem?.selector === 'emr-separator'
                                   ? ['solid', 'dashed', 'subtle']
-                                  : activeItem?.selector === 'emr-card'
+                                  : activeItem?.selector === 'emr-card' ||
+                                      activeItem?.selector === 'emr-section-card' ||
+                                      activeItem?.selector === 'emr-clinical-list' ||
+                                      activeItem?.selector === 'emr-medication-list' ||
+                                      activeItem?.selector === 'emr-allergy-list' ||
+                                      activeItem?.selector === 'emr-chronic-disease-list' ||
+                                      activeItem?.selector === 'emr-personal-history-list'
                                     ? ['outlined', 'elevated', 'filled', 'subtle']
                                     : activeItem?.selector === 'emr-scale-field'
                                       ? ['likert', 'vas']
@@ -835,7 +850,17 @@ function ComponentsDocsInner({
                             error: ['', 'Chief complaint is required for triage'],
                           }
                         : {}),
-                      precision: ['minute', 'second'],
+                      precision: activeItem?.selector === 'emr-vas' ? ['integer', 'decimal'] : ['minute', 'second'],
+                      scaleMode: ['numeric', 'text'],
+                      inputType: ['text', 'integer', 'decimal', 'select'],
+                      ...(activeItem?.selector === 'emr-paired-field'
+                        ? {
+                            mode: ['integer', 'decimal', 'text', 'select'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            size: ['sm', 'md', 'lg'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
                       timePrecision: ['minute', 'second'],
                       displayFormat: ['dd-mm-yyyy', 'dd/mm/yyyy', 'yyyy-mm-dd', 'mm/dd/yyyy'],
                       wireFormat: ['utc', 'local'],
@@ -1034,10 +1059,100 @@ function ComponentsDocsInner({
                             error: ['', 'Select an annotation colour before saving'],
                           }
                         : {}),
+                      ...(activeItem?.selector === 'emr-clinical-list' ||
+                      activeItem?.selector === 'emr-medication-list' ||
+                      activeItem?.selector === 'emr-allergy-list' ||
+                      activeItem?.selector === 'emr-chronic-disease-list' ||
+                      activeItem?.selector === 'emr-personal-history-list'
+                        ? {
+                            variant: ['outlined', 'elevated', 'filled', 'subtle'],
+                            error: ['', 'Unable to sync clinical entries'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-image-template-picker'
+                        ? {
+                            category: ['all', 'retina', 'cornea'],
+                            selectedTemplateId: ['retina-od', 'retina-os', 'cornea-od'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-time-axis'
+                        ? {
+                            stepId: ['60', '30'],
+                            selectedTickId: ['t0', 't1', 't2', 't3', 't4', 't5', 't6'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-data-table'
+                        ? {
+                            density: ['comfortable', 'compact'],
+                            error: ['', 'Unable to load referral registry'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-split-workspace'
+                        ? {
+                            preset: ['3-pane', '2-pane-50-50', '2-pane-40-60', 'focus-primary'],
+                            mobileActivePaneId: ['pane-chart', 'pane-note', 'pane-cds'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-command-palette'
+                        ? {
+                            presentation: ['inline', 'modal'],
+                            activeCategory: ['all', 'orders', 'navigation', 'smartphrases', 'calculators', 'actions'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-master-detail'
+                        ? {
+                            activeFilterId: ['all', 'critical', 'cosign'],
+                            selectedId: ['inb-1', 'inb-2', 'inb-3'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-synchronized-time-grid'
+                        ? {
+                            resolution: ['15m', '1h', '4h', '24h'],
+                            selectedColumnId: ['c08', 'c09', 'c10', 'c11', 'c12', 'c13'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-field-generator'
+                        ? {
+                            type: [
+                              'text',
+                              'multiline',
+                              'integer',
+                              'decimal',
+                              'quantity',
+                              'boolean',
+                              'select',
+                              'multi-select',
+                              'date',
+                              'time',
+                              'datetime',
+                            ],
+                            error: ['', 'Unable to persist field definition cleanly.'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-terminology-search'
+                        ? {
+                            role: ['question-meaning', 'unit', 'answer-value-set', 'classification-mapping'],
+                            sourceId: ['loinc', 'snomed', 'icd10', 'ucum'],
+                            error: ['', 'Terminology lookup timed out.'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-field-library-picker'
+                        ? {
+                            selectedSectionId: ['tonometry', 'history'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-template-composer' ||
+                      activeItem?.selector === 'emr-template-preview'
+                        ? {
+                            status: ['draft', 'active', 'retired'],
+                            selectedSectionId: ['tonometry', 'history'],
+                            error: ['', 'Template revision conflict detected.'],
+                          }
+                        : {}),
                       hourCycle: ['24', '12'],
                       mode:
                         activeItem?.selector === 'emr-paired-field'
-                          ? ['integer', 'decimal', 'text']
+                          ? ['integer', 'decimal', 'text', 'select']
                           : activeItem?.selector === 'emr-date-range-input'
                             ? ['date', 'datetime']
                             : ['decimal', 'integer'],
@@ -1070,10 +1185,33 @@ function ComponentsDocsInner({
                       weekStartsOn: [0, 1],
                       separatorAfter: [3, 2, 0],
                       maxItems: [3, 2, 4, 0],
+                      headingLevel: [2, 3, 4, 5, 6],
                       ...(activeItem?.selector === 'emr-macro-text-field'
                         ? {
                             rows: [4, 2, 6, 8],
                             maxLength: [280, 140, 500],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-time-axis'
+                        ? {
+                            offset: [0, 1, 2],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-data-table'
+                        ? {
+                            pageSize: [3, 5, 10],
+                            page: [1, 2, 3],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-command-palette'
+                        ? {
+                            activeIndex: [0, 1, 2, 3],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-synchronized-time-grid'
+                        ? {
+                            scrollOffset: [0, 1, 2],
+                            visibleColumnCount: [3, 4, 6],
                           }
                         : {}),
                     };
@@ -1083,9 +1221,23 @@ function ComponentsDocsInner({
                     const interactive = isBool || Boolean(cycle) || Boolean(numCycle);
                     const onToggleProp = () => {
                       if (isBool) {
-                        setComponentState((prev) =>
-                          prev && typeof prev === 'object' ? { ...(prev as Record<string, unknown>), [k]: !v } : prev,
-                        );
+                        setComponentState((prev) => {
+                          if (!prev || typeof prev !== 'object') return prev;
+                          const obj = prev as Record<string, unknown>;
+                          if (
+                            activeItem?.selector === 'emr-terminology-search' &&
+                            k === 'loading' &&
+                            obj['search'] &&
+                            typeof obj['search'] === 'object'
+                          ) {
+                            return {
+                              ...obj,
+                              loading: !v,
+                              search: { ...(obj['search'] as Record<string, unknown>), loading: !v },
+                            };
+                          }
+                          return { ...obj, [k]: !v };
+                        });
                       } else if (cycle) {
                         const next = cycle[(cycle.indexOf(v as string) + 1) % cycle.length];
                         setComponentState((prev) => {
@@ -1190,14 +1342,74 @@ function ComponentsDocsInner({
                               };
                             }
                           }
+                          if (activeItem?.selector === 'emr-time-axis' && k === 'stepId') {
+                            const labels =
+                              next === '30'
+                                ? ['08:00', '08:30', '09:00']
+                                : ['08:00', '09:00', '10:00'];
+                            const off = typeof obj['offset'] === 'number' ? Math.max(0, Math.min(2, obj['offset'])) : 0;
+                            return { ...obj, stepId: next, windowStartLabel: labels[off] ?? '08:00' };
+                          }
+                          if (
+                            activeItem?.selector === 'emr-field-generator' &&
+                            k === 'type' &&
+                            obj['draft'] &&
+                            typeof obj['draft'] === 'object'
+                          ) {
+                            return {
+                              ...obj,
+                              type: next,
+                              draft: { ...(obj['draft'] as Record<string, unknown>), type: next },
+                            };
+                          }
+                          if (
+                            activeItem?.selector === 'emr-terminology-search' &&
+                            (k === 'sourceId' || k === 'role' || k === 'error') &&
+                            obj['search'] &&
+                            typeof obj['search'] === 'object'
+                          ) {
+                            return {
+                              ...obj,
+                              [k]: next,
+                              search: {
+                                ...(obj['search'] as Record<string, unknown>),
+                                [k]: k === 'error' ? next || undefined : next,
+                              },
+                            };
+                          }
+                          if (
+                            (activeItem?.selector === 'emr-template-composer' ||
+                              activeItem?.selector === 'emr-template-preview') &&
+                            k === 'status' &&
+                            obj['template'] &&
+                            typeof obj['template'] === 'object'
+                          ) {
+                            return {
+                              ...obj,
+                              status: next,
+                              template: { ...(obj['template'] as Record<string, unknown>), status: next },
+                            };
+                          }
                           return { ...obj, [k]: next };
                         });
                       } else if (numCycle) {
                         const idx = numCycle.indexOf(v as number);
                         const next = numCycle[(idx + 1) % numCycle.length];
-                        setComponentState((prev) =>
-                          prev && typeof prev === 'object' ? { ...(prev as Record<string, unknown>), [k]: next } : prev,
-                        );
+                        setComponentState((prev) => {
+                          if (!prev || typeof prev !== 'object') return prev;
+                          const obj = prev as Record<string, unknown>;
+                          if (activeItem?.selector === 'emr-time-axis' && k === 'offset') {
+                            const labels =
+                              obj['stepId'] === '30'
+                                ? ['08:00', '08:30', '09:00']
+                                : ['08:00', '09:00', '10:00'];
+                            return { ...obj, offset: next, windowStartLabel: labels[next] ?? '08:00' };
+                          }
+                          if (activeItem?.selector === 'emr-data-table' && k === 'pageSize') {
+                            return { ...obj, pageSize: next, page: 1 };
+                          }
+                          return { ...obj, [k]: next };
+                        });
                       }
                     };
                     return (

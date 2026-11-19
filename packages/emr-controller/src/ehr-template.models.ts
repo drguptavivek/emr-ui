@@ -75,6 +75,7 @@ export type EhrTemplateIntent =
   | { type: 'templatePatched'; changes: Pick<Partial<EhrTemplateDefinition>, 'title' | 'description' | 'locale' | 'status'> }
   | { type: 'fieldLibraryQueryChanged'; query: string }
   | { type: 'sectionSelected'; sectionId: string }
+  | { readonly type: 'placementSelected'; readonly sectionId: string; readonly placementId: string }
   | { type: 'sectionAdded'; section: EhrTemplateSection }
   | { type: 'sectionPatched'; sectionId: string; changes: Pick<Partial<EhrTemplateSection>, 'label' | 'description'> }
   | { type: 'sectionMoved'; sectionId: string; direction: 'up' | 'down' }

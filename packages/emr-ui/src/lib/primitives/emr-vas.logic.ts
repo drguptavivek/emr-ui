@@ -2,18 +2,25 @@ import type {
   EmrVasAnchorsProp,
   EmrVasAnchorsSummary,
   EmrVasOrientation,
+  EmrVasPrecision,
   EmrVasSize,
   EmrVasTick,
 } from '@drguptavivek/emr-controller';
 
-export type { EmrVasAnchorsProp, EmrVasAnchorsSummary, EmrVasOrientation, EmrVasSize, EmrVasTick };
+export type { EmrVasAnchorsProp, EmrVasAnchorsSummary, EmrVasOrientation, EmrVasPrecision, EmrVasSize, EmrVasTick };
 
 export const EMR_VAS_MAX_TICKS = 400;
 export const EMR_VAS_TRACK_INSET_PX = 14;
 
-export function resolveVasStep(min: number, max: number, step?: number): number {
+export function resolveVasStep(
+  min: number,
+  max: number,
+  step?: number,
+  precision: EmrVasPrecision = 'integer',
+): number {
   if (typeof step === 'number' && Number.isFinite(step) && step >= 0) return step;
-  return Math.abs(max - min) <= 20 ? 0.1 : 1;
+  if (precision === 'decimal') return Math.abs(max - min) <= 20 ? 0.1 : 0.5;
+  return 1;
 }
 
 export function vasPercent(value: number, min: number, max: number): number {

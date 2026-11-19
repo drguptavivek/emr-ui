@@ -2,31 +2,73 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal } from '@
 import type {
   AddressFieldIntent,
   AddressFieldViewModel,
+  AnnotationLayerRecord,
+  AnnotationListIntent,
+  AnnotationListItem,
+  AnnotationListViewModel,
+  AnnotationToolbarIntent,
+  AnnotationToolbarViewModel,
   AttestationIntent,
   AttestationViewModel,
   AttachmentFieldIntent,
   AttachmentFieldViewModel,
   ClinicalFieldDefinition,
   ClinicalFieldState,
+  ClinicalFormIntent,
+  ClinicalFormViewModel,
+  ClinicalListIntent,
+  ClinicalListItem,
+  ClinicalListViewModel,
+  ClinicalCellState,
+  ClinicalFieldType,
+  ClinicalMatrixIntent,
+  ClinicalMatrixSchema,
+  ClinicalMatrixValues,
   CodedInputIntent,
   CodedInputViewModel,
   DoseSlot,
   DurationFieldIntent,
   DurationFieldViewModel,
+  EhrTemplateDefinition,
+  EhrTemplateIntent,
+  EhrTemplateViewModel,
   EmrAccordionItem,
   EmrBadge,
   EmrBreadcrumbItem,
   EmrCodedValue,
   EmrColorSwatch,
+  EmrCommandCategory,
+  EmrCommandItem,
+  EmrCommandPaletteIntent,
+  EmrCommandPalettePresentation,
+  EmrCommandPaletteViewModel,
+  EmrDataTableColumn,
+  EmrDataTableDensity,
+  EmrDataTableIntent,
+  EmrDataTableModel,
+  EmrDataTableRow,
+  EmrDataTableSortDirection,
   EmrDateRangePreset,
   EmrDateRangeValue,
+  EmrFileSelectionItem,
+  EmrGeneratedFieldDefinition,
   EmrImageCropTransform,
   EmrImageItem,
   EmrImageViewportState,
+  EmrLikertOption,
   EmrMacroSuggestion,
+  EmrMasterDetailIntent,
+  EmrMasterDetailItem,
+  EmrMasterDetailViewModel,
   EmrMenuItem,
   EmrOption,
   EmrPhoneChannel,
+  EmrToastIntent,
+  EmrToastModel,
+  EmrVasPrecision,
+  EmrSectionCardHeadingLevel,
+  EmrSectionCardPadding,
+  EmrSectionCardVariant,
   EmrSegmentedOption,
   EmrSegmentedOrientation,
   EmrSegmentedShape,
@@ -34,6 +76,15 @@ import type {
   EmrSegmentedVariant,
   EmrSelectSize,
   EmrSelectValue,
+  EmrSplitWorkspaceIntent,
+  EmrSplitWorkspacePane,
+  EmrSplitWorkspacePreset,
+  EmrSplitWorkspaceViewModel,
+  EmrSynchronizedTimeGridIntent,
+  EmrSynchronizedTimeGridViewModel,
+  EmrTimeGridColumn,
+  EmrTimeGridResolution,
+  EmrTimeGridTrack,
   EmrSelectVariant,
   EmrStatTileModel,
   EmrToggleGroupLabelPlacement,
@@ -45,10 +96,19 @@ import type {
   EmrTreeNode,
   EmrUploadedImageItem,
   FieldFrameLayout,
+  FieldGeneratorIntent,
+  FieldGeneratorViewModel,
+  FieldLibraryPickerIntent,
+  FieldLibraryPickerViewModel,
+  FieldValidationRule,
   IdentifierEntryIntent,
   IdentifierEntryView,
   ImageFieldIntent,
   ImageFieldViewModel,
+  ImageTemplateGroup,
+  ImageTemplateOption,
+  ImageTemplatePickerIntent,
+  ImageTemplatePickerViewModel,
   LateralityFieldIntent,
   LateralityFieldViewModel,
   MacroTextFieldIntent,
@@ -63,6 +123,8 @@ import type {
   RangeFieldViewModel,
   RefractionFieldIntent,
   RefractionFieldViewModel,
+  RepeatableGroupDefinition,
+  RepeatableItemState,
   ScaleFieldIntent,
   ScaleFieldViewModel,
   ScheduleAmountMode,
@@ -70,6 +132,19 @@ import type {
   ScheduleSlotPreset,
   SignatureCaptureIntent,
   SignatureCaptureViewModel,
+  TemplateArtifactIssue,
+  TemplatePreviewIntent,
+  TemplatePreviewViewModel,
+  TerminologyBinding,
+  TerminologyConcept,
+  TerminologySearchIntent,
+  TerminologySearchState,
+  TerminologySearchViewModel,
+  TerminologySource,
+  TimeAxisIntent,
+  TimeAxisViewModel,
+  ValidationRuleEditorIntent,
+  ValidationRuleEditorViewModel,
   VisualAcuityFieldIntent,
   VisualAcuityFieldViewModel,
 } from '@drguptavivek/emr-controller';
@@ -78,75 +153,120 @@ import {
   DEFAULT_CLINICAL_COLOR_SWATCHES,
   DEFAULT_IMAGE_CROP_TRANSFORM,
   DEFAULT_IMAGE_VIEWPORT,
+  FAVOURITES_GROUP_ID,
+  clampTimeGridScrollOffset,
+  derivePreview,
   expandMacroTriggerAtCursor,
+  filterImageTemplates,
+  resolveSplitWorkspacePresetSizes,
 } from '@drguptavivek/emr-controller';
 import {
   EmrAccordionComponent,
   EmrAddressFieldComponent,
   EmrAlertComponent,
+  EmrAllergyListComponent,
+  EmrAnnotationListComponent,
+  EmrAnnotationToolbarComponent,
   EmrAttachmentFieldComponent,
   EmrAttestationComponent,
+  EmrAvatarComponent,
   EmrBadgeComponent,
   EmrBreadcrumbsComponent,
   EmrButtonComponent,
   EmrCardComponent,
   EmrCheckboxComponent,
   EmrChipComponent,
+  EmrChronicDiseaseListComponent,
+  EmrClinicalCellRendererDirective,
+  EmrClinicalFormComponent,
+  EmrClinicalListComponent,
+  EmrClinicalMatrixComponent,
   EmrCodedInputComponent,
   EmrColorPickerComponent,
   EmrColumnsComponent,
   EmrCopyButtonComponent,
+  EmrDataTableComponent,
   EmrDateInputComponent,
   EmrDateRangeInputComponent,
   EmrDateTimeInputComponent,
+  EmrDialogComponent,
   EmrDurationInputComponent,
   EmrFieldFrameComponent,
+  EmrFieldGeneratorComponent,
+  EmrFieldLibraryPickerComponent,
   EmrFieldValueRowComponent,
+  EmrFileTriggerComponent,
+  EmrIconButtonComponent,
   EmrIdentifierEntryComponent,
   EmrImageCropperComponent,
   EmrImageFieldComponent,
+  EmrImageTemplatePickerComponent,
   EmrImageUploadComponent,
   EmrImageViewerComponent,
   EmrLateralityFieldComponent,
   EmrLikertComponent,
   EmrMacroTextFieldComponent,
   EmrMaskedInputComponent,
+  EmrMedicationListComponent,
   EmrMenuComponent,
   EmrNumberInputComponent,
+  EmrNumericStepperComponent,
   EmrOtpInputComponent,
+  EmrPaginationComponent,
   EmrPairedFieldComponent,
   EmrPairedInputComponent,
+  EmrPasswordInputComponent,
   EmrCheckboxGroupComponent,
   EmrComboboxComponent,
   EmrPartialDateFieldComponent,
+  EmrPersonalHistoryListComponent,
   EmrPhoneInputComponent,
+  EmrPopoverComponent,
+  EmrProgressBarComponent,
   EmrQuantityInputComponent,
   EmrRadioGroupComponent,
   EmrRangeFieldComponent,
   EmrRangeSliderComponent,
   EmrRefractionFieldComponent,
+  EmrRepeatableGroupComponent,
   EmrScaleFieldComponent,
   EmrScheduleSlotPickerComponent,
+  EmrSearchInputComponent,
   EmrSearchSelectComponent,
+  EmrSectionCardComponent,
   EmrSegmentedControlComponent,
   EmrSelectComponent,
   EmrSeparatorComponent,
   EmrSignatureCaptureFieldComponent,
+  EmrSkeletonComponent,
   EmrSliderComponent,
+  EmrSpinnerComponent,
   EmrSplitButtonComponent,
+  EmrCommandPaletteComponent,
+  EmrMasterDetailComponent,
+  EmrSplitWorkspaceComponent,
   EmrStageStepperComponent,
   EmrStatTileComponent,
   EmrStateMessageComponent,
   EmrStatusCellComponent,
+  EmrSynchronizedTimeGridComponent,
   EmrTabsComponent,
   EmrTagInputComponent,
+  EmrTemplateComposerComponent,
+  EmrTemplatePreviewComponent,
+  EmrTerminologySearchComponent,
   EmrTextInputComponent,
+  EmrTextareaComponent,
+  EmrTimeAxisComponent,
   EmrTimeInputComponent,
+  EmrToastComponent,
   EmrToggleComponent,
   EmrToggleGroupComponent,
+  EmrTooltipComponent,
   EmrTreeSelectComponent,
   EmrTreeViewComponent,
   EmrTypedFieldComponent,
+  EmrValidationRuleEditorComponent,
   EmrVasComponent,
   EmrVisualAcuityFieldComponent,
 } from '../../packages/emr-ui/src/public-api';
@@ -208,6 +328,18 @@ import {
     EmrAttestationComponent,
     EmrScheduleSlotPickerComponent,
     EmrIdentifierEntryComponent,
+    EmrSectionCardComponent,
+    EmrRepeatableGroupComponent,
+    EmrClinicalFormComponent,
+    EmrClinicalListComponent,
+    EmrClinicalMatrixComponent,
+    EmrClinicalCellRendererDirective,
+    EmrAnnotationToolbarComponent,
+    EmrAnnotationListComponent,
+    EmrMedicationListComponent,
+    EmrAllergyListComponent,
+    EmrChronicDiseaseListComponent,
+    EmrPersonalHistoryListComponent,
     EmrLateralityFieldComponent,
     EmrMacroTextFieldComponent,
     EmrScaleFieldComponent,
@@ -223,6 +355,34 @@ import {
     EmrImageCropperComponent,
     EmrImageUploadComponent,
     EmrImageFieldComponent,
+    EmrImageTemplatePickerComponent,
+    EmrTimeAxisComponent,
+    EmrDataTableComponent,
+    EmrSplitWorkspaceComponent,
+    EmrCommandPaletteComponent,
+    EmrMasterDetailComponent,
+    EmrSynchronizedTimeGridComponent,
+    EmrFieldGeneratorComponent,
+    EmrTerminologySearchComponent,
+    EmrValidationRuleEditorComponent,
+    EmrFieldLibraryPickerComponent,
+    EmrTemplateComposerComponent,
+    EmrTemplatePreviewComponent,
+    EmrTextareaComponent,
+    EmrIconButtonComponent,
+    EmrSearchInputComponent,
+    EmrPasswordInputComponent,
+    EmrNumericStepperComponent,
+    EmrPaginationComponent,
+    EmrDialogComponent,
+    EmrPopoverComponent,
+    EmrTooltipComponent,
+    EmrProgressBarComponent,
+    EmrSpinnerComponent,
+    EmrSkeletonComponent,
+    EmrAvatarComponent,
+    EmrFileTriggerComponent,
+    EmrToastComponent,
   ],
   template: `
     @switch (selector()) {
@@ -349,6 +509,8 @@ import {
           label="Presenting visual acuity (OD / OS)"
           firstLabel="OD"
           secondLabel="OS"
+          [inputType]="pairedInputType()"
+          [options]="pairedInputType() === 'select' ? pairedVaOptions : []"
           [firstValue]="pairedLeft()"
           [secondValue]="pairedRight()"
           (firstValueChange)="pairedLeft.set($event ?? ''); emitState({ od: $event ?? '' })"
@@ -641,6 +803,210 @@ import {
             <div>OS: -1.25 DS / -0.75 DC × 85° (BCVA 6/6)</div>
           </div>
         </emr-card>
+      }
+      @case ('emr-section-card') {
+        <emr-section-card
+          sectionId="parity-sec-angular"
+          label="Anterior Segment Slit-Lamp"
+          [description]="sectionCardShowDescription() ? 'Collapsible L3 section container (expands automatically in .emr-print)' : undefined"
+          [status]="sectionCardShowStatus() ? { label: 'Recorded', tone: 'success' } : undefined"
+          [collapsible]="sectionCardCollapsible()"
+          [collapsed]="sectionCardCollapsed()"
+          [headingLevel]="sectionCardHeadingLevel()"
+          [variant]="sectionCardVariant()"
+          [tone]="sectionCardTone()"
+          [padding]="sectionCardPadding()"
+          [readOnly]="sectionCardReadOnly()"
+          (intent)="sectionCardCollapsed.set(!sectionCardCollapsed()); emitState({ collapsed: sectionCardCollapsed() })"
+        >
+          <div style="display:grid;gap:6px">
+            <emr-field-value-row field="Cornea (OD / OS)" value="Clear / Clear" remarks="Fluorescein negative" />
+            <emr-field-value-row field="Lens (OD / OS)" value="NS Grade II / Pseudophakic PCIOL" remarks="Dilated" />
+          </div>
+        </emr-section-card>
+      }
+      @case ('emr-repeatable-group') {
+        <emr-repeatable-group
+          [definition]="repeatGroupDef"
+          [model]="repeatEmpty() ? [] : repeatItems()"
+          [readOnly]="repeatReadOnly() || readOnly()"
+          idPrefix="parity-rg-a"
+          [error]="repeatError() ? 'At least one post-operative topical drop regimen is required' : undefined"
+          [warning]="repeatWarning() ? 'Verify preservative-free drops for corneal graft patients' : undefined"
+          (intent)="onRepeatIntent($event)"
+        />
+      }
+      @case ('emr-clinical-form') {
+        <emr-clinical-form
+          [model]="clinicalFormModel()"
+          idPrefix="parity-cf-a"
+          (intent)="onClinicalFormIntent($event)"
+        />
+      }
+      @case ('emr-clinical-list') {
+        <emr-clinical-list
+          [model]="clinicalListModelFor('emr-clinical-list')"
+          (intent)="onClinicalListIntent('emr-clinical-list', $event)"
+        />
+      }
+      @case ('emr-medication-list') {
+        <emr-medication-list
+          [model]="clinicalListModelFor('emr-medication-list')"
+          (intent)="onClinicalListIntent('emr-medication-list', $event)"
+        />
+      }
+      @case ('emr-allergy-list') {
+        <emr-allergy-list
+          [model]="clinicalListModelFor('emr-allergy-list')"
+          (intent)="onClinicalListIntent('emr-allergy-list', $event)"
+        />
+      }
+      @case ('emr-chronic-disease-list') {
+        <emr-chronic-disease-list
+          [model]="clinicalListModelFor('emr-chronic-disease-list')"
+          (intent)="onClinicalListIntent('emr-chronic-disease-list', $event)"
+        />
+      }
+      @case ('emr-personal-history-list') {
+        <emr-personal-history-list
+          [model]="clinicalListModelFor('emr-personal-history-list')"
+          (intent)="onClinicalListIntent('emr-personal-history-list', $event)"
+        />
+      }
+      @case ('emr-clinical-matrix') {
+        <emr-clinical-matrix
+          [definition]="clinicalMatrixDefinition()"
+          [model]="clinicalMatrixValues()"
+          [readOnly]="clinicalMatrixReadOnly() || readOnly()"
+          idPrefix="parity-cm-a"
+          (intent)="onClinicalMatrixIntent($event)"
+        />
+      }
+      @case ('emr-clinical-cell-renderer') {
+        <emr-clinical-matrix
+          [definition]="customCellSchema"
+          [model]="customCellMatrixModel()"
+          [readOnly]="customCellReadOnly() || readOnly()"
+          idPrefix="parity-ccr-a"
+          (intent)="onCustomCellMatrixIntent($event)"
+        >
+          <ng-template emrClinicalCellRenderer="angleStamp" let-ctx>
+            <button
+              type="button"
+              class="emr-button emr-button--outline emr-button--small"
+              [attr.aria-readonly]="ctx.readOnly ? 'true' : null"
+              [attr.aria-label]="'Stamp ' + ctx.row.label + ' ' + ctx.column.label"
+              (click)="ctx.emit('stamp', { columnId: ctx.column.id, next: (typeof ctx.cell?.value === 'number' ? ctx.cell.value : 0) + 1 })"
+            >
+              Stamp Shaffer IV · {{ ctx.column.id.toUpperCase() }} ({{ typeof ctx.cell?.value === 'number' ? ctx.cell.value : 0 }})
+            </button>
+          </ng-template>
+        </emr-clinical-matrix>
+      }
+      @case ('emr-annotation-toolbar') {
+        <emr-annotation-toolbar
+          [model]="annotationToolbarModel()"
+          idPrefix="parity-at-a"
+          (intent)="onAnnotationToolbarIntent($event)"
+        />
+      }
+      @case ('emr-annotation-list') {
+        <emr-annotation-list
+          [model]="annotationListModel()"
+          idPrefix="parity-al-a"
+          (intent)="onAnnotationListIntent($event)"
+        />
+      }
+      @case ('emr-image-template-picker') {
+        <emr-image-template-picker
+          [model]="imageTemplatePickerModel()"
+          idPrefix="parity-tp-a"
+          (intent)="onImageTemplatePickerIntent($event)"
+        />
+      }
+      @case ('emr-time-axis') {
+        <emr-time-axis
+          [model]="timeAxisModel()"
+          idPrefix="parity-ta-a"
+          (intent)="onTimeAxisIntent($event)"
+        />
+      }
+      @case ('emr-data-table') {
+        <emr-data-table
+          [model]="dataTableModel()"
+          idPrefix="parity-dt-a"
+          (intent)="onDataTableIntent($event)"
+        />
+      }
+      @case ('emr-split-workspace') {
+        <emr-split-workspace
+          [model]="splitWorkspaceModel()"
+          idPrefix="parity-sw-a"
+          (intent)="onSplitWorkspaceIntent($event)"
+        />
+      }
+      @case ('emr-command-palette') {
+        <emr-command-palette
+          [model]="commandPaletteModel()"
+          idPrefix="parity-cp-a"
+          (intent)="onCommandPaletteIntent($event)"
+        />
+      }
+      @case ('emr-master-detail') {
+        <emr-master-detail
+          [model]="masterDetailModel()"
+          idPrefix="parity-md-a"
+          (intent)="onMasterDetailIntent($event)"
+        />
+      }
+      @case ('emr-synchronized-time-grid') {
+        <emr-synchronized-time-grid
+          [model]="synchronizedTimeGridModel()"
+          idPrefix="parity-stg-a"
+          (intent)="onSynchronizedTimeGridIntent($event)"
+        />
+      }
+      @case ('emr-field-generator') {
+        <emr-field-generator
+          [model]="fgEffectiveModel()"
+          idPrefix="parity-fg-a"
+          (intent)="onFieldGeneratorIntent($event)"
+        />
+      }
+      @case ('emr-terminology-search') {
+        <emr-terminology-search
+          [model]="tsEffectiveModel()"
+          idPrefix="parity-ts-a"
+          (intent)="onTerminologySearchIntent($event)"
+        />
+      }
+      @case ('emr-validation-rule-editor') {
+        <emr-validation-rule-editor
+          [model]="vreEffectiveModel()"
+          idPrefix="parity-vre-a"
+          (intent)="onValidationRuleEditorIntent($event)"
+        />
+      }
+      @case ('emr-field-library-picker') {
+        <emr-field-library-picker
+          [model]="flpEffectiveModel()"
+          idPrefix="parity-flp-a"
+          (intent)="onFieldLibraryPickerIntent($event)"
+        />
+      }
+      @case ('emr-template-composer') {
+        <emr-template-composer
+          [model]="tcEffectiveModel()"
+          idPrefix="parity-tc-a"
+          (intent)="onTemplateComposerIntent($event)"
+        />
+      }
+      @case ('emr-template-preview') {
+        <emr-template-preview
+          [model]="tpEffectiveModel()"
+          idPrefix="parity-tpv-a"
+          (intent)="onTemplatePreviewIntent($event)"
+        />
       }
       @case ('emr-search-select') {
         <emr-search-select
@@ -1067,11 +1433,13 @@ import {
       }
       @case ('emr-likert') {
         <emr-likert
-          label="Ocular surface discomfort score (0–10)"
-          [min]="0"
-          [max]="10"
-          [anchors]="likertAnchors"
-          [tone]="likertVal() !== null && likertVal()! >= 7 ? 'danger' : 'info'"
+          [label]="likertScaleMode() === 'text' ? 'Post-op discomfort level (text scale)' : 'Ocular surface discomfort score (0–10)'"
+          [min]="likertScaleMode() === 'text' ? 1 : 0"
+          [max]="likertScaleMode() === 'text' ? 5 : 10"
+          [anchors]="likertScaleMode() === 'text' ? [] : likertAnchors"
+          [options]="likertScaleMode() === 'text' ? likertTextOptions : []"
+          [showOptionLabels]="false"
+          [tone]="likertVal() !== null && (likertScaleMode() === 'text' ? likertVal()! >= 4 : likertVal()! >= 7) ? 'danger' : 'info'"
           [clearable]="likertClearable()"
           [fullWidth]="likertFullWidth()"
           [disabled]="likertDisabled()"
@@ -1083,10 +1451,10 @@ import {
       }
       @case ('emr-vas') {
         <emr-vas
-          label="Post-operative pain VAS (0.0–10.0)"
+          [label]="vasPrecision() === 'integer' ? 'Post-operative pain VAS (0–10)' : 'Post-operative pain VAS (0.0–10.0)'"
           [min]="0"
           [max]="10"
-          [step]="0.5"
+          [precision]="vasPrecision()"
           [majorInterval]="5"
           [minorInterval]="1"
           [orientation]="vasOrientation()"
@@ -1097,7 +1465,6 @@ import {
           [required]="vasRequired()"
           [anchors]="vasAnchors"
           [value]="vasVal()"
-          [valueText]="vasVal() === null ? undefined : vasVal() + ' / 10'"
           (valueChange)="vasVal.set($event); emitState({ value: $event })"
           (cleared)="vasVal.set(null); emitState({ value: null })"
         />
@@ -1349,6 +1716,138 @@ import {
           (blurred)="emitState({ focused: false })"
         />
       }
+      @case ('emr-textarea') {
+        <emr-textarea
+          controlId="parity-textarea-ng"
+          label="History of present illness"
+          hint="Recorded in patient's own words"
+          [rows]="3"
+          [maxLength]="300"
+          [value]="textareaVal()"
+          (valueChange)="textareaVal.set($event); emitState({ value: $event ?? '' })"
+        />
+      }
+      @case ('emr-icon-button') {
+        <emr-icon-button
+          controlId="parity-iconbtn-ng"
+          ariaLabel="Favourite template"
+          [icon]="iconButtonPressed() ? '★' : '☆'"
+          [variant]="iconButtonPressed() ? 'secondary' : 'outline'"
+          [pressed]="iconButtonPressed()"
+          (clicked)="onToggleIconButton()"
+        />
+      }
+      @case ('emr-search-input') {
+        <emr-search-input
+          controlId="parity-search-ng"
+          label="Filter outpatient roster"
+          placeholder="Search MRN or patient name"
+          [value]="searchVal()"
+          (valueChange)="searchVal.set($event); emitState({ value: $event })"
+          (cleared)="searchVal.set(null); emitState({ value: null })"
+          (submitted)="emitState({ submitted: $event })"
+        />
+      }
+      @case ('emr-password-input') {
+        <emr-password-input
+          controlId="parity-pwd-ng"
+          label="Controlled-drug witness passphrase"
+          hint="Required for Schedule X administration witness"
+          [value]="passwordVal()"
+          (valueChange)="passwordVal.set($event); emitState({ value: $event })"
+        />
+      }
+      @case ('emr-numeric-stepper') {
+        <emr-numeric-stepper
+          controlId="parity-stepper-ng"
+          label="Authorised refills"
+          unit="refills"
+          [min]="0"
+          [max]="12"
+          [step]="1"
+          [value]="stepperVal()"
+          (valueChange)="stepperVal.set($event); emitState({ value: $event })"
+        />
+      }
+      @case ('emr-pagination') {
+        <emr-pagination
+          controlId="parity-pagination-ng"
+          [page]="paginationPage()"
+          [pageSize]="paginationSize()"
+          [totalItems]="94"
+          [pageSizeOptions]="[10, 20, 50]"
+          (pageChange)="paginationPage.set($event); emitState({ page: $event })"
+          (pageSizeChange)="paginationSize.set($event); paginationPage.set(1); emitState({ pageSize: $event, page: 1 })"
+        />
+      }
+      @case ('emr-dialog') {
+        <div>
+          <emr-button variant="outline" (clicked)="setDialogOpen(true)">Open override dialog</emr-button>
+          <emr-dialog
+            controlId="parity-dialog-ng"
+            title="Confirm medication override"
+            description="Patient has documented penicillin mild rash (2019). Document rationale."
+            [open]="dialogOpen()"
+            (closeRequested)="setDialogOpen(false)"
+          >
+            <div style="font-size:14px;color:var(--emr-text);">Clinical justification will be audited on sign-off.</div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+              <emr-button variant="outline" (clicked)="setDialogOpen(false)">Cancel</emr-button>
+              <emr-button variant="danger" (clicked)="setDialogOpen(false)">Confirm override</emr-button>
+            </div>
+          </emr-dialog>
+        </div>
+      }
+      @case ('emr-popover') {
+        <emr-popover
+          controlId="parity-popover-ng"
+          [open]="popoverOpen()"
+          (openChange)="setPopoverOpen($event)"
+        >
+          <emr-button popoverTrigger variant="secondary" (clicked)="setPopoverOpen(!popoverOpen())">IOP reference</emr-button>
+          <div style="font-size:13px;color:var(--emr-text);white-space:normal;">
+            Adult reference range: 10–21 mmHg (Goldmann applanation)
+          </div>
+        </emr-popover>
+      }
+      @case ('emr-tooltip') {
+        <emr-tooltip
+          controlId="parity-tooltip-ng"
+          content="Goldmann applanation tonometry"
+        >
+          <emr-button variant="outline">GAT abbreviation</emr-button>
+        </emr-tooltip>
+      }
+      @case ('emr-progress-bar') {
+        <emr-progress-bar label="Offline encounter bundle sync" [value]="72" tone="info" />
+      }
+      @case ('emr-spinner') {
+        <emr-spinner label="Searching SNOMED CT…" tone="info" />
+      }
+      @case ('emr-skeleton') {
+        <emr-skeleton variant="line" [lines]="3" />
+      }
+      @case ('emr-avatar') {
+        <div style="display:flex;align-items:center;gap:12px;">
+          <emr-avatar name="Mahesh Nair" size="sm" tone="info" />
+          <emr-avatar name="Dr. Rekha Singh" size="md" tone="success" />
+        </div>
+      }
+      @case ('emr-file-trigger') {
+        <emr-file-trigger
+          controlId="parity-file-ng"
+          label="Attach external OCT PDF"
+          accept=".pdf,image/png,image/jpeg"
+          [multiple]="true"
+          [hint]="fileTriggerNames().length ? fileTriggerNames().length + ' file(s) selected' : 'Maximum 25 MB per file'"
+          (filesSelected)="onFileTriggerSelected($event)"
+        />
+      }
+      @case ('emr-toast') {
+        @if (toastVisible()) {
+          <emr-toast [model]="toastModel()" (intent)="onToastIntent($event)" />
+        }
+      }
       @default {
         <div style="font-size:var(--emr-text-sm);color:var(--emr-text-muted);padding:8px 0;">
           Standalone Angular preview fixture not yet wired for <code>&lt;{{ selector() }}&gt;</code>.
@@ -1402,8 +1901,70 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
   readonly qtySteppers = signal(true);
   readonly qtyClearable = signal(false);
   readonly qtyDisabled = signal(false);
-  readonly pairedLeft = signal('6/6');
-  readonly pairedRight = signal('6/9');
+  readonly pairedLeft = signal<string | null>('6/6');
+  readonly pairedRight = signal<string | null>('6/9');
+  readonly pairedInputType = signal<'text' | 'integer' | 'decimal' | 'select'>('text');
+  readonly pairedVaOptions: readonly EmrOption[] = ['6/5', '6/6', '6/9', '6/12', '6/18', '6/24', '6/36', '6/60', 'CF', 'HM', 'PL+', 'NPL'].map((v) => ({
+    value: v,
+    label: v,
+  }));
+  readonly pairedFieldLensOptions: readonly EmrOption[] = [
+    { value: 'Clear', label: 'Clear' },
+    { value: 'NS I', label: 'NS I' },
+    { value: 'NS II', label: 'NS II' },
+    { value: 'NS III', label: 'NS III' },
+    { value: 'PSC', label: 'PSC' },
+    { value: 'PCIOL', label: 'PCIOL' },
+  ];
+  readonly textareaVal = signal<string | null>('Gradual painless blurring of distance vision in OD over 8 months.');
+  readonly iconButtonPressed = signal(true);
+  readonly iconButtonClicks = signal(0);
+  readonly searchVal = signal<string | null>(null);
+  readonly passwordVal = signal<string | null>(null);
+  readonly stepperVal = signal<number | null>(2);
+  readonly paginationPage = signal(2);
+  readonly paginationSize = signal(20);
+  readonly dialogOpen = signal(false);
+  readonly popoverOpen = signal(false);
+  readonly fileTriggerNames = signal<readonly string[]>([]);
+  readonly toastVisible = signal(true);
+  readonly toastModel = signal<EmrToastModel>({
+    id: 'parity-toast-ng',
+    tone: 'warning',
+    message: '3 offline camp records queued for sync.',
+    actionLabel: 'Sync now',
+  });
+
+  protected onToggleIconButton(): void {
+    const next = !this.iconButtonPressed();
+    this.iconButtonPressed.set(next);
+    this.emitState({ pressed: next });
+  }
+
+  protected setDialogOpen(open: boolean): void {
+    this.dialogOpen.set(open);
+    this.emitState({ open });
+  }
+
+  protected setPopoverOpen(open: boolean): void {
+    this.popoverOpen.set(open);
+    this.emitState({ open });
+  }
+
+  protected onFileTriggerSelected(files: readonly EmrFileSelectionItem[]): void {
+    const names = files.map((f) => f.name);
+    this.fileTriggerNames.set(names);
+    this.emitState({ files: names });
+  }
+
+  protected onToastIntent(i: EmrToastIntent): void {
+    if (i.type === 'dismissed') {
+      this.toastVisible.set(false);
+      this.emitState({ visible: false });
+    } else if (i.type === 'actionPressed') {
+      this.emitState({ action: i.type });
+    }
+  }
   readonly checkedVal = signal(true);
   readonly cbMixed = signal(false);
   readonly cbVariant = signal<'tile' | 'inline'>('tile');
@@ -1609,6 +2170,7 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
   readonly tabsFitted = signal(false);
   readonly tabsDisabled = signal(false);
   readonly likertVal = signal<number | null>(4);
+  readonly likertScaleMode = signal<'numeric' | 'text'>('numeric');
   readonly likertClearable = signal(false);
   readonly likertFullWidth = signal(false);
   readonly likertDisabled = signal(false);
@@ -1617,7 +2179,15 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
     { value: 0, label: 'None' },
     { value: 10, label: 'Severe' },
   ];
-  readonly vasVal = signal<number | null>(3.5);
+  readonly likertTextOptions: readonly EmrLikertOption[] = [
+    { value: 1, label: 'None', description: 'No pain', tone: 'success' },
+    { value: 2, label: 'Mild', description: 'Aware, no distress', tone: 'info' },
+    { value: 3, label: 'Moderate', description: 'Interferes with task', tone: 'warning' },
+    { value: 4, label: 'Severe', description: 'Prevents task', tone: 'danger' },
+    { value: 5, label: 'Extreme', description: 'Unable to continue', tone: 'danger' },
+  ];
+  readonly vasVal = signal<number | null>(4);
+  readonly vasPrecision = signal<EmrVasPrecision>('integer');
   readonly timeVal = signal<string | null>('09:30');
   readonly timePrecision = signal<'minute' | 'second'>('minute');
   readonly timeHourCycle = signal<'24' | '12'>('24');
@@ -2471,6 +3041,156 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
   readonly accordionSize = signal<'sm' | 'md'>('md');
   readonly accordionReadOnly = signal(false);
   readonly accordionDisabled = signal(false);
+  readonly sectionCardCollapsed = signal(false);
+  readonly sectionCardCollapsible = signal(true);
+  readonly sectionCardVariant = signal<EmrSectionCardVariant>('outlined');
+  readonly sectionCardTone = signal<EmrTone>('neutral');
+  readonly sectionCardPadding = signal<EmrSectionCardPadding>('md');
+  readonly sectionCardHeadingLevel = signal<EmrSectionCardHeadingLevel>(2);
+  readonly sectionCardReadOnly = signal(false);
+  readonly sectionCardShowStatus = signal(true);
+  readonly sectionCardShowDescription = signal(true);
+  readonly repeatGroupDef: RepeatableGroupDefinition = {
+    kind: 'repeatable',
+    id: 'topical-drops',
+    label: 'Post-operative topical drops',
+    description: 'Add or edit each eye drop regimen.',
+    addLabel: 'Add drop',
+    fields: [
+      { id: 'drug', label: 'Medication', type: 'text', required: true, span: 6, placeholder: 'e.g. Prednisolone 1%' },
+      {
+        id: 'eye',
+        label: 'Eye',
+        type: 'select',
+        span: 6,
+        options: [
+          { value: 'OD', label: 'Right (OD)' },
+          { value: 'OS', label: 'Left (OS)' },
+          { value: 'OU', label: 'Both (OU)' },
+        ],
+      },
+      { id: 'freq', label: 'Frequency', type: 'text', span: 6, placeholder: 'e.g. 4 times daily' },
+      { id: 'days', label: 'Duration', type: 'quantity', unit: 'days', span: 6 },
+    ],
+  };
+  readonly repeatItems = signal<readonly RepeatableItemState[]>([
+    {
+      id: 'drop-1',
+      label: 'Drop 1',
+      fields: {
+        drug: { value: 'Moxifloxacin 0.5%' },
+        eye: { value: 'OD' },
+        freq: { value: '4 times daily' },
+        days: { value: { value: 7, unit: 'days' } },
+      },
+    },
+    {
+      id: 'drop-2',
+      label: 'Drop 2',
+      fields: {
+        drug: { value: 'Nepafenac 0.1%' },
+        eye: { value: 'OD' },
+        freq: { value: '3 times daily' },
+        days: { value: { value: 28, unit: 'days' } },
+      },
+    },
+  ]);
+  readonly repeatReadOnly = signal(false);
+  readonly repeatEmpty = signal(false);
+  readonly repeatError = signal(false);
+  readonly repeatWarning = signal(false);
+  readonly clinicalFormSchema: ClinicalFormViewModel['schema'] = {
+    id: 'opd-triage-form',
+    label: 'Ophthalmic Triage Assessment',
+    sections: [
+      {
+        id: 'presenting',
+        label: 'Presenting History & Vitals',
+        description: '12-column schema-driven clinical form',
+        collapsible: true,
+        blocks: [
+          { id: 'complaint', label: 'Chief complaint', type: 'text', required: true, span: 6 },
+          {
+            id: 'laterality',
+            label: 'Affected eye',
+            type: 'select',
+            span: 6,
+            options: [
+              { value: 'OD', label: 'Right (OD)' },
+              { value: 'OS', label: 'Left (OS)' },
+              { value: 'OU', label: 'Both (OU)' },
+            ],
+          },
+          { id: 'iopOd', label: 'IOP Right (OD)', type: 'quantity', unit: 'mmHg', span: 4 },
+          { id: 'iopOs', label: 'IOP Left (OS)', type: 'quantity', unit: 'mmHg', span: 4 },
+          { id: 'diabetic', label: 'Known diabetes mellitus', type: 'boolean', span: 4 },
+        ],
+      },
+      {
+        id: 'medications',
+        label: 'Current Eye Drops',
+        collapsible: true,
+        blocks: [
+          {
+            kind: 'repeatable',
+            id: 'drops',
+            label: 'Topical medications',
+            addLabel: 'Add medication',
+            fields: [
+              { id: 'drug', label: 'Medication', type: 'text', span: 6, required: true, placeholder: 'e.g. Timolol 0.5%' },
+              { id: 'freq', label: 'Frequency', type: 'text', span: 6, placeholder: 'e.g. Twice daily' },
+            ],
+          },
+          {
+            kind: 'matrix',
+            id: 'anterior-chamber',
+            label: 'Anterior Chamber Comparison',
+            columns: [
+              { id: 'od', label: 'Right (OD)' },
+              { id: 'os', label: 'Left (OS)' },
+            ],
+            rows: [
+              {
+                id: 'ac-depth',
+                label: 'AC depth',
+                cells: {
+                  od: { id: 'acOd', label: 'AC depth Right (OD)', type: 'text', required: true },
+                  os: { id: 'acOs', label: 'AC depth Left (OS)', type: 'text' },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  readonly clinicalFormSectionStatuses: Readonly<Record<string, EmrBadge>> = {
+    presenting: { label: 'In progress', tone: 'info' },
+    medications: { label: '1 active', tone: 'success' },
+  };
+  readonly clinicalFormFields = signal<Readonly<Record<string, ClinicalFieldState>>>({
+    complaint: { value: 'Halos around lights at night' },
+    laterality: { value: 'OU' },
+    iopOd: { value: { value: 22, unit: 'mmHg' }, warning: 'Borderline IOP' },
+    iopOs: { value: { value: 18, unit: 'mmHg' } },
+    diabetic: { value: true },
+    acOd: { value: 'Deep, quiet' },
+    acOs: { value: 'Deep, quiet' },
+  });
+  readonly clinicalFormRepeatableGroups = signal<Readonly<Record<string, readonly RepeatableItemState[]>>>({
+    drops: [
+      {
+        id: 'drop-1',
+        label: 'Medication 1',
+        fields: {
+          drug: { value: 'Timolol 0.5%' },
+          freq: { value: 'Twice daily' },
+        },
+      },
+    ],
+  });
+  readonly clinicalFormCollapsedSectionIds = signal<readonly string[]>([]);
+  readonly clinicalFormReadOnly = signal(false);
   readonly clinicBreadcrumbs: readonly EmrBreadcrumbItem[] = [
     { id: 'clinic', label: 'Outpatient Clinic' },
     { id: 'retina', label: 'Retina Service' },
@@ -3264,6 +3984,2281 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
     }
   }
 
+  onRepeatIntent(ev: ClinicalFormIntent): void {
+    const baseItems = this.repeatEmpty() ? [] : this.repeatItems();
+    if (ev.type === 'repeatItemAddRequested') {
+      const maxIndex = baseItems.reduce((acc, item) => {
+        const match = /^drop-(\d+)$/.exec(item.id);
+        const n = match ? Number(match[1]) : 0;
+        return Number.isFinite(n) && n > acc ? n : acc;
+      }, 0);
+      const nextNum = maxIndex + 1;
+      const next: readonly RepeatableItemState[] = [
+        ...baseItems,
+        {
+          id: `drop-${nextNum}`,
+          label: `Drop ${nextNum}`,
+          fields: {
+            drug: { value: '' },
+            eye: { value: 'OD' },
+            freq: { value: '' },
+            days: { value: { value: 7, unit: 'days' } },
+          },
+        },
+      ];
+      this.repeatItems.set(next);
+      this.repeatEmpty.set(false);
+      this.emitState({ items: next, empty: false });
+    } else if (ev.type === 'repeatItemRemoveRequested') {
+      const next = baseItems.filter((it) => it.id !== ev.itemId);
+      this.repeatItems.set(next);
+      this.emitState({ items: next });
+    } else if (ev.type === 'repeatItemEditRequested') {
+      const next = baseItems.map((it) =>
+        it.id === ev.itemId
+          ? { ...it, fields: { ...it.fields, [ev.fieldId]: { ...it.fields[ev.fieldId], value: ev.value } } }
+          : it,
+      );
+      this.repeatItems.set(next);
+      this.emitState({ items: next });
+    } else if (ev.type === 'repeatItemStatusEditRequested') {
+      const next = baseItems.map((it) =>
+        it.id === ev.itemId
+          ? {
+              ...it,
+              fields: {
+                ...it.fields,
+                [ev.fieldId]: {
+                  ...it.fields[ev.fieldId],
+                  value: it.fields[ev.fieldId]?.value ?? null,
+                  assessmentStatus: ev.status,
+                },
+              },
+            }
+          : it,
+      );
+      this.repeatItems.set(next);
+      this.emitState({ items: next });
+    }
+  }
+
+  clinicalFormModel(): ClinicalFormViewModel {
+    return {
+      schema: this.clinicalFormSchema,
+      fields: this.clinicalFormFields(),
+      repeatableGroups: this.clinicalFormRepeatableGroups(),
+      collapsedSectionIds: this.clinicalFormCollapsedSectionIds(),
+      sectionStatuses: this.clinicalFormSectionStatuses,
+      readOnly: this.clinicalFormReadOnly() || this.readOnly(),
+    };
+  }
+
+  onClinicalFormIntent(ev: ClinicalFormIntent): void {
+    if (ev.type === 'fieldEditRequested') {
+      const next: Record<string, ClinicalFieldState> = {
+        ...this.clinicalFormFields(),
+        [ev.fieldId]: { ...this.clinicalFormFields()[ev.fieldId], value: ev.value },
+      };
+      this.clinicalFormFields.set(next);
+      this.emitState({ fields: next });
+    } else if (ev.type === 'fieldStatusEditRequested') {
+      const prev = this.clinicalFormFields()[ev.fieldId];
+      const next: Record<string, ClinicalFieldState> = {
+        ...this.clinicalFormFields(),
+        [ev.fieldId]: { ...prev, value: prev?.value ?? null, assessmentStatus: ev.status },
+      };
+      this.clinicalFormFields.set(next);
+      this.emitState({ fields: next });
+    } else if (ev.type === 'sectionToggleRequested') {
+      const collapsed = new Set(this.clinicalFormCollapsedSectionIds());
+      if (collapsed.has(ev.sectionId)) collapsed.delete(ev.sectionId);
+      else collapsed.add(ev.sectionId);
+      const next = [...collapsed];
+      this.clinicalFormCollapsedSectionIds.set(next);
+      this.emitState({ collapsedSectionIds: next });
+    } else if (ev.type === 'repeatItemAddRequested') {
+      const groups = this.clinicalFormRepeatableGroups();
+      const existing = groups[ev.groupId] ?? [];
+      const taken = new Set(existing.map((it) => it.id));
+      let seq = existing.length + 1;
+      while (taken.has(`drop-${seq}`)) seq += 1;
+      const nextGroups = {
+        ...groups,
+        [ev.groupId]: [
+          ...existing,
+          { id: `drop-${seq}`, label: `Medication ${seq}`, fields: { drug: { value: '' }, freq: { value: '' } } },
+        ],
+      };
+      this.clinicalFormRepeatableGroups.set(nextGroups);
+      this.emitState({ repeatableGroups: nextGroups });
+    } else if (ev.type === 'repeatItemRemoveRequested') {
+      const groups = this.clinicalFormRepeatableGroups();
+      const nextGroups = {
+        ...groups,
+        [ev.groupId]: (groups[ev.groupId] ?? []).filter((it) => it.id !== ev.itemId),
+      };
+      this.clinicalFormRepeatableGroups.set(nextGroups);
+      this.emitState({ repeatableGroups: nextGroups });
+    } else if (ev.type === 'repeatItemEditRequested') {
+      const groups = this.clinicalFormRepeatableGroups();
+      const nextGroups = {
+        ...groups,
+        [ev.groupId]: (groups[ev.groupId] ?? []).map((it) =>
+          it.id === ev.itemId
+            ? { ...it, fields: { ...it.fields, [ev.fieldId]: { ...it.fields[ev.fieldId], value: ev.value } } }
+            : it,
+        ),
+      };
+      this.clinicalFormRepeatableGroups.set(nextGroups);
+      this.emitState({ repeatableGroups: nextGroups });
+    } else if (ev.type === 'repeatItemStatusEditRequested') {
+      const groups = this.clinicalFormRepeatableGroups();
+      const nextGroups = {
+        ...groups,
+        [ev.groupId]: (groups[ev.groupId] ?? []).map((it) =>
+          it.id === ev.itemId
+            ? {
+                ...it,
+                fields: {
+                  ...it.fields,
+                  [ev.fieldId]: {
+                    ...it.fields[ev.fieldId],
+                    value: it.fields[ev.fieldId]?.value ?? null,
+                    assessmentStatus: ev.status,
+                  },
+                },
+              }
+            : it,
+        ),
+      };
+      this.clinicalFormRepeatableGroups.set(nextGroups);
+      this.emitState({ repeatableGroups: nextGroups });
+    } else if (ev.type === 'correctionRequested') {
+      this.clinicalFormReadOnly.set(false);
+      this.emitState({ readOnly: false });
+    }
+  }
+
+  private readonly clinicalListModels = signal<
+    Record<
+      | 'emr-clinical-list'
+      | 'emr-medication-list'
+      | 'emr-allergy-list'
+      | 'emr-chronic-disease-list'
+      | 'emr-personal-history-list',
+      ClinicalListViewModel
+    >
+  >({
+    'emr-clinical-list': {
+      title: 'Active clinical problems',
+      items: [
+        {
+          id: 'c1',
+          title: 'Primary open-angle glaucoma (OU)',
+          subtitle: 'Diagnosed 2023',
+          badges: [{ label: 'Active', tone: 'success' }],
+        },
+        {
+          id: 'c2',
+          title: 'Pseudophakia (OS)',
+          subtitle: 'PCIOL implanted 2024',
+          badges: [{ label: 'Stable', tone: 'info' }],
+        },
+      ],
+      selectedId: 'c1',
+      allowAdd: true,
+      readOnly: false,
+      loading: false,
+      error: '',
+      variant: 'outlined',
+      emptyMessage: 'No active problems recorded.',
+    },
+    'emr-medication-list': {
+      title: 'Medications',
+      items: [
+        {
+          id: 'm1',
+          title: 'Latanoprost 0.005% eye drops',
+          subtitle: '1 drop OU at bedtime',
+          badges: [{ label: 'Active', tone: 'success' }],
+        },
+        {
+          id: 'm2',
+          title: 'Metformin 500 mg tablet',
+          subtitle: 'Twice daily after food',
+          badges: [{ label: 'Systemic', tone: 'info' }],
+        },
+      ],
+      selectedId: 'm1',
+      allowAdd: true,
+      readOnly: false,
+      loading: false,
+      error: '',
+      variant: 'outlined',
+      emptyMessage: 'No active medications.',
+    },
+    'emr-allergy-list': {
+      title: 'Allergies',
+      items: [
+        {
+          id: 'a1',
+          title: 'Penicillin',
+          subtitle: 'Anaphylaxis (verified 2025)',
+          badges: [{ label: 'Severe', tone: 'danger' }],
+        },
+        {
+          id: 'a2',
+          title: 'Sulfonamides',
+          subtitle: 'Maculopapular rash',
+          badges: [{ label: 'Moderate', tone: 'warning' }],
+        },
+      ],
+      selectedId: 'a1',
+      allowAdd: true,
+      readOnly: false,
+      loading: false,
+      error: '',
+      variant: 'outlined',
+      emptyMessage: 'No known drug allergies recorded.',
+    },
+    'emr-chronic-disease-list': {
+      title: 'Chronic diseases',
+      items: [
+        {
+          id: 'd1',
+          title: 'Primary Open-Angle Glaucoma (OU)',
+          subtitle: 'Since 2022',
+          badges: [{ label: 'On therapy', tone: 'info' }],
+        },
+        {
+          id: 'd2',
+          title: 'Type 2 Diabetes Mellitus',
+          subtitle: 'HbA1c 7.6%',
+          badges: [{ label: 'Active', tone: 'warning' }],
+        },
+      ],
+      selectedId: 'd1',
+      allowAdd: true,
+      readOnly: false,
+      loading: false,
+      error: '',
+      variant: 'outlined',
+      emptyMessage: 'No chronic conditions recorded.',
+    },
+    'emr-personal-history-list': {
+      title: 'Significant personal history',
+      items: [
+        {
+          id: 'p1',
+          title: 'Non-smoker, non-alcoholic',
+          subtitle: 'Recorded at intake',
+          badges: [{ label: 'Verified', tone: 'success' }],
+        },
+        {
+          id: 'p2',
+          title: 'High near-screen visual demand',
+          subtitle: 'Accountant (8 hrs/day)',
+          badges: [{ label: 'Occupational', tone: 'neutral' }],
+        },
+      ],
+      selectedId: 'p1',
+      allowAdd: true,
+      readOnly: false,
+      loading: false,
+      error: '',
+      variant: 'outlined',
+      emptyMessage: 'No personal/social history recorded.',
+    },
+  });
+
+  clinicalListModelFor(
+    sel:
+      | 'emr-clinical-list'
+      | 'emr-medication-list'
+      | 'emr-allergy-list'
+      | 'emr-chronic-disease-list'
+      | 'emr-personal-history-list',
+  ): ClinicalListViewModel {
+    const cur = this.clinicalListModels()[sel];
+    return {
+      ...cur,
+      readOnly: Boolean(cur.readOnly) || this.readOnly(),
+      error: cur.error || undefined,
+    };
+  }
+
+  onClinicalListIntent(
+    sel:
+      | 'emr-clinical-list'
+      | 'emr-medication-list'
+      | 'emr-allergy-list'
+      | 'emr-chronic-disease-list'
+      | 'emr-personal-history-list',
+    ev: ClinicalListIntent,
+  ): void {
+    const cur = this.clinicalListModels()[sel];
+    let next: ClinicalListViewModel = cur;
+    if (ev.type === 'selected') {
+      next = { ...cur, selectedId: ev.id };
+    } else if (ev.type === 'editRequested') {
+      next = {
+        ...cur,
+        selectedId: ev.id,
+        items: cur.items.map((item) =>
+          item.id === ev.id ? { ...item, meta: 'Edited' } : item,
+        ),
+      };
+    } else if (ev.type === 'removeRequested') {
+      next = {
+        ...cur,
+        items: cur.items.filter((item) => item.id !== ev.id),
+        selectedId: cur.selectedId === ev.id ? undefined : cur.selectedId,
+      };
+    } else if (ev.type === 'addRequested') {
+      const max = cur.items.reduce((acc, item) => {
+        const match = /(\d+)$/.exec(item.id);
+        const n = match ? Number(match[1]) : 0;
+        return Number.isFinite(n) && n > acc ? n : acc;
+      }, 0);
+      const nextNum = max + 1;
+      next = {
+        ...cur,
+        items: [
+          ...cur.items,
+          {
+            id: `c-${nextNum}`,
+            title: `Added clinical entry ${nextNum}`,
+            badges: [{ label: 'New', tone: 'info' }],
+          },
+        ],
+      };
+    } else if (ev.type === 'retryRequested') {
+      next = { ...cur, error: '', loading: false };
+    }
+    this.clinicalListModels.update((prev) => ({ ...prev, [sel]: next }));
+    this.emitState({
+      items: next.items,
+      selectedId: next.selectedId,
+      error: next.error ?? '',
+      loading: Boolean(next.loading),
+    });
+  }
+
+  private readonly clinicalMatrixBaseSchema: ClinicalMatrixSchema = {
+    id: 'anterior-matrix',
+    label: 'Bilateral Anterior Segment Matrix',
+    description: 'Controller-driven bilateral ocular assessment',
+    columnGroups: [{ id: 'eyes', label: 'Laterality', columnIds: ['od', 'os'] }],
+    columns: [
+      { id: 'od', label: 'Right Eye (OD)' },
+      { id: 'os', label: 'Left Eye (OS)' },
+    ],
+    rows: [
+      {
+        id: 'va',
+        label: 'Best-corrected VA',
+        type: 'select',
+        options: [
+          { value: '6/6', label: '6/6' },
+          { value: '6/9', label: '6/9' },
+          { value: '6/18', label: '6/18' },
+          { value: '6/60', label: '6/60' },
+        ],
+        assessmentStatusOptions: [
+          { value: 'recorded', label: 'Recorded', tone: 'success' },
+          { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+        ],
+      },
+      { id: 'iop', label: 'Applanation IOP', type: 'quantity', unit: 'mmHg', min: 0, max: 80, step: 1 },
+      { id: 'cdr', label: 'Vertical cup-disc ratio', type: 'decimal', step: 0.05 },
+      {
+        id: 'schirmer',
+        label: 'Schirmer baseline',
+        type: 'integer',
+        unit: 'mm',
+        applicableColumnIds: ['od'],
+        helpText: 'OD-only baseline check (OS is N/A)',
+      },
+      { id: 'cornea', label: 'Cornea & tear film', type: 'text', placeholder: 'Slit-lamp findings' },
+    ],
+  };
+
+  readonly clinicalMatrixValues = signal<ClinicalMatrixValues>({
+    va: {
+      remark: 'Snellen 6m',
+      cells: {
+        od: { value: '6/9', assessmentStatus: { value: 'recorded', label: 'Recorded', tone: 'success' } },
+        os: { value: '6/6' },
+      },
+    },
+    iop: {
+      remark: 'GAT 09:45',
+      cells: {
+        od: {
+          value: { value: 24, unit: 'mmHg' },
+          warning: 'Above 21 mmHg',
+          previousValueLabel: 'Prev: 18 mmHg',
+          deltaLabel: '+6',
+          flagBadge: { label: 'Elevated', tone: 'warning' },
+          modified: true,
+        },
+        os: { value: { value: 16, unit: 'mmHg' } },
+      },
+    },
+    cdr: {
+      remark: '90D lens',
+      cells: {
+        od: { value: 0.95, error: 'Confirm optic disc excavation' },
+        os: { value: 0.45 },
+      },
+    },
+    schirmer: { remark: '', cells: { od: { value: 14 } } },
+    cornea: {
+      remark: '',
+      remarkError: 'Enter cornea remark before sign-off',
+      cells: { od: { value: 'Clear, deep AC' }, os: { value: 'Clear, deep AC' } },
+    },
+  });
+  readonly clinicalMatrixReadOnly = signal(false);
+  readonly clinicalMatrixShowRemarks = signal(true);
+
+  clinicalMatrixDefinition(): ClinicalMatrixSchema {
+    return {
+      ...this.clinicalMatrixBaseSchema,
+      showRemarks: this.clinicalMatrixShowRemarks(),
+    };
+  }
+
+  onClinicalMatrixIntent(ev: ClinicalMatrixIntent): void {
+    const cur = this.clinicalMatrixValues();
+    let next = cur;
+    if (ev.type === 'cellEditRequested') {
+      const row = cur[ev.rowId] ?? { remark: '', cells: {} };
+      const prevCell: ClinicalCellState = row.cells[ev.columnId] ?? { value: null };
+      next = {
+        ...cur,
+        [ev.rowId]: {
+          ...row,
+          cells: {
+            ...row.cells,
+            [ev.columnId]: { ...prevCell, value: ev.value, modified: true },
+          },
+        },
+      };
+    } else if (ev.type === 'cellAssessmentStatusEditRequested') {
+      const row = cur[ev.rowId] ?? { remark: '', cells: {} };
+      const prevCell: ClinicalCellState = row.cells[ev.columnId] ?? { value: null };
+      const statusObj = ev.status
+        ? {
+            value: ev.status,
+            label: ev.status === 'recorded' ? 'Recorded' : 'Unable to assess',
+            tone: (ev.status === 'recorded' ? 'success' : 'warning') as 'success' | 'warning',
+          }
+        : undefined;
+      next = {
+        ...cur,
+        [ev.rowId]: {
+          ...row,
+          cells: { ...row.cells, [ev.columnId]: { ...prevCell, assessmentStatus: statusObj } },
+        },
+      };
+    } else if (ev.type === 'remarkEditRequested') {
+      const row = cur[ev.rowId] ?? { remark: '', cells: {} };
+      next = {
+        ...cur,
+        [ev.rowId]: {
+          ...row,
+          remark: ev.remark,
+          remarkError: ev.rowId === 'cornea' && !ev.remark.trim() ? 'Enter cornea remark before sign-off' : undefined,
+        },
+      };
+    }
+    if (next !== cur) {
+      this.clinicalMatrixValues.set(next);
+      this.emitState({
+        values: next,
+        readOnly: this.clinicalMatrixReadOnly(),
+        showRemarks: this.clinicalMatrixShowRemarks(),
+      });
+    }
+  }
+
+  readonly customCellSchema: ClinicalMatrixSchema = {
+    id: 'custom-cell-matrix',
+    label: 'Custom Cell Renderer Matrix (OD / OS Stamp)',
+    columns: [
+      { id: 'od', label: 'Right Eye (OD)' },
+      { id: 'os', label: 'Left Eye (OS)' },
+    ],
+    rows: [
+      { id: 'gonioscopy', label: 'Gonioscopy stamp', type: 'custom', customRendererKey: 'angleStamp' },
+    ],
+  };
+  readonly customCellOd = signal(1);
+
+  private readonly annotationToolbarSeed: AnnotationToolbarViewModel = {
+    tools: [
+      { id: 'select', label: 'Select', icon: 'heroCursorArrowRays', shortcutLabel: 'V' },
+      { id: 'line', label: 'Line', icon: 'shape-line', shortcutLabel: 'L' },
+      { id: 'arrow', label: 'Arrow', icon: 'shape-arrow', shortcutLabel: 'A' },
+      { id: 'ellipse', label: 'Ellipse', icon: 'shape-ellipse', shortcutLabel: 'O' },
+      { id: 'freehand', label: 'Freehand', icon: 'shape-freehand', shortcutLabel: 'F' },
+    ],
+    selectedToolId: 'ellipse',
+    colours: [
+      { id: 'red', label: 'Red', hex: '#d92d20' },
+      { id: 'blue', label: 'Blue', hex: '#1d4ed8' },
+      { id: 'green', label: 'Green', hex: '#15803d' },
+    ],
+    selectedColourId: 'red',
+    widths: [
+      { id: 'w1', label: 'Thin 1px', px: 1 },
+      { id: 'w2', label: 'Medium 3px', px: 3 },
+      { id: 'w3', label: 'Thick 6px', px: 6 },
+    ],
+    selectedWidthId: 'w2',
+    canUndo: true,
+    canRedo: true,
+    zoomLabel: '100%',
+    canSave: true,
+    saveLabel: 'Save sketch',
+  };
+
+  readonly tbSelectedToolId = signal('ellipse');
+  readonly tbSelectedColourId = signal('red');
+  readonly tbSelectedWidthId = signal('w2');
+  readonly tbZoomPct = signal(100);
+  readonly tbCanUndo = signal(true);
+  readonly tbCanRedo = signal(true);
+  readonly tbCanSave = signal(true);
+  readonly tbZoomLocked = signal(false);
+  readonly tbReadOnly = signal(false);
+  readonly tbUndoCount = signal(0);
+  readonly tbRedoCount = signal(0);
+  readonly tbSaveCount = signal(0);
+
+  annotationToolbarModel(): AnnotationToolbarViewModel {
+    return {
+      ...this.annotationToolbarSeed,
+      selectedToolId: this.tbSelectedToolId(),
+      selectedColourId: this.tbSelectedColourId(),
+      selectedWidthId: this.tbSelectedWidthId(),
+      zoomLabel: `${this.tbZoomPct()}%`,
+      canUndo: this.tbCanUndo(),
+      canRedo: this.tbCanRedo(),
+      canSave: this.tbCanSave(),
+      zoomLocked: this.tbZoomLocked(),
+      readOnly: this.readOnly() || this.tbReadOnly(),
+    };
+  }
+
+  onAnnotationToolbarIntent(ev: AnnotationToolbarIntent): void {
+    const locked = this.readOnly() || this.tbReadOnly();
+    switch (ev.type) {
+      case 'toolSelected':
+        if (locked) return;
+        this.tbSelectedToolId.set(ev.toolId);
+        this.emitState({ selectedToolId: ev.toolId });
+        break;
+      case 'colourSelected':
+        if (locked) return;
+        this.tbSelectedColourId.set(ev.colourId);
+        this.emitState({ selectedColourId: ev.colourId });
+        break;
+      case 'widthSelected':
+        if (locked) return;
+        this.tbSelectedWidthId.set(ev.widthId);
+        this.emitState({ selectedWidthId: ev.widthId });
+        break;
+      case 'undoRequested':
+        if (locked || !this.tbCanUndo()) return;
+        this.tbUndoCount.update((c) => c + 1);
+        this.emitState({ undoCount: this.tbUndoCount() });
+        break;
+      case 'redoRequested':
+        if (locked || !this.tbCanRedo()) return;
+        this.tbRedoCount.update((c) => c + 1);
+        this.emitState({ redoCount: this.tbRedoCount() });
+        break;
+      case 'saveRequested':
+        if (locked || !this.tbCanSave()) return;
+        this.tbSaveCount.update((c) => c + 1);
+        this.emitState({ saveCount: this.tbSaveCount() });
+        break;
+      case 'zoomInRequested':
+        if (this.tbZoomLocked()) return;
+        this.tbZoomPct.update((z) => Math.min(400, z + 25));
+        this.emitState({ zoomPct: this.tbZoomPct() });
+        break;
+      case 'zoomOutRequested':
+        if (this.tbZoomLocked()) return;
+        this.tbZoomPct.update((z) => Math.max(25, z - 25));
+        this.emitState({ zoomPct: this.tbZoomPct() });
+        break;
+      case 'zoomResetRequested':
+      case 'zoomFitRequested':
+        if (this.tbZoomLocked()) return;
+        this.tbZoomPct.set(100);
+        this.emitState({ zoomPct: 100 });
+        break;
+    }
+  }
+
+  readonly alItems = signal<readonly AnnotationListItem[]>([
+    {
+      layer: {
+        id: 'l1',
+        label: 'Inferotemporal RNFL wedge defect',
+        color: '#d92d20',
+        strokeWidth: 3,
+        visible: true,
+        tool: 'circle',
+        center: { x: 0.44, y: 0.62 },
+        radiusX: 0.09,
+        radiusY: 0.07,
+      } as AnnotationLayerRecord,
+      number: 1,
+      classLabel: 'RNFL defect',
+    },
+    {
+      layer: {
+        id: 'l2',
+        label: 'Disc haemorrhage at 7 o’clock',
+        color: '#1d4ed8',
+        strokeWidth: 3,
+        visible: true,
+        tool: 'line',
+        points: [{ x: 0.3, y: 0.55 }, { x: 0.38, y: 0.6 }],
+      } as AnnotationLayerRecord,
+      number: 2,
+      classLabel: 'Haemorrhage',
+      description: 'Inferotemporal rim margin',
+    },
+    {
+      layer: {
+        id: 'l3',
+        label: 'Macular exudate border',
+        color: '#15803d',
+        strokeWidth: 3,
+        visible: false,
+        tool: 'freeform',
+        points: [{ x: 0.52, y: 0.48 }, { x: 0.58, y: 0.5 }],
+      } as AnnotationLayerRecord,
+      number: 3,
+      classLabel: 'Exudate',
+    },
+  ]);
+  readonly alSelectedLayerId = signal<string | undefined>('l2');
+  readonly alCanLock = signal(true);
+  readonly alReadOnly = signal(false);
+
+  annotationListModel(): AnnotationListViewModel {
+    return {
+      items: this.alItems(),
+      selectedLayerId: this.alSelectedLayerId(),
+      canLock: this.alCanLock(),
+      readOnly: this.readOnly() || this.alReadOnly(),
+      emptyMessage: 'No layers.',
+    };
+  }
+
+  onAnnotationListIntent(ev: AnnotationListIntent): void {
+    const locked = this.readOnly() || this.alReadOnly();
+    const cur = this.alItems();
+    if (ev.type === 'layerSelected') {
+      if (cur.some((it) => it.layer.id === ev.layerId)) {
+        this.alSelectedLayerId.set(ev.layerId);
+        this.emitState({ selectedLayerId: ev.layerId });
+      }
+      return;
+    }
+    if (locked) return;
+    if (ev.type === 'layerVisibilityToggleRequested') {
+      const next = cur.map((it) =>
+        it.layer.id === ev.layerId ? { ...it, layer: { ...it.layer, visible: !it.layer.visible } } : it,
+      );
+      this.alItems.set(next);
+      this.emitState({ items: next });
+    } else if (ev.type === 'layerLockToggleRequested' && this.alCanLock()) {
+      const next = cur.map((it) => (it.layer.id === ev.layerId ? { ...it, locked: !it.locked } : it));
+      this.alItems.set(next);
+      this.emitState({ items: next });
+    } else if (ev.type === 'layerMoveRequested') {
+      const idx = cur.findIndex((it) => it.layer.id === ev.layerId);
+      if (idx < 0 || cur[idx].locked) return;
+      const target = idx + (ev.direction === 'up' ? -1 : 1);
+      if (target < 0 || target >= cur.length) return;
+      const copy = [...cur];
+      const [moved] = copy.splice(idx, 1);
+      copy.splice(target, 0, moved);
+      const next = copy.map((it, n) => ({ ...it, number: n + 1 }));
+      this.alItems.set(next);
+      this.emitState({ items: next });
+    } else if (ev.type === 'layerRemoveRequested') {
+      const item = cur.find((it) => it.layer.id === ev.layerId);
+      if (!item || item.locked) return;
+      const next = cur
+        .filter((it) => it.layer.id !== ev.layerId)
+        .map((it, n) => ({ ...it, number: n + 1 }));
+      const nextSelected = this.alSelectedLayerId() === ev.layerId ? next[0]?.layer.id : this.alSelectedLayerId();
+      this.alItems.set(next);
+      this.alSelectedLayerId.set(nextSelected);
+      this.emitState({ items: next, selectedLayerId: nextSelected });
+    }
+  }
+
+  private readonly tpGroups: readonly ImageTemplateGroup[] = [
+    { id: 'retina', label: 'Retina', count: 2 },
+    { id: 'cornea', label: 'Cornea', count: 1 },
+  ];
+
+  private readonly tpSvgUri = (stroke: string, text: string) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="54" r="40" fill="none" stroke="${stroke}" stroke-width="3"/><circle cx="60" cy="54" r="12" fill="none" stroke="${stroke}" stroke-width="2"/><text x="60" y="112" text-anchor="middle" font-size="11" fill="${stroke}" font-family="sans-serif">${text}</text></svg>`,
+    )}`;
+
+  private readonly tpAllTemplates: readonly ImageTemplateOption[] = [
+    { id: 'retina-od', label: 'Posterior pole (OD)', imageUrl: this.tpSvgUri('#263847', 'Retina OD'), width: 120, height: 120, groupId: 'retina', badges: ['Right'] },
+    { id: 'retina-os', label: 'Posterior pole (OS)', imageUrl: this.tpSvgUri('#263847', 'Retina OS'), width: 120, height: 120, groupId: 'retina', badges: ['Left'] },
+    { id: 'cornea-od', label: 'Cornea frontal (OD)', imageUrl: this.tpSvgUri('#0f766e', 'Cornea OD'), width: 120, height: 120, groupId: 'cornea', badges: ['Right'] },
+  ];
+
+  readonly tpSelectedTemplateId = signal('retina-od');
+  readonly tpSearch = signal('');
+  readonly tpCategory = signal('all');
+  readonly tpFavouritesOnly = signal(false);
+  readonly tpFavouriteIds = signal<readonly string[]>(['retina-od']);
+  readonly tpReadOnly = signal(false);
+  readonly tpCanEditFavourites = signal(true);
+
+  imageTemplatePickerModel(): ImageTemplatePickerViewModel {
+    const effectiveGroupId = this.tpFavouritesOnly()
+      ? FAVOURITES_GROUP_ID
+      : this.tpCategory() && this.tpCategory() !== 'all'
+        ? this.tpCategory()
+        : undefined;
+    const options = filterImageTemplates(
+      this.tpAllTemplates,
+      this.tpSearch(),
+      effectiveGroupId,
+      this.tpGroups,
+      this.tpFavouriteIds(),
+    );
+    return {
+      title: 'Select anatomical drawing outline',
+      options,
+      groups: this.tpGroups,
+      selectedGroupId: effectiveGroupId,
+      query: this.tpSearch(),
+      selectedId: this.tpSelectedTemplateId(),
+      totalLabel: `${options.length} of ${this.tpAllTemplates.length} outlines`,
+      emptyMessage: 'No matching outlines',
+      readOnly: this.readOnly() || this.tpReadOnly(),
+      favouriteIds: this.tpFavouriteIds(),
+      canEditFavourites: this.tpCanEditFavourites(),
+    };
+  }
+
+  onImageTemplatePickerIntent(ev: ImageTemplatePickerIntent): void {
+    const locked = this.readOnly() || this.tpReadOnly();
+    switch (ev.type) {
+      case 'queryChangeRequested':
+        this.tpSearch.set(ev.query);
+        this.emitState({ search: ev.query });
+        break;
+      case 'groupSelected':
+        if (ev.groupId === FAVOURITES_GROUP_ID) {
+          this.tpFavouritesOnly.set(true);
+          this.emitState({ favouritesOnly: true });
+        } else if (ev.groupId === null) {
+          this.tpFavouritesOnly.set(false);
+          this.tpCategory.set('all');
+          this.emitState({ favouritesOnly: false, category: 'all' });
+        } else {
+          this.tpFavouritesOnly.set(false);
+          this.tpCategory.set(ev.groupId);
+          this.emitState({ favouritesOnly: false, category: ev.groupId });
+        }
+        break;
+      case 'templateSelected':
+        if (locked) return;
+        this.tpSelectedTemplateId.set(ev.templateId);
+        this.emitState({ selectedTemplateId: ev.templateId });
+        break;
+      case 'favouriteToggleRequested': {
+        if (locked || !this.tpCanEditFavourites()) return;
+        const cur = this.tpFavouriteIds();
+        const next = ev.favourite
+          ? [...cur.filter((id) => id !== ev.templateId), ev.templateId]
+          : cur.filter((id) => id !== ev.templateId);
+        this.tpFavouriteIds.set(next);
+        this.emitState({ favouriteIds: next });
+        break;
+      }
+      case 'closeRequested':
+        break;
+    }
+  }
+
+  private readonly taHourly = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00'] as const;
+  private readonly taHalfHourly = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00'] as const;
+  private readonly taSteps = [
+    { id: '60', label: 'Hourly' },
+    { id: '30', label: '30 min' },
+  ] as const;
+
+  readonly taOffset = signal(0);
+  readonly taSelectedTickId = signal('t1');
+  readonly taStepId = signal('60');
+  readonly taReadOnly = signal(false);
+
+  private timeAxisTicksSource(stepId = this.taStepId()): readonly string[] {
+    return stepId === '30' ? this.taHalfHourly : this.taHourly;
+  }
+
+  timeAxisModel(): TimeAxisViewModel {
+    const source = this.timeAxisTicksSource();
+    const offset = Math.max(0, Math.min(source.length - 5, this.taOffset()));
+    const step = this.taSteps.find((s) => s.id === this.taStepId());
+    return {
+      id: 'parity-axis',
+      title: 'IOP diurnal curve window',
+      ticks: source.slice(offset, offset + 5).map((label, idx) => ({
+        id: `t${offset + idx}`,
+        label,
+        sublabel: 'Day 1',
+        current: offset + idx === 2,
+      })),
+      selectedTickId: this.taSelectedTickId(),
+      stepLabel: step?.label,
+      steps: this.taSteps,
+      selectedStepId: this.taStepId(),
+      canShiftEarlier: offset > 0,
+      canShiftLater: offset + 5 < source.length,
+      readOnly: this.readOnly() || this.taReadOnly(),
+    };
+  }
+
+  onTimeAxisIntent(ev: TimeAxisIntent): void {
+    if (this.readOnly() || this.taReadOnly()) return;
+    const source = this.timeAxisTicksSource();
+    const maxOffset = Math.max(0, source.length - 5);
+    switch (ev.type) {
+      case 'tickSelected':
+        this.taSelectedTickId.set(ev.tickId);
+        this.emitState({ selectedTickId: ev.tickId });
+        break;
+      case 'shiftEarlierRequested': {
+        const nextOffset = Math.max(0, this.taOffset() - 1);
+        this.taOffset.set(nextOffset);
+        this.emitState({ offset: nextOffset, windowStartLabel: source[nextOffset] ?? '08:00' });
+        break;
+      }
+      case 'shiftLaterRequested': {
+        const nextOffset = Math.min(maxOffset, this.taOffset() + 1);
+        this.taOffset.set(nextOffset);
+        this.emitState({ offset: nextOffset, windowStartLabel: source[nextOffset] ?? '08:00' });
+        break;
+      }
+      case 'stepChangeRequested': {
+        const nextSource = this.timeAxisTicksSource(ev.stepId);
+        const offset = Math.max(0, Math.min(nextSource.length - 5, this.taOffset()));
+        this.taStepId.set(ev.stepId);
+        this.emitState({ stepId: ev.stepId, windowStartLabel: nextSource[offset] ?? '08:00' });
+        break;
+      }
+    }
+  }
+
+  private readonly dtColumns: EmrDataTableColumn[] = [
+    { id: 'patient', label: 'Patient', sortable: true, width: 150 },
+    { id: 'centre', label: 'Vision Centre', sortable: true },
+    { id: 'date', label: 'Referred', sortable: true, align: 'end', width: 120 },
+    { id: 'status', label: 'Status' },
+  ];
+  private readonly dtSource: ReadonlyArray<{
+    id: string;
+    patient: string;
+    centre: string;
+    date: string;
+    status: EmrBadge;
+  }> = [
+    { id: 'r1', patient: 'Ananya Rao', centre: 'Vision Centre North', date: '11 Oct 2026', status: { label: 'Pending', tone: 'warning' } },
+    { id: 'r2', patient: 'Aarav Sharma', centre: 'District Eye Unit', date: '12 Oct 2026', status: { label: 'Accepted', tone: 'success' } },
+    { id: 'r3', patient: 'Meera Iyer', centre: 'Community Screening', date: '13 Oct 2026', status: { label: 'Pending', tone: 'warning' } },
+    { id: 'r4', patient: 'Rohan Nair', centre: 'Vision Centre North', date: '14 Oct 2026', status: { label: 'Declined', tone: 'danger' } },
+    { id: 'r5', patient: 'Kavita Verma', centre: 'District Eye Unit', date: '15 Oct 2026', status: { label: 'Pending', tone: 'warning' } },
+    { id: 'r6', patient: 'Vikram Patel', centre: 'Rampur Vision Centre', date: '16 Oct 2026', status: { label: 'Accepted', tone: 'success' } },
+    { id: 'r7', patient: 'Priya Menon', centre: 'Community Screening', date: '17 Oct 2026', status: { label: 'Booked', tone: 'info' } },
+    { id: 'r8', patient: 'Suresh Das', centre: 'Rampur Vision Centre', date: '18 Oct 2026', status: { label: 'Pending', tone: 'warning' } },
+  ];
+  readonly dtSortColumnId = signal<string | undefined>(undefined);
+  readonly dtSortDirection = signal<EmrDataTableSortDirection | undefined>(undefined);
+  readonly dtSelectedIds = signal<string[]>(['r1']);
+  readonly dtDensity = signal<EmrDataTableDensity>('comfortable');
+  readonly dtPendingOnly = signal(false);
+  readonly dtCustomSavedFilter = signal(false);
+  readonly dtPage = signal(1);
+  readonly dtPageSize = signal(5);
+  readonly dtLoading = signal(false);
+  readonly dtError = signal('');
+  readonly dtReadOnly = signal(false);
+
+  dataTableModel(): EmrDataTableModel {
+    const pendingOnly = this.dtPendingOnly();
+    const filtered = this.dtSource.filter((r) => !pendingOnly || r.status.label === 'Pending');
+    const sortCol = this.dtSortColumnId();
+    const sortDir = this.dtSortDirection();
+    const sorted = sortCol && sortDir
+      ? [...filtered].sort((a, b) => {
+          const av = sortCol === 'centre' ? a.centre : sortCol === 'date' ? a.date : a.patient;
+          const bv = sortCol === 'centre' ? b.centre : sortCol === 'date' ? b.date : b.patient;
+          return av.localeCompare(bv) * (sortDir === 'asc' ? 1 : -1);
+        })
+      : filtered;
+    const pageSize = this.dtPageSize();
+    const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
+    const currentPage = Math.min(Math.max(1, this.dtPage()), pageCount);
+    const start = (currentPage - 1) * pageSize;
+    const slice = sorted.slice(start, start + pageSize);
+    const rows: EmrDataTableRow[] = slice.map((r) => ({
+      id: r.id,
+      cells: { patient: r.patient, centre: r.centre, date: r.date, status: { text: '', badge: r.status } },
+    }));
+    const first = slice.length > 0 ? start + 1 : 0;
+    const last = slice.length > 0 ? start + slice.length : 0;
+    const err = this.dtError();
+    return {
+      caption: 'Vision centre surgical referrals',
+      columns: this.dtColumns,
+      rows,
+      selectedIds: [...this.dtSelectedIds()],
+      sort: sortCol && sortDir ? { columnId: sortCol, direction: sortDir } : undefined,
+      filters: pendingOnly ? [{ id: 'pending', label: 'Status', valueLabel: 'Pending' }] : [],
+      savedFilters: this.dtCustomSavedFilter()
+        ? [
+            { id: 'pending', label: 'Pending only' },
+            { id: 'custom', label: 'Current view (saved)' },
+          ]
+        : [{ id: 'pending', label: 'Pending only' }],
+      bulkActions: [{ id: 'accept', label: 'Accept selected' }],
+      density: this.dtDensity(),
+      page: currentPage,
+      pageCount,
+      pageSize,
+      pageSizeOptions: [3, 5, 10],
+      summaryLabel: slice.length > 0 ? `Showing ${first}–${last} of ${sorted.length} referrals` : 'Showing 0 of 0 referrals',
+      status: this.dtLoading() ? 'loading' : err ? 'error' : 'ready',
+      error: err || undefined,
+      readOnly: this.readOnly() || this.dtReadOnly(),
+    };
+  }
+
+  onDataTableIntent(ev: EmrDataTableIntent): void {
+    const ro = this.readOnly() || this.dtReadOnly();
+    switch (ev.type) {
+      case 'sortChanged':
+        this.dtSortColumnId.set(ev.columnId);
+        this.dtSortDirection.set(ev.direction);
+        this.dtPage.set(1);
+        this.emitState({ sortColumnId: ev.columnId, sortDirection: ev.direction, page: 1 });
+        break;
+      case 'selectionChanged':
+        if (ro) return;
+        this.dtSelectedIds.set(ev.selectedIds);
+        this.emitState({ selectedIds: ev.selectedIds, selectedRowCount: ev.selectedIds.length });
+        break;
+      case 'densityChanged':
+        this.dtDensity.set(ev.density);
+        this.emitState({ density: ev.density });
+        break;
+      case 'savedFilterSelected':
+        this.dtPendingOnly.set(true);
+        this.dtPage.set(1);
+        this.emitState({ pendingOnly: true, page: 1 });
+        break;
+      case 'filterAddRequested':
+        if (ro) return;
+        this.dtPendingOnly.set(true);
+        this.dtPage.set(1);
+        this.emitState({ pendingOnly: true, page: 1 });
+        break;
+      case 'filterRemoved':
+        if (ro) return;
+        this.dtPendingOnly.set(false);
+        this.dtPage.set(1);
+        this.emitState({ pendingOnly: false, page: 1 });
+        break;
+      case 'saveFilterRequested':
+        if (ro) return;
+        this.dtCustomSavedFilter.set(true);
+        this.emitState({ customSavedFilter: true });
+        break;
+      case 'bulkActionRequested':
+        if (ro) return;
+        this.dtSelectedIds.set([]);
+        this.emitState({ selectedIds: [], selectedRowCount: 0 });
+        break;
+      case 'pageChanged':
+        this.dtPage.set(ev.page);
+        this.emitState({ page: ev.page });
+        break;
+      case 'pageSizeChanged':
+        this.dtPageSize.set(ev.pageSize);
+        this.dtPage.set(1);
+        this.emitState({ pageSize: ev.pageSize, page: 1 });
+        break;
+      case 'retryRequested':
+        this.dtLoading.set(false);
+        this.dtError.set('');
+        this.emitState({ loading: false, error: '' });
+        break;
+      case 'exportRequested':
+      case 'rowActivated':
+        break;
+    }
+  }
+
+  // ---- L3 Workstation Containers ----
+  readonly swPreset = signal<EmrSplitWorkspacePreset>('3-pane');
+  readonly swPane1Pct = signal(25);
+  readonly swPane2Pct = signal(50);
+  readonly swPane3Pct = signal(25);
+  readonly swPane1Collapsed = signal(false);
+  readonly swPane2Collapsed = signal(false);
+  readonly swPane3Collapsed = signal(false);
+  readonly swMobileActivePaneId = signal('pane-note');
+  readonly swReadOnly = signal(false);
+
+  private readonly swPanes: readonly EmrSplitWorkspacePane[] = [
+    {
+      id: 'pane-chart',
+      slot: 'pane-primary',
+      title: 'Chart Review & Prior Visits',
+      subtitle: 'Last seen 4 weeks ago',
+      badge: { label: '3 Prior OCTs', tone: 'info' },
+      collapsible: true,
+      minWidthPct: 20,
+      summaryItems: ['BCVA OD 6/18 · OS 6/6', 'Baseline CST OD 510 µm -> 412 µm'],
+    },
+    {
+      id: 'pane-note',
+      slot: 'pane-secondary',
+      title: 'Active Encounter Note & Orders',
+      subtitle: 'SOAP + Intravitreal Procedure Order',
+      badge: { label: 'Draft in Progress', tone: 'warning' },
+      collapsible: true,
+      minWidthPct: 25,
+      summaryItems: ['Assessment: Centre-involving DME OD responding to anti-VEGF therapy.'],
+    },
+    {
+      id: 'pane-cds',
+      slot: 'pane-tertiary',
+      title: 'PACS Key Images & CDS',
+      subtitle: 'DICOMweb + Care Gaps',
+      badge: { label: '1 Care Alert', tone: 'success' },
+      collapsible: true,
+      minWidthPct: 15,
+      summaryItems: ['Pre-procedure povidone-iodine 5% checklist verified.'],
+    },
+  ];
+
+  splitWorkspaceModel(): EmrSplitWorkspaceViewModel {
+    const preset = this.swPreset();
+    const visibleCount = preset === '3-pane' ? 3 : 2;
+    const fallback = resolveSplitWorkspacePresetSizes(preset, visibleCount);
+    const raw =
+      visibleCount === 3
+        ? [this.swPane1Pct(), this.swPane2Pct(), this.swPane3Pct()]
+        : [this.swPane1Pct(), this.swPane2Pct()];
+    const sum = raw.reduce((acc, v) => acc + v, 0);
+    const collapsedById: Readonly<Record<string, boolean>> = {
+      'pane-chart': this.swPane1Collapsed(),
+      'pane-note': this.swPane2Collapsed(),
+      'pane-cds': this.swPane3Collapsed(),
+    };
+    return {
+      id: 'ws-encounter-retina',
+      title: 'Vitreoretinal Encounter Split Workstation',
+      preset,
+      paneSizes: sum === 100 ? raw : fallback,
+      mobileActivePaneId: this.swMobileActivePaneId(),
+      panes: this.swPanes.map((pane) => ({
+        ...pane,
+        collapsed: Boolean(collapsedById[pane.id]),
+      })),
+      readOnly: this.readOnly() || this.swReadOnly(),
+    };
+  }
+
+  onSplitWorkspaceIntent(ev: EmrSplitWorkspaceIntent): void {
+    const ro = this.readOnly() || this.swReadOnly();
+    switch (ev.type) {
+      case 'presetChanged':
+        if (ro) return;
+        this.swPreset.set(ev.preset);
+        this.swPane1Pct.set(ev.paneSizes[0] ?? 50);
+        this.swPane2Pct.set(ev.paneSizes[1] ?? 50);
+        if (ev.paneSizes[2] !== undefined) this.swPane3Pct.set(ev.paneSizes[2]);
+        this.emitState({
+          preset: ev.preset,
+          pane1Pct: this.swPane1Pct(),
+          pane2Pct: this.swPane2Pct(),
+          pane3Pct: this.swPane3Pct(),
+        });
+        break;
+      case 'paneResized':
+        if (ro) return;
+        this.swPane1Pct.set(ev.paneSizes[0] ?? this.swPane1Pct());
+        this.swPane2Pct.set(ev.paneSizes[1] ?? this.swPane2Pct());
+        if (ev.paneSizes[2] !== undefined) this.swPane3Pct.set(ev.paneSizes[2]);
+        this.emitState({
+          pane1Pct: this.swPane1Pct(),
+          pane2Pct: this.swPane2Pct(),
+          pane3Pct: this.swPane3Pct(),
+        });
+        break;
+      case 'paneCollapsedToggled':
+        if (ro) return;
+        if (ev.paneId === 'pane-chart') this.swPane1Collapsed.set(ev.collapsed);
+        else if (ev.paneId === 'pane-note') this.swPane2Collapsed.set(ev.collapsed);
+        else if (ev.paneId === 'pane-cds') this.swPane3Collapsed.set(ev.collapsed);
+        this.emitState({
+          pane1Collapsed: this.swPane1Collapsed(),
+          pane2Collapsed: this.swPane2Collapsed(),
+          pane3Collapsed: this.swPane3Collapsed(),
+        });
+        break;
+      case 'mobilePaneSelected':
+        this.swMobileActivePaneId.set(ev.paneId);
+        this.emitState({ mobileActivePaneId: ev.paneId });
+        break;
+    }
+  }
+
+  readonly cpPresentation = signal<EmrCommandPalettePresentation>('inline');
+  readonly cpOpen = signal(true);
+  readonly cpQuery = signal('');
+  readonly cpActiveCategory = signal<EmrCommandCategory>('all');
+  readonly cpActiveIndex = signal(0);
+  readonly cpLastCommandId = signal('');
+  readonly cpReadOnly = signal(false);
+
+  private readonly cpItems: readonly EmrCommandItem[] = [
+    {
+      id: 'cmd-oct',
+      label: 'Order Spectral-Domain OCT Macula (OU)',
+      subtitle: 'Diagnostics · Ophthalmic Imaging',
+      category: 'orders',
+      groupLabel: 'Pinned Quick Orders',
+      shortcut: 'Ctrl+O',
+      pinned: true,
+      badge: { label: 'STAT Eligible', tone: 'info' },
+    },
+    {
+      id: 'cmd-sle',
+      label: '.sle-pseudophakia — Insert normal pseudophakic anterior segment exam',
+      subtitle: 'SmartPhrase · Ophthalmology',
+      category: 'smartphrases',
+      shortcut: '.sle',
+      recent: true,
+    },
+    {
+      id: 'cmd-iop-calc',
+      label: 'Corrected IOP Calculator (Pachymetry CCT adjustment)',
+      subtitle: 'Clinical Calculator · Glaucoma',
+      category: 'calculators',
+      shortcut: 'Alt+I',
+    },
+    {
+      id: 'cmd-mar',
+      label: 'Jump to eMAR Medication Administration Grid',
+      subtitle: 'Navigation · Inpatient Flowsheet',
+      category: 'navigation',
+      shortcut: 'G M',
+    },
+    {
+      id: 'cmd-sign',
+      label: 'Co-Sign Selected Encounter Orders (Locked)',
+      subtitle: 'Requires attending credentials',
+      category: 'actions',
+      disabled: true,
+      badge: { label: 'Locked', tone: 'neutral' },
+    },
+  ];
+
+  commandPaletteModel(): EmrCommandPaletteViewModel {
+    return {
+      id: 'cmd-launcher',
+      title: 'Clinical Workstation Command Palette (Cmd+K)',
+      presentation: this.cpPresentation(),
+      open: this.cpOpen(),
+      query: this.cpQuery(),
+      activeCategory: this.cpActiveCategory(),
+      activeIndex: this.cpActiveIndex(),
+      items: this.cpItems,
+      readOnly: this.readOnly() || this.cpReadOnly(),
+    };
+  }
+
+  onCommandPaletteIntent(ev: EmrCommandPaletteIntent): void {
+    const ro = this.readOnly() || this.cpReadOnly();
+    switch (ev.type) {
+      case 'queryChanged':
+        if (ro) return;
+        this.cpQuery.set(ev.query);
+        this.cpActiveIndex.set(0);
+        this.emitState({ query: ev.query, activeIndex: 0 });
+        break;
+      case 'categoryChanged':
+        if (ro) return;
+        this.cpActiveCategory.set(ev.category);
+        this.cpActiveIndex.set(0);
+        this.emitState({ activeCategory: ev.category, activeIndex: 0 });
+        break;
+      case 'itemHighlighted':
+        this.cpActiveIndex.set(ev.index);
+        this.emitState({ activeIndex: ev.index });
+        break;
+      case 'commandExecuted':
+        if (ro) return;
+        this.cpLastCommandId.set(ev.itemId);
+        this.emitState({ lastCommandId: ev.itemId });
+        break;
+      case 'dismissed':
+        this.cpOpen.set(false);
+        this.emitState({ open: false });
+        break;
+    }
+  }
+
+  readonly mdSearchQuery = signal('');
+  readonly mdActiveFilterId = signal('all');
+  readonly mdSelectedId = signal('inb-1');
+  readonly mdCheckedIds = signal<string[]>(['inb-1']);
+  readonly mdMobileDetailOpen = signal(false);
+  readonly mdLastAction = signal('');
+  readonly mdReadOnly = signal(false);
+
+  private readonly mdItems: readonly EmrMasterDetailItem[] = [
+    {
+      id: 'inb-1',
+      title: 'Critical Post-Op IOP Spike: 38 mmHg OD',
+      subtitle: 'Ramesh Nair (64M · UHID-2026-8812)',
+      timestampLabel: '6m ago',
+      unread: true,
+      filterId: 'critical',
+      priorityBadge: { label: 'CRITICAL', tone: 'danger' },
+      statusBadge: { label: 'Action Required', tone: 'warning' },
+      summaryFields: [
+        { label: 'Eye', value: 'Right Eye (OD)' },
+        { label: 'IOP', value: '38 mmHg' },
+        { label: 'Procedure', value: 'PPV + Silicone Oil POD 1' },
+      ],
+      detailBody: 'Recommend stat oral Acetazolamide 250 mg + topical Timolol/Dorzolamide OD.',
+      actions: [{ id: 'order-lowering', label: 'Order IOP-Lowering Protocol', primary: true }],
+    },
+    {
+      id: 'inb-2',
+      title: 'Co-Sign Resident Operative Note: Phaco + Toric PCIOL OS',
+      subtitle: 'Ananya Sharma (58F · UHID-2026-44109)',
+      timestampLabel: '35m ago',
+      unread: true,
+      filterId: 'cosign',
+      statusBadge: { label: 'Awaiting Co-Sign', tone: 'info' },
+      summaryFields: [
+        { label: 'Eye', value: 'Left Eye (OS)' },
+        { label: 'IOL', value: '+21.5 D Toric T3' },
+      ],
+      detailBody: 'Uneventful sutureless temporal clear corneal phacoemulsification.',
+      actions: [{ id: 'cosign-note', label: 'Co-Sign Operative Note', primary: true }],
+    },
+    {
+      id: 'inb-3',
+      title: 'OCT Macula Quality Review Complete (OU)',
+      subtitle: 'Karthik Rao (71M · UHID-2026-10932)',
+      timestampLabel: '2h ago',
+      unread: false,
+      filterId: 'all',
+      statusBadge: { label: 'Verified', tone: 'success' },
+      summaryFields: [
+        { label: 'Signal Strength', value: '9/10 OU' },
+        { label: 'CST OD', value: '312 um' },
+      ],
+      detailBody: 'Reduced intraretinal fluid compared to baseline scan from 4 weeks ago.',
+    },
+  ];
+
+  masterDetailModel(): EmrMasterDetailViewModel {
+    return {
+      id: 'md-inbox',
+      title: 'Physician Results, Critical Alerts & Co-Sign Work Queue',
+      subtitle: 'Vitreoretinal & Glaucoma Unit II · 3 items',
+      searchQuery: this.mdSearchQuery(),
+      activeFilterId: this.mdActiveFilterId(),
+      selectedId: this.mdSelectedId(),
+      checkedIds: [...this.mdCheckedIds()],
+      mobileDetailOpen: this.mdMobileDetailOpen(),
+      filters: [
+        { id: 'all', label: 'All Items', count: 3 },
+        { id: 'critical', label: 'Critical Alerts', count: 1 },
+        { id: 'cosign', label: 'Co-Sign', count: 1 },
+      ],
+      batchActions: [{ id: 'batch-ack', label: 'Acknowledge Selected', primary: true }],
+      items: this.mdItems,
+      readOnly: this.readOnly() || this.mdReadOnly(),
+    };
+  }
+
+  onMasterDetailIntent(ev: EmrMasterDetailIntent): void {
+    const ro = this.readOnly() || this.mdReadOnly();
+    switch (ev.type) {
+      case 'searchChanged':
+        if (ro) return;
+        this.mdSearchQuery.set(ev.query);
+        this.emitState({ searchQuery: ev.query });
+        break;
+      case 'filterChanged':
+        if (ro) return;
+        this.mdActiveFilterId.set(ev.filterId);
+        this.emitState({ activeFilterId: ev.filterId });
+        break;
+      case 'itemSelected':
+        this.mdSelectedId.set(ev.itemId);
+        this.mdMobileDetailOpen.set(true);
+        this.emitState({ selectedId: ev.itemId, mobileDetailOpen: true });
+        break;
+      case 'detailClosed':
+        this.mdMobileDetailOpen.set(false);
+        this.emitState({ mobileDetailOpen: false });
+        break;
+      case 'batchSelectionToggled':
+        if (ro) return;
+        this.mdCheckedIds.set([...ev.checkedIds]);
+        this.emitState({ checkedIds: [...ev.checkedIds], checkedCount: ev.checkedIds.length });
+        break;
+      case 'actionTriggered':
+        if (ro) return;
+        this.mdLastAction.set(`${ev.actionId}:${ev.itemIds.length}`);
+        this.emitState({ lastAction: this.mdLastAction() });
+        break;
+    }
+  }
+
+  readonly stgResolution = signal<EmrTimeGridResolution>('1h');
+  readonly stgScrollOffset = signal(0);
+  readonly stgVisibleColumnCount = signal(4);
+  readonly stgSelectedColumnId = signal('c10');
+  readonly stgSelectedCellKey = signal('');
+  readonly stgVitalsCollapsed = signal(false);
+  readonly stgTrendCollapsed = signal(false);
+  readonly stgMedsCollapsed = signal(false);
+  readonly stgReadOnly = signal(false);
+
+  private readonly stgColumns: readonly EmrTimeGridColumn[] = [
+    { id: 'c08', timestamp: '2026-11-12T08:00:00Z', label: '08:00', shiftBadge: 'AM' },
+    { id: 'c09', timestamp: '2026-11-12T09:00:00Z', label: '09:00', shiftBadge: 'AM' },
+    { id: 'c10', timestamp: '2026-11-12T10:00:00Z', label: '10:00', shiftBadge: 'AM', isCurrentTime: true },
+    { id: 'c11', timestamp: '2026-11-12T11:00:00Z', label: '11:00', shiftBadge: 'AM' },
+    { id: 'c12', timestamp: '2026-11-12T12:00:00Z', label: '12:00', shiftBadge: 'PM' },
+    { id: 'c13', timestamp: '2026-11-12T13:00:00Z', label: '13:00', shiftBadge: 'PM' },
+  ];
+
+  private readonly stgTracks: readonly EmrTimeGridTrack[] = [
+    {
+      id: 'trk-vitals',
+      title: 'Observation Flowsheet (IOP & Vitals)',
+      kind: 'vitals',
+      badge: { label: 'Ward Live', tone: 'info' },
+      rows: [
+        {
+          id: 'r-iop-od',
+          label: 'IOP Right Eye (OD)',
+          unitLabel: 'mmHg',
+          referenceRangeLabel: '10–21 mmHg',
+          cells: {
+            c08: { columnId: 'c08', valueLabel: '34', abnormalTone: 'danger', badge: { label: 'STAT', tone: 'danger' }, note: 'Post-op spike' },
+            c09: { columnId: 'c09', valueLabel: '26', abnormalTone: 'warning', note: 'Post Acetazolamide' },
+            c10: { columnId: 'c10', valueLabel: '18', abnormalTone: 'success', badge: { label: 'Target', tone: 'success' } },
+            c11: { columnId: 'c11', valueLabel: '17', abnormalTone: 'neutral' },
+            c12: { columnId: 'c12', valueLabel: '16', abnormalTone: 'info' },
+            c13: { columnId: 'c13', valueLabel: '16', abnormalTone: 'success' },
+          },
+        },
+      ],
+    },
+    {
+      id: 'trk-trend',
+      title: 'Macular CST Trend (Sparkline)',
+      kind: 'trend',
+      badge: { label: 'OCT', tone: 'neutral' },
+      rows: [
+        {
+          id: 'r-cst-od',
+          label: 'Central Subfield Thickness',
+          unitLabel: 'um',
+          cells: {
+            c08: { columnId: 'c08', valueLabel: '440', sparklineNorm: 0.92, abnormalTone: 'warning' },
+            c09: { columnId: 'c09', valueLabel: '412', sparklineNorm: 0.76 },
+            c10: { columnId: 'c10', valueLabel: '380', sparklineNorm: 0.58, abnormalTone: 'info' },
+            c11: { columnId: 'c11', valueLabel: '348', sparklineNorm: 0.42 },
+            c12: { columnId: 'c12', valueLabel: '332', sparklineNorm: 0.34, abnormalTone: 'success' },
+            c13: { columnId: 'c13', valueLabel: '320', sparklineNorm: 0.28, abnormalTone: 'success' },
+          },
+        },
+      ],
+    },
+    {
+      id: 'trk-meds',
+      title: 'eMAR Administrations',
+      kind: 'medications',
+      badge: { label: 'Active', tone: 'success' },
+      rows: [
+        {
+          id: 'r-acetazolamide',
+          label: 'Acetazolamide 250 mg PO',
+          unitLabel: 'STAT',
+          cells: {
+            c08: { columnId: 'c08', valueLabel: 'Given', secondaryLabel: 'BCMA 08:12', badge: { label: 'Verified', tone: 'success' } },
+            c12: { columnId: 'c12', valueLabel: 'Due', secondaryLabel: '250 mg PO', badge: { label: 'Due', tone: 'warning' } },
+          },
+        },
+      ],
+    },
+  ];
+
+  synchronizedTimeGridModel(): EmrSynchronizedTimeGridViewModel {
+    const key = this.stgSelectedCellKey();
+    const parts = key ? key.split(':') : [];
+    const selectedCell =
+      parts.length === 3
+        ? { trackId: parts[0]!, rowId: parts[1]!, columnId: parts[2]! }
+        : undefined;
+    const scrollOffset = clampTimeGridScrollOffset(
+      this.stgScrollOffset(),
+      this.stgColumns.length,
+      this.stgVisibleColumnCount(),
+    );
+    return {
+      id: 'stg-icu-ophth',
+      title: 'Synchronized Longitudinal Time Grid (Vitals, IOP Trend & eMAR)',
+      subtitle: 'Ophthalmic High-Dependency Ward',
+      resolution: this.stgResolution(),
+      availableResolutions: ['15m', '1h', '4h', '24h'],
+      scrollOffset,
+      visibleColumnCount: this.stgVisibleColumnCount(),
+      selectedColumnId: this.stgSelectedColumnId(),
+      selectedCell,
+      columns: this.stgColumns,
+      tracks: this.stgTracks.map((trk) => ({
+        ...trk,
+        collapsed:
+          trk.id === 'trk-vitals'
+            ? this.stgVitalsCollapsed()
+            : trk.id === 'trk-trend'
+              ? this.stgTrendCollapsed()
+              : this.stgMedsCollapsed(),
+      })),
+      readOnly: this.readOnly() || this.stgReadOnly(),
+    };
+  }
+
+  onSynchronizedTimeGridIntent(ev: EmrSynchronizedTimeGridIntent): void {
+    const ro = this.readOnly() || this.stgReadOnly();
+    switch (ev.type) {
+      case 'resolutionChanged':
+        if (ro) return;
+        this.stgResolution.set(ev.resolution);
+        this.emitState({ resolution: ev.resolution });
+        break;
+      case 'scrollOffsetChanged':
+        if (ro) return;
+        this.stgScrollOffset.set(
+          clampTimeGridScrollOffset(ev.offset, this.stgColumns.length, this.stgVisibleColumnCount()),
+        );
+        this.emitState({ scrollOffset: this.stgScrollOffset() });
+        break;
+      case 'columnSelected':
+        this.stgSelectedColumnId.set(ev.columnId);
+        this.emitState({ selectedColumnId: ev.columnId });
+        break;
+      case 'trackToggled':
+        if (ev.trackId === 'trk-vitals') this.stgVitalsCollapsed.set(ev.collapsed);
+        else if (ev.trackId === 'trk-trend') this.stgTrendCollapsed.set(ev.collapsed);
+        else if (ev.trackId === 'trk-meds') this.stgMedsCollapsed.set(ev.collapsed);
+        this.emitState({
+          vitalsCollapsed: this.stgVitalsCollapsed(),
+          trendCollapsed: this.stgTrendCollapsed(),
+          medsCollapsed: this.stgMedsCollapsed(),
+        });
+        break;
+      case 'cellSelected':
+        this.stgSelectedColumnId.set(ev.columnId);
+        this.stgSelectedCellKey.set(`${ev.trackId}:${ev.rowId}:${ev.columnId}`);
+        this.emitState({
+          selectedColumnId: ev.columnId,
+          selectedCellKey: this.stgSelectedCellKey(),
+        });
+        break;
+    }
+  }
+  readonly customCellOs = signal(0);
+  readonly customCellRemark = signal('4-mirror Posner goniolens');
+  readonly customCellReadOnly = signal(false);
+
+  customCellMatrixModel(): ClinicalMatrixValues {
+    return {
+      gonioscopy: {
+        remark: this.customCellRemark(),
+        cells: {
+          od: { value: this.customCellOd() },
+          os: { value: this.customCellOs() },
+        },
+      },
+    };
+  }
+
+  onCustomCellMatrixIntent(ev: ClinicalMatrixIntent): void {
+    if (ev.type === 'customCellIntent') {
+      if (ev.columnId === 'od') this.customCellOd.update((n) => n + 1);
+      else this.customCellOs.update((n) => n + 1);
+      this.emitState({
+        od: this.customCellOd(),
+        os: this.customCellOs(),
+        remark: this.customCellRemark(),
+        readOnly: this.customCellReadOnly(),
+      });
+    } else if (ev.type === 'remarkEditRequested') {
+      this.customCellRemark.set(ev.remark);
+      this.emitState({
+        od: this.customCellOd(),
+        os: this.customCellOs(),
+        remark: ev.remark,
+        readOnly: this.customCellReadOnly(),
+      });
+    }
+  }
+
+  // ---- L6 Authoring Batch 1 ----------------------------------------------------
+
+  private readonly l6Sources: readonly TerminologySource[] = [
+    { id: 'loinc', kind: 'loinc', label: 'LOINC', available: true, supportsPagination: true, versionLabel: '2.78' },
+    { id: 'snomed', kind: 'snomed-ct', label: 'SNOMED CT', available: true, supportsPagination: true, versionLabel: '2025-01' },
+    { id: 'icd10', kind: 'icd-10', label: 'ICD-10-CM', available: true, supportsPagination: true, versionLabel: '2025' },
+    { id: 'ucum', kind: 'ucum', label: 'UCUM', available: true, versionLabel: '2.2' },
+  ];
+
+  private readonly l6LoincIop: TerminologyConcept = {
+    sourceId: 'loinc',
+    system: 'http://loinc.org',
+    code: '56844-4',
+    display: 'Intraocular pressure of Eye',
+    version: '2.78',
+    active: true,
+  };
+
+  private readonly l6LoincWeight: TerminologyConcept = {
+    sourceId: 'loinc',
+    system: 'http://loinc.org',
+    code: '29463-7',
+    display: 'Body weight',
+    version: '2.78',
+    active: true,
+  };
+
+  private readonly l6IcdGlaucoma: TerminologyConcept = {
+    sourceId: 'icd10',
+    system: 'http://hl7.org/fhir/sid/icd-10-cm',
+    code: 'H40.1112',
+    display: 'Primary open-angle glaucoma, right eye, moderate stage',
+    version: '2025',
+    active: true,
+  };
+
+  private readonly l6UcumMmhg: TerminologyConcept = {
+    sourceId: 'ucum',
+    system: 'http://unitsofmeasure.org',
+    code: 'mm[Hg]',
+    display: 'millimeter of mercury',
+    version: '2.2',
+    active: true,
+  };
+
+  private readonly l6Concepts: readonly TerminologyConcept[] = [
+    this.l6LoincIop,
+    this.l6LoincWeight,
+    this.l6IcdGlaucoma,
+    this.l6UcumMmhg,
+  ];
+
+  private readonly l6LibFields: readonly EmrGeneratedFieldDefinition[] = [
+    {
+      schemaVersion: '1.0',
+      id: 'chief-complaints',
+      revision: 1,
+      label: 'Chief complaints',
+      type: 'multiline',
+      required: true,
+      repeats: false,
+      rows: 3,
+      span: 12,
+      validationRules: [],
+      terminologyBindings: [],
+    },
+    {
+      schemaVersion: '1.0',
+      id: 'iop-gat',
+      revision: 1,
+      label: 'Intraocular pressure (GAT)',
+      type: 'quantity',
+      unit: 'mmHg',
+      unitSystem: 'UCUM',
+      unitCode: 'mm[Hg]',
+      required: true,
+      repeats: false,
+      span: 6,
+      validationRules: [],
+      terminologyBindings: [
+        { id: 'b-iop', role: 'question-meaning', concept: this.l6LoincIop, strength: 'preferred' },
+      ],
+    },
+    {
+      schemaVersion: '1.0',
+      id: 'cup-disc-ratio',
+      revision: 1,
+      label: 'Vertical cup-to-disc ratio',
+      type: 'decimal',
+      precision: 2,
+      required: false,
+      repeats: false,
+      span: 6,
+      validationRules: [],
+      terminologyBindings: [],
+    },
+  ];
+
+  private readonly l6InitialTemplate: EhrTemplateDefinition = {
+    schemaVersion: '1.0',
+    id: 'glaucoma-screening-template',
+    revision: 2,
+    title: 'Glaucoma Screening Encounter',
+    description: 'Reusable L6-authored ophthalmic screening template.',
+    locale: 'en-IN',
+    status: 'draft',
+    sections: [
+      {
+        id: 'history',
+        label: 'Presenting History',
+        description: 'Symptoms and ocular history.',
+        fields: [
+          {
+            id: 'chief-complaints',
+            sourceFieldId: 'chief-complaints',
+            sourceFieldRevision: 1,
+            field: this.l6LibFields[0],
+          },
+        ],
+      },
+      {
+        id: 'tonometry',
+        label: 'Tonometry & Optic Disc',
+        description: 'Core glaucoma screening parameters.',
+        fields: [
+          {
+            id: 'iop-gat',
+            sourceFieldId: 'iop-gat',
+            sourceFieldRevision: 1,
+            field: this.l6LibFields[1],
+          },
+          {
+            id: 'cup-disc-ratio',
+            sourceFieldId: 'cup-disc-ratio',
+            sourceFieldRevision: 1,
+            field: this.l6LibFields[2],
+          },
+        ],
+      },
+    ],
+  };
+
+  private createInitialFgModel(): FieldGeneratorViewModel {
+    return {
+      draft: {
+        schemaVersion: '1.0',
+        id: 'iop-applanation',
+        revision: 1,
+        label: 'Applanation IOP',
+        description: 'Measured Goldmann applanation intraocular pressure.',
+        type: 'quantity',
+        required: true,
+        repeats: false,
+        unit: 'mmHg',
+        unitSystem: 'UCUM',
+        unitCode: 'mm[Hg]',
+        precision: 0,
+        defaultValue: { value: 16, unit: 'mmHg' },
+        validationRules: [{ id: 'r1', kind: 'minimum', value: 0, message: 'IOP cannot be negative.' }],
+        terminologyBindings: [
+          { id: 'b-loinc', role: 'question-meaning', concept: this.l6LoincIop, strength: 'preferred' },
+          { id: 'b-ucum', role: 'unit', concept: this.l6UcumMmhg, strength: 'required' },
+        ],
+      },
+      sources: this.l6Sources,
+      terminologySearches: {},
+      validationErrors: {},
+      saving: false,
+      dirty: false,
+    };
+  }
+
+  readonly fgModel = signal<FieldGeneratorViewModel>(this.createInitialFgModel());
+  readonly fgReadOnly = signal(false);
+
+  fgEffectiveModel(): FieldGeneratorViewModel {
+    const m = this.fgModel();
+    return { ...m, readOnly: Boolean(m.readOnly) || this.fgReadOnly() || this.readOnly() };
+  }
+
+  onFieldGeneratorIntent(ev: FieldGeneratorIntent): void {
+    const prev = this.fgModel();
+    let next = prev;
+    if (ev.type === 'draftPatched') {
+      next = { ...prev, draft: { ...prev.draft, ...ev.changes }, dirty: true };
+    } else if (ev.type === 'validationRuleAdded') {
+      next = {
+        ...prev,
+        dirty: true,
+        draft: {
+          ...prev.draft,
+          validationRules: [
+            ...prev.draft.validationRules,
+            { ...ev.rule, id: `r-${prev.draft.validationRules.length + 1}` },
+          ],
+        },
+      };
+    } else if (ev.type === 'validationRuleRemoved') {
+      next = {
+        ...prev,
+        dirty: true,
+        draft: {
+          ...prev.draft,
+          validationRules: prev.draft.validationRules.filter((r) => r.id !== ev.ruleId),
+        },
+      };
+    } else if (ev.type === 'terminologySearchOpened' || ev.type === 'terminologyRetryRequested') {
+      const role = ev.role;
+      const existing = prev.terminologySearches[role];
+      const sourceId = ('sourceId' in ev && ev.sourceId) || existing?.sourceId || 'loinc';
+      const opts = this.l6Concepts.filter((c) => c.sourceId === sourceId || sourceId === 'snomed');
+      next = {
+        ...prev,
+        terminologySearches: {
+          ...prev.terminologySearches,
+          [role]: {
+            sourceId,
+            role,
+            query: existing?.query ?? '',
+            options: opts,
+            page: 1,
+            pageSize: 10,
+            total: opts.length,
+            loading: false,
+          },
+        },
+      };
+    } else if (ev.type === 'terminologyQueryChanged') {
+      const existing = prev.terminologySearches[ev.role] ?? {
+        sourceId: 'loinc',
+        role: ev.role,
+        query: '',
+        options: [],
+        page: 1,
+        pageSize: 10,
+        total: 0,
+        loading: false,
+      };
+      next = {
+        ...prev,
+        terminologySearches: {
+          ...prev.terminologySearches,
+          [ev.role]: {
+            ...existing,
+            query: ev.query,
+          },
+        },
+      };
+    } else if (ev.type === 'terminologySearchRequested') {
+      const existing = prev.terminologySearches[ev.role];
+      const q = (existing?.query ?? '').trim().toLowerCase();
+      const opts = this.l6Concepts.filter(
+        (c) => !q || c.display.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
+      );
+      next = {
+        ...prev,
+        terminologySearches: {
+          ...prev.terminologySearches,
+          [ev.role]: {
+            sourceId: existing?.sourceId ?? 'loinc',
+            role: ev.role,
+            query: existing?.query ?? '',
+            options: opts,
+            page: 1,
+            pageSize: 10,
+            total: opts.length,
+            loading: false,
+          },
+        },
+      };
+    } else if (ev.type === 'terminologyPageChanged') {
+      const existing = prev.terminologySearches[ev.role];
+      if (existing) {
+        next = {
+          ...prev,
+          terminologySearches: {
+            ...prev.terminologySearches,
+            [ev.role]: { ...existing, page: ev.page },
+          },
+        };
+      }
+    } else if (ev.type === 'terminologyConceptSelected') {
+      const id = `b-${ev.concept.sourceId}-${ev.concept.code}`;
+      const filtered = prev.draft.terminologyBindings.filter((b) => b.id !== id);
+      next = {
+        ...prev,
+        dirty: true,
+        draft: {
+          ...prev.draft,
+          terminologyBindings: [
+            ...filtered,
+            { id, role: ev.role, concept: ev.concept, strength: ev.strength ?? 'preferred' },
+          ],
+        },
+      };
+    } else if (ev.type === 'terminologyBindingRemoved') {
+      next = {
+        ...prev,
+        dirty: true,
+        draft: {
+          ...prev.draft,
+          terminologyBindings: prev.draft.terminologyBindings.filter((b) => b.id !== ev.bindingId),
+        },
+      };
+    } else if (ev.type === 'saveRequested') {
+      next = { ...prev, dirty: false, savedFieldId: prev.draft.id };
+    } else if (ev.type === 'resetRequested') {
+      next = this.createInitialFgModel();
+    }
+    this.fgModel.set(next);
+    this.emitState({
+      draft: next.draft,
+      type: next.draft.type,
+      terminologySearches: next.terminologySearches,
+      dirty: next.dirty,
+      savedFieldId: next.savedFieldId,
+    });
+  }
+
+  readonly tsModel = signal<TerminologySearchViewModel>({
+    role: 'question-meaning',
+    sources: this.l6Sources,
+    search: {
+      sourceId: 'loinc',
+      role: 'question-meaning',
+      query: 'pressure',
+      options: [this.l6LoincIop, this.l6LoincWeight],
+      page: 1,
+      pageSize: 10,
+      total: 2,
+      loading: false,
+    },
+    bindings: [
+      { id: 'b-loinc-iop', role: 'question-meaning', concept: this.l6LoincIop, strength: 'preferred' },
+    ],
+  });
+  readonly l6TsReadOnly = signal(false);
+
+  tsEffectiveModel(): TerminologySearchViewModel {
+    const m = this.tsModel();
+    return { ...m, readOnly: Boolean(m.readOnly) || this.l6TsReadOnly() || this.readOnly() };
+  }
+
+  onTerminologySearchIntent(ev: TerminologySearchIntent): void {
+    const prev = this.tsModel();
+    let next = prev;
+    if (ev.type === 'terminologySearchOpened' || ev.type === 'terminologyRetryRequested') {
+      const sourceId = ('sourceId' in ev && ev.sourceId) || prev.search?.sourceId || 'loinc';
+      const opts = this.l6Concepts.filter((c) => c.sourceId === sourceId || sourceId === 'snomed');
+      next = {
+        ...prev,
+        search: {
+          sourceId,
+          role: prev.role,
+          query: prev.search?.query ?? '',
+          options: opts,
+          page: 1,
+          pageSize: 10,
+          total: opts.length,
+          loading: false,
+        },
+      };
+    } else if (ev.type === 'terminologyQueryChanged' && prev.search) {
+      next = {
+        ...prev,
+        search: {
+          ...prev.search,
+          query: ev.query,
+        },
+      };
+    } else if (ev.type === 'terminologySearchRequested' && prev.search) {
+      const q = prev.search.query.trim().toLowerCase();
+      const opts = this.l6Concepts.filter(
+        (c) => !q || c.display.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
+      );
+      next = {
+        ...prev,
+        search: { ...prev.search, options: opts, page: 1, total: opts.length, loading: false },
+      };
+    } else if (ev.type === 'terminologyPageChanged' && prev.search) {
+      next = { ...prev, search: { ...prev.search, page: ev.page } };
+    } else if (ev.type === 'terminologyConceptSelected') {
+      const id = `b-${ev.concept.sourceId}-${ev.concept.code}`;
+      next = {
+        ...prev,
+        bindings: [
+          ...prev.bindings.filter((b) => b.id !== id),
+          { id, role: ev.role, concept: ev.concept, strength: ev.strength ?? 'preferred' },
+        ],
+      };
+    } else if (ev.type === 'terminologyBindingRemoved') {
+      next = { ...prev, bindings: prev.bindings.filter((b) => b.id !== ev.bindingId) };
+    }
+    this.tsModel.set(next);
+    this.emitState({
+      role: next.role,
+      search: next.search,
+      bindings: next.bindings,
+      sourceId: next.search?.sourceId ?? 'loinc',
+      loading: next.search?.loading ?? false,
+      error: next.search?.error ?? '',
+    });
+  }
+
+  readonly vreRules = signal<readonly FieldValidationRule[]>([
+    { id: 'r-min', kind: 'minimum', value: 5, message: 'Hypotony alert below 5 mmHg.' },
+    { id: 'r-max', kind: 'maximum', value: 21, message: 'Elevated IOP above 21 mmHg.' },
+  ]);
+  readonly vreReadOnly = signal(false);
+
+  vreEffectiveModel(): ValidationRuleEditorViewModel {
+    return { rules: this.vreRules(), readOnly: this.vreReadOnly() || this.readOnly() };
+  }
+
+  onValidationRuleEditorIntent(ev: ValidationRuleEditorIntent): void {
+    const prev = this.vreRules();
+    const next =
+      ev.type === 'validationRuleAdded'
+        ? [...prev, { ...ev.rule, id: `r-${prev.length + 1}` }]
+        : prev.filter((r) => r.id !== ev.ruleId);
+    this.vreRules.set(next);
+    this.emitState({ rules: next });
+  }
+
+  readonly flpQuery = signal('');
+  readonly flpSelectedSectionId = signal('tonometry');
+  readonly flpReadOnly = signal(false);
+
+  flpEffectiveModel(): FieldLibraryPickerViewModel {
+    const q = this.flpQuery().trim().toLowerCase();
+    const fields = this.l6LibFields.filter(
+      (f) => !q || f.label.toLowerCase().includes(q) || f.type.toLowerCase().includes(q),
+    );
+    return {
+      fields,
+      query: this.flpQuery(),
+      selectedSectionId: this.flpSelectedSectionId(),
+      readOnly: this.flpReadOnly() || this.readOnly(),
+    };
+  }
+
+  onFieldLibraryPickerIntent(ev: FieldLibraryPickerIntent): void {
+    if (ev.type === 'fieldLibraryQueryChanged') {
+      this.flpQuery.set(ev.query);
+      this.emitState({ query: ev.query });
+    } else if (ev.type === 'fieldAdded') {
+      this.emitState({ selectedSectionId: ev.sectionId, lastAddedFieldId: ev.field.id });
+    }
+  }
+
+  private createInitialEhrTemplateModel(): EhrTemplateViewModel {
+    return {
+      template: this.l6InitialTemplate,
+      fieldLibrary: this.l6LibFields,
+      fieldLibraryQuery: '',
+      selectedSectionId: 'tonometry',
+      preview: derivePreview(this.l6InitialTemplate),
+      loading: false,
+      saving: false,
+      dirty: false,
+    };
+  }
+
+  private readonly l6StagedImports = new Map<string, EhrTemplateDefinition>();
+
+  private reduceEhrTemplateModel(
+    model: EhrTemplateViewModel,
+    intent: EhrTemplateIntent,
+  ): EhrTemplateViewModel {
+    const withTemplate = (template: EhrTemplateDefinition): EhrTemplateViewModel => ({
+      ...model,
+      template,
+      preview: derivePreview(template),
+      dirty: true,
+    });
+    switch (intent.type) {
+      case 'templatePatched':
+        return withTemplate({
+          ...model.template,
+          ...intent.changes,
+          revision: model.template.revision + 1,
+        });
+      case 'fieldLibraryQueryChanged': {
+        const q = intent.query.trim().toLowerCase();
+        return {
+          ...model,
+          fieldLibraryQuery: intent.query,
+          fieldLibrary: this.l6LibFields.filter(
+            (f) => !q || f.label.toLowerCase().includes(q) || f.type.toLowerCase().includes(q),
+          ),
+        };
+      }
+      case 'sectionSelected':
+        return {
+          ...model,
+          selectedSectionId: intent.sectionId,
+          selectedPlacementId: undefined,
+        };
+      case 'placementSelected':
+        return {
+          ...model,
+          selectedSectionId: intent.sectionId,
+          selectedPlacementId: intent.placementId,
+        };
+      case 'sectionAdded': {
+        const id = `sec-${model.template.sections.length + 1}`;
+        return {
+          ...withTemplate({
+            ...model.template,
+            revision: model.template.revision + 1,
+            sections: [...model.template.sections, { ...intent.section, id }],
+          }),
+          selectedSectionId: id,
+          selectedPlacementId: undefined,
+        };
+      }
+      case 'sectionPatched':
+        return withTemplate({
+          ...model.template,
+          revision: model.template.revision + 1,
+          sections: model.template.sections.map((s) =>
+            s.id === intent.sectionId ? { ...s, ...intent.changes } : s,
+          ),
+        });
+      case 'sectionMoved': {
+        const sections = [...model.template.sections];
+        const fromIdx = sections.findIndex((s) => s.id === intent.sectionId);
+        if (fromIdx < 0) return model;
+        const toIdx = fromIdx + (intent.direction === 'up' ? -1 : 1);
+        if (toIdx < 0 || toIdx >= sections.length) return model;
+        const [item] = sections.splice(fromIdx, 1);
+        if (!item) return model;
+        sections.splice(toIdx, 0, item);
+        return withTemplate({ ...model.template, revision: model.template.revision + 1, sections });
+      }
+      case 'sectionRemoved': {
+        const sections = model.template.sections.filter((s) => s.id !== intent.sectionId);
+        const nextSectionId =
+          model.selectedSectionId === intent.sectionId ? sections[0]?.id : model.selectedSectionId;
+        return {
+          ...withTemplate({ ...model.template, revision: model.template.revision + 1, sections }),
+          selectedSectionId: nextSectionId,
+          selectedPlacementId:
+            model.selectedSectionId === intent.sectionId ? undefined : model.selectedPlacementId,
+        };
+      }
+      case 'fieldAdded':
+        return withTemplate({
+          ...model.template,
+          revision: model.template.revision + 1,
+          sections: model.template.sections.map((s) =>
+            s.id === intent.sectionId
+              ? {
+                  ...s,
+                  fields: [
+                    ...s.fields,
+                    {
+                      id: `${intent.field.id}-${s.fields.length + 1}`,
+                      sourceFieldId: intent.field.id,
+                      sourceFieldRevision: intent.field.revision,
+                      field: intent.field,
+                    },
+                  ],
+                }
+              : s,
+          ),
+        });
+      case 'fieldMoved':
+        return withTemplate({
+          ...model.template,
+          revision: model.template.revision + 1,
+          sections: model.template.sections.map((s) => {
+            if (s.id !== intent.sectionId) return s;
+            const fields = [...s.fields];
+            const fromIdx = fields.findIndex((f) => f.id === intent.placementId);
+            if (fromIdx < 0) return s;
+            const toIdx = fromIdx + (intent.direction === 'up' ? -1 : 1);
+            if (toIdx < 0 || toIdx >= fields.length) return s;
+            const [item] = fields.splice(fromIdx, 1);
+            if (!item) return s;
+            fields.splice(toIdx, 0, item);
+            return { ...s, fields };
+          }),
+        });
+      case 'fieldRemoved':
+        return {
+          ...withTemplate({
+            ...model.template,
+            revision: model.template.revision + 1,
+            sections: model.template.sections.map((s) =>
+              s.id === intent.sectionId
+                ? { ...s, fields: s.fields.filter((f) => f.id !== intent.placementId) }
+                : s,
+            ),
+          }),
+          selectedPlacementId:
+            model.selectedPlacementId === intent.placementId ? undefined : model.selectedPlacementId,
+        };
+      case 'artifactExportRequested':
+        return {
+          ...model,
+          artifact: {
+            format: intent.format,
+            fhirVersion: intent.format === 'internal-json' ? undefined : '4.0.1',
+            serialized: JSON.stringify(model.template, null, 2),
+            issues: [],
+          },
+        };
+      case 'artifactImportRequested': {
+        try {
+          const parsed = JSON.parse(intent.serialized) as Partial<EhrTemplateDefinition>;
+          if (parsed && typeof parsed.title === 'string' && Array.isArray(parsed.sections)) {
+            this.l6StagedImports.set(model.template.id, {
+              ...model.template,
+              ...parsed,
+              schemaVersion: '1.0',
+              id: parsed.id ?? model.template.id,
+              revision: model.template.revision + 1,
+              sections: parsed.sections,
+            });
+            return {
+              ...model,
+              canAcceptImport: true,
+              importIssues: [],
+            };
+          }
+          this.l6StagedImports.delete(model.template.id);
+          return {
+            ...model,
+            canAcceptImport: false,
+            importIssues: [
+              {
+                severity: 'error',
+                code: 'INVALID_TEMPLATE_PAYLOAD',
+                message: 'Imported payload must include template title and sections array.',
+              },
+            ],
+          };
+        } catch {
+          this.l6StagedImports.delete(model.template.id);
+          return {
+            ...model,
+            canAcceptImport: false,
+            importIssues: [
+              {
+                severity: 'error',
+                code: 'INVALID_JSON',
+                message: 'Invalid JSON payload; unable to parse template artifact.',
+              },
+            ],
+          };
+        }
+      }
+      case 'importAccepted': {
+        const staged = this.l6StagedImports.get(model.template.id);
+        if (!staged) return model;
+        this.l6StagedImports.delete(model.template.id);
+        return {
+          ...withTemplate(staged),
+          canAcceptImport: false,
+          importIssues: [],
+          selectedSectionId: staged.sections[0]?.id,
+          selectedPlacementId: undefined,
+        };
+      }
+      case 'saveRequested':
+        return { ...model, dirty: false };
+      default:
+        return model;
+    }
+  }
+
+  readonly tcModel = signal<EhrTemplateViewModel>(this.createInitialEhrTemplateModel());
+  readonly tcReadOnly = signal(false);
+
+  tcEffectiveModel(): EhrTemplateViewModel {
+    const m = this.tcModel();
+    return { ...m, readOnly: Boolean(m.readOnly) || this.tcReadOnly() || this.readOnly() };
+  }
+
+  onTemplateComposerIntent(ev: EhrTemplateIntent): void {
+    const next = this.reduceEhrTemplateModel(this.tcModel(), ev);
+    this.tcModel.set(next);
+    this.emitState({
+      template: next.template,
+      fieldLibrary: next.fieldLibrary,
+      fieldLibraryQuery: next.fieldLibraryQuery,
+      selectedSectionId: next.selectedSectionId,
+      selectedPlacementId: next.selectedPlacementId,
+      preview: next.preview,
+      dirty: next.dirty,
+      status: next.template.status,
+      artifact: next.artifact,
+      canAcceptImport: next.canAcceptImport,
+      importIssues: next.importIssues,
+    });
+  }
+
+  readonly tpModel = signal<EhrTemplateViewModel>(this.createInitialEhrTemplateModel());
+  readonly l6TpReadOnly = signal(false);
+
+  tpEffectiveModel(): TemplatePreviewViewModel {
+    const m = this.tpModel();
+    return { ...m, readOnly: Boolean(m.readOnly) || this.l6TpReadOnly() || this.readOnly() };
+  }
+
+  onTemplatePreviewIntent(ev: TemplatePreviewIntent): void {
+    const next = this.reduceEhrTemplateModel(this.tpModel(), ev);
+    this.tpModel.set(next);
+    this.emitState({
+      template: next.template,
+      preview: next.preview,
+      artifact: next.artifact,
+      canAcceptImport: next.canAcceptImport,
+      importIssues: next.importIssues,
+      status: next.template.status,
+      dirty: next.dirty,
+    });
+  }
+
   private readonly onMessage = (event: MessageEvent) => {
     const data = event.data as {
       type?: string;
@@ -3525,6 +6520,7 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
       if (sel === 'emr-date-input') this.dateVal.set(val);
     } else if (sel === 'emr-likert') {
       if ('value' in s) this.likertVal.set((s['value'] as number | null) ?? null);
+      if (s['scaleMode'] === 'numeric' || s['scaleMode'] === 'text') this.likertScaleMode.set(s['scaleMode']);
       if (typeof s['clearable'] === 'boolean') this.likertClearable.set(s['clearable']);
       if (typeof s['fullWidth'] === 'boolean') this.likertFullWidth.set(s['fullWidth']);
       if (typeof s['disabled'] === 'boolean') this.likertDisabled.set(s['disabled']);
@@ -3551,6 +6547,7 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
       if (typeof s['required'] === 'boolean') this.timeRequired.set(s['required']);
     } else if (sel === 'emr-vas') {
       if ('value' in s) this.vasVal.set((s['value'] as number | null) ?? null);
+      if (s['precision'] === 'integer' || s['precision'] === 'decimal') this.vasPrecision.set(s['precision']);
       if (s['orientation'] === 'horizontal' || s['orientation'] === 'vertical') {
         this.vasOrientation.set(s['orientation']);
       }
@@ -3573,8 +6570,57 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
     } else if (sel === 'emr-paired-input') {
       const left = s['od'] ?? s['first'];
       const right = s['os'] ?? s['second'];
-      if (typeof left === 'string') this.pairedLeft.set(left);
-      if (typeof right === 'string') this.pairedRight.set(right);
+      if (left !== undefined) this.pairedLeft.set(typeof left === 'string' ? left : null);
+      if (right !== undefined) this.pairedRight.set(typeof right === 'string' ? right : null);
+      if (s['inputType'] === 'text' || s['inputType'] === 'integer' || s['inputType'] === 'decimal' || s['inputType'] === 'select') {
+        this.pairedInputType.set(s['inputType']);
+      }
+    } else if (sel === 'emr-paired-field') {
+      const cur = this.pairedModel();
+      const nextMode =
+        s['mode'] === 'text' || s['mode'] === 'decimal' || s['mode'] === 'integer' || s['mode'] === 'select'
+          ? s['mode']
+          : cur.mode;
+      this.pairedModel.set({
+        ...cur,
+        value: 'value' in s ? ((s['value'] as PairedFieldViewModel['value']) ?? null) : cur.value,
+        mode: nextMode,
+        options: nextMode === 'select' ? this.pairedFieldLensOptions : cur.options,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        layout: s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline' ? s['layout'] : cur.layout,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        status: typeof s['status'] === 'string' ? (s['status'] as PairedFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.pairedLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-textarea') {
+      if ('value' in s) this.textareaVal.set(typeof s['value'] === 'string' ? s['value'] : null);
+    } else if (sel === 'emr-icon-button') {
+      if (typeof s['pressed'] === 'boolean') this.iconButtonPressed.set(s['pressed']);
+      else if (typeof s['pinned'] === 'boolean') this.iconButtonPressed.set(s['pinned']);
+    } else if (sel === 'emr-search-input') {
+      if ('value' in s) this.searchVal.set(typeof s['value'] === 'string' ? s['value'] : null);
+    } else if (sel === 'emr-password-input') {
+      if ('value' in s) this.passwordVal.set(typeof s['value'] === 'string' ? s['value'] : null);
+    } else if (sel === 'emr-numeric-stepper') {
+      if ('value' in s) this.stepperVal.set(typeof s['value'] === 'number' ? s['value'] : null);
+    } else if (sel === 'emr-pagination') {
+      if (typeof s['page'] === 'number') this.paginationPage.set(s['page']);
+      if (typeof s['pageSize'] === 'number') this.paginationSize.set(s['pageSize']);
+    } else if (sel === 'emr-dialog') {
+      if (typeof s['open'] === 'boolean') this.dialogOpen.set(s['open']);
+    } else if (sel === 'emr-popover') {
+      if (typeof s['open'] === 'boolean') this.popoverOpen.set(s['open']);
+    } else if (sel === 'emr-toast') {
+      if (typeof s['visible'] === 'boolean') this.toastVisible.set(s['visible']);
+      if (typeof s['tone'] === 'string') {
+        this.toastModel.update((cur) => ({
+          ...cur,
+          tone: s['tone'] as EmrTone,
+        }));
+      }
     } else if (sel === 'emr-checkbox') {
       if (typeof s['checked'] === 'boolean') this.checkedVal.set(s['checked']);
       if (typeof s['mixed'] === 'boolean') this.cbMixed.set(s['mixed']);
@@ -3728,21 +6774,6 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
         maxItems: typeof s['maxItems'] === 'number' ? s['maxItems'] : cur.maxItems,
         status: typeof s['status'] === 'string' ? (s['status'] as AttachmentFieldViewModel['status']) : undefined,
       });
-      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
-    } else if (sel === 'emr-paired-field') {
-      const cur = this.pairedModel();
-      this.pairedModel.set({
-        ...cur,
-        value: 'value' in s ? ((s['value'] as PairedFieldViewModel['value']) ?? null) : cur.value,
-        mode: s['mode'] === 'text' || s['mode'] === 'decimal' || s['mode'] === 'integer' ? s['mode'] : cur.mode,
-        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
-        layout: s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline' ? s['layout'] : cur.layout,
-        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
-        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
-        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
-        status: typeof s['status'] === 'string' ? (s['status'] as PairedFieldViewModel['status']) : undefined,
-      });
-      if (typeof s['labelHidden'] === 'boolean') this.pairedLabelHidden.set(s['labelHidden']);
       if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
     } else if (sel === 'emr-duration-input') {
       const cur = this.durationModel();
@@ -4083,6 +7114,325 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
       if (typeof s['interactive'] === 'boolean') this.cardInteractive.set(s['interactive']);
       if (typeof s['selected'] === 'boolean') this.cardSelected.set(s['selected']);
       if (typeof s['disabled'] === 'boolean') this.cardDisabled.set(s['disabled']);
+    } else if (sel === 'emr-section-card') {
+      if (typeof s['collapsed'] === 'boolean') this.sectionCardCollapsed.set(s['collapsed']);
+      if (typeof s['collapsible'] === 'boolean') this.sectionCardCollapsible.set(s['collapsible']);
+      if (s['variant'] === 'outlined' || s['variant'] === 'elevated' || s['variant'] === 'filled' || s['variant'] === 'subtle') {
+        this.sectionCardVariant.set(s['variant']);
+      }
+      if (s['tone'] === 'neutral' || s['tone'] === 'info' || s['tone'] === 'success' || s['tone'] === 'warning' || s['tone'] === 'danger') {
+        this.sectionCardTone.set(s['tone']);
+      }
+      if (s['padding'] === 'none' || s['padding'] === 'sm' || s['padding'] === 'md' || s['padding'] === 'lg') {
+        this.sectionCardPadding.set(s['padding']);
+      }
+      if (s['headingLevel'] === 2 || s['headingLevel'] === 3 || s['headingLevel'] === 4 || s['headingLevel'] === 5 || s['headingLevel'] === 6) {
+        this.sectionCardHeadingLevel.set(s['headingLevel']);
+      }
+      if (typeof s['readOnly'] === 'boolean') this.sectionCardReadOnly.set(s['readOnly']);
+      if (typeof s['showStatus'] === 'boolean') this.sectionCardShowStatus.set(s['showStatus']);
+      if (typeof s['showDescription'] === 'boolean') this.sectionCardShowDescription.set(s['showDescription']);
+    } else if (sel === 'emr-repeatable-group') {
+      if (Array.isArray(s['items'])) this.repeatItems.set(s['items'] as readonly RepeatableItemState[]);
+      if (typeof s['readOnly'] === 'boolean') this.repeatReadOnly.set(s['readOnly']);
+      if (typeof s['empty'] === 'boolean') this.repeatEmpty.set(s['empty']);
+      if (typeof s['error'] === 'boolean') this.repeatError.set(s['error']);
+      if (typeof s['warning'] === 'boolean') this.repeatWarning.set(s['warning']);
+    } else if (sel === 'emr-clinical-form') {
+      if (typeof s['readOnly'] === 'boolean') this.clinicalFormReadOnly.set(s['readOnly']);
+      if (Array.isArray(s['collapsedSectionIds'])) {
+        this.clinicalFormCollapsedSectionIds.set(s['collapsedSectionIds'].map(String));
+      }
+      if (s['fields'] && typeof s['fields'] === 'object') {
+        this.clinicalFormFields.set(s['fields'] as Readonly<Record<string, ClinicalFieldState>>);
+      }
+      if (s['repeatableGroups'] && typeof s['repeatableGroups'] === 'object') {
+        this.clinicalFormRepeatableGroups.set(
+          s['repeatableGroups'] as Readonly<Record<string, readonly RepeatableItemState[]>>,
+        );
+      }
+    } else if (
+      sel === 'emr-clinical-list' ||
+      sel === 'emr-medication-list' ||
+      sel === 'emr-allergy-list' ||
+      sel === 'emr-chronic-disease-list' ||
+      sel === 'emr-personal-history-list'
+    ) {
+      const cur = this.clinicalListModels()[sel];
+      const next: ClinicalListViewModel = {
+        ...cur,
+        ...(typeof s['title'] === 'string' ? { title: s['title'] } : {}),
+        ...(Array.isArray(s['items']) ? { items: s['items'] as readonly ClinicalListItem[] } : {}),
+        ...(typeof s['selectedId'] === 'string' || s['selectedId'] === undefined
+          ? { selectedId: s['selectedId'] as string | undefined }
+          : {}),
+        ...(typeof s['allowAdd'] === 'boolean' ? { allowAdd: s['allowAdd'] } : {}),
+        ...(typeof s['readOnly'] === 'boolean' ? { readOnly: s['readOnly'] } : {}),
+        ...(typeof s['loading'] === 'boolean' ? { loading: s['loading'] } : {}),
+        ...(typeof s['error'] === 'string' ? { error: s['error'] } : {}),
+        ...(typeof s['emptyMessage'] === 'string' ? { emptyMessage: s['emptyMessage'] } : {}),
+        ...(s['variant'] === 'outlined' ||
+        s['variant'] === 'elevated' ||
+        s['variant'] === 'filled' ||
+        s['variant'] === 'subtle'
+          ? { variant: s['variant'] }
+          : {}),
+      };
+      this.clinicalListModels.update((prev) => ({ ...prev, [sel]: next }));
+    } else if (sel === 'emr-clinical-matrix') {
+      if (s['values'] && typeof s['values'] === 'object') {
+        this.clinicalMatrixValues.set(s['values'] as ClinicalMatrixValues);
+      }
+      if (typeof s['readOnly'] === 'boolean') {
+        this.clinicalMatrixReadOnly.set(s['readOnly']);
+      }
+      if (typeof s['showRemarks'] === 'boolean') {
+        this.clinicalMatrixShowRemarks.set(s['showRemarks']);
+      }
+    } else if (sel === 'emr-clinical-cell-renderer') {
+      if (typeof s['od'] === 'number') this.customCellOd.set(s['od']);
+      if (typeof s['os'] === 'number') this.customCellOs.set(s['os']);
+      if (typeof s['remark'] === 'string') this.customCellRemark.set(s['remark']);
+      if (typeof s['readOnly'] === 'boolean') this.customCellReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-annotation-toolbar') {
+      if (typeof s['selectedToolId'] === 'string') this.tbSelectedToolId.set(s['selectedToolId']);
+      if (typeof s['selectedColourId'] === 'string') this.tbSelectedColourId.set(s['selectedColourId']);
+      if (typeof s['selectedWidthId'] === 'string') this.tbSelectedWidthId.set(s['selectedWidthId']);
+      if (typeof s['zoomPct'] === 'number') this.tbZoomPct.set(s['zoomPct']);
+      if (typeof s['canUndo'] === 'boolean') this.tbCanUndo.set(s['canUndo']);
+      if (typeof s['canRedo'] === 'boolean') this.tbCanRedo.set(s['canRedo']);
+      if (typeof s['canSave'] === 'boolean') this.tbCanSave.set(s['canSave']);
+      if (typeof s['zoomLocked'] === 'boolean') this.tbZoomLocked.set(s['zoomLocked']);
+      if (typeof s['readOnly'] === 'boolean') this.tbReadOnly.set(s['readOnly']);
+      if (typeof s['undoCount'] === 'number') this.tbUndoCount.set(s['undoCount']);
+      if (typeof s['redoCount'] === 'number') this.tbRedoCount.set(s['redoCount']);
+      if (typeof s['saveCount'] === 'number') this.tbSaveCount.set(s['saveCount']);
+    } else if (sel === 'emr-annotation-list') {
+      if (Array.isArray(s['items'])) this.alItems.set(s['items'] as readonly AnnotationListItem[]);
+      if (typeof s['selectedLayerId'] === 'string' || s['selectedLayerId'] === undefined) {
+        if ('selectedLayerId' in s) this.alSelectedLayerId.set(s['selectedLayerId'] as string | undefined);
+      }
+      if (typeof s['canLock'] === 'boolean') this.alCanLock.set(s['canLock']);
+      if (typeof s['readOnly'] === 'boolean') this.alReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-image-template-picker') {
+      if (typeof s['selectedTemplateId'] === 'string') this.tpSelectedTemplateId.set(s['selectedTemplateId']);
+      if (typeof s['search'] === 'string') this.tpSearch.set(s['search']);
+      if (typeof s['category'] === 'string') this.tpCategory.set(s['category']);
+      if (typeof s['favouritesOnly'] === 'boolean') this.tpFavouritesOnly.set(s['favouritesOnly']);
+      if (Array.isArray(s['favouriteIds'])) this.tpFavouriteIds.set(s['favouriteIds'].map(String));
+      if (typeof s['readOnly'] === 'boolean') this.tpReadOnly.set(s['readOnly']);
+      if (typeof s['canEditFavourites'] === 'boolean') this.tpCanEditFavourites.set(s['canEditFavourites']);
+    } else if (sel === 'emr-time-axis') {
+      if (typeof s['stepId'] === 'string' && (s['stepId'] === '60' || s['stepId'] === '30')) {
+        this.taStepId.set(s['stepId']);
+      }
+      const source = this.timeAxisTicksSource();
+      if (typeof s['offset'] === 'number') {
+        this.taOffset.set(Math.max(0, Math.min(source.length - 5, s['offset'])));
+      } else if (typeof s['windowStartLabel'] === 'string') {
+        const idx = source.indexOf(s['windowStartLabel']);
+        if (idx >= 0) this.taOffset.set(Math.max(0, Math.min(source.length - 5, idx)));
+      }
+      if (typeof s['selectedTickId'] === 'string') this.taSelectedTickId.set(s['selectedTickId']);
+      else if (typeof s['selectedSlotId'] === 'string') this.taSelectedTickId.set(s['selectedSlotId']);
+      if (typeof s['readOnly'] === 'boolean') this.taReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-data-table') {
+      if (typeof s['sortColumnId'] === 'string' || s['sortColumnId'] === undefined) {
+        if ('sortColumnId' in s) this.dtSortColumnId.set(s['sortColumnId'] as string | undefined);
+      }
+      if (s['sortDirection'] === 'asc' || s['sortDirection'] === 'desc' || s['sortDirection'] === undefined) {
+        if ('sortDirection' in s) this.dtSortDirection.set(s['sortDirection'] as EmrDataTableSortDirection | undefined);
+      }
+      if (Array.isArray(s['selectedIds'])) this.dtSelectedIds.set(s['selectedIds'].map(String));
+      if (s['density'] === 'comfortable' || s['density'] === 'compact') this.dtDensity.set(s['density']);
+      if (typeof s['pendingOnly'] === 'boolean') this.dtPendingOnly.set(s['pendingOnly']);
+      if (typeof s['customSavedFilter'] === 'boolean') this.dtCustomSavedFilter.set(s['customSavedFilter']);
+      if (typeof s['page'] === 'number') this.dtPage.set(s['page']);
+      if (typeof s['pageSize'] === 'number') this.dtPageSize.set(s['pageSize']);
+      if (typeof s['loading'] === 'boolean') this.dtLoading.set(s['loading']);
+      if (typeof s['error'] === 'string') this.dtError.set(s['error']);
+      if (typeof s['readOnly'] === 'boolean') this.dtReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-split-workspace') {
+      if (
+        s['preset'] === '2-pane-50-50' ||
+        s['preset'] === '2-pane-40-60' ||
+        s['preset'] === '3-pane' ||
+        s['preset'] === 'focus-primary'
+      ) {
+        this.swPreset.set(s['preset']);
+      }
+      if (typeof s['pane1Pct'] === 'number') this.swPane1Pct.set(s['pane1Pct']);
+      if (typeof s['pane2Pct'] === 'number') this.swPane2Pct.set(s['pane2Pct']);
+      if (typeof s['pane3Pct'] === 'number') this.swPane3Pct.set(s['pane3Pct']);
+      if (typeof s['pane1Collapsed'] === 'boolean') this.swPane1Collapsed.set(s['pane1Collapsed']);
+      if (typeof s['pane2Collapsed'] === 'boolean') this.swPane2Collapsed.set(s['pane2Collapsed']);
+      if (typeof s['pane3Collapsed'] === 'boolean') this.swPane3Collapsed.set(s['pane3Collapsed']);
+      if (typeof s['mobileActivePaneId'] === 'string') this.swMobileActivePaneId.set(s['mobileActivePaneId']);
+      if (typeof s['readOnly'] === 'boolean') this.swReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-command-palette') {
+      if (s['presentation'] === 'inline' || s['presentation'] === 'modal') {
+        this.cpPresentation.set(s['presentation']);
+      }
+      if (typeof s['open'] === 'boolean') this.cpOpen.set(s['open']);
+      if (typeof s['query'] === 'string') this.cpQuery.set(s['query']);
+      if (
+        s['activeCategory'] === 'all' ||
+        s['activeCategory'] === 'orders' ||
+        s['activeCategory'] === 'navigation' ||
+        s['activeCategory'] === 'smartphrases' ||
+        s['activeCategory'] === 'calculators' ||
+        s['activeCategory'] === 'actions'
+      ) {
+        this.cpActiveCategory.set(s['activeCategory']);
+      }
+      if (typeof s['activeIndex'] === 'number') this.cpActiveIndex.set(s['activeIndex']);
+      if (typeof s['lastCommandId'] === 'string') this.cpLastCommandId.set(s['lastCommandId']);
+      if (typeof s['readOnly'] === 'boolean') this.cpReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-master-detail') {
+      if (typeof s['searchQuery'] === 'string') this.mdSearchQuery.set(s['searchQuery']);
+      if (typeof s['activeFilterId'] === 'string') this.mdActiveFilterId.set(s['activeFilterId']);
+      if (typeof s['selectedId'] === 'string') this.mdSelectedId.set(s['selectedId']);
+      if (Array.isArray(s['checkedIds'])) this.mdCheckedIds.set(s['checkedIds'].map(String));
+      if (typeof s['mobileDetailOpen'] === 'boolean') this.mdMobileDetailOpen.set(s['mobileDetailOpen']);
+      if (typeof s['lastAction'] === 'string') this.mdLastAction.set(s['lastAction']);
+      if (typeof s['readOnly'] === 'boolean') this.mdReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-synchronized-time-grid') {
+      if (
+        s['resolution'] === '15m' ||
+        s['resolution'] === '1h' ||
+        s['resolution'] === '4h' ||
+        s['resolution'] === '24h'
+      ) {
+        this.stgResolution.set(s['resolution']);
+      }
+      if (typeof s['scrollOffset'] === 'number') this.stgScrollOffset.set(s['scrollOffset']);
+      if (typeof s['visibleColumnCount'] === 'number') this.stgVisibleColumnCount.set(s['visibleColumnCount']);
+      if (typeof s['selectedColumnId'] === 'string') this.stgSelectedColumnId.set(s['selectedColumnId']);
+      if (typeof s['selectedCellKey'] === 'string') this.stgSelectedCellKey.set(s['selectedCellKey']);
+      if (typeof s['vitalsCollapsed'] === 'boolean') this.stgVitalsCollapsed.set(s['vitalsCollapsed']);
+      if (typeof s['trendCollapsed'] === 'boolean') this.stgTrendCollapsed.set(s['trendCollapsed']);
+      if (typeof s['medsCollapsed'] === 'boolean') this.stgMedsCollapsed.set(s['medsCollapsed']);
+      if (typeof s['readOnly'] === 'boolean') this.stgReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-field-generator') {
+      this.fgModel.update((prev) => {
+        const nextDraft =
+          s['draft'] && typeof s['draft'] === 'object'
+            ? (s['draft'] as EmrGeneratedFieldDefinition)
+            : prev.draft;
+        const typeOverride =
+          typeof s['type'] === 'string' ? (s['type'] as ClinicalFieldType) : nextDraft.type;
+        return {
+          ...prev,
+          draft: { ...nextDraft, type: typeOverride },
+          sources: Array.isArray(s['sources']) ? (s['sources'] as readonly TerminologySource[]) : prev.sources,
+          terminologySearches:
+            s['terminologySearches'] && typeof s['terminologySearches'] === 'object'
+              ? (s['terminologySearches'] as FieldGeneratorViewModel['terminologySearches'])
+              : prev.terminologySearches,
+          validationErrors:
+            s['validationErrors'] && typeof s['validationErrors'] === 'object'
+              ? (s['validationErrors'] as Readonly<Record<string, string>>)
+              : prev.validationErrors,
+          saving: typeof s['saving'] === 'boolean' ? s['saving'] : prev.saving,
+          dirty: typeof s['dirty'] === 'boolean' ? s['dirty'] : prev.dirty,
+          error: typeof s['error'] === 'string' ? (s['error'] || undefined) : prev.error,
+          savedFieldId:
+            typeof s['savedFieldId'] === 'string' ? (s['savedFieldId'] || undefined) : prev.savedFieldId,
+        };
+      });
+      if (typeof s['readOnly'] === 'boolean') this.fgReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-terminology-search') {
+      this.tsModel.update((prev) => {
+        const baseSearch =
+          s['search'] && typeof s['search'] === 'object'
+            ? (s['search'] as TerminologySearchState)
+            : prev.search;
+        const nextSearch = baseSearch
+          ? {
+              ...baseSearch,
+              sourceId: typeof s['sourceId'] === 'string' ? s['sourceId'] : baseSearch.sourceId,
+              loading: typeof s['loading'] === 'boolean' ? s['loading'] : baseSearch.loading,
+              error: typeof s['error'] === 'string' ? (s['error'] || undefined) : baseSearch.error,
+            }
+          : baseSearch;
+        return {
+          ...prev,
+          role:
+            s['role'] === 'question-meaning' ||
+            s['role'] === 'unit' ||
+            s['role'] === 'answer-value-set' ||
+            s['role'] === 'classification-mapping'
+              ? s['role']
+              : prev.role,
+          sources: Array.isArray(s['sources']) ? (s['sources'] as readonly TerminologySource[]) : prev.sources,
+          search: nextSearch,
+          bindings: Array.isArray(s['bindings'])
+            ? (s['bindings'] as readonly TerminologyBinding[])
+            : prev.bindings,
+        };
+      });
+      if (typeof s['readOnly'] === 'boolean') this.l6TsReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-validation-rule-editor') {
+      if (Array.isArray(s['rules'])) {
+        this.vreRules.set(s['rules'] as readonly FieldValidationRule[]);
+      }
+      if (typeof s['readOnly'] === 'boolean') this.vreReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-field-library-picker') {
+      if (typeof s['query'] === 'string') this.flpQuery.set(s['query']);
+      if (typeof s['selectedSectionId'] === 'string') {
+        this.flpSelectedSectionId.set(s['selectedSectionId']);
+      }
+      if (typeof s['readOnly'] === 'boolean') this.flpReadOnly.set(s['readOnly']);
+    } else if (sel === 'emr-template-composer' || sel === 'emr-template-preview') {
+      const targetSignal = sel === 'emr-template-composer' ? this.tcModel : this.tpModel;
+      const targetReadOnly = sel === 'emr-template-composer' ? this.tcReadOnly : this.l6TpReadOnly;
+      targetSignal.update((prev) => {
+        const baseTemplate =
+          s['template'] && typeof s['template'] === 'object'
+            ? (s['template'] as EhrTemplateDefinition)
+            : prev.template;
+        const nextStatus =
+          s['status'] === 'draft' || s['status'] === 'active' || s['status'] === 'retired'
+            ? s['status']
+            : baseTemplate.status;
+        const nextTemplate: EhrTemplateDefinition = { ...baseTemplate, status: nextStatus };
+        return {
+          ...prev,
+          template: nextTemplate,
+          fieldLibrary: Array.isArray(s['fieldLibrary'])
+            ? (s['fieldLibrary'] as readonly EmrGeneratedFieldDefinition[])
+            : prev.fieldLibrary,
+          fieldLibraryQuery:
+            typeof s['fieldLibraryQuery'] === 'string'
+              ? s['fieldLibraryQuery']
+              : prev.fieldLibraryQuery,
+          selectedSectionId:
+            typeof s['selectedSectionId'] === 'string'
+              ? s['selectedSectionId']
+              : prev.selectedSectionId,
+          selectedPlacementId:
+            typeof s['selectedPlacementId'] === 'string'
+              ? s['selectedPlacementId']
+              : undefined,
+          preview: derivePreview(nextTemplate),
+          loading: typeof s['loading'] === 'boolean' ? s['loading'] : prev.loading,
+          saving: typeof s['saving'] === 'boolean' ? s['saving'] : prev.saving,
+          dirty: typeof s['dirty'] === 'boolean' ? s['dirty'] : prev.dirty,
+          error: typeof s['error'] === 'string' ? (s['error'] || undefined) : prev.error,
+          artifact:
+            s['artifact'] && typeof s['artifact'] === 'object'
+              ? (s['artifact'] as EhrTemplateViewModel['artifact'])
+              : prev.artifact,
+          canAcceptImport:
+            typeof s['canAcceptImport'] === 'boolean'
+              ? s['canAcceptImport']
+              : prev.canAcceptImport,
+          importIssues: Array.isArray(s['importIssues'])
+            ? (s['importIssues'] as readonly TemplateArtifactIssue[])
+            : prev.importIssues,
+        };
+      });
+      if (typeof s['readOnly'] === 'boolean') targetReadOnly.set(s['readOnly']);
     } else if (sel === 'emr-separator') {
       if (typeof s['label'] === 'string') this.sepLabel.set(s['label']);
       if (s['orientation'] === 'horizontal' || s['orientation'] === 'vertical') {

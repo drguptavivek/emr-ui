@@ -20,6 +20,7 @@ import {
   type EmrNumberInputElement,
   type EmrNumericStepperElement,
   type EmrPaginationElement,
+  type EmrPairedInputElement,
   type EmrPasswordInputElement,
   type EmrPopoverElement,
   type EmrProgressBarElement,
@@ -1033,5 +1034,54 @@ describe('controlled L1 primitives', () => {
     expect(toggle.shadowRoot!.querySelector('.emr-error')).toBeNull();
 
     toggle.remove();
+  });
+
+  it('supports paired select dropdowns on emr-paired-input, likert custom text options, vas precision, and horizontal tabs scroll wrapper', async () => {
+    const paired = await mount<EmrPairedInputElement>('emr-paired-input');
+    paired.label = 'Visual acuity';
+    paired.firstLabel = 'OD';
+    paired.secondLabel = 'OS';
+    paired.inputType = 'select';
+    paired.firstOptions = [{ value: '6/6', label: '6/6' }, { value: '6/9', label: '6/9' }];
+    paired.secondOptions = [{ value: '6/6', label: '6/6' }, { value: '6/12', label: '6/12' }];
+    paired.firstValue = '6/6';
+    paired.secondValue = '6/12';
+    await paired.updateComplete;
+    const selects = paired.shadowRoot!.querySelectorAll<EmrSelectElement>('emr-select');
+    expect(selects).toHaveLength(2);
+    const pairedFirst: unknown[] = [];
+    paired.addEventListener('firstValueChange', (e) => pairedFirst.push((e as CustomEvent).detail));
+    await selects[0]!.updateComplete;
+    selects[0]!.shadowRoot!.querySelector<HTMLButtonElement>('[role="combobox"]')!.click();
+    await selects[0]!.updateComplete;
+    selects[0]!.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="option"]')[1]!.click();
+    expect(pairedFirst).toEqual(['6/9']);
+    paired.remove();
+
+    const likert = await mount<EmrLikertElement>('emr-likert');
+    likert.options = [
+      { value: 1, label: 'None' },
+      { value: 2, label: 'Severe' },
+    ];
+    likert.showOptionLabels = true;
+    await likert.updateComplete;
+    const likertTexts = [...likert.shadowRoot!.querySelectorAll('button')].map((b) => b.textContent?.trim());
+    expect(likertTexts.some((t) => t?.includes('None'))).toBe(true);
+    likert.remove();
+
+    const vas = await mount<EmrVasElement>('emr-vas');
+    vas.precision = 'decimal';
+    vas.step = 0.5;
+    vas.value = 4.5;
+    await vas.updateComplete;
+    expect(vas.shadowRoot!.querySelector('[role="slider"]')?.getAttribute('aria-valuenow')).toBe('4.5');
+    vas.remove();
+
+    const tabs = await mount<EmrTabsElement>('emr-tabs');
+    tabs.orientation = 'horizontal';
+    tabs.tabs = [{ label: 'One', value: 'one' }, { label: 'Two', value: 'two' }];
+    await tabs.updateComplete;
+    expect(tabs.shadowRoot!.querySelector('.emr-tabs-scroll')).not.toBeNull();
+    tabs.remove();
   });
 });

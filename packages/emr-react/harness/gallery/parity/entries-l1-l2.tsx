@@ -271,50 +271,24 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
           label={`Confirm action (${state.count})`}
           onPress={() => update('react', 'onPress', { count: state.count + 1 }, (s) => ({ ...s, count: s.count + 1 }))}
         />
-        <EmrButton
-          variant="outline"
-          disabled={readOnly}
-          label="Cycle variant"
-          onPress={() =>
-            update('react', 'cycleVariant', {}, (s) => {
-              const order = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-              return { ...s, variant: order[(order.indexOf(s.variant) + 1) % order.length] };
-            })
-          }
-        />
       </View>
     ),
     renderLit: ({ state, readOnly, update }) => (
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center', width: '100%' }}>
-        <View style={state.block ? { width: '100%' } : { minWidth: 180 }}>
-          <LitElementHost
-            tag="emr-button"
-            props={{
-              label: `Confirm action (${state.count})`,
-              variant: state.variant,
-              size: state.size,
-              disabled: readOnly || state.disabled,
-              loading: state.loading,
-              block: state.block,
-            }}
-            events={{
-              clicked: () => update('lit', 'clicked', { count: state.count + 1 }, (s) => ({ ...s, count: s.count + 1 })),
-            }}
-          />
-        </View>
-        <View style={{ minWidth: 140 }}>
-          <LitElementHost
-            tag="emr-button"
-            props={{ label: 'Cycle variant', variant: 'outline', disabled: readOnly }}
-            events={{
-              clicked: () =>
-                update('lit', 'cycleVariant', {}, (s) => {
-                  const order = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-                  return { ...s, variant: order[(order.indexOf(s.variant) + 1) % order.length] };
-                }),
-            }}
-          />
-        </View>
+      <View style={state.block ? { width: '100%' } : { alignSelf: 'flex-start' }}>
+        <LitElementHost
+          tag="emr-button"
+          props={{
+            label: `Confirm action (${state.count})`,
+            variant: state.variant,
+            size: state.size,
+            disabled: readOnly || state.disabled,
+            loading: state.loading,
+            block: state.block,
+          }}
+          events={{
+            clicked: () => update('lit', 'clicked', { count: state.count + 1 }, (s) => ({ ...s, count: s.count + 1 })),
+          }}
+        />
       </View>
     ),
   }),
@@ -736,42 +710,62 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<{ od: string | null; os: string | null }>({
+  defineParityEntry<{
+    od: string | null;
+    os: string | null;
+    inputType: 'text' | 'integer' | 'decimal' | 'select';
+  }>({
     selector: 'emr-paired-input',
-    createInitialState: () => ({ od: '6/6', os: '6/9' }),
-    renderReact: ({ state, readOnly, update }) => (
-      <EmrPairedInput
-        controlId="parity-pair-react"
-        label="Presenting visual acuity (OD / OS)"
-        firstLabel="OD"
-        secondLabel="OS"
-        separator="/"
-        readOnly={readOnly}
-        firstValue={state.od}
-        secondValue={state.os}
-        onFirstValueChange={(v) => update('react', 'onFirstValueChange', v, (s) => ({ ...s, od: v }))}
-        onSecondValueChange={(v) => update('react', 'onSecondValueChange', v, (s) => ({ ...s, os: v }))}
-      />
-    ),
-    renderLit: ({ state, readOnly, update }) => (
-      <LitElementHost
-        tag="emr-paired-input"
-        props={{
-          controlId: 'parity-pair-lit',
-          label: 'Presenting visual acuity (OD / OS)',
-          firstLabel: 'OD',
-          secondLabel: 'OS',
-          separator: '/',
-          readOnly,
-          firstValue: state.od,
-          secondValue: state.os,
-        }}
-        events={{
-          firstValueChange: (v) => update('lit', 'firstValueChange', v, (s) => ({ ...s, od: (v as string | null) ?? null })),
-          secondValueChange: (v) => update('lit', 'secondValueChange', v, (s) => ({ ...s, os: (v as string | null) ?? null })),
-        }}
-      />
-    ),
+    createInitialState: () => ({ od: '6/6', os: '6/9', inputType: 'text' }),
+    renderReact: ({ state, readOnly, update }) => {
+      const vaOpts = ['6/5', '6/6', '6/9', '6/12', '6/18', '6/24', '6/36', '6/60', 'CF', 'HM', 'PL+', 'NPL'].map((v) => ({
+        value: v,
+        label: v,
+      }));
+      return (
+        <EmrPairedInput
+          controlId="parity-pair-react"
+          label="Presenting visual acuity (OD / OS)"
+          firstLabel="OD"
+          secondLabel="OS"
+          separator="/"
+          inputType={state.inputType}
+          options={state.inputType === 'select' ? vaOpts : undefined}
+          readOnly={readOnly}
+          firstValue={state.od}
+          secondValue={state.os}
+          onFirstValueChange={(v) => update('react', 'onFirstValueChange', v, (s) => ({ ...s, od: v }))}
+          onSecondValueChange={(v) => update('react', 'onSecondValueChange', v, (s) => ({ ...s, os: v }))}
+        />
+      );
+    },
+    renderLit: ({ state, readOnly, update }) => {
+      const vaOpts = ['6/5', '6/6', '6/9', '6/12', '6/18', '6/24', '6/36', '6/60', 'CF', 'HM', 'PL+', 'NPL'].map((v) => ({
+        value: v,
+        label: v,
+      }));
+      return (
+        <LitElementHost
+          tag="emr-paired-input"
+          props={{
+            controlId: 'parity-pair-lit',
+            label: 'Presenting visual acuity (OD / OS)',
+            firstLabel: 'OD',
+            secondLabel: 'OS',
+            separator: '/',
+            inputType: state.inputType,
+            options: state.inputType === 'select' ? vaOpts : [],
+            readOnly,
+            firstValue: state.od,
+            secondValue: state.os,
+          }}
+          events={{
+            firstValueChange: (v) => update('lit', 'firstValueChange', v, (s) => ({ ...s, od: (v as string | null) ?? null })),
+            secondValueChange: (v) => update('lit', 'secondValueChange', v, (s) => ({ ...s, os: (v as string | null) ?? null })),
+          }}
+        />
+      );
+    },
   }),
 
   defineParityEntry<{
@@ -1458,6 +1452,7 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
 
   defineParityEntry<{
     value: number | null;
+    scaleMode: 'numeric' | 'text';
     clearable: boolean;
     fullWidth: boolean;
     disabled: boolean;
@@ -1466,56 +1461,80 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
     selector: 'emr-likert',
     createInitialState: () => ({
       value: 4,
+      scaleMode: 'numeric',
       clearable: false,
       fullWidth: false,
       disabled: false,
       required: false,
     }),
-    renderReact: ({ state, readOnly, update }) => (
-      <EmrLikert
-        controlId="parity-likert-react"
-        label="Ocular surface discomfort score (0–10)"
-        min={0}
-        max={10}
-        clearable={state.clearable}
-        fullWidth={state.fullWidth}
-        disabled={state.disabled}
-        required={state.required}
-        readOnly={readOnly}
-        value={state.value}
-        tone={state.value !== null && state.value >= 7 ? 'danger' : 'info'}
-        anchors={[{ value: 0, label: 'None' }, { value: 10, label: 'Severe' }]}
-        onValueChange={(v) => update('react', 'onValueChange', v, (s) => ({ ...s, value: v }))}
-        onCleared={() => update('react', 'onCleared', null, (s) => ({ ...s, value: null }))}
-      />
-    ),
-    renderLit: ({ state, readOnly, update }) => (
-      <LitElementHost
-        tag="emr-likert"
-        props={{
-          controlId: 'parity-likert-lit',
-          label: 'Ocular surface discomfort score (0–10)',
-          min: 0,
-          max: 10,
-          clearable: state.clearable,
-          fullWidth: state.fullWidth,
-          disabled: state.disabled,
-          required: state.required,
-          readOnly,
-          value: state.value,
-          tone: state.value !== null && state.value >= 7 ? 'danger' : 'info',
-          anchors: [{ value: 0, label: 'None' }, { value: 10, label: 'Severe' }],
-        }}
-        events={{
-          valueChange: (v) => update('lit', 'valueChange', v, (s) => ({ ...s, value: (v as number | null) ?? null })),
-          cleared: () => update('lit', 'cleared', null, (s) => ({ ...s, value: null })),
-        }}
-      />
-    ),
+    renderReact: ({ state, readOnly, update }) => {
+      const isText = state.scaleMode === 'text';
+      const textOptions = [
+        { value: 1, label: 'None', description: 'No pain', tone: 'success' as const },
+        { value: 2, label: 'Mild', description: 'Aware, no distress', tone: 'info' as const },
+        { value: 3, label: 'Moderate', description: 'Interferes with task', tone: 'warning' as const },
+        { value: 4, label: 'Severe', description: 'Prevents task', tone: 'danger' as const },
+        { value: 5, label: 'Extreme', description: 'Unable to continue', tone: 'danger' as const },
+      ];
+      return (
+        <EmrLikert
+          controlId="parity-likert-react"
+          label={isText ? 'Post-op discomfort level (text scale)' : 'Ocular surface discomfort score (0–10)'}
+          min={isText ? 1 : 0}
+          max={isText ? 5 : 10}
+          options={isText ? textOptions : undefined}
+          clearable={state.clearable}
+          fullWidth={state.fullWidth}
+          disabled={state.disabled}
+          required={state.required}
+          readOnly={readOnly}
+          value={state.value}
+          tone={state.value !== null && state.value >= (isText ? 4 : 7) ? 'danger' : 'info'}
+          anchors={isText ? undefined : [{ value: 0, label: 'None' }, { value: 10, label: 'Severe' }]}
+          onValueChange={(v) => update('react', 'onValueChange', v, (s) => ({ ...s, value: v }))}
+          onCleared={() => update('react', 'onCleared', null, (s) => ({ ...s, value: null }))}
+        />
+      );
+    },
+    renderLit: ({ state, readOnly, update }) => {
+      const isText = state.scaleMode === 'text';
+      const textOptions = [
+        { value: 1, label: 'None', description: 'No pain', tone: 'success' as const },
+        { value: 2, label: 'Mild', description: 'Aware, no distress', tone: 'info' as const },
+        { value: 3, label: 'Moderate', description: 'Interferes with task', tone: 'warning' as const },
+        { value: 4, label: 'Severe', description: 'Prevents task', tone: 'danger' as const },
+        { value: 5, label: 'Extreme', description: 'Unable to continue', tone: 'danger' as const },
+      ];
+      return (
+        <LitElementHost
+          tag="emr-likert"
+          props={{
+            controlId: 'parity-likert-lit',
+            label: isText ? 'Post-op discomfort level (text scale)' : 'Ocular surface discomfort score (0–10)',
+            min: isText ? 1 : 0,
+            max: isText ? 5 : 10,
+            options: isText ? textOptions : [],
+            clearable: state.clearable,
+            fullWidth: state.fullWidth,
+            disabled: state.disabled,
+            required: state.required,
+            readOnly,
+            value: state.value,
+            tone: state.value !== null && state.value >= (isText ? 4 : 7) ? 'danger' : 'info',
+            anchors: isText ? [] : [{ value: 0, label: 'None' }, { value: 10, label: 'Severe' }],
+          }}
+          events={{
+            valueChange: (v) => update('lit', 'valueChange', v, (s) => ({ ...s, value: (v as number | null) ?? null })),
+            cleared: () => update('lit', 'cleared', null, (s) => ({ ...s, value: null })),
+          }}
+        />
+      );
+    },
   }),
 
   defineParityEntry<{
     value: number | null;
+    precision: 'integer' | 'decimal';
     orientation: 'horizontal' | 'vertical';
     size: 'sm' | 'md' | 'lg';
     tone: 'info' | 'success' | 'warning' | 'danger' | 'neutral';
@@ -1525,7 +1544,8 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
   }>({
     selector: 'emr-vas',
     createInitialState: () => ({
-      value: 3.5,
+      value: 4,
+      precision: 'integer',
       orientation: 'horizontal',
       size: 'md',
       tone: 'info',
@@ -1535,10 +1555,10 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
     }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrVas
-        label="Post-operative pain VAS (0.0–10.0)"
+        label={state.precision === 'decimal' ? 'Post-operative pain VAS (0.0–10.0)' : 'Post-operative pain VAS (0–10)'}
         min={0}
         max={10}
-        step={0.5}
+        precision={state.precision}
         majorInterval={5}
         minorInterval={1}
         orientation={state.orientation}
@@ -1560,10 +1580,10 @@ export const PARITY_ENTRIES_L1_L2: readonly ParityEntry[] = [
         tag="emr-vas"
         props={{
           controlId: 'parity-vas-lit',
-          label: 'Post-operative pain VAS (0.0–10.0)',
+          label: state.precision === 'decimal' ? 'Post-operative pain VAS (0.0–10.0)' : 'Post-operative pain VAS (0–10)',
           min: 0,
           max: 10,
-          step: 0.5,
+          precision: state.precision,
           majorInterval: 5,
           minorInterval: 1,
           orientation: state.orientation,

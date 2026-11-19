@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { filterImageTemplates } from './image-template-picker.models';
+import {
+  canSelectImageTemplate,
+  canToggleTemplateFavourite,
+  filterImageTemplates,
+  resolveImageTemplatePickerHeadingId,
+  resolveImageTemplatePickerId,
+  resolveImageTemplateSearchId,
+  resolveImageTemplateSectionId,
+} from './image-template-picker.models';
 import type { ImageTemplateGroup, ImageTemplateOption } from './image-template-picker.models';
 
 const o = (id: string, label: string, groupId: string, badges: string[] = []): ImageTemplateOption =>
@@ -45,5 +53,35 @@ describe('filterImageTemplates', () => {
   it('ignores unknown favourite ids and yields none without favourites', () => {
     expect(ids(filterImageTemplates(options, '', 'favourites', groups, ['nope', 'h-l']))).toEqual(['h-l']);
     expect(filterImageTemplates(options, '', 'favourites', groups)).toEqual([]);
+  });
+});
+
+describe('image-template-picker guards and id helpers', () => {
+  it('enforces readOnly and canEditFavourites guards for selection and starring', () => {
+    const opt = options[0];
+    expect(canSelectImageTemplate(false, opt)).toBe(true);
+    expect(canSelectImageTemplate(undefined, opt)).toBe(true);
+    expect(canSelectImageTemplate(true, opt)).toBe(false);
+    expect(canSelectImageTemplate(false, null)).toBe(false);
+
+    expect(canToggleTemplateFavourite({ canEditFavourites: true, readOnly: false }, opt)).toBe(true);
+    expect(canToggleTemplateFavourite({ canEditFavourites: false, readOnly: false }, opt)).toBe(false);
+    expect(canToggleTemplateFavourite({ canEditFavourites: true, readOnly: true }, opt)).toBe(false);
+    expect(canToggleTemplateFavourite({ canEditFavourites: true, readOnly: false }, opt, true)).toBe(false);
+    expect(canToggleTemplateFavourite({ canEditFavourites: true, readOnly: false }, undefined)).toBe(false);
+  });
+
+  it('resolves deterministic picker, heading, search, and section ids', () => {
+    expect(resolveImageTemplatePickerId()).toBe('emr-image-template-picker');
+    expect(resolveImageTemplatePickerId('opd-')).toBe('opd-emr-image-template-picker');
+    expect(resolveImageTemplatePickerId('', 'tpl-h')).toBe('tpl-h-picker');
+
+    expect(resolveImageTemplatePickerHeadingId()).toBe('emr-image-template-picker-heading');
+    expect(resolveImageTemplatePickerHeadingId('opd-')).toBe('opd-emr-image-template-picker-heading');
+    expect(resolveImageTemplatePickerHeadingId('opd', 'custom-h')).toBe('custom-h');
+
+    expect(resolveImageTemplateSearchId('opd')).toBe('opd-emr-image-template-picker-q');
+    expect(resolveImageTemplateSectionId('fav', 'opd')).toBe('opd-emr-image-template-picker-fav');
+    expect(resolveImageTemplateSectionId('all', 'opd')).toBe('opd-emr-image-template-picker-all');
   });
 });

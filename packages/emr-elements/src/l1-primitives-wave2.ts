@@ -2278,7 +2278,7 @@ export class EmrToggleGroupElement extends EmrLitElement {
             type="button"
             role="checkbox"
             data-select-all="true"
-            class=${`toggle-row-btn${this.readOnly ? ' toggle-row-btn--readonly' : ''}${placementCls}${variantCls}${sizeCls}`}
+            class=${`toggle-row-btn toggle-row-btn--inline${this.readOnly ? ' toggle-row-btn--readonly' : ''}${placementCls}${sizeCls}`}
             aria-checked=${selectAllState === 'mixed' ? 'mixed' : String(selectAllState === 'all')}
             aria-readonly=${this.readOnly ? 'true' : nothing}
             ?disabled=${this.disabled}
@@ -3338,54 +3338,55 @@ export class EmrImageViewerElement extends EmrLitElement {
       .filter(Boolean)
       .join(' ');
 
-    return html`<div
-      id=${id}
-      role=${this.fullscreen ? 'dialog' : 'region'}
-      aria-modal=${this.fullscreen ? 'true' : nothing}
-      aria-label=${this.label || current?.alt || 'Clinical image viewer'}
-      aria-invalid=${isInvalid ? 'true' : nothing}
-      aria-disabled=${this.disabled ? 'true' : nothing}
-      aria-describedby=${describedByIds || nothing}
-      data-readonly=${this.readOnly ? 'true' : nothing}
-      tabindex="0"
-      class=${`viewer-shell${this.fullscreen ? ' viewer-shell--fullscreen' : ''}${isInvalid ? ' viewer-shell--invalid' : ''}${!isInvalid && this.warning ? ' viewer-shell--warning' : ''}${this.readOnly ? ' viewer-shell--readonly' : ''}${this.disabled ? ' viewer-shell--disabled' : ''}`}
-      @focusin=${() => this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }))}
-      @focusout=${() => this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }))}
-      @keydown=${(e: KeyboardEvent) => {
-        if (this.disabled) return;
-        const tag = (e.target as HTMLElement | null)?.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-        if (e.key === 'Escape' && this.fullscreen) {
-          e.preventDefault();
-          this.toggleFullscreen(false);
-        } else if (e.key === '+' || e.key === '=') {
-          e.preventDefault();
-          this.updateViewport({ zoom: stepImageZoom(this.viewport.zoom, 0.25) });
-        } else if (e.key === '-') {
-          e.preventDefault();
-          this.updateViewport({ zoom: stepImageZoom(this.viewport.zoom, -0.25) });
-        } else if (e.key === '0') {
-          e.preventDefault();
-          this.updateViewport(DEFAULT_IMAGE_VIEWPORT);
-        } else if (e.key === 'r' || e.key === 'R') {
-          e.preventDefault();
-          const nextBase = rotateImage90(rotParts.base90, true);
-          this.updateViewport({
-            rotationDeg: normalizeLitCombinedRotation(nextBase, rotParts.straighten),
-          });
-        } else if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          if (items.length > 1) this.setActiveIndex(boundedIndex - 1);
-          else this.updateViewport({ panX: this.viewport.panX - 24 });
-        } else if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (items.length > 1) this.setActiveIndex(boundedIndex + 1);
-          else this.updateViewport({ panX: this.viewport.panX + 24 });
-        }
-      }}
-    >
-      <div class="viewer-toolbar">
-        ${this.label && !this.labelHidden ? html`<strong class="emr-label">${this.label}</strong>` : nothing}
+    return html`<div class="emr-field">
+      ${this.label && !this.labelHidden ? html`<strong class="emr-label">${this.label}</strong>` : nothing}
+      <div
+        id=${id}
+        role=${this.fullscreen ? 'dialog' : 'region'}
+        aria-modal=${this.fullscreen ? 'true' : nothing}
+        aria-label=${this.label || current?.alt || 'Clinical image viewer'}
+        aria-invalid=${isInvalid ? 'true' : nothing}
+        aria-disabled=${this.disabled ? 'true' : nothing}
+        aria-describedby=${describedByIds || nothing}
+        data-readonly=${this.readOnly ? 'true' : nothing}
+        tabindex="0"
+        class=${`viewer-shell${this.fullscreen ? ' viewer-shell--fullscreen' : ''}${isInvalid ? ' viewer-shell--invalid' : ''}${!isInvalid && this.warning ? ' viewer-shell--warning' : ''}${this.readOnly ? ' viewer-shell--readonly' : ''}${this.disabled ? ' viewer-shell--disabled' : ''}`}
+        @focusin=${() => this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }))}
+        @focusout=${() => this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }))}
+        @keydown=${(e: KeyboardEvent) => {
+          if (this.disabled) return;
+          const tag = (e.target as HTMLElement | null)?.tagName;
+          if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+          if (e.key === 'Escape' && this.fullscreen) {
+            e.preventDefault();
+            this.toggleFullscreen(false);
+          } else if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            this.updateViewport({ zoom: stepImageZoom(this.viewport.zoom, 0.25) });
+          } else if (e.key === '-') {
+            e.preventDefault();
+            this.updateViewport({ zoom: stepImageZoom(this.viewport.zoom, -0.25) });
+          } else if (e.key === '0') {
+            e.preventDefault();
+            this.updateViewport(DEFAULT_IMAGE_VIEWPORT);
+          } else if (e.key === 'r' || e.key === 'R') {
+            e.preventDefault();
+            const nextBase = rotateImage90(rotParts.base90, true);
+            this.updateViewport({
+              rotationDeg: normalizeLitCombinedRotation(nextBase, rotParts.straighten),
+            });
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            if (items.length > 1) this.setActiveIndex(boundedIndex - 1);
+            else this.updateViewport({ panX: this.viewport.panX - 24 });
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            if (items.length > 1) this.setActiveIndex(boundedIndex + 1);
+            else this.updateViewport({ panX: this.viewport.panX + 24 });
+          }
+        }}
+      >
+        <div class="viewer-toolbar" style="background:var(--emr-surface-soft);padding:8px;border-radius:8px;border:1px solid var(--emr-border);">
         <div class="emr-row">
           <button
             type="button"
@@ -3586,6 +3587,7 @@ export class EmrImageViewerElement extends EmrLitElement {
       ${this.hint ? html`<span id=${`${id}-hint`} class="emr-hint">${this.hint}</span>` : nothing}
       ${this.warning ? html`<span id=${`${id}-warning`} class="emr-warning" role="status">${this.warning}</span>` : nothing}
       ${this.error ? html`<span id=${`${id}-error`} class="emr-error" role="alert">${this.error}</span>` : nothing}
+      </div>
     </div>`;
   }
 }
@@ -3996,6 +3998,7 @@ export class EmrImageCropperElement extends EmrLitElement {
       ${this.hint ? html`<span id=${`${id}-hint`} class="emr-hint">${this.hint}</span>` : nothing}
       ${this.warning ? html`<span id=${`${id}-warning`} class="emr-warning" role="status">${this.warning}</span>` : nothing}
       ${this.error ? html`<span id=${`${id}-error`} class="emr-error" role="alert">${this.error}</span>` : nothing}
+      </div>
     </div>`;
   }
 }

@@ -383,7 +383,9 @@ function reduceTemplateIntent(model: EhrTemplateViewModel, intent: EhrTemplateIn
       };
     }
     case 'sectionSelected':
-      return { ...model, selectedSectionId: intent.sectionId };
+      return { ...model, selectedSectionId: intent.sectionId, selectedPlacementId: undefined };
+    case 'placementSelected':
+      return { ...model, selectedSectionId: intent.sectionId, selectedPlacementId: intent.placementId };
     case 'sectionAdded': {
       const id = `section-${model.template.sections.length + 1}`;
       const nextSection = { ...intent.section, id };

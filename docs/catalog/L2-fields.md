@@ -538,7 +538,7 @@ export class EmrAttachmentFieldComponent {
 
 **Need** — Paired clinical measurements (systolic/diastolic BP `128/78 mmHg`, OD/OS IOP `16/18 mmHg`, cup-to-disc ratio `0.4/0.5`, and visual acuity pairs) require a field-framed two-slot control with independent per-side modes, numeric constraints, per-side validation targeting, inline unit display, clear action, and six-state `ClinicalAssessmentStatus` capture.
 
-**Purpose** — Renders `PairedFieldViewModel` (`firstLabel`, `secondLabel`, `mode`, `firstMode`, `secondMode`, `separator`, `unit`, `value`, `min`/`max`/`step`/`precision`/`maxLength` per side, `clearable`, `showSteppers`, `size`, `status`, `statusOptions`, `messages`) inside `EmrFieldFrame`, delegating label, hint, validation messages, and six-state assessment status strip to `EmrFieldFrame` while rendering `unit` inline after the second input and routing `EmrValidationMessage.path` (`'first'` / `'second'` / root) to per-side `aria-invalid` and warning border states. Emits `PairedFieldIntent` (`firstChangeRequested`, `secondChangeRequested`, `clearRequested`, `statusChangeRequested`) plus `focused` and `blurred` lifecycle events without silently dropping or clamping out-of-range typed numbers.
+**Purpose** — Renders `PairedFieldViewModel` (`firstLabel`, `secondLabel`, `mode`, `firstMode`, `secondMode`, `options`, `firstOptions`, `secondOptions`, `separator`, `unit`, `value`, `min`/`max`/`step`/`precision`/`maxLength` per side, `clearable`, `showSteppers`, `size`, `status`, `statusOptions`, `messages`) inside `EmrFieldFrame`, delegating label, hint, validation messages, and six-state assessment status strip to `EmrFieldFrame` while rendering `unit` inline after the second input and routing `EmrValidationMessage.path` (`'first'` / `'second'` / root) to per-side `aria-invalid` and warning border states (supporting `'text'`, `'decimal'`, `'integer'`, and `'select'` dropdown sides). Emits `PairedFieldIntent` (`firstChangeRequested`, `secondChangeRequested`, `clearRequested`, `statusChangeRequested`) plus `focused` and `blurred` lifecycle events without silently dropping or clamping out-of-range typed numbers.
 
 **API**
 ```ts
@@ -563,7 +563,7 @@ export class EmrPairedFieldComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `PairedFieldViewModel` (required) | — | label, firstLabel, secondLabel, mode (`text` \| `decimal` \| `integer`), firstMode, secondMode, value, separator, unit, min/max/step/precision/maxLength (shared & per-side), required/firstRequired/secondRequired, readOnly/firstReadOnly/secondReadOnly, clearable, showSteppers, size, layout, showMetadata, status, statusOptions, hint, messages |
+| `model` | `PairedFieldViewModel` (required) | — | label, firstLabel, secondLabel, mode (`text` \| `decimal` \| `integer` \| `select`), firstMode, secondMode, options, firstOptions, secondOptions, value, separator, unit, min/max/step/precision/maxLength (shared & per-side), required/firstRequired/secondRequired, readOnly/firstReadOnly/secondReadOnly, clearable, showSteppers, size, layout, showMetadata, status, statusOptions, hint, messages |
 | `definition` | `EmrFieldDefinition` | — | optional contract definition fallback (label, unitDisplay, readOnly, cardinality, valueType) |
 | `controlId` | `string` | generated | id prefix (`{controlId}-first`, `{controlId}-second`, `{controlId}-label`, `{controlId}-message`) |
 | `headingId` | `string` | — | optional external heading/label id for group `aria-labelledby` |

@@ -1309,6 +1309,42 @@ describe('Lit L2 field adapters', () => {
     }
   });
 
+  it('supports paired select dropdowns with shared options and per-side firstOptions/secondOptions on emr-paired-field', async () => {
+    registerAllEmrElements();
+    const pf = document.createElement('emr-paired-field') as EmrPairedFieldElement;
+    pf.controlId = 'pf-select-test';
+    pf.model = {
+      label: 'Presenting visual acuity',
+      mode: 'select',
+      firstLabel: 'OD',
+      secondLabel: 'OS',
+      firstOptions: [
+        { value: '6/6', label: '6/6' },
+        { value: '6/9', label: '6/9' },
+      ],
+      secondOptions: [
+        { value: '6/6', label: '6/6' },
+        { value: '6/12', label: '6/12' },
+      ],
+      value: { first: '6/6', second: '6/12' },
+    };
+    const intents: unknown[] = [];
+    pf.addEventListener('intent', e => intents.push((e as CustomEvent).detail));
+    document.body.append(pf);
+    try {
+      await pf.updateComplete;
+      const selects = pf.shadowRoot!.querySelectorAll<EmrSelectElement>('emr-select');
+      expect(selects).toHaveLength(2);
+      await selects[0]!.updateComplete;
+      selects[0]!.shadowRoot!.querySelector<HTMLButtonElement>('[role="combobox"]')!.click();
+      await selects[0]!.updateComplete;
+      selects[0]!.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="option"]')[1]!.click();
+      expect(intents).toContainEqual({ type: 'firstChangeRequested', value: '6/9' });
+    } finally {
+      pf.remove();
+    }
+  });
+
   it('supports definition fallback, non-negative amount guard, per-part validation, unitPlaceholder, clearable, 6-state status, readOnly, and lifecycle events on emr-duration-input', async () => {
     registerAllEmrElements();
     const dur = document.createElement('emr-duration-input') as EmrDurationInputElement;

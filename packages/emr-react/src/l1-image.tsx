@@ -741,44 +741,46 @@ export function EmrImageViewer({
           },
         ]}
       >
-        <View style={styles.panControls}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Pan left"
-            disabled={disabled}
-            onPress={() => updateVp({ ...activeVp, panX: activeVp.panX - 24 })}
-            style={styles.toolBtn}
-          >
-            <SvgIcon name="chevron-left" size={15} color={t.textMuted} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Pan right"
-            disabled={disabled}
-            onPress={() => updateVp({ ...activeVp, panX: activeVp.panX + 24 })}
-            style={styles.toolBtn}
-          >
-            <SvgIcon name="chevron-right" size={15} color={t.textMuted} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Pan up"
-            disabled={disabled}
-            onPress={() => updateVp({ ...activeVp, panY: activeVp.panY - 24 })}
-            style={styles.toolBtn}
-          >
-            <SvgIcon name="chevron-up" size={15} color={t.textMuted} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Pan down"
-            disabled={disabled}
-            onPress={() => updateVp({ ...activeVp, panY: activeVp.panY + 24 })}
-            style={styles.toolBtn}
-          >
-            <SvgIcon name="chevron-down" size={15} color={t.textMuted} />
-          </Pressable>
-        </View>
+        {Platform.OS !== 'web' ? (
+          <View style={styles.panControls}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Pan left"
+              disabled={disabled}
+              onPress={() => updateVp({ ...activeVp, panX: activeVp.panX - 24 })}
+              style={styles.toolBtn}
+            >
+              <SvgIcon name="chevron-left" size={15} color={t.textMuted} />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Pan right"
+              disabled={disabled}
+              onPress={() => updateVp({ ...activeVp, panX: activeVp.panX + 24 })}
+              style={styles.toolBtn}
+            >
+              <SvgIcon name="chevron-right" size={15} color={t.textMuted} />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Pan up"
+              disabled={disabled}
+              onPress={() => updateVp({ ...activeVp, panY: activeVp.panY - 24 })}
+              style={styles.toolBtn}
+            >
+              <SvgIcon name="chevron-up" size={15} color={t.textMuted} />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Pan down"
+              disabled={disabled}
+              onPress={() => updateVp({ ...activeVp, panY: activeVp.panY + 24 })}
+              style={styles.toolBtn}
+            >
+              <SvgIcon name="chevron-down" size={15} color={t.textMuted} />
+            </Pressable>
+          </View>
+        ) : null}
 
         {currentItem?.caption || caption ? (
           <Text

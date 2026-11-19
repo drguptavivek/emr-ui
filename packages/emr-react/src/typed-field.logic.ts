@@ -282,7 +282,7 @@ export function normalizeTypedField(
   const messages: readonly EmrValidationMessage[] = contractState ? contractState.messages : [];
   const firstError = legacyState?.error ?? messages.find(m => m.severity === 'error')?.message;
   const firstWarning = legacyState?.warning ?? messages.find(m => m.severity === 'warning')?.message;
-  const firstInfo = messages.find(m => m.severity === 'info')?.message;
+  const firstInfo = legacyState?.info ?? messages.find(m => m.severity === 'info')?.message;
   const value = model?.value;
   const status = contractState ? contractState.status : legacyState?.assessmentStatus;
 

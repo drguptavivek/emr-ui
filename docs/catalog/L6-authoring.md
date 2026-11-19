@@ -81,10 +81,14 @@ export type FieldGeneratorIntent =
 
 @Component({ selector: 'emr-field-generator', standalone: true })
 export class EmrFieldGeneratorComponent {
-  @Input({ required: true }) model!: FieldGeneratorViewModel;
-  @Input() set readOnly(value: boolean); get readOnly(): boolean; // OR'd with model.readOnly
-  @Input() headingId = 'emr-field-generator-heading';
-  @Output() readonly intent = new EventEmitter<FieldGeneratorIntent>();
+  readonly model = input.required<FieldGeneratorViewModel>();
+  readonly readOnly = input<boolean>(false); // OR'd with model().readOnly
+  readonly headingId = input<string>('emr-field-generator-heading');
+  readonly idPrefix = input<string>('emr-field-generator');
+  readonly labels = input<Partial<EmrFieldGeneratorLabels>>({});
+  readonly intent = output<FieldGeneratorIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
@@ -92,9 +96,13 @@ export class EmrFieldGeneratorComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `FieldGeneratorViewModel` (required) | — | Draft field + terminology sources/search state + validation errors + save state |
-| `readOnly` | `boolean` (setter) | `false` | Effective value is `explicitReadOnly \|\| model.readOnly` |
-| `headingId` | `string` | `'emr-field-generator-heading'` | Prefixed onto every generated control id and terminology-search heading id |
+| `model` | `FieldGeneratorViewModel` (required) | — | Draft field (including `'time'` and `'datetime'` field types) + terminology sources/search state + validation errors + save state |
+| `readOnly` | `boolean` | `false` | Effective value is `readOnly() \|\| Boolean(model().readOnly)` |
+| `headingId` | `string` | `'emr-field-generator-heading'` | Accessible heading element id |
+| `idPrefix` | `string` | `'emr-field-generator'` | Prefixed onto generated control ids and child widgets (`resolveAuthoringId(idPrefix(), headingId())`) |
+| `labels` | `Partial<EmrFieldGeneratorLabels>` | `{}` | Optional copy overrides merged with `FIELD_GENERATOR_LABEL_DEFAULTS` |
+| `intent` | `output<FieldGeneratorIntent>` | — | Emits draft, terminology, validation rule, save, and reset intents |
+| `focused` / `blurred` | `output<void>` | — | Emitted on focusin / focusout within the surface |
 
 **Example**
 ```html
@@ -109,7 +117,7 @@ export class EmrFieldGeneratorComponent {
 ---
 
 ### EmrTerminologySearch
-**Layer** L6 · **Selector** `emr-terminology-search` · **Status** stable · **Story** none — coverage gap
+**Layer** L6 · **Selector** `emr-terminology-search` · **Status** stable · **Story** `emr-authoring-field-generator--terminology-search-standalone`
 
 **Need** — binding a field to LOINC/SNOMED CT/ICD-10/ICD-11/UCUM concepts requires searching a controller-chosen source, paging results, showing loading/error/empty states, and letting the user set binding strength (and, for classification mappings, a mapping relationship) — one reusable search-and-bind widget instead of one per terminology role.
 
@@ -117,44 +125,30 @@ export class EmrFieldGeneratorComponent {
 
 **API**
 ```ts
-// terminology.models.ts — quoted verbatim
+// terminology.models.ts / field-generator.models.ts
 export type TerminologyKind = 'loinc' | 'snomed-ct' | 'icd-10' | 'icd-11' | 'ucum' | 'custom';
 export type TerminologyBindingRole = 'question-meaning' | 'answer-value-set' | 'unit' | 'classification-mapping';
 export type TerminologyBindingStrength = 'required' | 'extensible' | 'preferred' | 'example';
 export type TerminologyMappingRelationship = 'equivalent' | 'wider' | 'narrower' | 'related-to';
 
-export interface TerminologySource {
-  id: string; kind: TerminologyKind; label: string; available: boolean;
-  supportsPagination?: boolean; versionLabel?: string; language?: string; jurisdiction?: string;
-}
-
-export interface TerminologyConcept {
-  sourceId: string; system: string; code: string; display: string; version?: string;
-  canonicalUri?: string; releaseUri?: string; language?: string;
-  designations?: readonly string[]; active?: boolean; providerMetadata?: Readonly<Record<string, string>>;
-}
-
-export interface TerminologyBinding {
-  id: string; role: TerminologyBindingRole; concept?: TerminologyConcept;
-  valueSetCanonical?: string; strength?: TerminologyBindingStrength;
-  mappingRelationship?: TerminologyMappingRelationship; note?: string;
-}
-
-export interface TerminologySearchState {
-  sourceId: string; role: TerminologyBindingRole; query: string;
-  options: readonly TerminologyConcept[]; page: number; pageSize: number; total: number;
-  loading: boolean; error?: string;
+export interface TerminologySearchViewModel {
+  role: TerminologyBindingRole;
+  sources: readonly TerminologySource[];
+  search?: TerminologySearchState;
+  bindings: readonly TerminologyBinding[];
+  readOnly?: boolean;
 }
 
 @Component({ selector: 'emr-terminology-search', standalone: true })
 export class EmrTerminologySearchComponent {
-  @Input({ required: true }) role!: TerminologyBindingRole;
-  @Input() sources: readonly TerminologySource[] = [];
-  @Input() state?: TerminologySearchState;
-  @Input() bindings: readonly TerminologyBinding[] = [];
-  @Input() readOnly = false;
-  @Input() headingId = 'emr-terminology-heading';
-  @Output() readonly intent = new EventEmitter<FieldGeneratorIntent>();
+  readonly model = input.required<TerminologySearchViewModel>();
+  readonly readOnly = input<boolean>(false);
+  readonly headingId = input<string>('emr-terminology-heading');
+  readonly idPrefix = input<string>('emr-terminology');
+  readonly labels = input<Partial<EmrTerminologySearchLabels>>({});
+  readonly intent = output<TerminologySearchIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
@@ -162,23 +156,21 @@ export class EmrTerminologySearchComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `role` | `TerminologyBindingRole` (required) | — | Which of the four binding roles this instance edits |
-| `sources` | `readonly TerminologySource[]` | `[]` | Options for the source `<select>`; unavailable sources render disabled |
-| `state` | `TerminologySearchState?` | — | Current query/results/paging/loading/error for this role |
-| `bindings` | `readonly TerminologyBinding[]` | `[]` | Already-attached bindings for this role, rendered below the results |
-| `readOnly` | `boolean` | `false` | Disables search, selection, and binding controls |
-| `headingId` | `string` | `'emr-terminology-heading'` | Prefixes generated control ids |
+| `model` | `TerminologySearchViewModel` (required) | — | Canonical model holding `role`, `sources`, `search`, `bindings`, and optional `readOnly` |
+| `readOnly` | `boolean` | `false` | Effective value is `readOnly() \|\| Boolean(model().readOnly)` |
+| `headingId` | `string` | `'emr-terminology-heading'` | Accessible heading element id |
+| `idPrefix` | `string` | `'emr-terminology'` | Prefixes generated control ids |
+| `labels` | `Partial<EmrTerminologySearchLabels>` | `{}` | Optional copy overrides merged with `TERMINOLOGY_SEARCH_LABEL_DEFAULTS` |
+| `intent` | `output<TerminologySearchIntent>` | — | Typed standalone `TerminologySearchIntent` (subset compatible with `FieldGeneratorIntent`) |
+| `focused` / `blurred` | `output<void>` | — | Emitted on focusin / focusout within the surface |
 
 **Example**
 ```html
-<emr-terminology-search role="question-meaning" [sources]="loincAndSnomedSources"
-  [state]="model.terminologySearches['question-meaning']" [bindings]="questionMeaningBindings"
-  (intent)="onFieldGeneratorIntent($event)" />
+<emr-terminology-search [model]="{ role: 'question-meaning', sources: loincAndSnomedSources, search: model.terminologySearches['question-meaning'], bindings: questionMeaningBindings }"
+  (intent)="onTerminologyIntent($event)" />
 ```
 
-**Known structural limitation** — `@Output() readonly intent = new EventEmitter<FieldGeneratorIntent>()`. Every event this component emits is typed as a `FieldGeneratorIntent`, a union defined in `field-generator.models.ts` specifically for `EmrFieldGenerator`'s draft-editing workflow. That makes `EmrTerminologySearchComponent` structurally unusable as a standalone terminology-binding widget outside `EmrFieldGenerator` — any other consumer wanting a generic "search and bind a concept" component (e.g. binding terminology directly onto a `ClinicalMatrixSchema` row, or onto an `EhrTemplateSection`) would have to either adopt `FieldGeneratorIntent` regardless of relevance, or the component would need a generic intent type extracted. This is a real architectural coupling, not a naming quirk.
-
-**Composition** — renders no other catalogued component; pure template + native controls.
+**Composition** — renders no other catalogued component; pure template + native controls (`NgIcon` monochrome SVG icons).
 
 **Depends on** — none.
 **Used by** — `EmrFieldGenerator` (L6, verified: `emr-field-generator -> emr-terminology-search`).
@@ -186,11 +178,11 @@ export class EmrTerminologySearchComponent {
 ---
 
 ### EmrValidationRuleEditor
-**Layer** L6 · **Selector** `emr-validation-rule-editor` · **Status** stable · **Story** none — coverage gap
+**Layer** L6 · **Selector** `emr-validation-rule-editor` · **Status** stable · **Story** `emr-authoring-field-generator--validation-rule-editor-standalone`
 
 **Need** — a field's declarative validation (min/max length, numeric bounds, precision, regex pattern, date bounds, allowed values, or a named custom validator) needs one small, reusable add/remove editor rather than ten separate ad-hoc inputs wherever validation rules are authored.
 
-**Purpose** — lets the user pick a `FieldValidationRule['kind']`, fill in the kind-appropriate value control (number, date, regex text, comma-separated list, or a custom-validator id + required message), and add or remove rules from the list. It emits `validationRuleAdded` / `validationRuleRemoved` only, and explicitly does not execute any rule — the in-template note for `kind: 'custom'` states this directly: "The controller resolves this validator ID. The UI does not execute clinical validation."
+**Purpose** — lets the user pick a `FieldValidationRule['kind']`, fill in the kind-appropriate value control (number, date, regex text, comma-separated list, or a custom-validator id + required message), and add or remove rules from the list (resetting rule draft value/message cleanly upon add). It emits `ValidationRuleEditorIntent` (`validationRuleAdded` / `validationRuleRemoved`) only, and explicitly does not execute any rule — the in-template note for `kind: 'custom'` states: "The controller resolves this validator ID. The UI does not execute clinical validation."
 
 **API**
 ```ts
@@ -207,14 +199,21 @@ export type FieldValidationRule =
   | { id: string; kind: 'allowed-values'; values: readonly string[]; message?: string }
   | { id: string; kind: 'custom'; customValidatorId: string; message: string };
 
+export interface ValidationRuleEditorViewModel {
+  rules: readonly FieldValidationRule[];
+  readOnly?: boolean;
+}
+
 @Component({ selector: 'emr-validation-rule-editor', standalone: true })
 export class EmrValidationRuleEditorComponent {
-  @Input() rules: readonly FieldValidationRule[] = [];
-  @Input() readOnly = false;
-  @Input() idPrefix = 'emr-validation';
-  @Output() readonly intent = new EventEmitter<FieldGeneratorIntent>();
-  readonly ruleKinds: readonly RuleKind[] =
-    ['min-length', 'max-length', 'minimum', 'maximum', 'precision', 'pattern', 'earliest-date', 'latest-date', 'allowed-values', 'custom'];
+  readonly model = input.required<ValidationRuleEditorViewModel>();
+  readonly readOnly = input<boolean>(false);
+  readonly headingId = input<string>('emr-validation-heading');
+  readonly idPrefix = input<string>('emr-validation');
+  readonly labels = input<Partial<EmrValidationRuleEditorLabels>>({});
+  readonly intent = output<ValidationRuleEditorIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
@@ -222,17 +221,19 @@ export class EmrValidationRuleEditorComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `rules` | `readonly FieldValidationRule[]` | `[]` | Currently attached rules, rendered below the add form |
-| `readOnly` | `boolean` | `false` | Disables the add form and every Remove button |
+| `model` | `ValidationRuleEditorViewModel` (required) | — | Canonical model holding `rules` and optional `readOnly` |
+| `readOnly` | `boolean` | `false` | Effective value is `readOnly() \|\| Boolean(model().readOnly)` |
+| `headingId` | `string` | `'emr-validation-heading'` | Accessible heading element id |
 | `idPrefix` | `string` | `'emr-validation'` | Prefixes generated control ids |
+| `labels` | `Partial<EmrValidationRuleEditorLabels>` | `{}` | Optional copy overrides merged with `VALIDATION_RULE_EDITOR_LABEL_DEFAULTS` |
+| `intent` | `output<ValidationRuleEditorIntent>` | — | Typed standalone `ValidationRuleEditorIntent` (`validationRuleAdded` / `validationRuleRemoved`) |
+| `focused` / `blurred` | `output<void>` | — | Emitted on focusin / focusout within the surface |
 
 **Example**
 ```html
-<emr-validation-rule-editor [rules]="draft.validationRules" [idPrefix]="'field-a-validation'"
-  (intent)="onFieldGeneratorIntent($event)" />
+<emr-validation-rule-editor [model]="{ rules: draft.validationRules }" idPrefix="field-a-validation"
+  (intent)="onRuleIntent($event)" />
 ```
-
-**Note** — like `EmrTerminologySearch`, this component's `intent` output is typed as `FieldGeneratorIntent`, the same coupling to `EmrFieldGenerator`'s workflow (it only ever emits the two `validationRule*` members of that union, but the declared type is the whole union).
 
 **Composition** — renders no other catalogued component; pure template + native controls.
 
@@ -242,29 +243,32 @@ export class EmrValidationRuleEditorComponent {
 ---
 
 ### EmrFieldLibraryPicker
-**Layer** L6 · **Selector** `emr-field-library-picker` · **Status** stable · **Story** none — coverage gap
+**Layer** L6 · **Selector** `emr-field-library-picker` · **Status** stable · **Story** `emr-templates-composer--field-library-picker-standalone`
 
 **Need** — composing an EHR template means repeatedly finding an already-authored, revision-pinned field (produced by `EmrFieldGenerator`) and dropping it into the currently selected template section — a searchable catalogue browser is the natural UI for that, distinct from authoring a new field.
 
-**Purpose** — renders a search box over `fields` (the controller-filtered field library) and a scrollable list of `EmrGeneratedFieldDefinition` summaries (label, type, required/repeatable flags, description, terminology-binding summary); clicking "Add" on an item emits `fieldAdded` for `selectedSectionId`. It does NOT filter the list itself (the `query` input and `fieldLibraryQueryChanged` output round-trip through the controller), does NOT choose a section, and does NOT mint a placement id — `placementId: ''` is emitted and the controller assigns the real id.
+**Purpose** — renders a search box over `model.fields` (the controller-filtered field library) and a scrollable list of `EmrGeneratedFieldDefinition` summaries (label, type, required/repeatable flags, description, terminology-binding summary); clicking "Add" on an item emits `fieldAdded` for `model.selectedSectionId`. It does NOT filter the list itself (the `query` input and `fieldLibraryQueryChanged` output round-trip through the controller), does NOT choose a section, and does NOT mint a placement id — `placementId: ''` is emitted and the controller assigns the real id.
 
 **API**
 ```ts
-import type { EhrTemplateIntent, EmrGeneratedFieldDefinition } from '@drguptavivek/emr-controller';
+// ehr-template.models.ts
+export interface FieldLibraryPickerViewModel {
+  fields: readonly EmrGeneratedFieldDefinition[];
+  query: string;
+  selectedSectionId?: string;
+  readOnly?: boolean;
+}
 
 @Component({ selector: 'emr-field-library-picker', standalone: true })
 export class EmrFieldLibraryPickerComponent {
-  @Input() fields: readonly EmrGeneratedFieldDefinition[] = [];
-  @Input() query = '';
-  @Input() selectedSectionId?: string;
-  @Input() readOnly = false;
-  @Input() headingId = 'emr-field-library-heading';
-  @Output() readonly intent = new EventEmitter<EhrTemplateIntent>();
-
-  add(field: EmrGeneratedFieldDefinition): void {
-    if (this.readOnly || !this.selectedSectionId) return;
-    this.intent.emit({ type: 'fieldAdded', sectionId: this.selectedSectionId, field, placementId: '' });
-  }
+  readonly model = input.required<FieldLibraryPickerViewModel>();
+  readonly readOnly = input<boolean>(false);
+  readonly headingId = input<string>('emr-field-library-heading');
+  readonly idPrefix = input<string>('emr-field-library');
+  readonly labels = input<Partial<EmrFieldLibraryPickerLabels>>({});
+  readonly intent = output<FieldLibraryPickerIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
@@ -272,19 +276,21 @@ export class EmrFieldLibraryPickerComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `fields` | `readonly EmrGeneratedFieldDefinition[]` | `[]` | Controller-filtered/searched field library |
-| `query` | `string` | `''` | Current search text (round-trips via `fieldLibraryQueryChanged`) |
-| `selectedSectionId` | `string?` | — | When unset, an inline note asks the user to select a section first; Add buttons stay disabled |
-| `readOnly` | `boolean` | `false` | Disables search input and every Add button |
-| `headingId` | `string` | `'emr-field-library-heading'` | Prefixes generated control ids |
+| `model` | `FieldLibraryPickerViewModel` (required) | — | Canonical model holding `fields`, `query`, optional `selectedSectionId`, and optional `readOnly` |
+| `readOnly` | `boolean` | `false` | Effective value is `readOnly() \|\| Boolean(model().readOnly)` |
+| `headingId` | `string` | `'emr-field-library-heading'` | Accessible heading element id |
+| `idPrefix` | `string` | `'emr-field-library'` | Prefixes generated control ids |
+| `labels` | `Partial<EmrFieldLibraryPickerLabels>` | `{}` | Optional copy overrides merged with `FIELD_LIBRARY_PICKER_LABEL_DEFAULTS` |
+| `intent` | `output<FieldLibraryPickerIntent>` | — | Typed standalone `FieldLibraryPickerIntent` (`fieldLibraryQueryChanged` / `fieldAdded`) |
+| `focused` / `blurred` | `output<void>` | — | Emitted on focusin / focusout within the surface |
 
 **Example**
 ```html
-<emr-field-library-picker [fields]="model.fieldLibrary" [query]="model.fieldLibraryQuery"
-  [selectedSectionId]="model.selectedSectionId" (intent)="onTemplateIntent($event)" />
+<emr-field-library-picker [model]="{ fields: model.fieldLibrary, query: model.fieldLibraryQuery, selectedSectionId: model.selectedSectionId }"
+  (intent)="onTemplateIntent($event)" />
 ```
 
-**Composition** — renders no other catalogued component; pure template + native controls.
+**Composition** — renders no other catalogued component; pure template + native controls (`NgIcon` monochrome SVG icons).
 
 **Depends on** — none.
 **Used by** — `EmrTemplateComposer` (L6, verified: `emr-template-composer -> emr-field-library-picker`).
@@ -296,61 +302,20 @@ export class EmrFieldLibraryPickerComponent {
 
 **Need** — assembling a reusable EHR template (e.g. "General physical examination") means naming/ordering sections and, within each section, adding/ordering/removing field placements pulled from the field library — with a live preview and FHIR/JSON export/import alongside, all without the UI owning persistence or FHIR mapping.
 
-**Purpose** — edits `EhrTemplateDefinition` metadata (title/description/locale/status), manages the section list (add/select/reorder/remove) and, for the selected section, its field placements (reorder/remove; adding happens through the embedded field-library picker), and hosts the live preview + artifact import/export panel. It emits `EhrTemplateIntent` only; it never persists the template, never serializes/deserializes FHIR itself, and treats an import as inert until the controller returns `importIssues` and the user explicitly emits `importAccepted` — "Invalid imports do not mutate the template" per the architecture docs.
+**Purpose** — edits `EhrTemplateDefinition` metadata (title/description/locale/status), manages the section list (add/select/reorder/remove) and, for the selected section, selects (`placementSelected`), reorders (`fieldMoved`), or removes (`fieldRemoved`) field placements; hosts `EmrFieldLibraryPicker` and `EmrTemplatePreview` (`readOnly: true`). It emits `EhrTemplateIntent` only; it never persists the template, never serializes/deserializes FHIR itself, and treats an import as inert until the controller returns `importIssues` and the user explicitly emits `importAccepted`.
 
 **API**
 ```ts
-// ehr-template.models.ts — quoted verbatim
+// ehr-template.models.ts — excerpt
 export type EhrTemplateStatus = 'draft' | 'active' | 'retired';
 export type TemplateArtifactFormat =
   | 'internal-json' | 'fhir-r4-questionnaire' | 'fhir-r4-bundle' | 'fhir-r4b-questionnaire' | 'fhir-r5-questionnaire';
-
-export interface EhrTemplateFieldPlacement {
-  id: string;
-  sourceFieldId: string;
-  sourceFieldRevision: number;
-  field: EmrGeneratedFieldDefinition;
-}
-
-export interface EhrTemplateSection {
-  id: string;
-  label: string;
-  description?: string;
-  fields: readonly EhrTemplateFieldPlacement[];
-}
-
-export interface EhrTemplateDefinition {
-  schemaVersion: '1.0';
-  id: string;
-  revision: number;
-  title: string;
-  description?: string;
-  locale: string;
-  status: EhrTemplateStatus;
-  sections: readonly EhrTemplateSection[];
-}
-
-export interface EhrTemplateViewModel {
-  template: EhrTemplateDefinition;
-  fieldLibrary: readonly EmrGeneratedFieldDefinition[];
-  fieldLibraryQuery: string;
-  selectedSectionId?: string;
-  selectedPlacementId?: string;
-  preview: ClinicalFormViewModel;
-  artifact?: TemplateArtifactResult;
-  importIssues?: readonly TemplateArtifactIssue[];
-  loading: boolean;
-  saving: boolean;
-  dirty: boolean;
-  readOnly?: boolean;
-  error?: string;
-  concurrencyToken?: string;
-}
 
 export type EhrTemplateIntent =
   | { type: 'templatePatched'; changes: Pick<Partial<EhrTemplateDefinition>, 'title' | 'description' | 'locale' | 'status'> }
   | { type: 'fieldLibraryQueryChanged'; query: string }
   | { type: 'sectionSelected'; sectionId: string }
+  | { type: 'placementSelected'; sectionId: string; placementId: string }
   | { type: 'sectionAdded'; section: EhrTemplateSection }
   | { type: 'sectionPatched'; sectionId: string; changes: Pick<Partial<EhrTemplateSection>, 'label' | 'description'> }
   | { type: 'sectionMoved'; sectionId: string; direction: 'up' | 'down' }
@@ -365,10 +330,14 @@ export type EhrTemplateIntent =
 
 @Component({ selector: 'emr-template-composer', standalone: true })
 export class EmrTemplateComposerComponent {
-  @Input({ required: true }) model!: EhrTemplateViewModel;
-  @Input() set readOnly(value: boolean); get readOnly(): boolean;
-  @Input() headingId = 'emr-template-composer-heading';
-  @Output() readonly intent = new EventEmitter<EhrTemplateIntent>();
+  readonly model = input.required<EhrTemplateViewModel>();
+  readonly readOnly = input<boolean>(false);
+  readonly headingId = input<string>('emr-template-composer-heading');
+  readonly idPrefix = input<string>('emr-template-composer');
+  readonly labels = input<Partial<EmrTemplateComposerLabels>>({});
+  readonly intent = output<EhrTemplateIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
@@ -376,16 +345,20 @@ export class EmrTemplateComposerComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `EhrTemplateViewModel` (required) | — | Template + field library + selection + live preview + artifact/import state |
-| `readOnly` | `boolean` (setter) | `false` | Effective value is `explicitReadOnly \|\| model.readOnly`; `sectionSelected` intents still pass through even when read-only |
-| `headingId` | `string` | `'emr-template-composer-heading'` | Prefixes every generated control id, including those of its two child components |
+| `model` | `EhrTemplateViewModel` (required) | — | Template + field library + section/placement selection + live preview + artifact/import state |
+| `readOnly` | `boolean` | `false` | Effective value is `readOnly() \|\| Boolean(model().readOnly)`; `sectionSelected` and `placementSelected` intents pass through when read-only |
+| `headingId` | `string` | `'emr-template-composer-heading'` | Accessible heading element id |
+| `idPrefix` | `string` | `'emr-template-composer'` | Prefixes generated control ids, including child picker and preview |
+| `labels` | `Partial<EmrTemplateComposerLabels>` | `{}` | Optional copy overrides merged with `TEMPLATE_COMPOSER_LABEL_DEFAULTS` |
+| `intent` | `output<EhrTemplateIntent>` | — | Typed `EhrTemplateIntent` stream shared with child components |
+| `focused` / `blurred` | `output<void>` | — | Emitted on focusin / focusout within the surface |
 
 **Example**
 ```html
 <emr-template-composer [model]="templateViewModel" (intent)="onTemplateIntent($event)" />
 ```
 
-**Composition** — renders `EmrFieldLibraryPickerComponent` (L6) in its sidebar and `EmrTemplatePreviewComponent` (L6) at the bottom of its main column; both receive `(intent)="emit($event)"`, so all three components share one intent stream typed as `EhrTemplateIntent`.
+**Composition** — renders `EmrFieldLibraryPickerComponent` (L6) in its sidebar and `EmrTemplatePreviewComponent` (L6) in its main column; both receive `(intent)="emit($event)"`, sharing `EhrTemplateIntent`.
 
 **Depends on** — `EmrFieldLibraryPickerComponent` (L6), `EmrTemplatePreviewComponent` (L6). Verified: `emr-template-composer -> emr-field-library-picker(L6), emr-template-preview(L6)`.
 **Used by** — none in the verified intra-UI import graph (top-level authoring entry point).
@@ -395,38 +368,33 @@ export class EmrTemplateComposerComponent {
 ### EmrTemplatePreview
 **Layer** L6 · **Selector** `emr-template-preview` · **Status** stable · **Story** `emr-templates-composer--preview`
 
-**Need** — while composing a template, authors need to see it rendered exactly as a real clinical form would (an actual `EmrClinicalForm` with empty/default values), plus a way to trigger and review controller-produced FHIR/JSON export and paste-in import — kept as a distinct concern from section/field editing so `EmrTemplateComposer` can also be used headless (e.g. `Preview` story renders it standalone).
+**Need** — while composing a template, authors need to see it rendered exactly as a real clinical form would (an actual read-only `EmrClinicalForm` with controller-derived defaults), plus a way to trigger and review controller-produced FHIR/JSON export and paste-in import — kept as a distinct concern from section/field editing so `EmrTemplatePreview` can also render standalone.
 
-**Purpose** — builds a value-empty `ClinicalFormViewModel` preview (`model.preview`, supplied by the controller) and renders it through `EmrClinicalForm`; separately renders a format picker, an Export button, a serialized-payload textarea usable for both showing export output and pasting import input, an Import button, and — only once `model.importIssues` exist with no `error`-severity issue — an explicit "Accept import" button. It never performs the FHIR conversion itself; `artifactExportRequested`/`artifactImportRequested` are dispatched to the controller-supplied `TemplateArtifactPort`, and the resulting `model.artifact`/`model.importIssues` are rendered as-is, including any `warning`/`error`-severity issues.
+**Purpose** — renders `model.preview` (`readOnly: true` enforced by `deriveTemplatePreview()` and renderer props) through `EmrClinicalForm`; separately renders a format picker, an Export button, a serialized-payload textarea usable for both showing export output and pasting import input, an Import button, and — once `model.importIssues` contain no error-severity issue — an explicit "Accept import" button. It never performs the FHIR conversion itself; `artifactExportRequested`/`artifactImportRequested` are dispatched to the controller-supplied `TemplateArtifactPort`, and `model.importIssues` are rendered with `role="alert"`.
 
 **API**
 ```ts
 // ehr-template.models.ts
-export interface TemplateArtifactIssue {
-  severity: 'information' | 'warning' | 'error';
-  code: string;
-  message: string;
-  path?: string;
-}
-
-export interface TemplateArtifactResult {
-  format: TemplateArtifactFormat;
-  fhirVersion?: '4.0.1' | '4.3.0' | '5.0.0';
-  serialized: string;
-  issues: readonly TemplateArtifactIssue[];
+export interface TemplatePreviewViewModel {
+  template: EhrTemplateDefinition;
+  preview: ClinicalFormViewModel;
+  artifact?: TemplateArtifactResult;
+  importIssues?: readonly TemplateArtifactIssue[];
+  canAcceptImport?: boolean;
+  readOnly?: boolean;
+  error?: string;
 }
 
 @Component({ selector: 'emr-template-preview', standalone: true })
 export class EmrTemplatePreviewComponent {
-  @Input({ required: true }) model!: EhrTemplateViewModel;
-  @Input() set readOnly(value: boolean); get readOnly(): boolean;
-  @Input() headingId = 'emr-template-preview-heading';
-  @Output() readonly intent = new EventEmitter<EhrTemplateIntent>();
-  format: TemplateArtifactFormat = 'fhir-r4-questionnaire';
-  serialized = '';
-  canAcceptImport(): boolean {
-    return !!this.model.importIssues?.length && !this.model.importIssues.some(issue => issue.severity === 'error');
-  }
+  readonly model = input.required<TemplatePreviewViewModel>();
+  readonly readOnly = input<boolean>(false);
+  readonly headingId = input<string>('emr-template-preview-heading');
+  readonly idPrefix = input<string>('emr-template-preview');
+  readonly labels = input<Partial<EmrTemplatePreviewLabels>>({});
+  readonly intent = output<TemplatePreviewIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
@@ -434,16 +402,20 @@ export class EmrTemplatePreviewComponent {
 
 | name | type | default | notes |
 |---|---|---|---|
-| `model` | `EhrTemplateViewModel` (required) | — | Same view model as `EmrTemplateComposer`; only `template`, `preview`, `artifact`, `importIssues`, `loading`, `error` are read here |
-| `readOnly` | `boolean` (setter) | `false` | Effective value is `explicitReadOnly \|\| model.readOnly` |
-| `headingId` | `string` | `'emr-template-preview-heading'` | Prefixes `artifactHeadingId()`/`formatId()`/`serializedId()` and the forwarded `idPrefix` on `emr-clinical-form` |
+| `model` | `TemplatePreviewViewModel` (required) | — | Same structural slice as `EhrTemplateViewModel`; holds `template`, `preview`, `artifact`, `importIssues`, `readOnly`, `error` |
+| `readOnly` | `boolean` | `false` | Effective value is `readOnly() \|\| Boolean(model().readOnly)` for import/export controls; clinical form preview is always read-only |
+| `headingId` | `string` | `'emr-template-preview-heading'` | Accessible heading element id |
+| `idPrefix` | `string` | `'emr-template-preview'` | Prefixes generated artifact control ids and child `emr-clinical-form` `idPrefix` |
+| `labels` | `Partial<EmrTemplatePreviewLabels>` | `{}` | Optional copy overrides merged with `TEMPLATE_PREVIEW_LABEL_DEFAULTS` |
+| `intent` | `output<TemplatePreviewIntent>` | — | Typed `TemplatePreviewIntent` (`artifactExportRequested` / `artifactImportRequested` / `importAccepted`) |
+| `focused` / `blurred` | `output<void>` | — | Emitted on focusin / focusout within the surface |
 
 **Example**
 ```html
 <emr-template-preview [model]="templateViewModel" (intent)="onTemplateIntent($event)" />
 ```
 
-**Composition** — renders `EmrClinicalFormComponent` (L3) against `model.preview`, with `idPrefix` set to its own `headingId` so control ids stay unique from any sibling `emr-clinical-form` on the page. This is the L6 → L3 edge that lets an author see the real capture-layer rendering of an in-progress template.
+**Composition** — renders `EmrClinicalFormComponent` (L3) against `{ ...model.preview, readOnly: true }`, with `idPrefix` forwarded so control ids stay unique from any sibling `emr-clinical-form` on the page.
 
 **Depends on** — `EmrClinicalFormComponent` (L3). Verified: `emr-template-preview -> emr-clinical-form(L3)`.
 **Used by** — `EmrTemplateComposer` (L6, verified: `emr-template-composer -> emr-template-preview`).

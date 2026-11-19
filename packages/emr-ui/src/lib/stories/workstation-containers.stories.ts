@@ -215,9 +215,16 @@ export const synchronizedTimeGridFixture: EmrSynchronizedTimeGridViewModel = {
           unitLabel: 'mmHg',
           referenceRangeLabel: '10–21 mmHg',
           cells: {
-            c08: { columnId: 'c08', valueLabel: '34', abnormalTone: 'danger', secondaryLabel: 'GAT' },
-            c09: { columnId: 'c09', valueLabel: '26', abnormalTone: 'warning', secondaryLabel: '↓ -8' },
-            c10: { columnId: 'c10', valueLabel: '18', secondaryLabel: 'Normalized' },
+            c08: {
+              columnId: 'c08',
+              valueLabel: '34',
+              abnormalTone: 'danger',
+              secondaryLabel: 'GAT',
+              badge: { label: 'STAT', tone: 'danger' },
+              note: 'Post-op spike',
+            },
+            c09: { columnId: 'c09', valueLabel: '26', abnormalTone: 'warning', secondaryLabel: '-8 mmHg' },
+            c10: { columnId: 'c10', valueLabel: '18', abnormalTone: 'success', secondaryLabel: 'Normalized' },
             c11: { columnId: 'c11', valueLabel: '17' },
           },
         },
@@ -239,6 +246,7 @@ export const synchronizedTimeGridFixture: EmrSynchronizedTimeGridViewModel = {
       id: 'trk-trend',
       title: 'Sparkline & Range Trend Track',
       kind: 'trend',
+      badge: { label: 'Perfusion', tone: 'info' },
       rows: [
         {
           id: 'r-cst-trend',
@@ -246,10 +254,10 @@ export const synchronizedTimeGridFixture: EmrSynchronizedTimeGridViewModel = {
           unitLabel: 'mmHg',
           referenceRangeLabel: '45–60 mmHg',
           cells: {
-            c08: { columnId: 'c08', valueLabel: '42', secondaryLabel: 'Low MOPP', abnormalTone: 'warning' },
-            c09: { columnId: 'c09', valueLabel: '49', secondaryLabel: 'In target' },
-            c10: { columnId: 'c10', valueLabel: '54', secondaryLabel: 'Optimal' },
-            c11: { columnId: 'c11', valueLabel: '55', secondaryLabel: 'Optimal' },
+            c08: { columnId: 'c08', valueLabel: '42', secondaryLabel: 'Low MOPP', sparklineNorm: 0.25, abnormalTone: 'warning' },
+            c09: { columnId: 'c09', valueLabel: '49', secondaryLabel: 'In target', sparklineNorm: 0.55 },
+            c10: { columnId: 'c10', valueLabel: '54', secondaryLabel: 'Optimal', sparklineNorm: 0.82, abnormalTone: 'success' },
+            c11: { columnId: 'c11', valueLabel: '55', secondaryLabel: 'Optimal', sparklineNorm: 0.88, abnormalTone: 'success' },
           },
         },
       ],
@@ -258,14 +266,25 @@ export const synchronizedTimeGridFixture: EmrSynchronizedTimeGridViewModel = {
       id: 'trk-mar',
       title: 'Medication Administrations (eMAR)',
       kind: 'medications',
+      badge: { label: 'Active', tone: 'success' },
       rows: [
         {
           id: 'r-acetazolamide',
           label: 'Acetazolamide 250 mg Oral',
           unitLabel: 'STAT + QID',
           cells: {
-            c08: { columnId: 'c08', valueLabel: '✓ Given', secondaryLabel: '250 mg PO · BCMA' },
-            c12: { columnId: 'c12', valueLabel: '◷ Due', secondaryLabel: '250 mg PO' },
+            c08: {
+              columnId: 'c08',
+              valueLabel: 'Given',
+              secondaryLabel: '250 mg PO · BCMA',
+              badge: { label: 'Verified', tone: 'success' },
+            },
+            c12: {
+              columnId: 'c12',
+              valueLabel: 'Due',
+              secondaryLabel: '250 mg PO',
+              badge: { label: 'Scheduled', tone: 'warning' },
+            },
           },
         },
         {
@@ -273,7 +292,12 @@ export const synchronizedTimeGridFixture: EmrSynchronizedTimeGridViewModel = {
           label: 'Timolol 0.5% Eye Drops (OD)',
           unitLabel: 'BD',
           cells: {
-            c08: { columnId: 'c08', valueLabel: '✓ Given', secondaryLabel: '1 gtt OD' },
+            c08: {
+              columnId: 'c08',
+              valueLabel: 'Given',
+              secondaryLabel: '1 gtt OD',
+              badge: { label: 'Verified', tone: 'success' },
+            },
           },
         },
       ],

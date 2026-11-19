@@ -155,6 +155,7 @@ describe('EMR React architecture boundary', () => {
       'EmrColorPicker',
       'EmrCopyButton',
       'EmrImageField',
+      'EmrClinicalCellRenderer',
     ]);
     const tsxFiles = reactSources.filter(({ file }) => file.endsWith('.tsx') && !file.endsWith('.native.tsx'));
     const unmapped: string[] = [];

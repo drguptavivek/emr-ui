@@ -153,30 +153,31 @@ function applyCropBoxDrag(
     '(document:keydown.escape)': 'onEscapeKey($event)',
   },
   template: `
-    <div
-      class="emr-image-viewer"
-      [class.emr-image-viewer--fullscreen]="isFullscreen()"
-      [class.emr-image-viewer--invalid]="isInvalid()"
-      [class.emr-image-viewer--warning]="!isInvalid() && !!warning()"
-      [class.emr-image-viewer--readonly]="readOnly()"
-      [class.emr-image-viewer--disabled]="disabled()"
-      [id]="resolvedId()"
-      [attr.role]="isFullscreen() ? 'dialog' : 'region'"
-      [attr.aria-modal]="isFullscreen() ? 'true' : null"
-      [attr.aria-label]="label() || activeImage()?.alt || 'Clinical image viewer'"
-      [attr.aria-invalid]="isInvalid() ? 'true' : null"
-      [attr.aria-disabled]="disabled() ? 'true' : null"
-      [attr.aria-describedby]="describedBy()"
-      [attr.data-readonly]="readOnly() ? 'true' : null"
-      tabindex="0"
-      (focusin)="focused.emit()"
-      (focusout)="blurred.emit()"
-      (keydown)="onKeyDown($event)"
-    >
-      <div class="emr-image-viewer__toolbar" data-emr-print="hide">
-        @if (label()) {
-          <strong class="emr-field__label" [class.emr-sr-only]="labelHidden()">{{ label() }}</strong>
-        }
+    <div class="emr-field">
+      @if (label()) {
+        <span class="emr-field__label" [class.emr-sr-only]="labelHidden()">{{ label() }}</span>
+      }
+      <div
+        class="emr-image-viewer"
+        [class.emr-image-viewer--fullscreen]="isFullscreen()"
+        [class.emr-image-viewer--invalid]="isInvalid()"
+        [class.emr-image-viewer--warning]="!isInvalid() && !!warning()"
+        [class.emr-image-viewer--readonly]="readOnly()"
+        [class.emr-image-viewer--disabled]="disabled()"
+        [id]="resolvedId()"
+        [attr.role]="isFullscreen() ? 'dialog' : 'region'"
+        [attr.aria-modal]="isFullscreen() ? 'true' : null"
+        [attr.aria-label]="label() || activeImage()?.alt || 'Clinical image viewer'"
+        [attr.aria-invalid]="isInvalid() ? 'true' : null"
+        [attr.aria-disabled]="disabled() ? 'true' : null"
+        [attr.aria-describedby]="describedBy()"
+        [attr.data-readonly]="readOnly() ? 'true' : null"
+        tabindex="0"
+        (focusin)="focused.emit()"
+        (focusout)="blurred.emit()"
+        (keydown)="onKeyDown($event)"
+      >
+        <div class="emr-image-viewer__toolbar" data-emr-print="hide">
         <button
           type="button"
           class="emr-button emr-button--outline emr-button--small emr-image-viewer__tool-btn"
@@ -390,14 +391,12 @@ function applyCropBoxDrag(
         </div>
       }
 
-      @if (hint()) {
+      @if (!labelHidden() && error()) {
+        <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
+      } @else if (!labelHidden() && warning()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'">{{ warning() }}</span>
+      } @else if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
-      }
-      @if (warning()) {
-        <span class="emr-field__warning" role="status" [id]="resolvedId() + '-warning'">{{ warning() }}</span>
-      }
-      @if (error()) {
-        <span class="emr-field__error" role="alert" [id]="resolvedId() + '-error'">{{ error() }}</span>
       }
     </div>
   `,
@@ -932,14 +931,12 @@ export class EmrImageViewerComponent {
         </div>
       </div>
 
-      @if (hint()) {
+      @if (!labelHidden() && error()) {
+        <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
+      } @else if (!labelHidden() && warning()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'">{{ warning() }}</span>
+      } @else if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
-      }
-      @if (warning()) {
-        <span class="emr-field__warning" role="status" [id]="resolvedId() + '-warning'">{{ warning() }}</span>
-      }
-      @if (error()) {
-        <span class="emr-field__error" role="alert" [id]="resolvedId() + '-error'">{{ error() }}</span>
       }
     </div>
   `,

@@ -480,8 +480,8 @@ export function EmrQuantityInput(
   );
 }
 
-/** Two text inputs sharing one label (e.g. OD / OS), joined by `separator`. */
-export type PairedSideInputType = 'text' | 'integer' | 'decimal';
+/** Two inputs or dropdowns sharing one label (e.g. OD / OS), joined by `separator`. */
+export type PairedSideInputType = 'text' | 'integer' | 'decimal' | 'select';
 
 export function EmrPairedInput(
   p: EmrFieldProps & {
@@ -494,6 +494,9 @@ export function EmrPairedInput(
     inputType?: PairedSideInputType;
     firstInputType?: PairedSideInputType;
     secondInputType?: PairedSideInputType;
+    options?: readonly EmrOption[];
+    firstOptions?: readonly EmrOption[];
+    secondOptions?: readonly EmrOption[];
     min?: number;
     max?: number;
     firstMin?: number;
@@ -514,12 +517,16 @@ export function EmrPairedInput(
   const { id, input } = useControl(frameProps);
   const t = useEmrTheme();
   const { 'aria-labelledby': _labelledBy, placeholder: _placeholder, ...rest } = input;
+  const resolvedFirstType = p.firstInputType ?? p.inputType ?? 'text';
+  const resolvedSecondType = p.secondInputType ?? p.inputType ?? 'text';
+  const hasSelect = resolvedFirstType === 'select' || resolvedSecondType === 'select';
   const side = (
     key: 'first' | 'second',
     sideLabel: string,
     value: string | null,
     change: (value: string | null) => void,
     sideType: PairedSideInputType,
+    sideOptions: readonly EmrOption[] | undefined,
     sideError: string | undefined,
     sideRequired: boolean | undefined,
     sidePlaceholder: string | undefined,
@@ -529,17 +536,33 @@ export function EmrPairedInput(
         {sideLabel}
       </Text>
       <View style={styles.flex}>
-        <ThemedInput
-          {...rest}
-          id={`${id}-${key}`}
-          placeholder={sidePlaceholder ?? p.placeholder}
-          invalid={Boolean(sideError || p.error)}
-          aria-required={sideRequired ?? p.required}
-          inputMode={sideType === 'integer' ? 'numeric' : sideType === 'decimal' ? 'decimal' : undefined}
-          aria-label={`${p.label}, ${sideLabel}`}
-          value={value ?? ''}
-          onChangeText={text => change(text === '' ? null : text)}
-        />
+        {sideType === 'select' ? (
+          <EmrSelect
+            controlId={`${id}-${key}`}
+            label={`${p.label}, ${sideLabel}`}
+            labelHidden
+            placeholder={sidePlaceholder ?? p.placeholder ?? 'Select…'}
+            options={sideOptions ?? []}
+            value={value}
+            required={Boolean(sideRequired ?? p.required)}
+            invalid={Boolean(sideError || p.error)}
+            readOnly={Boolean(p.readOnly)}
+            disabled={Boolean(p.disabled)}
+            onChange={(next) => change(next)}
+          />
+        ) : (
+          <ThemedInput
+            {...rest}
+            id={`${id}-${key}`}
+            placeholder={sidePlaceholder ?? p.placeholder}
+            invalid={Boolean(sideError || p.error)}
+            aria-required={sideRequired ?? p.required}
+            inputMode={sideType === 'integer' ? 'numeric' : sideType === 'decimal' ? 'decimal' : undefined}
+            aria-label={`${p.label}, ${sideLabel}`}
+            value={value ?? ''}
+            onChangeText={text => change(text === '' ? null : text)}
+          />
+        )}
       </View>
     </View>
   );
@@ -549,7 +572,7 @@ export function EmrPairedInput(
         role="group"
         aria-labelledby={p.labelHidden ? undefined : `${id}-label`}
         aria-label={input['aria-label']}
-        style={[styles.pair, { maxWidth: 360 }]}
+        style={[styles.pair, { maxWidth: hasSelect ? 440 : 360 }]}
       >
         <View style={styles.flex}>
           {side(
@@ -557,7 +580,8 @@ export function EmrPairedInput(
             p.firstLabel,
             p.firstValue,
             p.onFirstValueChange,
-            p.firstInputType ?? p.inputType ?? 'text',
+            resolvedFirstType,
+            p.firstOptions ?? p.options,
             p.firstError,
             p.firstRequired,
             p.firstPlaceholder,
@@ -572,7 +596,8 @@ export function EmrPairedInput(
             p.secondLabel,
             p.secondValue,
             p.onSecondValueChange,
-            p.secondInputType ?? p.inputType ?? 'text',
+            resolvedSecondType,
+            p.secondOptions ?? p.options,
             p.secondError,
             p.secondRequired,
             p.secondPlaceholder,

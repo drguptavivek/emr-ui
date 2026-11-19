@@ -10,10 +10,10 @@ import {
   output,
   viewChildren,
 } from '@angular/core';
-import type { EmrLikertAnchor, EmrLikertSize, EmrTone } from '@drguptavivek/emr-controller';
+import type { EmrLikertAnchor, EmrLikertOption, EmrLikertSize, EmrTone } from '@drguptavivek/emr-controller';
 import { buildLikertPoints, resolveLikertAnchors } from './emr-likert.logic';
 
-export type { EmrLikertAnchor };
+export type { EmrLikertAnchor, EmrLikertOption };
 
 @Component({
   selector: 'emr-likert',
@@ -84,7 +84,12 @@ export type { EmrLikertAnchor };
               (keydown)="onKeydown($event)"
               (change)="onSelect(point.value)"
             />
-            <span class="emr-likert__pip" aria-hidden="true">{{ point.label }}</span>
+            <span class="emr-likert__pip" [class.emr-likert__pip--has-text]="!!point.description || point.label.length > 3" aria-hidden="true">
+              <span>{{ point.label }}</span>
+              @if (point.description) {
+                <span class="emr-likert__desc">{{ point.description }}</span>
+              }
+            </span>
           </label>
         }
       </div>
@@ -136,6 +141,8 @@ export class EmrLikertComponent implements AfterViewChecked {
   readonly fullWidth = input(false, { transform: booleanAttribute });
   readonly value = input<number | null>(null);
   readonly anchors = input<readonly EmrLikertAnchor[]>([]);
+  readonly options = input<readonly EmrLikertOption[]>([]);
+  readonly showOptionLabels = input(false, { transform: booleanAttribute });
   readonly clearable = input(false, { transform: booleanAttribute });
   readonly clearLabel = input<string>('Clear');
   readonly disabled = input(false, { transform: booleanAttribute });
@@ -174,6 +181,8 @@ export class EmrLikertComponent implements AfterViewChecked {
       step: this.step(),
       value: this.value(),
       anchors: this.anchors(),
+      options: this.options(),
+      showOptionLabels: this.showOptionLabels(),
       tone: this.tone(),
       optionTones: this.optionTones(),
     }),

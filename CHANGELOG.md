@@ -2,6 +2,17 @@
 
 Current state and pending work live in `handoff.md`. Exact changes and authorship live in Git.
 
+## 19 November 2026 (Part 2) — Full L1 Sweep, L3 Structures Parity, Scrollable Tabs & Paired Dropdowns
+
+- **Full L1 Visual & UX Verification (`63/63 PASS`, `docs/audits/emr-l1-sweep.md`)**:
+  - Wired the remaining 15 L1 Angular preview fixtures in `examples/angular-preview/preview-app.component.ts` (`63/63` wired) and fixed `emr-image.component.ts` `NG5002`.
+  - Added horizontal narrow-screen `emr-tabs` scroll chevrons (`44x44px`, monochrome SVGs, `data-emr-print="hide"`) across React, Lit, and Angular (`0px` overflow at `390x844`).
+  - Added paired dropdown (`'select'` side mode + `options`/`firstOptions`/`secondOptions`) support to `EmrPairedInput` (`L1`) and `EmrPairedField` (`L2`) across `emr-controller`, `emr-react`, `emr-ui`, and `emr-elements`.
+  - Upgraded Angular `EmrDateTimeInputComponent` with interactive Calendar & Time popovers (`Today`, `Now`, `Clear`, `Done`, `Escape`), `EmrTooltipComponent` auto-flip when near top edges, monochrome SVGs on `EmrIconButtonComponent` & `EmrSearchInputComponent`, flex-shrink `.emr-input-affix__field` + SVG chevron `.emr-quantity__unit`, wrapped `EmrPaginationComponent`, custom text `options` on `EmrLikert`, `precision` on `EmrVas`, and Light/Dark parity on `EmrClinicalMatrix`.
+- **L3 Structures Parity (`15/15` Components Audited `PASS`)**: Completed Stage 1–3 verification and `docs/audits/emr-*.md` across `emr-section-card`, `emr-repeatable-group`, `emr-clinical-form`, `emr-clinical-list` (+ 4 L4 list wrappers), `emr-clinical-matrix`, `emr-clinical-cell-renderer`, `emr-annotation-toolbar`, `emr-annotation-list`, `emr-image-template-picker`, `emr-time-axis`, `emr-data-table`, `emr-split-workspace`, `emr-command-palette`, `emr-master-detail`, and `emr-synchronized-time-grid`.
+- **L6 Authoring Batch 1 (Stage 2)**: Implemented parity updates for `emr-field-generator`, `emr-terminology-search`, `emr-validation-rule-editor`, `emr-field-library-picker`, `emr-template-composer`, and `emr-template-preview` (pending Stage 3 live & Neon audit).
+- **Verification**: Full `pnpm check` passed **143/143** test files (**1826/1826** tests).
+
 ## 19 November 2026 — Full L1/Wave 2 & L2 Clinical Field Parity + Clean `pnpm check`
 
 - **L2 Clinical Building Blocks (`#35`–`#44` Audited `PASS`)**:

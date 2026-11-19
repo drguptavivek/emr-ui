@@ -167,6 +167,7 @@ const l2Styles = css`
   }
   .field-stack {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
     min-width: 0;
   }
@@ -263,8 +264,9 @@ const l2Styles = css`
     column-gap: 16px;
     align-items: start;
   }
-  .emr-field--horizontal .frame-control-col {
+  .frame-control-col {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     min-width: 0;
   }
@@ -547,7 +549,7 @@ function normalizeFieldModel(model: EmrTypedFieldModel | undefined, defaultValue
     requiredOverride: model.required,
     error: model.error ?? '',
     warning: model.warning ?? '',
-    info: '',
+    info: model.info ?? '',
     messages: [],
   };
 }

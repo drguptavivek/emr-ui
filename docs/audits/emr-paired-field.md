@@ -2,12 +2,12 @@
 
 - **Date:** 2026-11-19
 - **Layer:** L2 (`fields`)
-- **Verdict:** PASS
+- **Verdict:** PASS (`neon-supervisor` Sign-Off #100)
 - **Verified Renderers:** Angular · React Web · Lit Web Component · (Expo typecheck)
 
 ## 1. Props, Events & Validation Parity
 - [x] Canonical props & outputs implemented identically across Angular, React, Lit (`model`, `definition`, `controlId`, `headingId`, `labelHidden`, `layout`, `showMetadata`, `readOnly`, `size`, `clearable`; outputs `intent` (`firstChangeRequested`, `secondChangeRequested`, `clearRequested`, `statusChangeRequested`), `focused`, `blurred`).
-- [x] Per-side `firstMode`/`secondMode` (`'text' | 'decimal' | 'integer'`, defaulting `'text'` or `definition.contract.valueType`), `showSteppers` (`false` default), per-side `min`/`max`/`step`/`precision`/`maxLength`/`required`/`readOnly`, and `EmrValidationMessage.path` (`['first']` vs `['second']`) per-side `aria-invalid` / `data-warning` verified.
+- [x] Per-side `firstMode`/`secondMode` (`'text' | 'decimal' | 'integer' | 'select'`, defaulting `'text'` or `definition.contract.valueType`), shared `options` + per-side `firstOptions`/`secondOptions`, `showSteppers` (`false` default), per-side `min`/`max`/`step`/`precision`/`maxLength`/`required`/`readOnly`, and `EmrValidationMessage.path` (`['first']` vs `['second']`) per-side `aria-invalid` / `data-warning` verified.
 - [x] Six-state `ClinicalAssessmentStatus` delegated to `EmrFieldFrame` (`labelNamesControl={false}`), `readOnly` DOM gating/rollback (zero `disabled` above L2), and out-of-range valid numeric emission verified across `9` Vitest suites (`79/79` tests), `pnpm check:react`, `pnpm check:ssr`, `pnpm build:ui`, `pnpm build:react`, and `pnpm lit:public`.
 
 ## 2. Visual & Interactive Parity (Light & Dark, Desktop & 390px)

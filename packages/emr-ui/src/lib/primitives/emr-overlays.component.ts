@@ -2,12 +2,14 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   ViewEncapsulation,
   booleanAttribute,
   computed,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 
 let nextOverlayId = 0;
@@ -149,6 +151,7 @@ export class EmrPopoverComponent {
   encapsulation: ViewEncapsulation.None,
   template: `
     <span
+      #tooltipWrap
       class="emr-tooltip-wrap"
       [attr.aria-describedby]="isOpen() ? resolvedId() : null"
       (mouseenter)="show()"
@@ -159,7 +162,12 @@ export class EmrPopoverComponent {
     >
       <ng-content />
       @if (isOpen()) {
-        <span class="emr-tooltip__bubble" role="tooltip" [id]="resolvedId()">
+        <span
+          class="emr-tooltip__bubble"
+          [class.emr-tooltip__bubble--below]="placeBelow()"
+          role="tooltip"
+          [id]="resolvedId()"
+        >
           {{ content() }}
         </span>
       }
@@ -173,11 +181,18 @@ export class EmrTooltipComponent {
 
   private readonly fallbackId = `emr-tooltip-${++nextOverlayId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  private readonly wrapRef = viewChild<ElementRef<HTMLElement>>('tooltipWrap');
   private readonly active = signal(false);
+  protected readonly placeBelow = signal(false);
   protected readonly isOpen = computed(() => !this.disabled() && !!this.content() && this.active());
 
   protected show(): void {
-    if (!this.disabled()) this.active.set(true);
+    if (this.disabled()) return;
+    const el = this.wrapRef()?.nativeElement;
+    if (el && typeof el.getBoundingClientRect === 'function') {
+      this.placeBelow.set(el.getBoundingClientRect().top < 44);
+    }
+    this.active.set(true);
   }
 
   protected hide(): void {

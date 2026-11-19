@@ -242,4 +242,51 @@ describe('EhrTemplateController', () => {
     controller.dispatch({ type: 'saveRequested' });
     expect(save).not.toHaveBeenCalled();
   });
+
+  it('sets readOnly: true on derivePreview and handles placementSelected', () => {
+    const preview = derivePreview(template);
+    expect(preview.readOnly).toBe(true);
+
+    const controller = new EhrTemplateController(view());
+    expect(controller.getSnapshot().preview.readOnly).toBe(true);
+    controller.dispatch({ type: 'placementSelected', sectionId: 'history', placementId: 'chief' });
+    expect(controller.getSnapshot().selectedSectionId).toBe('history');
+    expect(controller.getSnapshot().selectedPlacementId).toBe('chief');
+
+    // Unknown placement is ignored cleanly
+    controller.dispatch({ type: 'placementSelected', sectionId: 'history', placementId: 'missing' });
+    expect(controller.getSnapshot().selectedPlacementId).toBe('chief');
+
+    // Switching to another section clears stale placement selection
+    controller.dispatch({ type: 'sectionAdded', section: { id: 'exam', label: 'Exam', fields: [] } });
+    controller.dispatch({ type: 'sectionSelected', sectionId: 'exam' });
+    expect(controller.getSnapshot().selectedSectionId).toBe('exam');
+    expect(controller.getSnapshot().selectedPlacementId).toBeUndefined();
+  });
+
+  it('round-trips templates containing time and datetime field types', () => {
+    const timeField: EmrGeneratedFieldDefinition = { ...field('dilation-time'), type: 'time' };
+    const dtField: EmrGeneratedFieldDefinition = { ...field('tonometry-at'), type: 'datetime' };
+    const temporalTemplate: EhrTemplateDefinition = {
+      ...template,
+      sections: [
+        {
+          id: 'timing',
+          label: 'Timing',
+          fields: [
+            { id: 'p-time', sourceFieldId: 'dilation-time', sourceFieldRevision: 2, field: timeField },
+            { id: 'p-dt', sourceFieldId: 'tonometry-at', sourceFieldRevision: 2, field: dtField },
+          ],
+        },
+      ],
+    };
+    const controller = new EhrTemplateController(view());
+    controller.dispatch({
+      type: 'artifactImportRequested',
+      format: 'internal-json',
+      serialized: JSON.stringify(temporalTemplate),
+    });
+    expect(controller.getSnapshot().importIssues).toBeUndefined();
+    expect(controller.getSnapshot().template.sections[0].fields.map(f => f.field.type)).toEqual(['time', 'datetime']);
+  });
 });

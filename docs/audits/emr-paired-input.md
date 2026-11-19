@@ -1,12 +1,12 @@
 # Audit Report: `emr-paired-input`
 
-- **Date:** 2026-11-18
+- **Date:** 2026-11-19
 - **Layer:** L1
-- **Verdict:** PASS
+- **Verdict:** PASS (`neon-supervisor` Sign-Off #100)
 - **Verified Renderers:** Angular · React Web · Lit Web Component · (Expo typecheck)
 
 ## 1. Props, Events & Validation Parity
-- [x] Canonical props & events (`firstLabel`/`secondLabel`, `firstValue`/`secondValue`, `inputType`/`firstInputType`/`secondInputType`, `min`/`max`, `firstRequired`/`secondRequired`, `firstError`/`secondError`, `firstPlaceholder`/`secondPlaceholder`, `firstValueChange`, `secondValueChange`, `blurred`) implemented across Angular, React, Lit
+- [x] Canonical props & events (`firstLabel`/`secondLabel`, `firstValue`/`secondValue`, `inputType`/`firstInputType`/`secondInputType` `'text' | 'integer' | 'decimal' | 'select'`, `options`/`firstOptions`/`secondOptions`, `min`/`max`, `firstRequired`/`secondRequired`, `firstError`/`secondError`, `firstPlaceholder`/`secondPlaceholder`, `firstValueChange`, `secondValueChange`, `blurred`) implemented across Angular, React, Lit
 - [x] Per-side `aria-invalid`, `role="alert"`, and `readOnly`/`disabled` gating verified
 
 ## 2. Visual & Interactive Parity (Light & Dark, Desktop & 390px)

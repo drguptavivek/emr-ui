@@ -15,7 +15,9 @@ import {
   annotationListTabStopId,
   annotationPrimaryLabel,
   annotationSecondaryLabel,
+  canAddRepeatableItem,
   canEditTemplateFavourites,
+  canRemoveRepeatableItem,
   filterImageTemplates,
   hasToolbarPen,
   isKnownToolIcon,
@@ -25,8 +27,11 @@ import {
   repeatableControlId,
   repeatableFieldSpanPercent,
   repeatableFocusFieldId,
+  repeatableHeadingId,
+  repeatableMaxItemsHint,
   showFavouritePinHint,
   showFavouritesFilterChip,
+  templateGridColumns,
   templateGridNextIndex,
   templateTabStopId,
   templateTileLabel,
@@ -46,13 +51,32 @@ describe('l3-annotation logic', () => {
       expect(isRepeatableStacked(720)).toBe(false);
     });
 
-    it('computes field span percentage and control/focus ids', () => {
+    it('computes field span percentage and control/focus/heading ids', () => {
       expect(repeatableFieldSpanPercent(undefined, false)).toBe('50%');
       expect(repeatableFieldSpanPercent(4, false)).toBe(`${(4 / 12) * 100}%`);
       expect(repeatableFieldSpanPercent(4, true)).toBe('100%');
       expect(repeatableControlId('meds', 'i1', 'dose')).toBe('meds-i1-dose');
       expect(repeatableControlId('meds', 'i1', 'dose', 'form')).toBe('form-meds-i1-dose');
+      expect(repeatableControlId('meds', 'i1', 'dose', 'form-')).toBe('form-meds-i1-dose');
+      expect(repeatableHeadingId('meds', 'form-')).toBe('form-meds-heading');
+      expect(repeatableHeadingId('meds', 'form', 'custom-h')).toBe('custom-h');
       expect(repeatableFocusFieldId('meds', 'i1', 'dose')).toBe('meds.i1.dose');
+    });
+
+    it('enforces minItems, maxItems, readOnly, and maxItems hint predicates', () => {
+      const items = [
+        { id: '1', fields: {} },
+        { id: '2', readOnly: true, fields: {} },
+      ];
+      expect(canAddRepeatableItem({ maxItems: 2 }, items, false)).toBe(false);
+      expect(canAddRepeatableItem({ maxItems: 3 }, items, false)).toBe(true);
+      expect(canAddRepeatableItem({ maxItems: 3 }, items, true)).toBe(false);
+      expect(repeatableMaxItemsHint({ maxItems: 2 }, items, false)).toBe('Maximum 2 entries');
+      expect(repeatableMaxItemsHint({ maxItems: 2 }, items, true)).toBeUndefined();
+      expect(canRemoveRepeatableItem({ minItems: 1 }, items, items[0], false)).toBe(true);
+      expect(canRemoveRepeatableItem({ minItems: 2 }, items, items[0], false)).toBe(false);
+      expect(canRemoveRepeatableItem({ minItems: 1 }, items, items[1], false)).toBe(false);
+      expect(canRemoveRepeatableItem({ minItems: 1 }, items, items[0], true)).toBe(false);
     });
   });
 
@@ -190,6 +214,9 @@ describe('l3-annotation logic', () => {
     });
 
     it('navigates across favourite and rest grids by keyboard', () => {
+      expect(templateGridColumns(0)).toBe(3);
+      expect(templateGridColumns(260)).toBe(2);
+      expect(templateGridColumns(520)).toBe(4);
       expect(templateGridNextIndex('ArrowRight', 0, 5, 2, 2)).toBe(1);
       expect(templateGridNextIndex('ArrowDown', 0, 5, 2, 2)).toBe(2);
       expect(templateGridNextIndex('ArrowUp', 2, 5, 2, 2)).toBe(0);

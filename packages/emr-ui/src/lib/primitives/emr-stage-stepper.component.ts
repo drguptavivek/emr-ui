@@ -76,7 +76,7 @@ export type { EmrStage, EmrStageStepperIntent, EmrStageStepperOrientation, EmrSt
     </nav>
   `,
   styles: [`
-    emr-stage-stepper { display: block; color: var(--emr-text); }
+    emr-stage-stepper { display: block; container-type: inline-size; color: var(--emr-text); }
     .emr-stage-stepper--disabled { opacity: 0.55; }
     .emr-stage-stepper__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; border: 1px solid var(--emr-border); border-radius: var(--emr-radius, 8px); overflow: hidden; background: var(--emr-surface-slate); }
     .emr-stage-stepper--readonly .emr-stage-stepper__list { border-style: dashed; }
@@ -103,6 +103,7 @@ export type { EmrStage, EmrStageStepperIntent, EmrStageStepperOrientation, EmrSt
     .emr-stage-stepper[data-orientation="vertical"] .emr-stage-stepper__item:last-child { border-bottom: 0; }
     .emr-stage-stepper__stage:focus-visible { outline: 3px solid var(--emr-focus); outline-offset: -3px; }
     @media (max-width: 640px) { .emr-stage-stepper__item { flex-basis: 100%; border-inline-end: 0; border-bottom: 1px solid var(--emr-border); } .emr-stage-stepper__item:last-child { border-bottom: 0; } }
+    @container (max-width: 560px) { .emr-stage-stepper__item { flex-basis: 100%; border-inline-end: 0; border-bottom: 1px solid var(--emr-border); } .emr-stage-stepper__item:last-child { border-bottom: 0; } }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

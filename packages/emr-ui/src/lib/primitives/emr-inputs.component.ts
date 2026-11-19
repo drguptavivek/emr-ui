@@ -32,17 +32,29 @@ import type {
   EmrTone,
 } from '@drguptavivek/emr-controller';
 import {
+  EMR_UI_CALENDAR_MONTH_NAMES,
+  EMR_UI_CALENDAR_MONTH_SHORT,
+  EMR_UI_CALENDAR_WEEKDAYS,
+  EMR_UI_HOURS_12,
+  EMR_UI_HOURS_24,
+  EMR_UI_MINUTES_60,
+  buildUiCalendarMonthGrid,
+  buildUiYearPage,
   emptyToNull,
+  extractUiTimeParts,
   formatDateTimeEmission,
   formatIsoDateDisplay,
   formatTimeDisplay,
+  formatUiTime24,
   isDateTimeOutOfBounds,
   isTimeOutOfBounds,
   joinDateTimeParts,
+  nowUiTime24,
   parseDateDisplayText,
   parseDateInputDomValue,
   parseQuantityDraft,
   parseTimeText,
+  parseUiIsoParts,
   resolveQuantityStep,
   resolveTimePlaceholder,
   sanitizeDateDisplayText,
@@ -50,9 +62,11 @@ import {
   sanitizeTimeText,
   splitDateTimeParts,
   stepNumberValue,
+  stepUiCalendarMonth,
   toDateBoundDomValue,
   toDateInputDomValue,
   toLocalDateTimeInputValue,
+  todayUiCalendarParts,
 } from './emr-inputs.logic';
 import {
   buildEmrSelectTriggerSummary,
@@ -453,86 +467,188 @@ export class EmrNumberInputComponent extends EmrSignalFieldBase {
 @Component({
   selector: 'emr-date-input',
   standalone: true,
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown.escape)': 'onDocumentEscape($event)',
+  },
   template: `
-    <label class="emr-field" [for]="resolvedId()">
-      <span class="emr-field__label" [class.emr-sr-only]="labelHidden()">
+    <div
+      class="emr-field emr-time-input"
+      [class.emr-time-input--sm]="size() === 'sm'"
+      [class.emr-time-input--lg]="size() === 'lg'"
+      [class.emr-time-input--invalid]="isInvalid()"
+      [class.emr-time-input--warning]="!isInvalid() && !!warning()"
+      [class.emr-time-input--readonly]="readOnly()"
+      [class.emr-time-input--disabled]="disabled()"
+    >
+      <label class="emr-field__label" [class.emr-sr-only]="labelHidden()" [for]="resolvedId()">
         {{ label() }}
         @if (required()) {
           <span class="emr-field__required" aria-hidden="true">*</span>
         }
-      </span>
-      @if (precision() === 'year') {
-        <input
-          class="emr-control"
-          [class.emr-control--sm]="size() === 'sm'"
-          [class.emr-control--lg]="size() === 'lg'"
-          [id]="resolvedId()"
-          type="number"
-          inputmode="numeric"
-          step="1"
-          [attr.min]="boundMin() ?? '1000'"
-          [attr.max]="boundMax() ?? '9999'"
-          [value]="domValue()"
-          [placeholder]="placeholder() || 'YYYY'"
-          [required]="required()"
-          [disabled]="disabled()"
-          [readOnly]="readOnly()"
-          [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
-          [attr.aria-required]="required() ? 'true' : null"
-          [attr.aria-readonly]="readOnly() ? 'true' : null"
-          [attr.aria-invalid]="isInvalid() ? 'true' : null"
-          [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
-          [attr.aria-describedby]="ariaDescribedBy() ?? describedBy()"
-          (wheel)="onWheel($event)"
-          (focus)="focused.emit()"
-          (input)="onInput($event)"
-          (blur)="onBlur($event)"
-          (keydown.enter)="onEnter()"
-        />
-      } @else {
-        <input
-          class="emr-control"
-          [class.emr-control--sm]="size() === 'sm'"
-          [class.emr-control--lg]="size() === 'lg'"
-          [id]="resolvedId()"
-          [attr.type]="precision() === 'month' ? 'month' : 'date'"
-          [value]="domValue()"
-          [attr.min]="boundMin()"
-          [attr.max]="boundMax()"
-          [required]="required()"
-          [disabled]="disabled()"
-          [readOnly]="readOnly()"
-          [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
-          [attr.aria-required]="required() ? 'true' : null"
-          [attr.aria-readonly]="readOnly() ? 'true' : null"
-          [attr.aria-invalid]="isInvalid() ? 'true' : null"
-          [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
-          [attr.aria-describedby]="ariaDescribedBy() ?? describedBy()"
-          (focus)="focused.emit()"
-          (input)="onInput($event)"
-          (blur)="onBlur($event)"
-          (keydown.enter)="onEnter()"
-        />
-      }
-      @if (!labelHidden() && hint()) {
+      </label>
+      <div class="emr-temporal-anchor" [style.width.%]="fullWidth() ? 100 : null">
+        <div class="emr-time-input__wrap" [style.max-width.px]="fullWidth() ? null : containerMaxWidth()">
+          <input
+            #dateTextInput
+            class="emr-time-input__field"
+            [id]="resolvedId()"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            [value]="displayedText()"
+            [placeholder]="resolvedPlaceholder()"
+            [required]="required()"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
+            [attr.aria-required]="required() ? 'true' : null"
+            [attr.aria-readonly]="readOnly() ? 'true' : null"
+            [attr.aria-invalid]="isInvalid() ? 'true' : null"
+            [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
+            [attr.aria-describedby]="ariaDescribedBy() ?? describedBy()"
+            (focus)="focused.emit()"
+            (input)="onInput($event)"
+            (blur)="onBlur($event)"
+            (keydown.enter)="onEnter()"
+          />
+          @if (clearable() && value() && !readOnly() && !disabled()) {
+            <button
+              type="button"
+              class="emr-time-input__clear"
+              [attr.aria-label]="'Clear ' + (ariaLabel() || label() || 'date')"
+              (click)="selectIso(null)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          }
+          <button
+            #calTrigger
+            type="button"
+            class="emr-time-input__picker-btn"
+            [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()"
+            aria-label="Choose date"
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="calOpen()"
+            [disabled]="disabled() || readOnly()"
+            (click)="toggleCalendar()"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+          </button>
+        </div>
+        @if (calOpen() && !disabled() && !readOnly()) {
+          <div class="emr-cal-popover" role="dialog" aria-label="Choose date">
+            <div class="emr-cal-header">
+              <button type="button" class="emr-cal-nav-btn" [attr.aria-label]="prevAriaLabel()" (click)="stepHeader(-1)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+              </button>
+              <button type="button" class="emr-cal-title-btn" [disabled]="subView() === 'years' && precision() === 'year'" (click)="cycleSubView()">
+                <span>{{ calHeaderTitle() }}</span>
+              </button>
+              <button type="button" class="emr-cal-nav-btn" [attr.aria-label]="nextAriaLabel()" (click)="stepHeader(1)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+              </button>
+            </div>
+            @if (subView() === 'days') {
+              <div class="emr-cal-body" role="grid" [attr.aria-label]="calHeaderTitle()">
+                <div class="emr-cal-weekdays" role="row">
+                  @for (wd of weekdays; track wd) {
+                    <span class="emr-cal-weekday" role="columnheader">{{ wd }}</span>
+                  }
+                </div>
+                @for (week of calWeeks(); track $index) {
+                  <div class="emr-cal-row" role="row">
+                    @for (cell of week; track cell.iso) {
+                      <span role="gridcell">
+                        <button
+                          type="button"
+                          class="emr-cal-day"
+                          [class.emr-cal-day--outside]="!cell.inMonth"
+                          [class.emr-cal-day--today]="cell.isToday"
+                          [class.emr-cal-day--selected]="cell.isSelected"
+                          [attr.aria-label]="cell.ariaLabel"
+                          [attr.aria-pressed]="cell.isSelected"
+                          [attr.aria-current]="cell.isToday ? 'date' : null"
+                          [disabled]="isIsoOutOfBounds(cell.iso)"
+                          (click)="selectIso(cell.iso)"
+                        >{{ cell.day }}</button>
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            } @else if (subView() === 'months') {
+              <div class="emr-cal-tile-grid">
+                @for (mName of monthShortNames; track mName; let idx = $index) {
+                  @let mNum = idx + 1;
+                  @let ymIso = pad4(viewYear()) + '-' + pad2(mNum);
+                  <button
+                    type="button"
+                    class="emr-cal-tile-btn"
+                    [class.emr-cal-tile-btn--selected]="precision() === 'month' && value() === ymIso"
+                    [disabled]="isIsoOutOfBounds(ymIso)"
+                    (click)="onPickMonth(mNum, ymIso)"
+                  >{{ mName }}</button>
+                }
+              </div>
+            } @else {
+              <div class="emr-cal-tile-grid">
+                @for (yr of yearPage().years; track yr) {
+                  @let yIso = pad4(yr);
+                  <button
+                    type="button"
+                    class="emr-cal-tile-btn"
+                    [class.emr-cal-tile-btn--selected]="precision() === 'year' && value() === yIso"
+                    [disabled]="isIsoOutOfBounds(yIso)"
+                    (click)="onPickYear(yr, yIso)"
+                  >{{ yr }}</button>
+                }
+              </div>
+            }
+            <div class="emr-cal-footer">
+              <button
+                type="button"
+                class="emr-cal-footer-btn emr-cal-footer-btn--today"
+                [disabled]="isIsoOutOfBounds(todayTargetIso())"
+                (click)="selectIso(todayTargetIso())"
+              >{{ todayButtonLabel() }}</button>
+              <button type="button" class="emr-cal-footer-btn" (click)="selectIso(null)">Clear</button>
+            </div>
+          </div>
+        }
+      </div>
+      @if (!labelHidden() && error()) {
+        <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">{{ error() }}</span>
+      } @else if (!labelHidden() && warning()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ warning() }}</span>
+      } @else if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
       }
-      @if (!labelHidden() && error()) {
-        <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
-      }
-    </label>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
 export class EmrDateInputComponent extends EmrSignalFieldBase {
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly calTriggerRef = viewChild<ElementRef<HTMLButtonElement>>('calTrigger');
+  private readonly dateTextInputRef = viewChild<ElementRef<HTMLInputElement>>('dateTextInput');
+
   readonly ariaLabel = input<string | undefined>(undefined);
   readonly ariaDescribedBy = input<string | undefined>(undefined);
   readonly value = input<string | null>(null);
   readonly min = input<string>();
   readonly max = input<string>();
   readonly precision = input<'day' | 'month' | 'year'>('day');
+  readonly displayFormat = input<EmrDateTimeDisplayFormat>('dd-mm-yyyy');
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly fullWidth = input<boolean, unknown>(false, { transform: booleanAttribute });
+  readonly clearable = input<boolean, unknown>(false, { transform: booleanAttribute });
   readonly invalid = input<boolean, unknown>(false, { transform: booleanAttribute });
   readonly warning = input<string>('');
   readonly valueChange = output<string | null>();
@@ -540,32 +656,178 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
   readonly blurred = output<void>();
   readonly submitted = output<void>();
 
+  protected readonly calOpen = signal(false);
+  protected readonly subView = signal<'days' | 'months' | 'years'>('days');
+  protected readonly viewYear = signal(todayUiCalendarParts().year);
+  protected readonly viewMonth = signal(todayUiCalendarParts().month);
+  protected readonly weekdays = EMR_UI_CALENDAR_WEEKDAYS;
+  protected readonly monthShortNames = EMR_UI_CALENDAR_MONTH_SHORT;
+
+  protected readonly pad2 = (n: number): string => String(n).padStart(2, '0');
+  protected readonly pad4 = (n: number): string => String(n).padStart(4, '0');
+
   protected readonly isInvalid = computed(() => Boolean(this.invalid() || this.error()));
   protected readonly domValue = computed(() => toDateInputDomValue(this.value(), this.precision()));
-  protected readonly boundMin = computed(() => toDateBoundDomValue(this.min(), this.precision()));
-  protected readonly boundMax = computed(() => toDateBoundDomValue(this.max(), this.precision()));
+  protected readonly displayedText = computed(() => {
+    const val = this.value();
+    if (!val) return '';
+    if (this.precision() === 'day') return formatIsoDateDisplay(val, this.displayFormat());
+    return toDateInputDomValue(val, this.precision());
+  });
+  protected readonly resolvedPlaceholder = computed(() => {
+    if (this.placeholder()) return this.placeholder();
+    if (this.precision() === 'year') return 'YYYY';
+    if (this.precision() === 'month') return 'YYYY-MM';
+    return this.displayFormat();
+  });
+  protected readonly containerMaxWidth = computed(() => {
+    const base = this.precision() === 'year' ? 140 : this.precision() === 'month' ? 180 : 224;
+    return this.clearable() ? base + 36 : base;
+  });
+  protected readonly yearPage = computed(() => buildUiYearPage(this.viewYear()));
+  protected readonly calHeaderTitle = computed(() => {
+    if (this.subView() === 'days') return `${EMR_UI_CALENDAR_MONTH_NAMES[this.viewMonth() - 1]} ${this.viewYear()}`;
+    if (this.subView() === 'months') return `${this.viewYear()}`;
+    const yp = this.yearPage();
+    return `${yp.startYear} – ${yp.endYear}`;
+  });
+  protected readonly prevAriaLabel = computed(() =>
+    this.subView() === 'days' ? 'Previous month' : this.subView() === 'months' ? 'Previous year' : 'Previous 12 years',
+  );
+  protected readonly nextAriaLabel = computed(() =>
+    this.subView() === 'days' ? 'Next month' : this.subView() === 'months' ? 'Next year' : 'Next 12 years',
+  );
+  protected readonly calWeeks = computed(() => {
+    if (this.subView() !== 'days') return [];
+    const today = todayUiCalendarParts();
+    const cells = buildUiCalendarMonthGrid(this.viewYear(), this.viewMonth(), this.value(), today.isoDay);
+    const out: (typeof cells)[] = [];
+    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
+    return out;
+  });
+  protected readonly todayTargetIso = computed(() => {
+    const t = todayUiCalendarParts();
+    return this.precision() === 'year' ? t.isoYear : this.precision() === 'month' ? t.isoMonth : t.isoDay;
+  });
+  protected readonly todayButtonLabel = computed(() =>
+    this.precision() === 'year' ? 'This year' : this.precision() === 'month' ? 'This month' : 'Today',
+  );
 
-  protected onWheel(event: WheelEvent): void {
-    (event.currentTarget as HTMLInputElement).blur();
+  protected isIsoOutOfBounds(iso: string): boolean {
+    const mn = this.min();
+    const mx = this.max();
+    if (mn && iso < mn.slice(0, iso.length)) return true;
+    if (mx && iso > mx.slice(0, iso.length)) return true;
+    return false;
+  }
+
+  protected onDocumentClick(event: Event): void {
+    if (!this.calOpen()) return;
+    if (!this.hostEl.nativeElement.contains(event.target as Node)) {
+      this.calOpen.set(false);
+    }
+  }
+
+  protected onDocumentEscape(event: Event): void {
+    if (!this.calOpen()) return;
+    event.stopPropagation();
+    this.calOpen.set(false);
+    this.calTriggerRef()?.nativeElement.focus();
+  }
+
+  protected toggleCalendar(): void {
+    if (this.disabled() || this.readOnly()) return;
+    if (this.calOpen()) {
+      this.calOpen.set(false);
+      return;
+    }
+    const p = parseUiIsoParts(this.value());
+    const t = todayUiCalendarParts();
+    this.viewYear.set(p?.year ?? t.year);
+    this.viewMonth.set(p?.month ?? t.month);
+    this.subView.set(this.precision() === 'year' ? 'years' : this.precision() === 'month' ? 'months' : 'days');
+    this.calOpen.set(true);
+  }
+
+  protected stepHeader(dir: -1 | 1): void {
+    if (this.subView() === 'days') {
+      const n = stepUiCalendarMonth(this.viewYear(), this.viewMonth(), dir);
+      this.viewYear.set(n.year);
+      this.viewMonth.set(n.month);
+    } else if (this.subView() === 'months') {
+      this.viewYear.set(Math.max(1, this.viewYear() + dir));
+    } else {
+      this.viewYear.set(Math.max(1, this.viewYear() + dir * 12));
+    }
+  }
+
+  protected cycleSubView(): void {
+    const cur = this.subView();
+    if (cur === 'days') this.subView.set('months');
+    else if (cur === 'months') this.subView.set('years');
+    else if (this.precision() === 'month') this.subView.set('months');
+    else if (this.precision() === 'day') this.subView.set('days');
+  }
+
+  protected onPickMonth(mNum: number, ymIso: string): void {
+    if (this.precision() === 'month') {
+      this.selectIso(ymIso);
+    } else {
+      this.viewMonth.set(mNum);
+      this.subView.set('days');
+    }
+  }
+
+  protected onPickYear(yr: number, yIso: string): void {
+    if (this.precision() === 'year') {
+      this.selectIso(yIso);
+    } else {
+      this.viewYear.set(yr);
+      this.subView.set('months');
+    }
+  }
+
+  protected selectIso(iso: string | null): void {
+    if (this.readOnly() || this.disabled()) return;
+    if (iso !== null && this.isIsoOutOfBounds(iso)) return;
+    this.calOpen.set(false);
+    const el = this.dateTextInputRef()?.nativeElement;
+    if (el) {
+      const txt = iso ? (this.precision() === 'day' ? formatIsoDateDisplay(iso, this.displayFormat()) : iso) : '';
+      this.syncElementNow(el, txt);
+    }
+    this.valueChange.emit(iso);
   }
 
   protected onInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (this.readOnly() || this.disabled()) {
-      this.syncElementNow(target, this.domValue());
+      this.syncElementNow(target, this.displayedText());
+      return;
+    }
+    if (this.precision() === 'day') {
+      const clean = sanitizeDateDisplayText(target.value, this.displayFormat());
+      if (target.value !== clean) target.value = clean;
+      const parsed = parseDateDisplayText(clean, this.displayFormat());
+      if (parsed.kind === 'empty') {
+        this.scheduleDomSync(target, () => this.displayedText());
+        this.valueChange.emit(null);
+      } else if (parsed.kind === 'valid' && !this.isIsoOutOfBounds(parsed.value)) {
+        this.scheduleDomSync(target, () => this.displayedText());
+        this.valueChange.emit(parsed.value);
+      }
       return;
     }
     const parsed = parseDateInputDomValue(target.value, this.precision());
-    if (parsed === undefined) {
-      return;
-    }
-    this.scheduleDomSync(target, () => this.domValue());
+    if (parsed === undefined) return;
+    if (parsed !== null && this.isIsoOutOfBounds(parsed)) return;
+    this.scheduleDomSync(target, () => this.displayedText());
     this.valueChange.emit(parsed);
   }
 
   protected onBlur(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.syncElementNow(target, this.domValue());
+    this.syncElementNow(target, this.displayedText());
     this.blurred.emit();
   }
 
@@ -579,8 +841,12 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
 @Component({
   selector: 'emr-time-input',
   standalone: true,
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown.escape)': 'onDocumentEscape($event)',
+  },
   template: `
-    <label
+    <div
       class="emr-field emr-time-input"
       [class.emr-time-input--sm]="size() === 'sm'"
       [class.emr-time-input--lg]="size() === 'lg'"
@@ -588,68 +854,162 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
       [class.emr-time-input--warning]="!isInvalid() && !!warning()"
       [class.emr-time-input--readonly]="readOnly()"
       [class.emr-time-input--disabled]="disabled()"
-      [for]="resolvedId()"
     >
-      <span class="emr-field__label" [class.emr-sr-only]="labelHidden()">
+      <label class="emr-field__label" [class.emr-sr-only]="labelHidden()" [for]="resolvedId()">
         {{ label() }}
         @if (required()) {
           <span class="emr-field__required" aria-hidden="true">*</span>
         }
-      </span>
-      <div class="emr-time-input__wrap" [style.max-width.px]="fullWidth() ? null : containerMaxWidth()">
-        <input
-          #textInput
-          class="emr-time-input__field"
-          [id]="resolvedId()"
-          type="text"
-          inputmode="numeric"
-          autocomplete="off"
-          [value]="displayedText()"
-          [placeholder]="resolvedPlaceholder()"
-          [required]="required()"
-          [disabled]="disabled()"
-          [readOnly]="readOnly()"
-          [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
-          [attr.aria-required]="required() || null"
-          [attr.aria-readonly]="readOnly() || null"
-          [attr.aria-invalid]="isInvalid() ? 'true' : null"
-          [attr.aria-describedby]="timeDescribedBy()"
-          (focus)="onFocus()"
-          (input)="onInput($event)"
-          (blur)="onBlur($event)"
-          (keydown.enter)="onEnter()"
-        />
-        @if (showClear()) {
+      </label>
+      <div class="emr-temporal-anchor" [style.width.%]="fullWidth() ? 100 : null">
+        <div class="emr-time-input__wrap" [style.max-width.px]="fullWidth() ? null : containerMaxWidth()">
+          <input
+            #textInput
+            class="emr-time-input__field"
+            [id]="resolvedId()"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            [value]="displayedText()"
+            [placeholder]="resolvedPlaceholder()"
+            [required]="required()"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
+            [attr.aria-required]="required() || null"
+            [attr.aria-readonly]="readOnly() || null"
+            [attr.aria-invalid]="isInvalid() ? 'true' : null"
+            [attr.aria-describedby]="timeDescribedBy()"
+            (focus)="onFocus()"
+            (input)="onInput($event)"
+            (blur)="onBlur($event)"
+            (keydown.enter)="onEnter()"
+          />
+          @if (showClear()) {
+            <button
+              type="button"
+              class="emr-time-input__clear"
+              [attr.aria-label]="'Clear ' + (ariaLabel() || label() || 'time')"
+              (click)="onClear($event)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          }
           <button
+            #timeTrigger
             type="button"
-            class="emr-time-input__clear"
-            [attr.aria-label]="'Clear ' + (ariaLabel() || label() || 'time')"
-            (click)="onClear($event)"
+            class="emr-time-input__picker-btn"
+            [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()"
+            aria-label="Choose time"
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="timeOpen()"
+            [disabled]="disabled() || readOnly()"
+            (click)="toggleTimePicker()"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M18 6 6 18M6 6l12 12" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
             </svg>
           </button>
+        </div>
+        @if (timeOpen() && !disabled() && !readOnly()) {
+          <div class="emr-cal-popover" role="dialog" aria-label="Choose time">
+            <div class="emr-cal-header">
+              <span style="font-weight:700;font-size:var(--emr-text-md);">Choose time</span>
+              <span style="font-family:var(--emr-font-mono);font-weight:700;color:var(--emr-primary);font-size:var(--emr-text-md);">
+                {{ previewDisplay() }}
+              </span>
+            </div>
+            <div class="emr-time-cols">
+              <div class="emr-time-col">
+                <div class="emr-time-col-label">Hour</div>
+                <div class="emr-time-scroll">
+                  @for (h of hourChoices(); track h) {
+                    @let active = is12h() ? h === current12Hour() : h === pickHour();
+                    @let target24 = is12h() ? ((h % 12) + (currentPeriod() === 'PM' ? 12 : 0)) : h;
+                    <button
+                      type="button"
+                      class="emr-time-cell"
+                      [class.emr-time-cell--selected]="active"
+                      [attr.aria-label]="'Hour ' + pad2(h)"
+                      [attr.aria-pressed]="active"
+                      (click)="pickHour.set(target24)"
+                    >{{ pad2(h) }}</button>
+                  }
+                </div>
+              </div>
+              <div class="emr-time-col">
+                <div class="emr-time-col-label">Min</div>
+                <div class="emr-time-scroll">
+                  @for (m of minutes60; track m) {
+                    <button
+                      type="button"
+                      class="emr-time-cell"
+                      [class.emr-time-cell--selected]="m === pickMinute()"
+                      [attr.aria-label]="'Min ' + pad2(m)"
+                      [attr.aria-pressed]="m === pickMinute()"
+                      (click)="pickMinute.set(m)"
+                    >{{ pad2(m) }}</button>
+                  }
+                </div>
+              </div>
+              @if (precision() === 'second') {
+                <div class="emr-time-col">
+                  <div class="emr-time-col-label">Sec</div>
+                  <div class="emr-time-scroll">
+                    @for (s of minutes60; track s) {
+                      <button
+                        type="button"
+                        class="emr-time-cell"
+                        [class.emr-time-cell--selected]="s === pickSecond()"
+                        [attr.aria-label]="'Sec ' + pad2(s)"
+                        [attr.aria-pressed]="s === pickSecond()"
+                        (click)="pickSecond.set(s)"
+                      >{{ pad2(s) }}</button>
+                    }
+                  </div>
+                </div>
+              }
+              @if (is12h()) {
+                <div class="emr-time-col" style="min-width:64px;flex:0.75;">
+                  <div class="emr-time-col-label">AM/PM</div>
+                  <div class="emr-time-scroll">
+                    @for (mer of ['AM', 'PM']; track mer) {
+                      <button
+                        type="button"
+                        class="emr-time-cell"
+                        [class.emr-time-cell--selected]="mer === currentPeriod()"
+                        [attr.aria-pressed]="mer === currentPeriod()"
+                        (click)="pickHour.set((pickHour() % 12) + (mer === 'PM' ? 12 : 0))"
+                      >{{ mer }}</button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="emr-cal-footer">
+              <button
+                type="button"
+                class="emr-cal-footer-btn emr-cal-footer-btn--today"
+                aria-label="Select current time"
+                [disabled]="nowDisabled()"
+                (click)="commitPickedTime(nowUiTime24(precision()))"
+              >Now</button>
+              <div style="display:inline-flex;gap:6px;">
+                <button type="button" class="emr-cal-footer-btn" aria-label="Clear time" (click)="commitPickedTime(null)">Clear</button>
+                <button
+                  type="button"
+                  class="emr-cal-footer-btn emr-cal-footer-btn--today"
+                  aria-label="Done choosing time"
+                  [disabled]="confirmDisabled()"
+                  (click)="commitPickedTime(preview24())"
+                >Done</button>
+              </div>
+            </div>
+          </div>
         }
-        <span class="emr-time-input__picker-btn" [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
-          </svg>
-          @if (!disabled() && !readOnly()) {
-            <input
-              type="time"
-              class="emr-time-input__native-picker"
-              tabindex="-1"
-              aria-hidden="true"
-              [value]="value() ?? ''"
-              [attr.min]="min() ?? null"
-              [attr.max]="max() ?? null"
-              [attr.step]="resolvedStep()"
-              (change)="onNativePick($event)"
-            />
-          }
-        </span>
       </div>
       @if (!labelHidden() && error()) {
         <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">{{ error() }}</span>
@@ -658,12 +1018,16 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
       } @else if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
       }
-    </label>
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
 export class EmrTimeInputComponent extends EmrSignalFieldBase {
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly textInputRef = viewChild<ElementRef<HTMLInputElement>>('textInput');
+  private readonly timeTriggerRef = viewChild<ElementRef<HTMLButtonElement>>('timeTrigger');
+
   readonly ariaLabel = input<string | undefined>(undefined);
   readonly ariaDescribedBy = input<string | undefined>(undefined);
   readonly fullWidth = input<boolean, unknown>(false, { transform: booleanAttribute });
@@ -684,7 +1048,14 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
   readonly blurred = output<void>();
   readonly submitted = output<void>();
 
-  private readonly textInputRef = viewChild<ElementRef<HTMLInputElement>>('textInput');
+  protected readonly timeOpen = signal(false);
+  protected readonly pickHour = signal(9);
+  protected readonly pickMinute = signal(0);
+  protected readonly pickSecond = signal(0);
+  protected readonly minutes60 = EMR_UI_MINUTES_60;
+  protected readonly nowUiTime24 = nowUiTime24;
+  protected readonly pad2 = (n: number): string => String(n).padStart(2, '0');
+
   private draftText: string | null = null;
   private isFocused = false;
   private leftInvalid = false;
@@ -706,6 +1077,22 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
     const base = this.precision() === 'second' || this.hourCycle() === '12' ? 210 : 176;
     return this.clearable() ? base + 36 : base;
   });
+  protected readonly is12h = computed(() => this.hourCycle() === '12');
+  protected readonly hourChoices = computed(() => (this.is12h() ? EMR_UI_HOURS_12 : EMR_UI_HOURS_24));
+  protected readonly currentPeriod = computed<'AM' | 'PM'>(() => (this.pickHour() >= 12 ? 'PM' : 'AM'));
+  protected readonly current12Hour = computed(() => (this.pickHour() % 12 === 0 ? 12 : this.pickHour() % 12));
+  protected readonly preview24 = computed(() =>
+    formatUiTime24(this.pickHour(), this.pickMinute(), this.pickSecond(), this.precision()),
+  );
+  protected readonly previewDisplay = computed(() =>
+    formatTimeDisplay(this.preview24(), { precision: this.precision(), hourCycle: this.hourCycle() }),
+  );
+  protected readonly nowDisabled = computed(() =>
+    isTimeOutOfBounds(nowUiTime24(this.precision()), this.min(), this.max()),
+  );
+  protected readonly confirmDisabled = computed(() =>
+    isTimeOutOfBounds(this.preview24(), this.min(), this.max()),
+  );
   protected readonly timeDescribedBy = computed(() => {
     if (this.ariaDescribedBy()) return this.ariaDescribedBy()!;
     if (this.labelHidden()) return null;
@@ -715,6 +1102,56 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
     if (this.hint()) return `${id}-hint`;
     return null;
   });
+
+  protected onDocumentClick(event: Event): void {
+    if (!this.timeOpen()) return;
+    if (!this.hostEl.nativeElement.contains(event.target as Node)) {
+      this.timeOpen.set(false);
+    }
+  }
+
+  protected onDocumentEscape(event: Event): void {
+    if (!this.timeOpen()) return;
+    event.stopPropagation();
+    this.timeOpen.set(false);
+    this.timeTriggerRef()?.nativeElement.focus();
+  }
+
+  protected toggleTimePicker(): void {
+    if (this.disabled() || this.readOnly()) return;
+    if (this.timeOpen()) {
+      this.timeOpen.set(false);
+      return;
+    }
+    const p = extractUiTimeParts(this.value());
+    this.pickHour.set(p.hour);
+    this.pickMinute.set(p.minute);
+    this.pickSecond.set(p.second);
+    this.timeOpen.set(true);
+  }
+
+  protected commitPickedTime(next24: string | null): void {
+    if (this.disabled() || this.readOnly()) return;
+    if (next24 === null) {
+      this.timeOpen.set(false);
+      this.draftText = null;
+      this.leftInvalid = false;
+      const el = this.textInputRef()?.nativeElement;
+      if (el) this.syncElementNow(el, '');
+      this.valueChange.emit(null);
+      this.cleared.emit();
+      return;
+    }
+    if (isTimeOutOfBounds(next24, this.min(), this.max())) return;
+    this.timeOpen.set(false);
+    this.draftText = null;
+    this.leftInvalid = false;
+    const el = this.textInputRef()?.nativeElement;
+    if (el) {
+      this.syncElementNow(el, formatTimeDisplay(next24, { precision: this.precision(), hourCycle: this.hourCycle() }));
+    }
+    this.valueChange.emit(next24);
+  }
 
   protected onFocus(): void {
     if (this.disabled()) return;
@@ -801,9 +1238,13 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
 @Component({
   selector: 'emr-datetime-input',
   standalone: true,
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown.escape)': 'onDocumentEscape($event)',
+  },
   template: `
     <div
-      class="emr-field emr-datetime-input"
+      class="emr-field emr-datetime-input emr-temporal-anchor"
       [class.emr-time-input--sm]="size() === 'sm'"
       [class.emr-time-input--lg]="size() === 'lg'"
       [class.emr-time-input--invalid]="isInvalid()"
@@ -822,85 +1263,256 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
         }
       </span>
       <div class="emr-datetime-input__row">
-        <div class="emr-time-input__wrap emr-datetime-input__date-box">
-          <input
-            #dateInput
-            class="emr-time-input__field"
-            [id]="resolvedId() + '-date'"
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            [value]="displayedDate()"
-            [placeholder]="displayFormat()"
-            [required]="required()"
-            [disabled]="disabled()"
-            [readOnly]="readOnly()"
-            [attr.aria-label]="(ariaLabel() || label() || 'Date and time') + ', ' + dateLabel()"
-            [attr.aria-required]="required() || null"
-            [attr.aria-readonly]="readOnly() || null"
-            [attr.aria-invalid]="isInvalid() ? 'true' : null"
-            [attr.aria-describedby]="dtDescribedBy()"
-            (input)="onDateInput($event)"
-            (blur)="onDateBlur($event)"
-            (keydown.enter)="onEnter()"
-          />
-          <span class="emr-time-input__picker-btn" [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <path d="M16 2v4M8 2v4M3 10h18" />
-            </svg>
-            @if (!disabled() && !readOnly()) {
-              <input
-                type="date"
-                class="emr-time-input__native-picker"
-                tabindex="-1"
-                aria-hidden="true"
-                [value]="parts().date ?? ''"
-                (change)="onNativeDatePick($event)"
-              />
-            }
-          </span>
+        <div class="emr-temporal-anchor" style="flex:1 1 156px;max-width:196px;">
+          <div class="emr-time-input__wrap emr-datetime-input__date-box">
+            <input
+              #dateInput
+              class="emr-time-input__field"
+              [id]="resolvedId() + '-date'"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="displayedDate()"
+              [placeholder]="displayFormat()"
+              [required]="required()"
+              [disabled]="disabled()"
+              [readOnly]="readOnly()"
+              [attr.aria-label]="(ariaLabel() || label() || 'Date and time') + ', ' + dateLabel()"
+              [attr.aria-required]="required() || null"
+              [attr.aria-readonly]="readOnly() || null"
+              [attr.aria-invalid]="isInvalid() ? 'true' : null"
+              [attr.aria-describedby]="dtDescribedBy()"
+              (input)="onDateInput($event)"
+              (blur)="onDateBlur($event)"
+              (keydown.enter)="onEnter()"
+            />
+            <button
+              #dateTrigger
+              type="button"
+              class="emr-time-input__picker-btn"
+              [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()"
+              aria-label="Choose date"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="calOpen()"
+              [disabled]="disabled() || readOnly()"
+              (click)="toggleCalendar()"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M16 2v4M8 2v4M3 10h18" />
+              </svg>
+            </button>
+          </div>
+          @if (calOpen() && !disabled() && !readOnly()) {
+            <div class="emr-cal-popover" role="dialog" aria-label="Choose date">
+              <div class="emr-cal-header">
+                <button type="button" class="emr-cal-nav-btn" aria-label="Previous month" (click)="stepHeader(-1)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                </button>
+                <button type="button" class="emr-cal-title-btn" (click)="cycleSubView()">{{ calHeaderTitle() }}</button>
+                <button type="button" class="emr-cal-nav-btn" aria-label="Next month" (click)="stepHeader(1)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
+              </div>
+              @if (subView() === 'days') {
+                <div class="emr-cal-body" role="grid" [attr.aria-label]="calHeaderTitle()">
+                  <div class="emr-cal-weekdays" role="row">
+                    @for (wd of weekdays; track wd) {
+                      <span class="emr-cal-weekday" role="columnheader">{{ wd }}</span>
+                    }
+                  </div>
+                  @for (week of calWeeks(); track $index) {
+                    <div class="emr-cal-row" role="row">
+                      @for (cell of week; track cell.iso) {
+                        <span role="gridcell">
+                          <button
+                            type="button"
+                            class="emr-cal-day"
+                            [class.emr-cal-day--outside]="!cell.inMonth"
+                            [class.emr-cal-day--today]="cell.isToday"
+                            [class.emr-cal-day--selected]="cell.isSelected"
+                            [attr.aria-label]="cell.ariaLabel"
+                            [attr.aria-pressed]="cell.isSelected"
+                            [attr.aria-current]="cell.isToday ? 'date' : null"
+                            [disabled]="isDateIsoOutOfBounds(cell.iso)"
+                            (click)="pickDateIso(cell.iso)"
+                          >{{ cell.day }}</button>
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else if (subView() === 'months') {
+                <div class="emr-cal-tile-grid">
+                  @for (mName of monthShortNames; track mName; let idx = $index) {
+                    @let mNum = idx + 1;
+                    <button
+                      type="button"
+                      class="emr-cal-tile-btn"
+                      [class.emr-cal-tile-btn--selected]="mNum === viewMonth()"
+                      (click)="viewMonth.set(mNum); subView.set('days')"
+                    >{{ mName }}</button>
+                  }
+                </div>
+              } @else {
+                <div class="emr-cal-tile-grid">
+                  @for (yr of yearPage().years; track yr) {
+                    <button
+                      type="button"
+                      class="emr-cal-tile-btn"
+                      [class.emr-cal-tile-btn--selected]="yr === viewYear()"
+                      (click)="viewYear.set(yr); subView.set('months')"
+                    >{{ yr }}</button>
+                  }
+                </div>
+              }
+              <div class="emr-cal-footer">
+                <button
+                  type="button"
+                  class="emr-cal-footer-btn emr-cal-footer-btn--today"
+                  [disabled]="isDateIsoOutOfBounds(todayDayIso)"
+                  (click)="pickDateIso(todayDayIso)"
+                >Today</button>
+                <button type="button" class="emr-cal-footer-btn" (click)="pickDateIso(null)">Clear</button>
+              </div>
+            </div>
+          }
         </div>
 
-        <div class="emr-time-input__wrap emr-datetime-input__time-box" [style.max-width.px]="timeBoxMaxWidth()">
-          <input
-            #timeInput
-            class="emr-time-input__field"
-            [id]="resolvedId() + '-time'"
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            [value]="displayedTime()"
-            [placeholder]="resolvedTimePlaceholder()"
-            [required]="required()"
-            [disabled]="disabled()"
-            [readOnly]="readOnly()"
-            [attr.aria-label]="(ariaLabel() || label() || 'Date and time') + ', ' + timeLabel()"
-            [attr.aria-required]="required() || null"
-            [attr.aria-readonly]="readOnly() || null"
-            [attr.aria-invalid]="isInvalid() ? 'true' : null"
-            [attr.aria-describedby]="dtDescribedBy()"
-            (input)="onTimeInput($event)"
-            (blur)="onTimeBlur($event)"
-            (keydown.enter)="onEnter()"
-          />
-          <span class="emr-time-input__picker-btn" [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
-            </svg>
-            @if (!disabled() && !readOnly()) {
-              <input
-                type="time"
-                class="emr-time-input__native-picker"
-                tabindex="-1"
-                aria-hidden="true"
-                [value]="parts().time ?? ''"
-                [attr.step]="effectivePrecision() === 'second' ? 1 : 60"
-                (change)="onNativeTimePick($event)"
-              />
-            }
-          </span>
+        <div class="emr-temporal-anchor" [style.max-width.px]="timeBoxMaxWidth()" style="flex:1 1 140px;">
+          <div class="emr-time-input__wrap emr-datetime-input__time-box" [style.max-width.px]="timeBoxMaxWidth()">
+            <input
+              #timeInput
+              class="emr-time-input__field"
+              [id]="resolvedId() + '-time'"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="displayedTime()"
+              [placeholder]="resolvedTimePlaceholder()"
+              [required]="required()"
+              [disabled]="disabled()"
+              [readOnly]="readOnly()"
+              [attr.aria-label]="(ariaLabel() || label() || 'Date and time') + ', ' + timeLabel()"
+              [attr.aria-required]="required() || null"
+              [attr.aria-readonly]="readOnly() || null"
+              [attr.aria-invalid]="isInvalid() ? 'true' : null"
+              [attr.aria-describedby]="dtDescribedBy()"
+              (input)="onTimeInput($event)"
+              (blur)="onTimeBlur($event)"
+              (keydown.enter)="onEnter()"
+            />
+            <button
+              #timeTrigger
+              type="button"
+              class="emr-time-input__picker-btn"
+              [class.emr-time-input__picker-btn--disabled]="disabled() || readOnly()"
+              aria-label="Choose time"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="timeOpen()"
+              [disabled]="disabled() || readOnly()"
+              (click)="toggleTimePicker()"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+            </button>
+          </div>
+          @if (timeOpen() && !disabled() && !readOnly()) {
+            <div class="emr-cal-popover" role="dialog" aria-label="Choose time">
+              <div class="emr-cal-header">
+                <span style="font-weight:700;font-size:var(--emr-text-md);">Choose time</span>
+                <span style="font-family:var(--emr-font-mono);font-weight:700;color:var(--emr-primary);font-size:var(--emr-text-md);">
+                  {{ previewTimeDisplay() }}
+                </span>
+              </div>
+              <div class="emr-time-cols">
+                <div class="emr-time-col">
+                  <div class="emr-time-col-label">Hour</div>
+                  <div class="emr-time-scroll">
+                    @for (h of hourChoices(); track h) {
+                      @let active = is12h() ? h === current12Hour() : h === pickHour();
+                      @let target24 = is12h() ? ((h % 12) + (currentPeriod() === 'PM' ? 12 : 0)) : h;
+                      <button
+                        type="button"
+                        class="emr-time-cell"
+                        [class.emr-time-cell--selected]="active"
+                        [attr.aria-label]="'Hour ' + pad2(h)"
+                        [attr.aria-pressed]="active"
+                        (click)="pickHour.set(target24)"
+                      >{{ pad2(h) }}</button>
+                    }
+                  </div>
+                </div>
+                <div class="emr-time-col">
+                  <div class="emr-time-col-label">Min</div>
+                  <div class="emr-time-scroll">
+                    @for (m of minutes60; track m) {
+                      <button
+                        type="button"
+                        class="emr-time-cell"
+                        [class.emr-time-cell--selected]="m === pickMinute()"
+                        [attr.aria-label]="'Min ' + pad2(m)"
+                        [attr.aria-pressed]="m === pickMinute()"
+                        (click)="pickMinute.set(m)"
+                      >{{ pad2(m) }}</button>
+                    }
+                  </div>
+                </div>
+                @if (effectivePrecision() === 'second') {
+                  <div class="emr-time-col">
+                    <div class="emr-time-col-label">Sec</div>
+                    <div class="emr-time-scroll">
+                      @for (s of minutes60; track s) {
+                        <button
+                          type="button"
+                          class="emr-time-cell"
+                          [class.emr-time-cell--selected]="s === pickSecond()"
+                          [attr.aria-label]="'Sec ' + pad2(s)"
+                          [attr.aria-pressed]="s === pickSecond()"
+                          (click)="pickSecond.set(s)"
+                        >{{ pad2(s) }}</button>
+                      }
+                    </div>
+                  </div>
+                }
+                @if (is12h()) {
+                  <div class="emr-time-col" style="min-width:64px;flex:0.75;">
+                    <div class="emr-time-col-label">AM/PM</div>
+                    <div class="emr-time-scroll">
+                      @for (mer of ['AM', 'PM']; track mer) {
+                        <button
+                          type="button"
+                          class="emr-time-cell"
+                          [class.emr-time-cell--selected]="mer === currentPeriod()"
+                          [attr.aria-pressed]="mer === currentPeriod()"
+                          (click)="pickHour.set((pickHour() % 12) + (mer === 'PM' ? 12 : 0))"
+                        >{{ mer }}</button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="emr-cal-footer">
+                <button
+                  type="button"
+                  class="emr-cal-footer-btn emr-cal-footer-btn--today"
+                  aria-label="Select current date and time"
+                  (click)="commitNow()"
+                >Now</button>
+                <div style="display:inline-flex;gap:6px;">
+                  <button type="button" class="emr-cal-footer-btn" aria-label="Clear time" (click)="pickTime24(null)">Clear</button>
+                  <button
+                    type="button"
+                    class="emr-cal-footer-btn emr-cal-footer-btn--today"
+                    aria-label="Done choosing time"
+                    (click)="pickTime24(previewTime24())"
+                  >Done</button>
+                </div>
+              </div>
+            </div>
+          }
         </div>
 
         @if (showClear()) {
@@ -929,6 +1541,10 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
   encapsulation: ViewEncapsulation.None,
 })
 export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly dateTriggerRef = viewChild<ElementRef<HTMLButtonElement>>('dateTrigger');
+  private readonly timeTriggerRef = viewChild<ElementRef<HTMLButtonElement>>('timeTrigger');
+
   readonly ariaLabel = input<string | undefined>(undefined);
   readonly ariaDescribedBy = input<string | undefined>(undefined);
   readonly value = input<string | null>(null);
@@ -959,6 +1575,20 @@ export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
   private leftInvalid = false;
   private focusInside = false;
 
+  protected readonly calOpen = signal(false);
+  protected readonly timeOpen = signal(false);
+  protected readonly subView = signal<'days' | 'months' | 'years'>('days');
+  protected readonly viewYear = signal(todayUiCalendarParts().year);
+  protected readonly viewMonth = signal(todayUiCalendarParts().month);
+  protected readonly pickHour = signal(9);
+  protected readonly pickMinute = signal(0);
+  protected readonly pickSecond = signal(0);
+  protected readonly weekdays = EMR_UI_CALENDAR_WEEKDAYS;
+  protected readonly monthShortNames = EMR_UI_CALENDAR_MONTH_SHORT;
+  protected readonly minutes60 = EMR_UI_MINUTES_60;
+  protected readonly todayDayIso = todayUiCalendarParts().isoDay;
+  protected readonly pad2 = (n: number): string => String(n).padStart(2, '0');
+
   protected readonly effectivePrecision = computed<EmrDateTimePrecision>(
     () => this.precision() ?? this.timePrecision(),
   );
@@ -979,6 +1609,163 @@ export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
     Boolean(this.clearable() && this.value() && !this.readOnly() && !this.disabled()),
   );
   protected readonly isInvalid = computed(() => Boolean(this.invalid() || this.error() || this.leftInvalid));
+  protected readonly is12h = computed(() => this.hourCycle() === '12');
+  protected readonly hourChoices = computed(() => (this.is12h() ? EMR_UI_HOURS_12 : EMR_UI_HOURS_24));
+  protected readonly currentPeriod = computed<'AM' | 'PM'>(() => (this.pickHour() >= 12 ? 'PM' : 'AM'));
+  protected readonly current12Hour = computed(() => (this.pickHour() % 12 === 0 ? 12 : this.pickHour() % 12));
+  protected readonly previewTime24 = computed(() =>
+    formatUiTime24(this.pickHour(), this.pickMinute(), this.pickSecond(), this.effectivePrecision()),
+  );
+  protected readonly previewTimeDisplay = computed(() =>
+    formatTimeDisplay(this.previewTime24(), { precision: this.effectivePrecision(), hourCycle: this.hourCycle() }),
+  );
+  protected readonly yearPage = computed(() => buildUiYearPage(this.viewYear()));
+  protected readonly calHeaderTitle = computed(() => {
+    if (this.subView() === 'days') return `${EMR_UI_CALENDAR_MONTH_NAMES[this.viewMonth() - 1]} ${this.viewYear()}`;
+    if (this.subView() === 'months') return String(this.viewYear());
+    const yp = this.yearPage();
+    return `${yp.startYear} – ${yp.endYear}`;
+  });
+  protected readonly calWeeks = computed(() => {
+    if (this.subView() !== 'days') return [];
+    const cells = buildUiCalendarMonthGrid(this.viewYear(), this.viewMonth(), this.parts().date, this.todayDayIso);
+    const out: (typeof cells)[] = [];
+    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
+    return out;
+  });
+
+  protected isDateIsoOutOfBounds(iso: string): boolean {
+    const mn = this.min()?.slice(0, 10);
+    const mx = this.max()?.slice(0, 10);
+    if (mn && iso < mn) return true;
+    if (mx && iso > mx) return true;
+    return false;
+  }
+
+  protected onDocumentClick(event: Event): void {
+    if (!this.calOpen() && !this.timeOpen()) return;
+    if (!this.hostEl.nativeElement.contains(event.target as Node)) {
+      this.calOpen.set(false);
+      this.timeOpen.set(false);
+    }
+  }
+
+  protected onDocumentEscape(event: Event): void {
+    if (!this.calOpen() && !this.timeOpen()) return;
+    event.stopPropagation();
+    const wasCal = this.calOpen();
+    this.calOpen.set(false);
+    this.timeOpen.set(false);
+    if (wasCal) this.dateTriggerRef()?.nativeElement.focus();
+    else this.timeTriggerRef()?.nativeElement.focus();
+  }
+
+  protected toggleCalendar(): void {
+    if (this.disabled() || this.readOnly()) return;
+    this.timeOpen.set(false);
+    if (this.calOpen()) {
+      this.calOpen.set(false);
+      return;
+    }
+    const p = parseUiIsoParts(this.parts().date);
+    const t = todayUiCalendarParts();
+    this.viewYear.set(p?.year ?? t.year);
+    this.viewMonth.set(p?.month ?? t.month);
+    this.subView.set('days');
+    this.calOpen.set(true);
+  }
+
+  protected toggleTimePicker(): void {
+    if (this.disabled() || this.readOnly()) return;
+    this.calOpen.set(false);
+    if (this.timeOpen()) {
+      this.timeOpen.set(false);
+      return;
+    }
+    const tp = extractUiTimeParts(this.parts().time);
+    this.pickHour.set(tp.hour);
+    this.pickMinute.set(tp.minute);
+    this.pickSecond.set(tp.second);
+    this.timeOpen.set(true);
+  }
+
+  protected stepHeader(dir: -1 | 1): void {
+    if (this.subView() === 'days') {
+      const n = stepUiCalendarMonth(this.viewYear(), this.viewMonth(), dir);
+      this.viewYear.set(n.year);
+      this.viewMonth.set(n.month);
+    } else if (this.subView() === 'months') {
+      this.viewYear.set(Math.max(1, this.viewYear() + dir));
+    } else {
+      this.viewYear.set(Math.max(1, this.viewYear() + dir * 12));
+    }
+  }
+
+  protected cycleSubView(): void {
+    const cur = this.subView();
+    if (cur === 'days') this.subView.set('months');
+    else if (cur === 'months') this.subView.set('years');
+    else this.subView.set('days');
+  }
+
+  protected pickDateIso(iso: string | null): void {
+    if (this.readOnly() || this.disabled()) return;
+    this.calOpen.set(false);
+    if (iso === null) {
+      this.onClear(new Event('click'));
+      return;
+    }
+    if (this.isDateIsoOutOfBounds(iso)) return;
+    const dEl = this.dateInputRef()?.nativeElement;
+    if (dEl) this.syncElementNow(dEl, formatIsoDateDisplay(iso, this.displayFormat()));
+    this.dateDraft = formatIsoDateDisplay(iso, this.displayFormat());
+    const tRaw = this.parts().time ?? formatUiTime24(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds(), this.effectivePrecision());
+    const tEl = this.timeInputRef()?.nativeElement;
+    if (tEl && !this.parts().time) {
+      const disp = formatTimeDisplay(tRaw, { precision: this.effectivePrecision(), hourCycle: this.hourCycle() });
+      this.syncElementNow(tEl, disp);
+      this.timeDraft = disp;
+    }
+    this.tryCommit(iso, tRaw, false, false);
+  }
+
+  protected pickTime24(next24: string | null): void {
+    if (this.readOnly() || this.disabled()) return;
+    this.timeOpen.set(false);
+    if (next24 === null) {
+      this.onClear(new Event('click'));
+      return;
+    }
+    const dIso = this.parts().date ?? todayUiCalendarParts().isoDay;
+    const dEl = this.dateInputRef()?.nativeElement;
+    if (dEl && !this.parts().date) {
+      const dDisp = formatIsoDateDisplay(dIso, this.displayFormat());
+      this.syncElementNow(dEl, dDisp);
+      this.dateDraft = dDisp;
+    }
+    const tEl = this.timeInputRef()?.nativeElement;
+    const tDisp = formatTimeDisplay(next24, { precision: this.effectivePrecision(), hourCycle: this.hourCycle() });
+    if (tEl) this.syncElementNow(tEl, tDisp);
+    this.timeDraft = tDisp;
+    this.tryCommit(dIso, next24, false, false);
+  }
+
+  protected commitNow(): void {
+    if (this.readOnly() || this.disabled()) return;
+    this.timeOpen.set(false);
+    this.calOpen.set(false);
+    const dIso = todayUiCalendarParts().isoDay;
+    const tRaw = nowUiTime24(this.effectivePrecision());
+    const dEl = this.dateInputRef()?.nativeElement;
+    const tEl = this.timeInputRef()?.nativeElement;
+    const dDisp = formatIsoDateDisplay(dIso, this.displayFormat());
+    const tDisp = formatTimeDisplay(tRaw, { precision: this.effectivePrecision(), hourCycle: this.hourCycle() });
+    if (dEl) this.syncElementNow(dEl, dDisp);
+    if (tEl) this.syncElementNow(tEl, tDisp);
+    this.dateDraft = dDisp;
+    this.timeDraft = tDisp;
+    this.tryCommit(dIso, tRaw, false, false);
+  }
   protected readonly dtDescribedBy = computed(() => {
     if (this.ariaDescribedBy()) return this.ariaDescribedBy()!;
     if (this.labelHidden()) return null;
@@ -1106,43 +1893,6 @@ export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
         formatTimeDisplay(tp.value, { precision: this.effectivePrecision(), hourCycle: this.hourCycle() }),
       );
     }
-  }
-
-  protected onNativeDatePick(event: Event): void {
-    if (this.readOnly() || this.disabled()) return;
-    const picked = emptyToNull((event.target as HTMLInputElement).value);
-    if (!picked) {
-      this.dateDraft = '';
-      this.tryCommit(null, null, true, true);
-      return;
-    }
-    this.dateDraft = null;
-    const el = this.dateInputRef()?.nativeElement;
-    if (el) this.syncElementNow(el, formatIsoDateDisplay(picked, this.displayFormat()));
-    const timeVal = this.parts().time ?? (this.effectivePrecision() === 'second' ? '09:00:00' : '09:00');
-    this.tryCommit(picked, timeVal, false, false);
-  }
-
-  protected onNativeTimePick(event: Event): void {
-    if (this.readOnly() || this.disabled()) return;
-    const picked = emptyToNull((event.target as HTMLInputElement).value);
-    if (!picked) return;
-    this.timeDraft = null;
-    const normalizedTime =
-      this.effectivePrecision() === 'second' && picked.length === 5
-        ? `${picked}:00`
-        : this.effectivePrecision() === 'minute'
-          ? picked.slice(0, 5)
-          : picked;
-    const el = this.timeInputRef()?.nativeElement;
-    if (el) {
-      this.syncElementNow(
-        el,
-        formatTimeDisplay(normalizedTime, { precision: this.effectivePrecision(), hourCycle: this.hourCycle() }),
-      );
-    }
-    const dateVal = this.parts().date;
-    if (dateVal) this.tryCommit(dateVal, normalizedTime, false, false);
   }
 
   protected onEnter(): void {
@@ -2136,6 +2886,7 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
 @Component({
   selector: 'emr-paired-input',
   standalone: true,
+  imports: [EmrSelectComponent],
   template: `
     <div class="emr-field">
       <label
@@ -2148,40 +2899,79 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
           <span class="emr-field__required" aria-hidden="true">*</span>
         }
       </label>
-      <div class="emr-paired-control">
+      <div
+        class="emr-paired-control"
+        [class.emr-paired-control--select]="effectiveFirstMode() === 'select' || effectiveSecondMode() === 'select'"
+      >
         <span class="emr-paired-control__prefix" aria-hidden="true">{{ firstLabel() }}</span>
-        <input
-          class="emr-control"
-          [id]="resolvedId() + '-first'"
-          [attr.inputmode]="effectiveFirstMode() === 'integer' ? 'numeric' : effectiveFirstMode() === 'decimal' ? 'decimal' : null"
-          [value]="firstValue() ?? ''"
-          [placeholder]="firstPlaceholder() || placeholder()"
-          [required]="firstRequired() ?? required()"
-          [disabled]="disabled()"
-          [readOnly]="readOnly()"
-          [attr.aria-label]="(label() ? label() + ', ' : '') + firstLabel()"
-          [attr.aria-invalid]="!!(firstError() || error()) || null"
-          [attr.aria-describedby]="describedBy()"
-          (input)="onFirstInput($event)"
-          (blur)="onFirstBlur($event)"
-        />
+        @if (effectiveFirstMode() === 'select') {
+          <emr-select
+            [controlId]="resolvedId() + '-first'"
+            [label]="(label() ? label() + ', ' : '') + firstLabel()"
+            [labelHidden]="true"
+            [options]="effectiveFirstOptions()"
+            [value]="firstValue()"
+            [placeholder]="firstPlaceholder() || placeholder() || 'Select…'"
+            [required]="firstRequired() ?? required()"
+            [invalid]="!!(firstError() || error())"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [ariaDescribedBy]="describedBy()"
+            (valueChange)="firstValueChange.emit(typeof $event === 'string' ? $event : null)"
+            (blurred)="blurred.emit()"
+          />
+        } @else {
+          <input
+            class="emr-control"
+            [id]="resolvedId() + '-first'"
+            [attr.inputmode]="effectiveFirstMode() === 'integer' ? 'numeric' : effectiveFirstMode() === 'decimal' ? 'decimal' : null"
+            [value]="firstValue() ?? ''"
+            [placeholder]="firstPlaceholder() || placeholder()"
+            [required]="firstRequired() ?? required()"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [attr.aria-label]="(label() ? label() + ', ' : '') + firstLabel()"
+            [attr.aria-invalid]="!!(firstError() || error()) || null"
+            [attr.aria-describedby]="describedBy()"
+            (input)="onFirstInput($event)"
+            (blur)="onFirstBlur($event)"
+          />
+        }
         <span class="emr-field-row__separator" aria-hidden="true">{{ separator() }}</span>
         <span class="emr-paired-control__prefix" aria-hidden="true">{{ secondLabel() }}</span>
-        <input
-          class="emr-control"
-          [id]="resolvedId() + '-second'"
-          [attr.inputmode]="effectiveSecondMode() === 'integer' ? 'numeric' : effectiveSecondMode() === 'decimal' ? 'decimal' : null"
-          [value]="secondValue() ?? ''"
-          [placeholder]="secondPlaceholder() || placeholder()"
-          [required]="secondRequired() ?? required()"
-          [disabled]="disabled()"
-          [readOnly]="readOnly()"
-          [attr.aria-label]="(label() ? label() + ', ' : '') + secondLabel()"
-          [attr.aria-invalid]="!!(secondError() || error()) || null"
-          [attr.aria-describedby]="describedBy()"
-          (input)="onSecondInput($event)"
-          (blur)="onSecondBlur($event)"
-        />
+        @if (effectiveSecondMode() === 'select') {
+          <emr-select
+            [controlId]="resolvedId() + '-second'"
+            [label]="(label() ? label() + ', ' : '') + secondLabel()"
+            [labelHidden]="true"
+            [options]="effectiveSecondOptions()"
+            [value]="secondValue()"
+            [placeholder]="secondPlaceholder() || placeholder() || 'Select…'"
+            [required]="secondRequired() ?? required()"
+            [invalid]="!!(secondError() || error())"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [ariaDescribedBy]="describedBy()"
+            (valueChange)="secondValueChange.emit(typeof $event === 'string' ? $event : null)"
+            (blurred)="blurred.emit()"
+          />
+        } @else {
+          <input
+            class="emr-control"
+            [id]="resolvedId() + '-second'"
+            [attr.inputmode]="effectiveSecondMode() === 'integer' ? 'numeric' : effectiveSecondMode() === 'decimal' ? 'decimal' : null"
+            [value]="secondValue() ?? ''"
+            [placeholder]="secondPlaceholder() || placeholder()"
+            [required]="secondRequired() ?? required()"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [attr.aria-label]="(label() ? label() + ', ' : '') + secondLabel()"
+            [attr.aria-invalid]="!!(secondError() || error()) || null"
+            [attr.aria-describedby]="describedBy()"
+            (input)="onSecondInput($event)"
+            (blur)="onSecondBlur($event)"
+          />
+        }
       </div>
       @if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
@@ -2201,9 +2991,12 @@ export class EmrPairedInputComponent extends EmrSignalFieldBase {
   readonly secondValue = input<string | null>(null);
   readonly firstPlaceholder = input('');
   readonly secondPlaceholder = input('');
-  readonly inputType = input<'text' | 'integer' | 'decimal'>('text');
-  readonly firstInputType = input<'text' | 'integer' | 'decimal'>();
-  readonly secondInputType = input<'text' | 'integer' | 'decimal'>();
+  readonly inputType = input<'text' | 'integer' | 'decimal' | 'select'>('text');
+  readonly firstInputType = input<'text' | 'integer' | 'decimal' | 'select'>();
+  readonly secondInputType = input<'text' | 'integer' | 'decimal' | 'select'>();
+  readonly options = input<readonly EmrOption[]>([]);
+  readonly firstOptions = input<readonly EmrOption[]>([]);
+  readonly secondOptions = input<readonly EmrOption[]>([]);
   readonly min = input<number>();
   readonly max = input<number>();
   readonly firstMin = input<number>();
@@ -2221,6 +3014,12 @@ export class EmrPairedInputComponent extends EmrSignalFieldBase {
 
   protected readonly effectiveFirstMode = computed(() => this.firstInputType() ?? this.inputType());
   protected readonly effectiveSecondMode = computed(() => this.secondInputType() ?? this.inputType());
+  protected readonly effectiveFirstOptions = computed(() =>
+    this.firstOptions().length ? this.firstOptions() : this.options(),
+  );
+  protected readonly effectiveSecondOptions = computed(() =>
+    this.secondOptions().length ? this.secondOptions() : this.options(),
+  );
   protected readonly resolvedError = computed(() =>
     [this.error(), this.firstError(), this.secondError()].filter(Boolean).join(' · '),
   );

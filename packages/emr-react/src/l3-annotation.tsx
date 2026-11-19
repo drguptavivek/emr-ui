@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ComponentRef } from 'react';
 import {
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -19,29 +20,41 @@ import type {
   ClinicalFieldDefinition,
   ClinicalFieldState,
   ClinicalFormIntent,
+  EmrImageTemplatePickerLabels as ControllerImageTemplatePickerLabels,
   ImageTemplateOption,
   ImageTemplatePickerIntent,
   ImageTemplatePickerViewModel,
   RepeatableGroupDefinition,
   RepeatableItemState,
 } from '@drguptavivek/emr-controller';
+import { SvgIcon } from './icons';
 import { ThemedInput } from './inputs-core';
 import { clampedTarget } from './l1-interactive.logic';
 import { webProps, type WebKeyEvent } from './l1-interactive-shared';
 import { useEmrLabels } from './labels';
-import { EmrButton } from './primitives';
+import { EmrBadgeView, EmrButton } from './primitives';
 import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';
 import { EmrTypedField, type EmrCustomRenderers } from './typed-field';
 import { isFieldShown } from './typed-field.logic';
 import {
   FAVOURITES_GROUP_ID,
   annotationFullSummary,
-  annotationLayerGlyph,
+  annotationLayerIconName,
   annotationLayerToolName,
   annotationListTabStopId,
   annotationPrimaryLabel,
   annotationSecondaryLabel,
+  canAddRepeatableItem,
   canEditTemplateFavourites,
+  canMoveAnnotationLayer,
+  canOpenToolbarPen,
+  canRemoveAnnotationLayer,
+  canRemoveRepeatableItem,
+  canSelectImageTemplate,
+  canToggleAnnotationLayerLock,
+  canToggleAnnotationLayerVisibility,
+  canToggleTemplateFavourite,
+  canTriggerToolbarIntent,
   filterImageTemplates,
   hasToolbarPen,
   isRepeatableStacked,
@@ -50,8 +63,18 @@ import {
   repeatableControlId,
   repeatableFieldSpanPercent,
   repeatableFocusFieldId,
+  repeatableHeadingId,
+  repeatableMaxItemsHint,
+  resolveAnnotationListId,
+  resolveAnnotationListRowId,
+  resolveAnnotationToolbarPanelId,
+  resolveImageTemplatePickerHeadingId,
+  resolveImageTemplatePickerId,
+  resolveImageTemplateSearchId,
+  resolveImageTemplateSectionId,
   showFavouritePinHint,
   showFavouritesFilterChip,
+  templateGridColumns,
   templateGridNextIndex,
   templateTabStopId,
   templateTileLabel,
@@ -59,9 +82,14 @@ import {
   toolbarEnabledKeys,
   toolbarPenLabel,
   toolbarRovingNextKey,
-  toolbarToolGlyph,
+  toolbarToolIconName,
   toolbarToolTitle,
 } from './l3-annotation.logic';
+
+const RESOLVED_MONO_FONT = (webMono: string): string | undefined =>
+  Platform.OS === 'web'
+    ? webMono
+    : Platform.select({ ios: 'Menlo', android: 'monospace', default: webMono });
 
 export {
   FAVOURITES_GROUP_ID,
@@ -69,7 +97,7 @@ export {
   partitionImageTemplates,
 };
 
-type PressState = PressableStateCallbackType & { focused?: boolean };
+type PressState = PressableStateCallbackType & { focused?: boolean; hovered?: boolean };
 type FocusableHandle = { focus(): void } | null;
 
 // ---------------------------------------------------------------------------
@@ -81,10 +109,21 @@ export type ClinicalRepeatableBlockDefinition = RepeatableGroupDefinition;
 export interface EmrRepeatableGroupProps {
   definition: ClinicalRepeatableBlockDefinition;
   model?: readonly RepeatableItemState[];
+  headingId?: string;
   readOnly?: boolean;
   idPrefix?: string;
+  emptyMessage?: string;
+  error?: string;
+  warning?: string;
   customRenderers?: EmrCustomRenderers;
   onIntent: (intent: ClinicalFormIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+}
+
+function containsDomNode(container: unknown, target: unknown): boolean {
+  const el = container as { contains?: (n: unknown) => boolean } | null | undefined;
+  return Boolean(el && typeof el.contains === 'function' && el.contains(target));
 }
 
 /**
@@ -94,21 +133,50 @@ export interface EmrRepeatableGroupProps {
 export function EmrRepeatableGroup({
   definition,
   model = [],
+  headingId,
   readOnly = false,
   idPrefix = '',
+  emptyMessage,
+  error,
+  warning,
   customRenderers,
   onIntent,
+  onFocus,
+  onBlur,
 }: EmrRepeatableGroupProps) {
   const t = useEmrTheme();
   const labels = useEmrLabels();
   const [width, setWidth] = useState(0);
+  const containerRef = useRef<ComponentRef<typeof View> | null>(null);
+  const focusWithinRef = useRef(false);
   const stacked = isRepeatableStacked(width);
-  const headingId = `${idPrefix ? idPrefix + '-' : ''}${definition.id}-heading`;
+  const resolvedHeadingId = repeatableHeadingId(definition.id, idPrefix, headingId);
+  const resolvedEmptyMessage = emptyMessage ?? definition.emptyMessage ?? labels.noEntries;
+  const addAllowed = canAddRepeatableItem(definition, model, readOnly);
+  const maxHint = repeatableMaxItemsHint(definition, model, readOnly);
+  const addText = definition.addLabel ?? labels.add;
+  const printHideProps = Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : null;
+
+  const handleFocusIn = () => {
+    if (!focusWithinRef.current) {
+      focusWithinRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleFocusOut = (ev: { relatedTarget?: unknown }) => {
+    if (ev.relatedTarget && containsDomNode(containerRef.current, ev.relatedTarget)) return;
+    if (focusWithinRef.current) {
+      focusWithinRef.current = false;
+      onBlur?.();
+    }
+  };
 
   const renderField = (item: RepeatableItemState, field: ClinicalFieldDefinition) => {
     const state: ClinicalFieldState | undefined = item.fields[field.id];
     if (!isFieldShown(state)) return null;
     const itemReadOnly = !!(readOnly || item.readOnly);
+    const fieldLocked = itemReadOnly || !!state?.readOnly || !!state?.disabled;
     return (
       <View
         key={field.id}
@@ -126,24 +194,28 @@ export function EmrRepeatableGroup({
               fieldId: repeatableFocusFieldId(definition.id, item.id, field.id),
             })
           }
-          onValueChange={value =>
-            onIntent({
-              type: 'repeatItemEditRequested',
-              groupId: definition.id,
-              itemId: item.id,
-              fieldId: field.id,
-              value,
-            })
-          }
-          onStatusChange={status =>
-            onIntent({
-              type: 'repeatItemStatusEditRequested',
-              groupId: definition.id,
-              itemId: item.id,
-              fieldId: field.id,
-              status,
-            })
-          }
+          onValueChange={value => {
+            if (!fieldLocked) {
+              onIntent({
+                type: 'repeatItemEditRequested',
+                groupId: definition.id,
+                itemId: item.id,
+                fieldId: field.id,
+                value,
+              });
+            }
+          }}
+          onStatusChange={status => {
+            if (!fieldLocked) {
+              onIntent({
+                type: 'repeatItemStatusEditRequested',
+                groupId: definition.id,
+                itemId: item.id,
+                fieldId: field.id,
+                status,
+              });
+            }
+          }}
         />
       </View>
     );
@@ -151,17 +223,29 @@ export function EmrRepeatableGroup({
 
   return (
     <View
+      ref={containerRef}
       role="region"
-      aria-labelledby={headingId}
+      aria-labelledby={resolvedHeadingId}
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
-      style={[styles.repeatable, { borderColor: t.border, backgroundColor: t.surfaceSlate }]}
+      style={[
+        styles.repeatable,
+        {
+          borderColor: error ? t.danger : warning ? t.warning : t.border,
+          borderStyle: readOnly ? 'dashed' : 'solid',
+          backgroundColor: t.surfaceSlate,
+        },
+      ]}
+      {...webProps({
+        onFocus: handleFocusIn,
+        onBlur: handleFocusOut,
+      })}
     >
       <View style={styles.repeatHeading}>
-        <View style={styles.flex}>
+        <View style={styles.repeatHeadingText}>
           <Text
             role="heading"
             aria-level={3}
-            nativeID={headingId}
+            nativeID={resolvedHeadingId}
             style={{
               color: t.text,
               fontSize: t.textLg,
@@ -177,14 +261,75 @@ export function EmrRepeatableGroup({
             </Text>
           ) : null}
         </View>
-        <EmrButton
-          variant="outline"
-          small
-          label={definition.addLabel ?? labels.add}
-          disabled={readOnly}
-          onPress={() => onIntent({ type: 'repeatItemAddRequested', groupId: definition.id })}
-        />
+        {addAllowed ? (
+          <View {...printHideProps}>
+            <EmrButton
+              variant="outline"
+              small
+              accessibilityLabel={addText}
+              onPress={() => {
+                if (canAddRepeatableItem(definition, model, readOnly)) {
+                  onIntent({ type: 'repeatItemAddRequested', groupId: definition.id });
+                }
+              }}
+            >
+              <SvgIcon name="plus" size={14} color={t.primary} />
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: t.primary,
+                  fontSize: t.textSm,
+                  fontWeight: fontWeight(t.weightBold),
+                  fontFamily: fontFamily(t),
+                }}
+              >
+                {addText}
+              </Text>
+            </EmrButton>
+          </View>
+        ) : maxHint ? (
+          <Text
+            role="status"
+            style={{
+              color: t.textMuted,
+              fontSize: t.textXs,
+              fontWeight: fontWeight(600),
+              fontFamily: fontFamily(t),
+              paddingTop: 6,
+            }}
+          >
+            {maxHint}
+          </Text>
+        ) : null}
       </View>
+      {error ? (
+        <Text
+          role="alert"
+          style={{
+            color: t.danger,
+            fontSize: t.textXs,
+            fontWeight: fontWeight(600),
+            fontFamily: fontFamily(t),
+            marginTop: 8,
+          }}
+        >
+          {error}
+        </Text>
+      ) : null}
+      {warning ? (
+        <Text
+          role="status"
+          style={{
+            color: t.warning,
+            fontSize: t.textXs,
+            fontWeight: fontWeight(600),
+            fontFamily: fontFamily(t),
+            marginTop: 8,
+          }}
+        >
+          {warning}
+        </Text>
+      ) : null}
       {model.length === 0 ? (
         <Text
           style={{
@@ -194,42 +339,107 @@ export function EmrRepeatableGroup({
             marginTop: 12,
           }}
         >
-          {labels.noEntries}
+          {resolvedEmptyMessage}
         </Text>
       ) : (
         model.map((item, index) => {
           const itemLabel = item.label ?? labels.entry(index + 1);
+          const itemLocked = !!(readOnly || item.readOnly);
+          const removeAllowed = canRemoveRepeatableItem(definition, model, item, readOnly);
           return (
             <View
               key={item.id}
-              style={[styles.repeatItem, { borderColor: t.border, backgroundColor: t.surface }]}
+              style={[
+                styles.repeatItem,
+                {
+                  borderColor: item.error ? t.danger : item.warning ? t.warning : t.border,
+                  borderStyle: itemLocked ? 'dashed' : 'solid',
+                  backgroundColor: t.surface,
+                },
+                Platform.OS === 'web'
+                  ? ({ breakInside: 'avoid', pageBreakInside: 'avoid' } as object)
+                  : null,
+              ]}
             >
               <View style={styles.repeatHeading}>
+                <View style={styles.repeatItemTitle}>
+                  <Text
+                    style={{
+                      color: t.text,
+                      fontSize: t.textMd,
+                      fontWeight: fontWeight(600),
+                      fontFamily: fontFamily(t),
+                    }}
+                  >
+                    {itemLabel}
+                  </Text>
+                  {item.readOnly && !readOnly ? (
+                    <EmrBadgeView
+                      badge={{ label: 'Read-only', tone: 'neutral', size: 'sm', icon: 'lock' }}
+                    />
+                  ) : null}
+                  {item.badges?.map((b, bi) => (
+                    <EmrBadgeView key={bi} badge={b} />
+                  ))}
+                </View>
+                {removeAllowed ? (
+                  <View {...printHideProps}>
+                    <EmrButton
+                      variant="ghost"
+                      small
+                      accessibilityLabel={`${labels.remove} ${itemLabel}`}
+                      onPress={() => {
+                        if (canRemoveRepeatableItem(definition, model, item, readOnly)) {
+                          onIntent({
+                            type: 'repeatItemRemoveRequested',
+                            groupId: definition.id,
+                            itemId: item.id,
+                          });
+                        }
+                      }}
+                    >
+                      <SvgIcon name="trash" size={14} color={t.text} />
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          color: t.text,
+                          fontSize: t.textSm,
+                          fontWeight: fontWeight(t.weightBold),
+                          fontFamily: fontFamily(t),
+                        }}
+                      >
+                        {labels.remove}
+                      </Text>
+                    </EmrButton>
+                  </View>
+                ) : null}
+              </View>
+              {item.error ? (
                 <Text
+                  role="alert"
                   style={{
-                    color: t.text,
-                    fontSize: t.textMd,
+                    color: t.danger,
+                    fontSize: t.textXs,
                     fontWeight: fontWeight(600),
                     fontFamily: fontFamily(t),
                   }}
                 >
-                  {itemLabel}
+                  {item.error}
                 </Text>
-                <EmrButton
-                  variant="ghost"
-                  small
-                  label={labels.remove}
-                  accessibilityLabel={`${labels.remove} ${itemLabel}`}
-                  disabled={readOnly || item.readOnly}
-                  onPress={() =>
-                    onIntent({
-                      type: 'repeatItemRemoveRequested',
-                      groupId: definition.id,
-                      itemId: item.id,
-                    })
-                  }
-                />
-              </View>
+              ) : null}
+              {item.warning ? (
+                <Text
+                  role="status"
+                  style={{
+                    color: t.warning,
+                    fontSize: t.textXs,
+                    fontWeight: fontWeight(600),
+                    fontFamily: fontFamily(t),
+                  }}
+                >
+                  {item.warning}
+                </Text>
+              ) : null}
               <View style={styles.repeatGrid}>
                 {definition.fields.map(field => renderField(item, field))}
               </View>
@@ -272,8 +482,11 @@ export type EmrAnnotationToolbarLabels = typeof TOOLBAR_DEFAULTS;
 export interface EmrAnnotationToolbarProps {
   model: AnnotationToolbarViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof TOOLBAR_DEFAULTS>;
   onIntent: (intent: AnnotationToolbarIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 /**
@@ -283,24 +496,71 @@ export interface EmrAnnotationToolbarProps {
 export function EmrAnnotationToolbar({
   model,
   headingId,
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: EmrAnnotationToolbarProps) {
   const t = useEmrTheme();
   const l = { ...TOOLBAR_DEFAULTS, ...labels };
-  const panelId = useId();
+  const reactPanelId = useId();
+  const panelId = resolveAnnotationToolbarPanelId(idPrefix, headingId, `${reactPanelId}-pen`);
   const [open, setOpen] = useState(false);
   const [focusedKey, setFocusedKey] = useState<string | null>(null);
+  const containerRef = useRef<ComponentRef<typeof View> | null>(null);
+  const focusWithinRef = useRef(false);
   const buttonRefs = useRef<Record<string, FocusableHandle>>({});
 
   const locked = !!model.readOnly;
   const hasPen = hasToolbarPen(model);
   const selectedColour = model.colours.find(c => c.id === model.selectedColourId);
   const selectedWidth = model.widths.find(w => w.id === model.selectedWidthId);
+  const btnMinSize = Math.max(44, t.controlHeight);
+  const monoFont = RESOLVED_MONO_FONT(t.fontMono);
+  const printHideProps = Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : null;
 
   useEffect(() => {
-    if (locked) setOpen(false);
-  }, [locked]);
+    if (locked || !hasPen) setOpen(false);
+  }, [locked, hasPen]);
+
+  useEffect(() => {
+    if (!open || Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const onDocPointerDown = (ev: Event) => {
+      if (!containsDomNode(containerRef.current, ev.target)) {
+        setOpen(false);
+      }
+    };
+    const onDocKeyDown = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        setOpen(false);
+        buttonRefs.current['pen']?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', onDocPointerDown, true);
+    document.addEventListener('keydown', onDocKeyDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', onDocPointerDown, true);
+      document.removeEventListener('keydown', onDocKeyDown, true);
+    };
+  }, [open]);
+
+  const handleContainerFocusIn = () => {
+    if (!focusWithinRef.current) {
+      focusWithinRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleContainerFocusOut = (ev: { relatedTarget?: unknown }) => {
+    if (ev.relatedTarget && containsDomNode(containerRef.current, ev.relatedTarget)) return;
+    if (open) setOpen(false);
+    if (focusWithinRef.current) {
+      focusWithinRef.current = false;
+      onBlur?.();
+    }
+  };
 
   const enabledKeys = useMemo(() => toolbarEnabledKeys(model), [model]);
   const activeKey = toolbarActiveTabStop(model, focusedKey);
@@ -319,7 +579,13 @@ export function EmrAnnotationToolbar({
     buttonRefs.current[next]?.focus();
   };
 
+  const emitToolbarIntent = (intent: AnnotationToolbarIntent) => {
+    if (!canTriggerToolbarIntent(model, intent)) return;
+    onIntent(intent);
+  };
+
   const pickPenOption = (intent: AnnotationToolbarIntent) => {
+    if (!canTriggerToolbarIntent(model, intent)) return;
     onIntent(intent);
     setOpen(false);
     buttonRefs.current['pen']?.focus();
@@ -331,6 +597,7 @@ export function EmrAnnotationToolbar({
     title,
     pressed,
     expanded,
+    ariaControls,
     disabled,
     onPress,
     children,
@@ -340,6 +607,7 @@ export function EmrAnnotationToolbar({
     title?: string;
     pressed?: boolean;
     expanded?: boolean;
+    ariaControls?: string;
     disabled?: boolean;
     onPress: () => void;
     children: React.ReactNode;
@@ -357,54 +625,64 @@ export function EmrAnnotationToolbar({
         aria-expanded={expanded}
         aria-disabled={disabled}
         disabled={disabled}
-        onPress={onPress}
+        onPress={() => {
+          if (!disabled) onPress();
+        }}
         onFocus={() => setFocusedKey(btnKey)}
         {...webProps({
           title: title ?? ariaLabel,
+          'aria-controls': ariaControls,
+          'aria-disabled': disabled ? 'true' : undefined,
           tabIndex: btnKey === activeKey ? 0 : -1,
           onKeyDown: (e: WebKeyEvent) => onButtonKey(e, btnKey),
         })}
         style={(st: PressState) => [
           styles.tbBtn,
-          { minWidth: t.controlHeight, height: t.controlHeight },
+          { minWidth: btnMinSize, minHeight: btnMinSize, height: btnMinSize },
           focusRing(t, st.focused),
           disabled ? styles.disabled : null,
         ]}
       >
-        <View
-          style={[
-            styles.tbFace,
-            {
-              backgroundColor: active ? t.primarySoft : 'transparent',
-              borderColor: active ? t.primary : 'transparent',
-            },
-          ]}
-        >
-          {children}
-        </View>
-        {active ? <View style={[styles.tbActiveBar, { backgroundColor: t.primary }]} /> : null}
+        {({ hovered }: PressState) => (
+          <>
+            <View
+              style={[
+                styles.tbFace,
+                {
+                  backgroundColor: active
+                    ? t.primarySoft
+                    : hovered && !disabled
+                      ? t.surfaceSoft
+                      : 'transparent',
+                  borderColor: active
+                    ? t.primary
+                    : hovered && !disabled
+                      ? t.border
+                      : 'transparent',
+                },
+              ]}
+            >
+              {children}
+            </View>
+            {active ? <View style={[styles.tbActiveBar, { backgroundColor: t.primary }]} /> : null}
+          </>
+        )}
       </Pressable>
     );
   };
 
-  const glyphText = (glyph: string, active?: boolean, mono?: boolean) => (
-    <Text
-      aria-hidden
-      style={{
-        color: active ? t.primaryContrast : t.text,
-        fontSize: mono ? t.textXs : t.textMd,
-        fontWeight: fontWeight(t.weightBold),
-        fontFamily: mono ? t.fontMono : fontFamily(t),
-      }}
-    >
-      {glyph}
-    </Text>
-  );
-
   const penSummary = toolbarPenLabel(model, l.penFallback, l.penPrefix);
 
   return (
-    <View style={styles.tbWrap}>
+    <View
+      ref={containerRef}
+      style={styles.tbWrap}
+      {...printHideProps}
+      {...webProps({
+        onFocus: handleContainerFocusIn,
+        onBlur: handleContainerFocusOut,
+      })}
+    >
       <View
         role="toolbar"
         aria-orientation="horizontal"
@@ -416,14 +694,30 @@ export function EmrAnnotationToolbar({
           <View role="group" aria-label={l.toolsGroup} style={styles.tbGroup}>
             {model.tools.map(tool => {
               const selected = tool.id === model.selectedToolId;
+              const iconName = toolbarToolIconName(tool);
+              const iconColor = selected ? t.primaryContrast : t.text;
               return toolbarBtn({
                 btnKey: `t:${tool.id}`,
                 ariaLabel: tool.label,
                 title: toolbarToolTitle(tool),
                 pressed: selected,
                 disabled: locked || !!tool.disabled,
-                onPress: () => onIntent({ type: 'toolSelected', toolId: tool.id }),
-                children: glyphText(toolbarToolGlyph(tool), selected),
+                onPress: () => emitToolbarIntent({ type: 'toolSelected', toolId: tool.id }),
+                children: iconName ? (
+                  <SvgIcon name={iconName} size={20} color={iconColor} strokeWidth={1.6} />
+                ) : (
+                  <Text
+                    aria-hidden
+                    style={{
+                      color: iconColor,
+                      fontSize: t.textMd,
+                      fontWeight: fontWeight(t.weightBold),
+                      fontFamily: fontFamily(t),
+                    }}
+                  >
+                    {tool.label.slice(0, 1)}
+                  </Text>
+                ),
               });
             })}
           </View>
@@ -436,8 +730,11 @@ export function EmrAnnotationToolbar({
               ariaLabel: penSummary,
               title: penSummary,
               expanded: open,
+              ariaControls: panelId,
               disabled: locked,
-              onPress: () => setOpen(prev => !prev),
+              onPress: () => {
+                if (canOpenToolbarPen(model)) setOpen(prev => !prev);
+              },
               children: (
                 <View style={styles.tbPenFace}>
                   <View
@@ -471,15 +768,15 @@ export function EmrAnnotationToolbar({
             btnKey: 'undo',
             ariaLabel: l.undo,
             disabled: locked || !model.canUndo,
-            onPress: () => onIntent({ type: 'undoRequested' }),
-            children: glyphText('↺'),
+            onPress: () => emitToolbarIntent({ type: 'undoRequested' }),
+            children: <SvgIcon name="undo" size={18} color={t.text} />,
           })}
           {toolbarBtn({
             btnKey: 'redo',
             ariaLabel: l.redo,
             disabled: locked || !model.canRedo,
-            onPress: () => onIntent({ type: 'redoRequested' }),
-            children: glyphText('↻'),
+            onPress: () => emitToolbarIntent({ type: 'redoRequested' }),
+            children: <SvgIcon name="redo" size={18} color={t.text} />,
           })}
         </View>
 
@@ -488,30 +785,43 @@ export function EmrAnnotationToolbar({
             btnKey: 'zoomOut',
             ariaLabel: l.zoomOut,
             disabled: !!model.zoomLocked,
-            onPress: () => onIntent({ type: 'zoomOutRequested' }),
-            children: glyphText('−'),
+            onPress: () => emitToolbarIntent({ type: 'zoomOutRequested' }),
+            children: <SvgIcon name="zoom-out" size={18} color={t.text} />,
           })}
           {toolbarBtn({
             btnKey: 'zoomReset',
             ariaLabel: l.zoomResetAria(model.zoomLabel),
             title: l.zoomReset,
             disabled: !!model.zoomLocked,
-            onPress: () => onIntent({ type: 'zoomResetRequested' }),
-            children: glyphText(model.zoomLabel, false, true),
+            onPress: () => emitToolbarIntent({ type: 'zoomResetRequested' }),
+            children: (
+              <Text
+                aria-hidden
+                style={{
+                  color: t.text,
+                  fontSize: t.textXs,
+                  fontWeight: fontWeight(t.weightBold),
+                  fontFamily: monoFont,
+                  fontVariant: ['tabular-nums'],
+                }}
+              >
+                {model.zoomLabel}
+              </Text>
+            ),
           })}
           {toolbarBtn({
             btnKey: 'zoomIn',
             ariaLabel: l.zoomIn,
             disabled: !!model.zoomLocked,
-            onPress: () => onIntent({ type: 'zoomInRequested' }),
-            children: glyphText('+'),
+            onPress: () => emitToolbarIntent({ type: 'zoomInRequested' }),
+            children: <SvgIcon name="zoom-in" size={18} color={t.text} />,
           })}
           {toolbarBtn({
             btnKey: 'zoomFit',
             ariaLabel: l.zoomFit,
             disabled: !!model.zoomLocked,
-            onPress: () => onIntent({ type: 'zoomFitRequested' }),
-            children: glyphText('⤢'),
+            onPress: () => emitToolbarIntent({ type: 'zoomFitRequested' }),
+            children: <SvgIcon name="maximize" size={18} color={t.text} />,
           })}
         </View>
 
@@ -520,8 +830,8 @@ export function EmrAnnotationToolbar({
             btnKey: 'save',
             ariaLabel: model.saveLabel ?? l.save,
             disabled: locked || !model.canSave,
-            onPress: () => onIntent({ type: 'saveRequested' }),
-            children: glyphText('⬇'),
+            onPress: () => emitToolbarIntent({ type: 'saveRequested' }),
+            children: <SvgIcon name="download" size={18} color={t.text} />,
           })}
         </View>
       </View>
@@ -531,6 +841,16 @@ export function EmrAnnotationToolbar({
           nativeID={panelId}
           role="group"
           aria-label={l.penPanelAria}
+          {...webProps({
+            id: panelId,
+            onKeyDown: (e: WebKeyEvent) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setOpen(false);
+                buttonRefs.current['pen']?.focus();
+              }
+            },
+          })}
           style={[styles.tbPanel, { borderColor: t.border, backgroundColor: t.surface }]}
         >
           {model.colours.length > 0 ? (
@@ -547,7 +867,7 @@ export function EmrAnnotationToolbar({
                     {...webProps({ title: c.label })}
                     style={(st: PressState) => [
                       styles.tbBtn,
-                      { minWidth: t.controlHeight, height: t.controlHeight },
+                      { minWidth: btnMinSize, minHeight: btnMinSize, height: btnMinSize },
                       focusRing(t, st.focused),
                     ]}
                   >
@@ -565,16 +885,7 @@ export function EmrAnnotationToolbar({
                       >
                         {selected ? (
                           <View style={[styles.tbTick, { backgroundColor: t.surface }]}>
-                            <Text
-                              aria-hidden
-                              style={{
-                                color: t.text,
-                                fontSize: t.text2xs,
-                                fontWeight: fontWeight(t.weightBold),
-                              }}
-                            >
-                              ✓
-                            </Text>
+                            <SvgIcon name="check" size={11} color={t.text} strokeWidth={2.5} />
                           </View>
                         ) : null}
                       </View>
@@ -602,7 +913,7 @@ export function EmrAnnotationToolbar({
                     {...webProps({ title: w.label })}
                     style={(st: PressState) => [
                       styles.tbBtn,
-                      { minWidth: t.controlHeight, height: t.controlHeight },
+                      { minWidth: btnMinSize, minHeight: btnMinSize, height: btnMinSize },
                       focusRing(t, st.focused),
                     ]}
                   >
@@ -648,6 +959,7 @@ export const LIST_DEFAULTS = {
   listAria: 'Annotations',
   locked: 'Locked',
   hidden: 'Hidden',
+  drawingPrefix: 'Drawing',
   showTitle: 'Show drawing',
   hideTitle: 'Hide drawing',
   lockTitle: 'Lock drawing',
@@ -667,8 +979,11 @@ export type EmrAnnotationListLabels = typeof LIST_DEFAULTS;
 export interface EmrAnnotationListProps {
   model: AnnotationListViewModel;
   headingId?: string;
+  idPrefix?: string;
   labels?: Partial<typeof LIST_DEFAULTS>;
   onIntent: (intent: AnnotationListIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 /**
@@ -678,15 +993,39 @@ export interface EmrAnnotationListProps {
 export function EmrAnnotationList({
   model,
   headingId,
+  idPrefix = '',
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: EmrAnnotationListProps) {
   const t = useEmrTheme();
   const l = { ...LIST_DEFAULTS, ...labels };
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const containerRef = useRef<ComponentRef<typeof View> | null>(null);
+  const focusWithinRef = useRef(false);
   const mainRefs = useRef<FocusableHandle[]>([]);
   const tabStopId = annotationListTabStopId(model, focusedId);
   const font = fontFamily(t);
+  const monoFont = RESOLVED_MONO_FONT(t.fontMono);
+  const btnMinSize = Math.max(44, t.controlHeight);
+  const listId = resolveAnnotationListId(idPrefix, headingId);
+  const printHideProps = Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : null;
+
+  const handleFocusIn = () => {
+    if (!focusWithinRef.current) {
+      focusWithinRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleFocusOut = (ev: { relatedTarget?: unknown }) => {
+    if (ev.relatedTarget && containsDomNode(containerRef.current, ev.relatedTarget)) return;
+    if (focusWithinRef.current) {
+      focusWithinRef.current = false;
+      onBlur?.();
+    }
+  };
 
   const onMainKey = (e: WebKeyEvent, index: number) => {
     const target = clampedTarget(e.key, index, model.items.length);
@@ -700,8 +1039,13 @@ export function EmrAnnotationList({
   if (model.items.length === 0) {
     return (
       <View
+        ref={containerRef}
         role="status"
         style={[styles.alEmpty, { borderColor: t.border, backgroundColor: t.surface }]}
+        {...webProps({
+          onFocus: handleFocusIn,
+          onBlur: handleFocusOut,
+        })}
       >
         <Text style={{ color: t.textMuted, fontSize: t.textMd, fontFamily: font }}>
           {model.emptyMessage}
@@ -719,7 +1063,7 @@ export function EmrAnnotationList({
     eyeToggle,
     danger,
     disabled,
-    glyph,
+    icon,
     onPress,
   }: {
     key: string;
@@ -730,7 +1074,7 @@ export function EmrAnnotationList({
     eyeToggle?: boolean;
     danger?: boolean;
     disabled?: boolean;
-    glyph: string;
+    icon: React.ReactNode;
     onPress: () => void;
   }) => {
     const highlighted = pressed && !eyeToggle;
@@ -742,50 +1086,60 @@ export function EmrAnnotationList({
         aria-pressed={pressed}
         aria-disabled={disabled}
         disabled={disabled}
-        onPress={onPress}
+        onPress={() => {
+          if (!disabled) onPress();
+        }}
         onFocus={() => setFocusedId(rowId)}
         {...webProps({
           title,
+          'aria-disabled': disabled ? 'true' : undefined,
           tabIndex: rowId === tabStopId ? 0 : -1,
         })}
         style={(st: PressState) => [
           styles.alActionBtn,
-          { width: t.controlHeight, height: t.controlHeight },
+          { width: btnMinSize, minWidth: btnMinSize, height: btnMinSize, minHeight: btnMinSize },
           focusRing(t, st.focused),
           disabled ? styles.disabled : null,
         ]}
       >
-        <View
-          style={[
-            styles.alActionFace,
-            {
-              backgroundColor: highlighted ? t.primarySoft : 'transparent',
-              borderColor: highlighted ? t.primaryBorder : 'transparent',
-            },
-          ]}
-        >
-          <Text
-            aria-hidden
-            style={{
-              color: danger ? t.danger : t.text,
-              fontSize: t.textMd,
-              fontWeight: fontWeight(t.weightBold),
-              fontFamily: font,
-            }}
+        {({ hovered }: PressState) => (
+          <View
+            style={[
+              styles.alActionFace,
+              {
+                backgroundColor: highlighted
+                  ? t.primarySoft
+                  : hovered && !disabled
+                    ? (danger ? t.dangerSoft : t.surfaceSoft)
+                    : 'transparent',
+                borderColor: highlighted
+                  ? t.primaryBorder
+                  : hovered && !disabled
+                    ? (danger ? t.danger : t.border)
+                    : 'transparent',
+              },
+            ]}
           >
-            {glyph}
-          </Text>
-        </View>
+            {icon}
+          </View>
+        )}
       </Pressable>
     );
   };
 
   return (
     <View
+      ref={containerRef}
+      nativeID={listId}
       role="list"
       aria-label={headingId ? undefined : l.listAria}
       aria-labelledby={headingId}
       style={[styles.al, { borderColor: t.border, backgroundColor: t.surface }]}
+      {...webProps({
+        id: listId,
+        onFocus: handleFocusIn,
+        onBlur: handleFocusOut,
+      })}
     >
       {model.items.map((it: AnnotationListItem, index: number) => {
         const selected = it.layer.id === model.selectedLayerId;
@@ -796,13 +1150,16 @@ export function EmrAnnotationList({
         const secondary = annotationSecondaryLabel(it);
         const summary = annotationFullSummary(it);
         const toolLabel = annotationLayerToolName(it.layer.tool);
-        const toolGlyph = annotationLayerGlyph(it.layer.tool);
+        const toolIcon = annotationLayerIconName(it.layer.tool);
+        const rowDomId = resolveAnnotationListRowId(idPrefix, it.layer.id);
 
         return (
           <View
             key={it.layer.id}
+            nativeID={rowDomId}
             role="listitem"
-            aria-current={selected ? true : undefined}
+            aria-current={selected ? 'true' : undefined}
+            {...webProps({ id: rowDomId, dataSet: { 'emr-print': 'legend-row' } })}
             style={[
               styles.alRow,
               !last ? { borderBottomWidth: 1, borderBottomColor: t.border } : null,
@@ -813,6 +1170,9 @@ export function EmrAnnotationList({
                     borderLeftColor: t.primary,
                   }
                 : null,
+              Platform.OS === 'web'
+                ? ({ breakInside: 'avoid', pageBreakInside: 'avoid' } as object)
+                : null,
             ]}
           >
             <Pressable
@@ -820,7 +1180,7 @@ export function EmrAnnotationList({
                 mainRefs.current[index] = el;
               }}
               role="button"
-              aria-label={`${it.number}. ${summary}, ${toolLabel}${it.locked ? `, ${l.locked}` : ''}${hidden ? `, ${l.hidden}` : ''}`}
+              aria-label={`${l.drawingPrefix} ${it.number}. ${summary}, ${toolLabel}${it.locked ? `, ${l.locked}` : ''}${hidden ? `, ${l.hidden}` : ''}`}
               onPress={() => onIntent({ type: 'layerSelected', layerId: it.layer.id })}
               onFocus={() => setFocusedId(it.layer.id)}
               {...webProps({
@@ -830,7 +1190,7 @@ export function EmrAnnotationList({
               })}
               style={(st: PressState) => [
                 styles.alMain,
-                { minHeight: t.controlHeight },
+                { minHeight: btnMinSize },
                 focusRing(t, st.focused),
               ]}
             >
@@ -843,7 +1203,8 @@ export function EmrAnnotationList({
                     color: t.text,
                     fontSize: t.textXs,
                     fontWeight: fontWeight(t.weightBold),
-                    fontFamily: t.fontMono,
+                    fontFamily: monoFont,
+                    fontVariant: ['tabular-nums'],
                   }}
                 >
                   {it.number}
@@ -865,6 +1226,7 @@ export function EmrAnnotationList({
               <View style={styles.alTxt}>
                 <Text
                   numberOfLines={1}
+                  {...webProps({ dataSet: { 'emr-print': 'unwrap' } })}
                   style={{
                     color: t.text,
                     fontSize: t.textMd,
@@ -881,6 +1243,7 @@ export function EmrAnnotationList({
                 {it.description ? (
                   <Text
                     numberOfLines={1}
+                    {...webProps({ dataSet: { 'emr-print': 'unwrap' } })}
                     style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: font }}
                   >
                     {it.description}
@@ -889,30 +1252,24 @@ export function EmrAnnotationList({
               </View>
 
               <View role="img" aria-label={toolLabel} style={styles.alTool}>
-                <Text aria-hidden style={{ color: t.textMuted, fontSize: t.textMd, fontFamily: font }}>
-                  {toolGlyph}
-                </Text>
+                <SvgIcon name={toolIcon} size={18} color={t.textMuted} strokeWidth={1.6} />
               </View>
 
               {it.locked ? (
                 <View role="img" aria-label={l.locked} style={styles.alTool}>
-                  <Text aria-hidden style={{ color: t.textMuted, fontSize: t.textSm }}>
-                    🔒
-                  </Text>
+                  <SvgIcon name="lock" size={15} color={t.textMuted} />
                 </View>
               ) : null}
 
               {model.readOnly && hidden ? (
                 <View role="img" aria-label={l.hidden} style={styles.alTool}>
-                  <Text aria-hidden style={{ color: t.textMuted, fontSize: t.textSm }}>
-                    ⊘
-                  </Text>
+                  <SvgIcon name="eye-off" size={15} color={t.textMuted} />
                 </View>
               ) : null}
             </Pressable>
 
             {!model.readOnly ? (
-              <View style={styles.alActions}>
+              <View style={styles.alActions} {...printHideProps}>
                 {rowActionBtn({
                   key: 'vis',
                   rowId: it.layer.id,
@@ -920,9 +1277,18 @@ export function EmrAnnotationList({
                   title: it.layer.visible ? l.hideTitle : l.showTitle,
                   pressed: it.layer.visible,
                   eyeToggle: true,
-                  glyph: it.layer.visible ? '👁' : '⊘',
-                  onPress: () =>
-                    onIntent({ type: 'layerVisibilityToggleRequested', layerId: it.layer.id }),
+                  icon: (
+                    <SvgIcon
+                      name={it.layer.visible ? 'eye' : 'eye-off'}
+                      size={18}
+                      color={t.text}
+                    />
+                  ),
+                  onPress: () => {
+                    if (canToggleAnnotationLayerVisibility(model, it.layer.id)) {
+                      onIntent({ type: 'layerVisibilityToggleRequested', layerId: it.layer.id });
+                    }
+                  },
                 })}
 
                 {model.canLock
@@ -932,9 +1298,14 @@ export function EmrAnnotationList({
                       ariaLabel: l.lockDrawing(it.number, primary),
                       title: it.locked ? l.unlockTitle : l.lockTitle,
                       pressed: !!it.locked,
-                      glyph: it.locked ? '🔒' : '🔓',
-                      onPress: () =>
-                        onIntent({ type: 'layerLockToggleRequested', layerId: it.layer.id }),
+                      icon: (
+                        <SvgIcon name={it.locked ? 'lock' : 'unlock'} size={18} color={t.text} />
+                      ),
+                      onPress: () => {
+                        if (canToggleAnnotationLayerLock(model, it.layer.id)) {
+                          onIntent({ type: 'layerLockToggleRequested', layerId: it.layer.id });
+                        }
+                      },
                     })
                   : null}
 
@@ -945,28 +1316,34 @@ export function EmrAnnotationList({
                       rowId: it.layer.id,
                       ariaLabel: l.moveUpDrawing(it.number, primary),
                       title: l.moveUpTitle,
-                      disabled: first,
-                      glyph: '▲',
-                      onPress: () =>
-                        onIntent({
-                          type: 'layerMoveRequested',
-                          layerId: it.layer.id,
-                          direction: 'up',
-                        }),
+                      disabled: first || !!it.locked,
+                      icon: <SvgIcon name="chevron-up" size={18} color={t.text} />,
+                      onPress: () => {
+                        if (canMoveAnnotationLayer(model, it.layer.id, 'up')) {
+                          onIntent({
+                            type: 'layerMoveRequested',
+                            layerId: it.layer.id,
+                            direction: 'up',
+                          });
+                        }
+                      },
                     })}
                     {rowActionBtn({
                       key: 'down',
                       rowId: it.layer.id,
                       ariaLabel: l.moveDownDrawing(it.number, primary),
                       title: l.moveDownTitle,
-                      disabled: last,
-                      glyph: '▼',
-                      onPress: () =>
-                        onIntent({
-                          type: 'layerMoveRequested',
-                          layerId: it.layer.id,
-                          direction: 'down',
-                        }),
+                      disabled: last || !!it.locked,
+                      icon: <SvgIcon name="chevron-down" size={18} color={t.text} />,
+                      onPress: () => {
+                        if (canMoveAnnotationLayer(model, it.layer.id, 'down')) {
+                          onIntent({
+                            type: 'layerMoveRequested',
+                            layerId: it.layer.id,
+                            direction: 'down',
+                          });
+                        }
+                      },
                     })}
                   </>
                 ) : null}
@@ -977,9 +1354,13 @@ export function EmrAnnotationList({
                   ariaLabel: l.deleteDrawing(it.number, primary),
                   title: l.deleteTitle,
                   danger: true,
-                  glyph: '🗑',
-                  onPress: () =>
-                    onIntent({ type: 'layerRemoveRequested', layerId: it.layer.id }),
+                  disabled: !!it.locked,
+                  icon: <SvgIcon name="trash" size={18} color={t.danger} />,
+                  onPress: () => {
+                    if (canRemoveAnnotationLayer(model, it.layer.id)) {
+                      onIntent({ type: 'layerRemoveRequested', layerId: it.layer.id });
+                    }
+                  },
                 })}
               </View>
             ) : null}
@@ -994,28 +1375,33 @@ export function EmrAnnotationList({
 // 4. EmrImageTemplatePicker
 // ---------------------------------------------------------------------------
 
-export const PICKER_DEFAULTS = {
+export const PICKER_DEFAULTS: Required<ControllerImageTemplatePickerLabels> = {
   close: 'Close',
   searchPlaceholder: 'Search by name, side or view',
   searchAria: (title: string) => `Search ${title}`,
+  clearSearch: 'Clear search',
   filterAria: (title: string) => `Filter ${title}`,
   favourites: 'Favourites',
   all: 'All',
   allTemplates: 'All templates',
   starHint: 'Star a template to pin it here.',
-  clearSearch: 'Clear search',
   showAll: 'Show all',
+  resetFilters: 'Reset filters',
   addFavourite: (label: string) => `Add ${label} to favourites`,
   removeFavourite: (label: string) => `Remove ${label} from favourites`,
 };
 
-export type EmrImageTemplatePickerLabels = typeof PICKER_DEFAULTS;
+export type EmrImageTemplatePickerLabels = ControllerImageTemplatePickerLabels;
 
 export interface EmrImageTemplatePickerProps {
   model: ImageTemplatePickerViewModel;
   headingId?: string;
-  labels?: Partial<typeof PICKER_DEFAULTS>;
+  idPrefix?: string;
+  readOnly?: boolean;
+  labels?: EmrImageTemplatePickerLabels;
   onIntent: (intent: ImageTemplatePickerIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 const TILE_MIN_WIDTH = 120;
@@ -1028,34 +1414,77 @@ const TILE_GAP = 8;
 export function EmrImageTemplatePicker({
   model,
   headingId,
+  idPrefix = '',
+  readOnly = false,
   labels,
   onIntent,
+  onFocus,
+  onBlur,
 }: EmrImageTemplatePickerProps) {
   const t = useEmrTheme();
   const l = { ...PICKER_DEFAULTS, ...labels };
   const uid = useId();
-  const resolvedHeadingId = headingId ?? `${uid}-heading`;
+  const pickerId = resolveImageTemplatePickerId(idPrefix, headingId, `${uid}-picker`);
+  const resolvedHeadingId = resolveImageTemplatePickerHeadingId(idPrefix, headingId, `${uid}-heading`);
+  const searchInputId = resolveImageTemplateSearchId(idPrefix, headingId, `${uid}-picker`);
+  const favSectionId = resolveImageTemplateSectionId('fav', idPrefix, headingId, `${uid}-picker`);
+  const allSectionId = resolveImageTemplateSectionId('all', idPrefix, headingId, `${uid}-picker`);
   const [containerWidth, setContainerWidth] = useState(0);
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const containerRef = useRef<ComponentRef<typeof View> | null>(null);
+  const focusWithinRef = useRef(false);
   const tileRefs = useRef<Record<string, FocusableHandle>>({});
+  const escapeStateRef = useRef({ query: model.query, onIntent });
+  escapeStateRef.current = { query: model.query, onIntent };
   const font = fontFamily(t);
+  const hitTarget = Math.max(44, t.controlHeight);
+  const effectiveReadOnly = !!(readOnly || model.readOnly);
+  const printHideProps = Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : null;
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const node = containerRef.current as unknown as {
+      addEventListener?: (t: string, l: (ev: { key: string; preventDefault: () => void }) => void) => void;
+      removeEventListener?: (t: string, l: (ev: { key: string; preventDefault: () => void }) => void) => void;
+    } | null;
+    if (!node?.addEventListener) return;
+    const onKeyDown = (ev: { key: string; preventDefault: () => void }) => {
+      if (ev.key !== 'Escape') return;
+      ev.preventDefault();
+      if (escapeStateRef.current.query) {
+        escapeStateRef.current.onIntent({ type: 'queryChangeRequested', query: '' });
+      } else {
+        escapeStateRef.current.onIntent({ type: 'closeRequested' });
+      }
+    };
+    node.addEventListener('keydown', onKeyDown);
+    return () => node.removeEventListener?.('keydown', onKeyDown);
+  }, []);
 
   const { favs, rest, flat } = useMemo(() => partitionImageTemplates(model), [model]);
   const tabStop = templateTabStopId(flat, model.selectedId, focusedId);
-  const canEditFavs = canEditTemplateFavourites(model);
-  const columns = Math.max(
-    1,
-    containerWidth > 0 ? Math.floor((containerWidth + TILE_GAP) / (TILE_MIN_WIDTH + TILE_GAP)) : 3,
-  );
+  const canEditFavs = canEditTemplateFavourites(model, readOnly);
+  const columns = templateGridColumns(containerWidth, TILE_MIN_WIDTH, TILE_GAP);
   const tileWidth =
-    containerWidth > 0
-      ? (containerWidth - TILE_GAP * (columns - 1)) / columns
-      : TILE_MIN_WIDTH;
+    containerWidth > 0 ? (containerWidth - TILE_GAP * (columns - 1)) / columns : undefined;
+
+  const handleFocusIn = () => {
+    if (!focusWithinRef.current) {
+      focusWithinRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleFocusOut = (ev: { relatedTarget?: unknown }) => {
+    if (ev.relatedTarget && containsDomNode(containerRef.current, ev.relatedTarget)) return;
+    if (focusWithinRef.current) {
+      focusWithinRef.current = false;
+      onBlur?.();
+    }
+  };
 
   const onTileKey = (e: WebKeyEvent, id: string) => {
     if (e.key === 'Escape') {
-      e.preventDefault();
-      onIntent({ type: 'closeRequested' });
       return;
     }
     const i = flat.findIndex(o => o.id === id);
@@ -1085,18 +1514,15 @@ export function EmrImageTemplatePicker({
       style={(st: PressState) => [
         styles.tpChip,
         {
-          minHeight: t.controlHeight,
+          minHeight: hitTarget,
+          minWidth: hitTarget,
           borderColor: selected ? t.primary : t.border,
           backgroundColor: selected ? t.primarySoft : t.surface,
         },
         focusRing(t, st.focused),
       ]}
     >
-      {starPrefix ? (
-        <Text aria-hidden style={{ color: t.warning, fontSize: t.textSm }}>
-          ★
-        </Text>
-      ) : null}
+      {starPrefix ? <SvgIcon name="star-filled" size={14} color={t.warning} /> : null}
       <Text
         style={{
           color: selected ? t.primaryContrast : t.text,
@@ -1124,11 +1550,20 @@ export function EmrImageTemplatePicker({
   const renderTile = (option: ImageTemplateOption) => {
     const selected = option.id === model.selectedId;
     const isFav = isTemplateFavourite(model, option.id);
+    const canSelect = canSelectImageTemplate(effectiveReadOnly, option);
+    const canToggleFav = canToggleTemplateFavourite(model, option, readOnly);
     return (
       <View
         key={option.id}
         role="listitem"
-        style={[styles.tpItem, { width: tileWidth }]}
+        style={[
+          styles.tpItem,
+          Platform.OS === 'web'
+            ? ({ width: '100%' } as object)
+            : tileWidth !== undefined
+              ? { width: tileWidth }
+              : { flexBasis: '31%', flexGrow: 1, minWidth: TILE_MIN_WIDTH },
+        ]}
       >
         <Pressable
           ref={el => {
@@ -1136,24 +1571,33 @@ export function EmrImageTemplatePicker({
           }}
           role="button"
           aria-pressed={selected}
-          aria-disabled={model.readOnly || undefined}
+          aria-disabled={effectiveReadOnly || undefined}
+          disabled={effectiveReadOnly}
           aria-label={templateTileLabel(option)}
           onPress={() => {
-            if (!model.readOnly) onIntent({ type: 'templateSelected', templateId: option.id });
+            if (canSelect) onIntent({ type: 'templateSelected', templateId: option.id });
           }}
           onFocus={() => setFocusedId(option.id)}
           {...webProps({
+            'aria-disabled': effectiveReadOnly ? 'true' : undefined,
             tabIndex: option.id === tabStop ? 0 : -1,
             onKeyDown: (e: WebKeyEvent) => onTileKey(e, option.id),
           })}
           style={(st: PressState) => [
             styles.tpTile,
             {
-              minHeight: t.controlHeight,
+              minHeight: hitTarget,
               borderColor: selected ? t.primary : t.border,
-              borderWidth: selected ? 2 : 1,
-              backgroundColor: selected ? t.primarySoft : t.surface,
+              borderWidth: 1,
+              backgroundColor: selected
+                ? t.primarySoft
+                : st.hovered && !effectiveReadOnly
+                  ? t.surfaceRaised
+                  : t.surface,
             },
+            Platform.OS === 'web' && selected
+              ? ({ boxShadow: `0 0 0 1px ${t.primary}` } as object)
+              : null,
             focusRing(t, st.focused),
           ]}
         >
@@ -1207,15 +1651,7 @@ export function EmrImageTemplatePicker({
               { backgroundColor: t.primarySoft, borderColor: t.primary },
             ]}
           >
-            <Text
-              style={{
-                color: t.primaryContrast,
-                fontSize: t.textXs,
-                fontWeight: fontWeight(t.weightBold),
-              }}
-            >
-              ✓
-            </Text>
+            <SvgIcon name="check" size={12} color={t.primaryContrast} strokeWidth={2.5} />
           </View>
         ) : null}
 
@@ -1224,18 +1660,20 @@ export function EmrImageTemplatePicker({
             role="button"
             aria-pressed={isFav}
             aria-label={isFav ? l.removeFavourite(option.label) : l.addFavourite(option.label)}
-            onPress={() =>
-              onIntent({
-                type: 'favouriteToggleRequested',
-                templateId: option.id,
-                favourite: !isFav,
-              })
-            }
+            onPress={() => {
+              if (canToggleFav) {
+                onIntent({
+                  type: 'favouriteToggleRequested',
+                  templateId: option.id,
+                  favourite: !isFav,
+                });
+              }
+            }}
             onFocus={() => setFocusedId(option.id)}
             {...webProps({ tabIndex: option.id === tabStop ? 0 : -1 })}
             style={(st: PressState) => [
               styles.tpStar,
-              { width: t.controlHeight, height: t.controlHeight },
+              { width: hitTarget, minWidth: hitTarget, height: hitTarget, minHeight: hitTarget },
               focusRing(t, st.focused),
             ]}
           >
@@ -1248,15 +1686,11 @@ export function EmrImageTemplatePicker({
                 },
               ]}
             >
-              <Text
-                aria-hidden
-                style={{
-                  color: isFav ? t.warning : t.text,
-                  fontSize: t.textMd,
-                }}
-              >
-                {isFav ? '★' : '☆'}
-              </Text>
+              <SvgIcon
+                name={isFav ? 'star-filled' : 'star'}
+                size={15}
+                color={isFav ? t.warning : t.text}
+              />
             </View>
           </Pressable>
         ) : null}
@@ -1266,9 +1700,17 @@ export function EmrImageTemplatePicker({
 
   return (
     <View
+      ref={containerRef}
+      nativeID={pickerId}
       role="region"
       aria-labelledby={resolvedHeadingId}
       style={[styles.tp, { borderColor: t.border, backgroundColor: t.surface }]}
+      {...printHideProps}
+      {...webProps({
+        id: pickerId,
+        onFocus: handleFocusIn,
+        onBlur: handleFocusOut,
+      })}
     >
       <View style={styles.tpHead}>
         <View style={styles.flex}>
@@ -1302,32 +1744,64 @@ export function EmrImageTemplatePicker({
           style={(st: PressState) => [
             styles.tpCloseBtn,
             {
-              width: t.controlHeight,
-              height: t.controlHeight,
+              width: hitTarget,
+              minWidth: hitTarget,
+              height: hitTarget,
+              minHeight: hitTarget,
               borderColor: t.border,
-              backgroundColor: t.surface,
+              backgroundColor: st.hovered ? t.surfaceRaised : t.surface,
             },
             focusRing(t, st.focused),
           ]}
         >
-          <Text aria-hidden style={{ color: t.text, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold) }}>
-            ✕
-          </Text>
+          <SvgIcon name="close" size={16} color={t.text} />
         </Pressable>
       </View>
 
-      <ThemedInput
-        role="searchbox"
-        aria-label={l.searchAria(model.title)}
-        placeholder={l.searchPlaceholder}
-        value={model.query}
-        autoCapitalize="none"
-        autoCorrect={false}
-        onChangeText={query => onIntent({ type: 'queryChangeRequested', query })}
-      />
+      <View style={styles.tpSearchWrap}>
+        <View pointerEvents="none" style={styles.tpSearchGlass}>
+          <SvgIcon name="search" size={16} color={t.textMuted} />
+        </View>
+        <ThemedInput
+          nativeID={searchInputId}
+          role="searchbox"
+          aria-label={l.searchAria(model.title)}
+          placeholder={l.searchPlaceholder}
+          value={model.query}
+          autoCapitalize="none"
+          autoCorrect={false}
+          onChangeText={query => onIntent({ type: 'queryChangeRequested', query })}
+          style={{
+            minHeight: hitTarget,
+            paddingLeft: 38,
+            paddingRight: model.query ? 46 : 12,
+          }}
+        />
+        {model.query ? (
+          <Pressable
+            role="button"
+            aria-label={l.clearSearch}
+            onPress={() => onIntent({ type: 'queryChangeRequested', query: '' })}
+            {...webProps({ title: l.clearSearch })}
+            style={(st: PressState) => [
+              styles.tpClearBtn,
+              {
+                width: hitTarget,
+                minWidth: hitTarget,
+                height: hitTarget,
+                minHeight: hitTarget,
+                backgroundColor: st.hovered ? t.surfaceSoft : 'transparent',
+              },
+              focusRing(t, st.focused),
+            ]}
+          >
+            <SvgIcon name="close" size={16} color={t.textMuted} />
+          </Pressable>
+        ) : null}
+      </View>
 
       <View role="group" aria-label={l.filterAria(model.title)} style={styles.tpChips}>
-        {showFavouritesFilterChip(model)
+        {showFavouritesFilterChip(model, readOnly)
           ? renderChip(
               FAVOURITES_GROUP_ID,
               l.favourites,
@@ -1361,13 +1835,11 @@ export function EmrImageTemplatePicker({
         {flat.length > 0 ? (
           <>
             {favs.length > 0 ? (
-              <View role="group" aria-labelledby={`${uid}-fav`} style={styles.tpSec}>
+              <View role="group" aria-labelledby={favSectionId} style={styles.tpSec}>
                 <View style={styles.tpSubRow}>
-                  <Text aria-hidden style={{ color: t.warning, fontSize: t.textSm }}>
-                    ★
-                  </Text>
+                  <SvgIcon name="star-filled" size={14} color={t.warning} />
                   <Text
-                    nativeID={`${uid}-fav`}
+                    nativeID={favSectionId}
                     style={[
                       styles.tpSubText,
                       {
@@ -1381,11 +1853,23 @@ export function EmrImageTemplatePicker({
                     {`${l.favourites} ${favs.length}`}
                   </Text>
                 </View>
-                <View role="list" style={styles.tpGrid}>
+                <View
+                  role="list"
+                  style={[
+                    styles.tpGrid,
+                    Platform.OS === 'web'
+                      ? ({
+                          display: 'grid',
+                          gridTemplateColumns: `repeat(auto-fill, minmax(min(${TILE_MIN_WIDTH}px, 100%), 1fr))`,
+                          gap: TILE_GAP,
+                        } as object)
+                      : null,
+                  ]}
+                >
                   {favs.map(renderTile)}
                 </View>
               </View>
-            ) : showFavouritePinHint(model) ? (
+            ) : showFavouritePinHint(model, readOnly) ? (
               <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: font }}>
                 {l.starHint}
               </Text>
@@ -1394,12 +1878,12 @@ export function EmrImageTemplatePicker({
             {rest.length > 0 ? (
               <View
                 role={favs.length > 0 ? 'group' : undefined}
-                aria-labelledby={favs.length > 0 ? `${uid}-all` : undefined}
+                aria-labelledby={favs.length > 0 ? allSectionId : undefined}
                 style={styles.tpSec}
               >
                 {favs.length > 0 ? (
                   <Text
-                    nativeID={`${uid}-all`}
+                    nativeID={allSectionId}
                     style={[
                       styles.tpSubText,
                       {
@@ -1413,7 +1897,19 @@ export function EmrImageTemplatePicker({
                     {`${l.allTemplates} ${rest.length}`}
                   </Text>
                 ) : null}
-                <View role="list" style={styles.tpGrid}>
+                <View
+                  role="list"
+                  style={[
+                    styles.tpGrid,
+                    Platform.OS === 'web'
+                      ? ({
+                          display: 'grid',
+                          gridTemplateColumns: `repeat(auto-fill, minmax(min(${TILE_MIN_WIDTH}px, 100%), 1fr))`,
+                          gap: TILE_GAP,
+                        } as object)
+                      : null,
+                  ]}
+                >
                   {rest.map(renderTile)}
                 </View>
               </View>
@@ -1441,6 +1937,17 @@ export function EmrImageTemplatePicker({
                   onPress={() => onIntent({ type: 'groupSelected', groupId: null })}
                 />
               ) : null}
+              {model.query && model.selectedGroupId ? (
+                <EmrButton
+                  small
+                  variant="outline"
+                  label={l.resetFilters}
+                  onPress={() => {
+                    onIntent({ type: 'queryChangeRequested', query: '' });
+                    onIntent({ type: 'groupSelected', groupId: null });
+                  }}
+                />
+              ) : null}
             </View>
           </View>
         )}
@@ -1463,9 +1970,20 @@ const styles = StyleSheet.create({
   repeatable: { borderWidth: 1, borderRadius: 8, padding: 16 },
   repeatHeading: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: 12,
+  },
+  repeatHeadingText: { flex: 1, flexBasis: 180, minWidth: 0, gap: 4 },
+  repeatItemTitle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    flexBasis: 160,
+    minWidth: 0,
   },
   repeatItem: { marginTop: 12, padding: 12, borderWidth: 1, borderRadius: 8, gap: 12 },
   repeatGrid: {
@@ -1576,7 +2094,7 @@ const styles = StyleSheet.create({
   alSwatch: { width: 14, height: 14, borderRadius: 7, borderWidth: 2 },
   alTxt: { flex: 1, minWidth: 0, gap: 2 },
   alTool: { alignItems: 'center', justifyContent: 'center' },
-  alActions: { flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', paddingRight: 4 },
+  alActions: { flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center', marginLeft: 'auto', paddingRight: 4 },
   alActionBtn: { alignItems: 'center', justifyContent: 'center' },
   alActionFace: {
     width: 34,
@@ -1597,6 +2115,25 @@ const styles = StyleSheet.create({
   tp: { borderWidth: 1, borderRadius: 12, padding: 16, gap: 12, minWidth: 0 },
   tpHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   tpCloseBtn: { borderWidth: 1, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  tpSearchWrap: { position: 'relative', justifyContent: 'center' },
+  tpSearchGlass: {
+    position: 'absolute',
+    left: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  tpClearBtn: {
+    position: 'absolute',
+    right: 2,
+    top: 0,
+    bottom: 0,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
   tpChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tpChip: {
     flexDirection: 'row',

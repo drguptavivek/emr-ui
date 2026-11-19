@@ -75,4 +75,5 @@ export * from './l4-ophthalmology-cataract-retina-cornea.models.js';
 export * from './l4-hospital-operations.models.js';
 export * from './l4-acute-lab-perioperative.models.js';
 export * from './l4-maternal-peds-specialty-abdm.models.js';
+export * from './section-card.models.js';
 

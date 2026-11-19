@@ -11,7 +11,8 @@ import type {
   EmrSplitWorkspaceViewModel,
   EmrSynchronizedTimeGridIntent,
   EmrSynchronizedTimeGridViewModel,
-} from '../../../../../emr-controller/src/l3-workstation.models';
+} from '@drguptavivek/emr-controller';
+import * as workstationLogic from './emr-workstation-containers.logic';
 
 const componentPath = join(
   process.cwd(),
@@ -44,7 +45,10 @@ function loadWorkstationModule() {
     if (id === '@angular/core') {
       return {
         ChangeDetectionStrategy: { OnPush: 0 },
+        ElementRef: class {},
         Component: () => (cls: unknown) => cls,
+        computed: <T>(fn: () => T) => fn,
+        inject: () => ({ nativeElement: { contains: () => false } }),
         input: Object.assign(
           <T>(init?: T) => makeSignal<T | undefined>(init),
           { required: <T>() => makeSignal<T | undefined>(undefined) },
@@ -58,7 +62,16 @@ function loadWorkstationModule() {
         },
       };
     }
-    return {};
+    if (id === '@ng-icons/core') {
+      return { NgIcon: class {}, provideIcons: () => [] };
+    }
+    if (id === '@ng-icons/heroicons/outline' || id === '@ng-icons/heroicons/solid') {
+      return new Proxy({}, { get: () => 'icon' });
+    }
+    if (id === './emr-workstation-containers.logic') {
+      return workstationLogic;
+    }
+    throw new Error(`Unexpected require: ${id}`);
   };
 
   const exportsObj: Record<string, unknown> = {};
@@ -76,12 +89,23 @@ function loadWorkstationModule() {
 const mod = loadWorkstationModule();
 
 describe('L3 Workstation Containers (Angular)', () => {
-  it('enforces design-token-only styling and zero runtime emr-controller imports', () => {
+  it('enforces design-token-only styling, zero runtime controller imports, zero native disabled, and zero raw glyphs', () => {
     expect(componentSource).not.toMatch(/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(/);
     expect(componentSource).not.toMatch(/ViewEncapsulation\.None/);
-    expect(componentSource).toContain("import type {");
+    expect(componentSource).toContain('import type {');
     expect(componentSource).toContain("from '@drguptavivek/emr-controller';");
-    expect(componentSource).toContain(":host-context(.emr-print)");
+    expect(componentSource).toContain(':host-context(.emr-print)');
+    expect(componentSource).toContain('@container (max-width: 720px)');
+    expect(componentSource).not.toContain('[disabled]=');
+    expect(componentSource).not.toMatch(/[✕★●‹›⋮▸▾←✓◷]/);
+    const masterDetailSource = componentSource.slice(
+      componentSource.indexOf('EmrMasterDetailComponent (`emr-master-detail`)'),
+      componentSource.indexOf('EmrSynchronizedTimeGridComponent (`emr-synchronized-time-grid`)'),
+    );
+    expect(masterDetailSource).not.toContain('role="option"');
+    expect(masterDetailSource).toContain('<ul class="emr-md__list"');
+    expect(componentSource).toContain('role="combobox"');
+    expect(componentSource).toContain('aria-activedescendant');
   });
 
   describe('EmrSplitWorkspaceComponent', () => {
@@ -92,13 +116,13 @@ describe('L3 Workstation Containers (Angular)', () => {
       paneSizes: [25, 50, 25],
       mobileActivePaneId: 'pane-chart',
       panes: [
-        { id: 'pane-chart', slot: 'pane-primary', title: 'Chart Review', summaryItems: ['OCT OD CST 412 µm'] },
-        { id: 'pane-note', slot: 'pane-secondary', title: 'Clinical Note & Orders' },
+        { id: 'pane-chart', slot: 'pane-primary', title: 'Chart Review', minWidthPct: 20, summaryItems: ['OCT OD CST 412 µm'] },
+        { id: 'pane-note', slot: 'pane-secondary', title: 'Clinical Note & Orders', minWidthPct: 30 },
         { id: 'pane-pacs', slot: 'pane-tertiary', title: 'PACS & CDS', collapsible: true, collapsed: false },
       ],
     };
 
-    it('switches layout presets, steps divider via keyboard/buttons, toggles collapse, and selects mobile tabs', () => {
+    it('switches layout presets, steps divider via keyboard (including Home/End + minWidthPct), toggles collapse, and selects mobile tabs', () => {
       const instance = new mod.EmrSplitWorkspaceComponent();
       const emitted: EmrSplitWorkspaceIntent[] = [];
       instance.intent.subscribe((i: EmrSplitWorkspaceIntent) => emitted.push(i));
@@ -122,6 +146,24 @@ describe('L3 Workstation Containers (Angular)', () => {
         paneSizes: [30, 45, 25],
       });
 
+      // Home respects left pane minWidthPct=20
+      instance.onDividerKeydown(0, { key: 'Home', preventDefault: () => {} });
+      expect(emitted.at(-1)).toEqual({
+        type: 'paneResized',
+        dividerIndex: 0,
+        deltaPct: -100,
+        paneSizes: [20, 55, 25],
+      });
+
+      // End respects right pane minWidthPct=30 (combined=75 -> 45, 30)
+      instance.onDividerKeydown(0, { key: 'End', preventDefault: () => {} });
+      expect(emitted.at(-1)).toEqual({
+        type: 'paneResized',
+        dividerIndex: 0,
+        deltaPct: 100,
+        paneSizes: [45, 30, 25],
+      });
+
       instance.togglePaneCollapse(splitModel.panes[2]!);
       expect(emitted.at(-1)).toEqual({
         type: 'paneCollapsedToggled',
@@ -135,12 +177,25 @@ describe('L3 Workstation Containers (Angular)', () => {
         paneId: 'pane-note',
       });
     });
+
+    it('guards mutations when readOnly is true', () => {
+      const instance = new mod.EmrSplitWorkspaceComponent();
+      const emitted: EmrSplitWorkspaceIntent[] = [];
+      instance.intent.subscribe((i: EmrSplitWorkspaceIntent) => emitted.push(i));
+      instance.model.set({ ...splitModel, readOnly: true });
+
+      instance.selectPreset('2-pane-50-50');
+      instance.resizeDivider(0, 5);
+      instance.togglePaneCollapse(splitModel.panes[0]!);
+      expect(emitted).toHaveLength(0);
+    });
   });
 
   describe('EmrCommandPaletteComponent', () => {
     const cmdModel: EmrCommandPaletteViewModel = {
       id: 'cmd-1',
       open: true,
+      presentation: 'inline',
       query: '',
       activeCategory: 'all',
       activeIndex: 0,
@@ -157,6 +212,8 @@ describe('L3 Workstation Containers (Angular)', () => {
       instance.intent.subscribe((i: EmrCommandPaletteIntent) => emitted.push(i));
       instance.model.set(cmdModel);
 
+      expect(instance.presentation()).toBe('inline');
+      expect(instance.activeOptionId()).toBe('emr-cmd-cmd-1-opt-c1');
       expect(instance.filteredItems()).toHaveLength(3);
       expect(instance.groupedItems().length).toBeGreaterThan(0);
 
@@ -268,14 +325,22 @@ describe('L3 Workstation Containers (Angular)', () => {
           id: 'trk-vitals',
           title: 'Vitals & IOP Flowsheet',
           kind: 'vitals',
+          badge: { label: 'Live', tone: 'info' },
           rows: [
             {
               id: 'row-iop',
               label: 'IOP (OD / OS)',
               unitLabel: 'mmHg',
               cells: {
-                t08: { columnId: 't08', valueLabel: '16 / 15' },
-                t10: { columnId: 't10', valueLabel: '24 / 15', abnormalTone: 'warning' },
+                t08: { columnId: 't08', valueLabel: '16 / 15', sparklineNorm: 0.4 },
+                t10: {
+                  columnId: 't10',
+                  valueLabel: '24 / 15',
+                  abnormalTone: 'warning',
+                  badge: { label: 'High', tone: 'warning' },
+                  sparklineNorm: 0.85,
+                  note: 'Repeat GAT in 30m',
+                },
               },
             },
           ],
@@ -283,19 +348,33 @@ describe('L3 Workstation Containers (Angular)', () => {
       ],
     };
 
-    it('emits resolutionChanged, scrollOffsetChanged, columnSelected, trackToggled, and cellSelected', () => {
+    it('emits resolutionChanged, scrollOffsetChanged, columnSelected, trackToggled, and cellSelected, and gates Earlier/Later', () => {
       const instance = new mod.EmrSynchronizedTimeGridComponent();
       const emitted: EmrSynchronizedTimeGridIntent[] = [];
       instance.intent.subscribe((i: EmrSynchronizedTimeGridIntent) => emitted.push(i));
       instance.model.set(gridModel);
 
       expect(instance.visibleColumns().map((c: any) => c.id)).toEqual(['t08', 't09', 't10']);
+      expect(instance.canStepEarlier()).toBe(false);
+      expect(instance.canStepLater()).toBe(true);
+
+      // Stepping earlier at 0 is a no-op
+      instance.stepScroll(-1);
+      expect(emitted).toHaveLength(0);
 
       instance.selectResolution('15m');
       expect(emitted.at(-1)).toEqual({ type: 'resolutionChanged', resolution: '15m' });
 
       instance.stepScroll(1);
       expect(emitted.at(-1)).toEqual({ type: 'scrollOffsetChanged', offset: 1 });
+
+      // At maxOffset=1 (4 cols - 3 visible = 1), Later is gated
+      instance.model.set({ ...gridModel, scrollOffset: 1 });
+      expect(instance.canStepEarlier()).toBe(true);
+      expect(instance.canStepLater()).toBe(false);
+      const countBefore = emitted.length;
+      instance.stepScroll(1);
+      expect(emitted).toHaveLength(countBefore);
 
       instance.selectColumn('t10');
       expect(emitted.at(-1)).toEqual({ type: 'columnSelected', columnId: 't10' });

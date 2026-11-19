@@ -345,57 +345,75 @@ export class EmrRightFlyoutComponent {
 
 ## Clinical lists
 
-Source: `packages/emr-ui/src/lib/structures/emr-clinical-list.component.ts` — all four domain components below, plus the L3 `EmrClinicalListComponent` itself, live in this one file (known deviation: the four L4 wrappers have not yet been split into `domain/`; see the note in that file).
+Source: `packages/emr-ui/src/lib/domain/emr-clinical-lists.component.ts` (L4 domain wrappers) delegating to `packages/emr-ui/src/lib/structures/emr-clinical-list.component.ts` (L3 `EmrClinicalListComponent`).
 
 `EmrMedicationList`, `EmrAllergyList`, `EmrChronicDiseaseList`, and `EmrPersonalHistoryList` are thin domain wrappers over the L3 `EmrClinicalListComponent`. They share a single, **non-exported** base class:
 
 ```ts
-export type ClinicalListAction =
-  | { type: 'addRequested' }
-  | { type: 'selected'; id: string }
-  | { type: 'editRequested'; id: string }
-  | { type: 'removeRequested'; id: string };
-
 @Directive()
-abstract class DomainListBase {
-  @Input() items: readonly ClinicalListItem[] = [];
-  @Input() allowAdd = true;
-  /** Empty collections have no clinical meaning; the controller supplies the status wording. */
-  @Input() emptyMessage = 'Status not supplied.';
-  @Output() readonly action = new EventEmitter<ClinicalListAction>();
+abstract class DomainClinicalListBase {
+  readonly model = input.required<ClinicalListViewModel>();
+  readonly headingId = input<string>();
+  readonly headingLevel = input<EmrClinicalListHeadingLevel>(2);
+  readonly labels = input<Partial<EmrClinicalListLabels>>({});
+
+  readonly intent = output<ClinicalListIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 }
 ```
 
-Each domain component's *entire* body is a fixed `headingId`/`title` string handed to `<emr-clinical-list>`; there is no additional behavior, no additional input, and no domain-specific rendering logic:
+Each domain component supplies its default `headingId` and default `title` (when `model.title` and `labels.title` are omitted) and delegates directly to `<emr-clinical-list>`:
 
 ```ts
 @Component({
-  selector: 'emr-medication-list', standalone: true, imports: [EmrClinicalListComponent],
-  template: `<emr-clinical-list headingId="emr-medication-list-title" title="Medications"
-    [emptyMessage]="emptyMessage" [items]="items" [allowAdd]="allowAdd" (action)="action.emit($event)" />`
+  selector: 'emr-medication-list',
+  standalone: true,
+  imports: [EmrClinicalListComponent],
+  template: `<emr-clinical-list
+    [model]="resolvedModel()"
+    [headingId]="resolvedHeadingId()"
+    [headingLevel]="headingLevel()"
+    [labels]="labels()"
+    (intent)="intent.emit($event)"
+    (focused)="focused.emit()"
+    (blurred)="blurred.emit()"
+  />`,
 })
-export class EmrMedicationListComponent extends DomainListBase {}
+export class EmrMedicationListComponent extends DomainClinicalListBase {}
 ```
 
-| Component | Selector | `headingId` | `title` |
+| Component | Selector | default `headingId` | default `title` |
 |---|---|---|---|
 | `EmrMedicationListComponent` | `emr-medication-list` | `emr-medication-list-title` | "Medications" |
 | `EmrAllergyListComponent` | `emr-allergy-list` | `emr-allergy-list-title` | "Allergies" |
 | `EmrChronicDiseaseListComponent` | `emr-chronic-disease-list` | `emr-chronic-list-title` | "Chronic diseases" |
 | `EmrPersonalHistoryListComponent` | `emr-personal-history-list` | `emr-history-list-title` | "Significant personal history" |
 
-**Known gap.** These four are *display* lists only — they render supplied `ClinicalListItem[]` and forward `addRequested`/`selected`/`editRequested`/`removeRequested` intents. There is no corresponding medication-entry or allergy-entry *capture* component anywhere in the catalogue (no dosage/frequency/route form, no reaction-severity picker); building a new medication or allergy record is entirely outside this layer's current scope.
+**Attributes & Outputs** (shared across all four wrappers)
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `ClinicalListViewModel` | required | Immutable list view model (`items`, `title`, `description`, `selectedId`, `status`, `allowAdd`, `addLabel`, `emptyTitle`, `emptyMessage`, `loading`, `loadingLabel`, `error`, `readOnly`, `variant`) |
+| `headingId` | `string` | wrapper default above | Drives `aria-labelledby` and heading `id` |
+| `headingLevel` | `EmrClinicalListHeadingLevel` (`2 \| 3 \| 4 \| 5 \| 6`) | `2` | Semantic heading level (`<h2>`–`<h6>`) |
+| `labels` | `Partial<EmrClinicalListLabels>` | `{}` | Overrides UI chrome strings (`title`, `add`, `edit`, `remove`, `retry`, `loading`, `emptyMessage`, `errorTitle`, `readOnlyItem`) |
+| `intent` | `ClinicalListIntent` (output) | — | Emits `addRequested`, `selected`, `editRequested`, `removeRequested`, or `retryRequested` |
+| `focused` | `void` (output) | — | Emits when focus enters the list container |
+| `blurred` | `void` (output) | — | Emits when focus leaves the list container |
+
+**Known gap.** These four are *display* lists only — they render supplied `ClinicalListViewModel` rows and forward `addRequested`/`selected`/`editRequested`/`removeRequested`/`retryRequested` intents. There is no corresponding medication-entry or allergy-entry *capture* component anywhere in the catalogue (no dosage/frequency/route form, no reaction-severity picker); building a new medication or allergy record is entirely outside this layer's current scope.
 
 ### EmrMedicationList
 **Layer** L4 · **Selector** `emr-medication-list` · **Status** stable · **Story** `emr-patient-and-navigation--clinical-lists`
 
 **Need** — A current-medications panel needs the same list chrome (heading, Add button, item badges, per-item Edit/Remove) as every other domain list, labelled specifically "Medications".
 
-**Purpose/API/Attributes** — see the shared `DomainListBase` above; adds nothing beyond the fixed heading/title.
+**Purpose/API/Attributes** — see the shared `DomainClinicalListBase` above; sets default `headingId="emr-medication-list-title"` and default `title="Medications"`.
 
 **Example**
 ```html
-<emr-medication-list [items]="medications" (action)="onMedicationAction($event)" />
+<emr-medication-list [model]="medicationsModel" (intent)="onMedicationIntent($event)" />
 ```
 
 **Depends on** — `EmrClinicalListComponent` (L3)
@@ -408,11 +426,11 @@ export class EmrMedicationListComponent extends DomainListBase {}
 
 **Need** — Allergy panels need the identical list chrome, labelled "Allergies", so allergy badges/severity tones stay controller-supplied and visually consistent with the rest of the catalogue.
 
-**Purpose/API/Attributes** — see the shared `DomainListBase` above.
+**Purpose/API/Attributes** — see the shared `DomainClinicalListBase` above; sets default `headingId="emr-allergy-list-title"` and default `title="Allergies"`.
 
 **Example**
 ```html
-<emr-allergy-list [items]="allergies" [allowAdd]="false" (action)="onAllergyAction($event)" />
+<emr-allergy-list [model]="allergiesModel" (intent)="onAllergyIntent($event)" />
 ```
 
 **Depends on** — `EmrClinicalListComponent` (L3)
@@ -425,11 +443,11 @@ export class EmrMedicationListComponent extends DomainListBase {}
 
 **Need** — Chronic-disease/problem-list panels need the same shared list chrome, labelled "Chronic diseases".
 
-**Purpose/API/Attributes** — see the shared `DomainListBase` above.
+**Purpose/API/Attributes** — see the shared `DomainClinicalListBase` above; sets default `headingId="emr-chronic-list-title"` and default `title="Chronic diseases"`.
 
 **Example**
 ```html
-<emr-chronic-disease-list [items]="diseases" (action)="onDiseaseAction($event)" />
+<emr-chronic-disease-list [model]="diseasesModel" (intent)="onDiseaseIntent($event)" />
 ```
 
 **Depends on** — `EmrClinicalListComponent` (L3)
@@ -442,11 +460,11 @@ export class EmrMedicationListComponent extends DomainListBase {}
 
 **Need** — Significant personal/social history (smoking, prior surgeries) needs the same shared list chrome, labelled "Significant personal history".
 
-**Purpose/API/Attributes** — see the shared `DomainListBase` above.
+**Purpose/API/Attributes** — see the shared `DomainClinicalListBase` above; sets default `headingId="emr-history-list-title"` and default `title="Significant personal history"`.
 
 **Example**
 ```html
-<emr-personal-history-list [items]="history" (action)="onHistoryAction($event)" />
+<emr-personal-history-list [model]="historyModel" (intent)="onHistoryIntent($event)" />
 ```
 
 **Depends on** — `EmrClinicalListComponent` (L3)

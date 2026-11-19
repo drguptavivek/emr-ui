@@ -19,13 +19,16 @@ export type EmrIconName =
   | 'close'
   | 'chevron-up'
   | 'chevron-down'
+  | 'chevrons-up-down'
   | 'chevron-left'
   | 'chevron-right'
+  | 'arrow-left'
   | 'search'
   | 'warning'
   | 'info'
   | 'danger'
   | 'star'
+  | 'star-filled'
   | 'trash'
   | 'undo'
   | 'redo'
@@ -48,8 +51,25 @@ export type EmrIconName =
   | 'flip-h'
   | 'flip-v'
   | 'copy'
+  | 'list'
+  | 'refresh'
   | 'more-vertical'
-  | 'more-horizontal';
+  | 'more-horizontal'
+  | 'arrows-out'
+  | 'backspace'
+  | 'shape-line'
+  | 'shape-arrow'
+  | 'shape-curve'
+  | 'shape-rect'
+  | 'shape-ellipse'
+  | 'shape-polygon'
+  | 'shape-freehand'
+  | 'shape-text'
+  | 'shape-eraser'
+  | 'shape-callout'
+  | 'shape-suture'
+  | 'shape-hatch'
+  | 'shape-lattice';
 
 export type IconName = EmrIconName;
 
@@ -104,8 +124,10 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
   close: ['M18 6 6 18', 'M6 6l12 12'],
   'chevron-up': ['m18 15-6-6-6 6'],
   'chevron-down': ['m6 9 6 6 6-6'],
+  'chevrons-up-down': ['m7 15 5 5 5-5', 'm7 9 5-5 5 5'],
   'chevron-left': ['m15 18-6-6 6-6'],
   'chevron-right': ['m9 18 6-6-6-6'],
+  'arrow-left': ['M19 12H5', 'm12 19-7-7 7-7'],
   search: ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'm21 21-4.3-4.3'],
   warning: [
     'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
@@ -123,6 +145,9 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
     'm9 9 6 6',
   ],
   star: [
+    'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  ],
+  'star-filled': [
     'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
   ],
   trash: [
@@ -157,6 +182,13 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
     'M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z',
     'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
   ],
+  list: ['M8 6h13', 'M8 12h13', 'M8 18h13', 'M3 6h.01', 'M3 12h.01', 'M3 18h.01'],
+  refresh: [
+    'M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8',
+    'M21 3v5h-5',
+    'M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16',
+    'M3 21v-5h5',
+  ],
   'more-vertical': [
     'M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
     'M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
@@ -167,6 +199,34 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
     'M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
     'M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
   ],
+  'arrows-out': [
+    'M4 8V4h4',
+    'M4 4l5 5',
+    'M20 8V4h-4',
+    'M20 4l-5 5',
+    'M4 16v4h4',
+    'M4 20l5-5',
+    'M20 16v4h-4',
+    'M20 20l-5-5',
+  ],
+  backspace: [
+    'M21 5H9l-7 7 7 7h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z',
+    'm18 9-6 6',
+    'm12 9 6 6',
+  ],
+  'shape-line': ['M5 19 19 5'],
+  'shape-arrow': ['M5 19 19 5', 'M11 5h8v8'],
+  'shape-curve': ['M6 19C6 9 18 15 18 5'],
+  'shape-rect': ['M6 6h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z'],
+  'shape-ellipse': ['M4 12a8 6 0 1 0 16 0a8 6 0 1 0-16 0'],
+  'shape-polygon': ['m12 4 8 6-3 10H7L4 10z'],
+  'shape-freehand': ['M4 14c2-6 4-6 5-2s3 4 5-1 4-3 6 1'],
+  'shape-text': ['M6 6h12', 'M12 6v13', 'M9.5 19h5'],
+  'shape-eraser': ['m4 15 9-9 7 7-6 6H8z', 'M9 10l7 7'],
+  'shape-callout': ['M19 5 9 15', 'M9 15h5', 'M9 15v-5', 'M3 21h7'],
+  'shape-suture': ['M4 12h16', 'M7 9l2 6', 'M11 9l2 6', 'M15 9l2 6'],
+  'shape-hatch': ['M5 5h14v14H5z', 'M5 13l8-8', 'M5 19 19 5', 'M11 19l8-8'],
+  'shape-lattice': ['M9 4v16', 'M15 4v16', 'M4 9h16', 'M4 15h16'],
 };
 
 const NATIVE_FALLBACK: Record<EmrIconName, string> = {
@@ -185,13 +245,16 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   close: '×',
   'chevron-up': '▴',
   'chevron-down': '▾',
+  'chevrons-up-down': '↕',
   'chevron-left': '‹',
   'chevron-right': '›',
+  'arrow-left': '←',
   search: '⌕',
   warning: '!',
   info: 'i',
   danger: '×',
   star: '☆',
+  'star-filled': '★',
   trash: '×',
   undo: '↶',
   redo: '↷',
@@ -214,8 +277,25 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   'flip-h': '⇄',
   'flip-v': '⇅',
   copy: '❐',
+  list: '≡',
+  refresh: '↻',
   'more-vertical': '⋮',
   'more-horizontal': '⋯',
+  'arrows-out': '✥',
+  backspace: '⌫',
+  'shape-line': '╱',
+  'shape-arrow': '↗',
+  'shape-curve': '∿',
+  'shape-rect': '▭',
+  'shape-ellipse': '◯',
+  'shape-polygon': '⬠',
+  'shape-freehand': '✎',
+  'shape-text': 'T',
+  'shape-eraser': '⌫',
+  'shape-callout': '◩',
+  'shape-suture': '╪',
+  'shape-hatch': '▤',
+  'shape-lattice': '⌗',
 };
 
 export function isEmrIconName(value: string): value is EmrIconName {
@@ -231,13 +311,16 @@ export function SvgIcon({
   size = 16,
   color = 'currentColor',
   strokeWidth = 1.75,
+  filled = false,
 }: {
   name: EmrIconName;
   size?: number;
   color?: string;
   strokeWidth?: number;
+  filled?: boolean;
 }) {
   const paths = ICON_PATHS[name];
+  const isFilled = filled || name === 'star-filled';
   if (Platform.OS === 'web') {
     return createElement(
       'svg' as unknown as React.ComponentType<Record<string, unknown>>,
@@ -246,7 +329,7 @@ export function SvgIcon({
         width: size,
         height: size,
         viewBox: '0 0 24 24',
-        fill: 'none',
+        fill: isFilled ? color : 'none',
         stroke: color,
         strokeWidth,
         strokeLinecap: 'round',
@@ -260,9 +343,10 @@ export function SvgIcon({
       ),
     );
   }
+  const fallback = isFilled && name === 'star' ? NATIVE_FALLBACK['star-filled'] : NATIVE_FALLBACK[name];
   return (
     <View aria-hidden style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color, fontSize: size * 0.85, lineHeight: size }}>{NATIVE_FALLBACK[name]}</Text>
+      <Text style={{ color, fontSize: size * 0.85, lineHeight: size }}>{fallback}</Text>
     </View>
   );
 }

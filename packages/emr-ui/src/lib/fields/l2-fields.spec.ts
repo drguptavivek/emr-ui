@@ -89,7 +89,9 @@ describe('emr-fields.logic (paired field)', () => {
     });
   });
 
-  it('falls back through explicit -> group -> definition.contract.valueType -> text', () => {
+  it('falls back through explicit -> group -> definition.contract.valueType -> text (including select)', () => {
+    expect(resolvePairedSideMode('select', 'integer', BP_DEF)).toBe('select');
+    expect(resolvePairedSideMode(undefined, 'select', BP_DEF)).toBe('select');
     expect(resolvePairedSideMode('text', 'integer', BP_DEF)).toBe('text');
     expect(resolvePairedSideMode(undefined, 'decimal', BP_DEF)).toBe('decimal');
     expect(resolvePairedSideMode(undefined, undefined, BP_DEF)).toBe('integer');

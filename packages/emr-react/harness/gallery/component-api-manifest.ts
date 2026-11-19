@@ -421,10 +421,28 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "'day'"
       },
       {
+        "name": "displayFormat",
+        "type": "EmrDateTimeDisplayFormat",
+        "required": false,
+        "defaultValue": "'dd-mm-yyyy'"
+      },
+      {
         "name": "size",
         "type": "'sm' | 'md' | 'lg'",
         "required": false,
         "defaultValue": "'md'"
+      },
+      {
+        "name": "fullWidth",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearable",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "invalid",
@@ -967,19 +985,37 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "inputType",
-        "type": "'text' | 'integer' | 'decimal'",
+        "type": "'text' | 'integer' | 'decimal' | 'select'",
         "required": false,
         "defaultValue": "'text'"
       },
       {
         "name": "firstInputType",
-        "type": "'text' | 'integer' | 'decimal'",
+        "type": "'text' | 'integer' | 'decimal' | 'select'",
         "required": false
       },
       {
         "name": "secondInputType",
-        "type": "'text' | 'integer' | 'decimal'",
+        "type": "'text' | 'integer' | 'decimal' | 'select'",
         "required": false
+      },
+      {
+        "name": "options",
+        "type": "readonly EmrOption[]",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "firstOptions",
+        "type": "readonly EmrOption[]",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "secondOptions",
+        "type": "readonly EmrOption[]",
+        "required": false,
+        "defaultValue": "[]"
       },
       {
         "name": "min",
@@ -2293,6 +2329,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "[]"
       },
       {
+        "name": "options",
+        "type": "readonly EmrLikertOption[]",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "showOptionLabels",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "clearable",
         "type": "boolean",
         "required": false,
@@ -2439,6 +2487,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "undefined"
       },
       {
+        "name": "precision",
+        "type": "EmrVasPrecision",
+        "required": false,
+        "defaultValue": "'integer'"
+      },
+      {
         "name": "majorInterval",
         "type": "number",
         "required": false,
@@ -2446,9 +2500,9 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "minorInterval",
-        "type": "number",
+        "type": "number | undefined",
         "required": false,
-        "defaultValue": "2"
+        "defaultValue": "undefined"
       },
       {
         "name": "orientation",
@@ -2983,11 +3037,59 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "headingLevel",
+        "type": "EmrSectionCardHeadingLevel",
+        "required": false,
+        "defaultValue": "2"
+      },
+      {
+        "name": "variant",
+        "type": "EmrSectionCardVariant",
+        "required": false,
+        "defaultValue": "'outlined'"
+      },
+      {
+        "name": "tone",
+        "type": "EmrTone",
+        "required": false,
+        "defaultValue": "'neutral'"
+      },
+      {
+        "name": "padding",
+        "type": "EmrSectionCardPadding",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       }
     ],
     "outputs": [
       {
-        "name": "toggleRequested",
+        "name": "intent",
+        "type": "SectionCardIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
         "type": "void"
       }
     ]
@@ -3006,10 +3108,36 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "[]"
       },
       {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "readOnly",
-        "type": "unknown",
+        "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false
       },
       {
         "name": "customTemplates",
@@ -3022,6 +3150,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "intent",
         "type": "ClinicalFormIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3033,8 +3169,13 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
         "name": "idPrefix",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "''"
       },
@@ -3049,46 +3190,54 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "intent",
         "type": "ClinicalFormIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-clinical-list": {
     "inputs": [
       {
+        "name": "model",
+        "type": "ClinicalListViewModel",
+        "required": true
+      },
+      {
         "name": "headingId",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "'emr-clinical-list-title'"
+        "type": "string",
+        "required": false
       },
       {
-        "name": "title",
-        "type": "unknown",
+        "name": "headingLevel",
+        "type": "EmrClinicalListHeadingLevel",
         "required": false,
-        "defaultValue": "'Clinical information'"
+        "defaultValue": "2"
       },
       {
-        "name": "emptyMessage",
-        "type": "unknown",
+        "name": "labels",
+        "type": "Partial<EmrClinicalListLabels>",
         "required": false,
-        "defaultValue": "'Status not supplied.'"
-      },
-      {
-        "name": "items",
-        "type": "readonly ClinicalListItem[]",
-        "required": false,
-        "defaultValue": "[]"
-      },
-      {
-        "name": "allowAdd",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "true"
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
-        "name": "action",
-        "type": "ClinicalListAction"
+        "name": "intent",
+        "type": "ClinicalListIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3107,127 +3256,206 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "readOnly",
-        "type": "unknown",
+        "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "headingId",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "ClinicalMatrixIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
+  },
+  "emr-clinical-cell-renderer": {
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      }
+    ],
+    "outputs": []
   },
   "emr-medication-list": {
     "inputs": [
       {
-        "name": "items",
-        "type": "readonly ClinicalListItem[]",
-        "required": false,
-        "defaultValue": "[]"
+        "name": "model",
+        "type": "ClinicalListViewModel",
+        "required": true
       },
       {
-        "name": "allowAdd",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "true"
+        "name": "headingId",
+        "type": "string",
+        "required": false
       },
       {
-        "name": "emptyMessage",
-        "type": "unknown",
+        "name": "headingLevel",
+        "type": "EmrClinicalListHeadingLevel",
         "required": false,
-        "defaultValue": "'Status not supplied.'"
+        "defaultValue": "2"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrClinicalListLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
-        "name": "action",
-        "type": "ClinicalListAction"
+        "name": "intent",
+        "type": "ClinicalListIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-allergy-list": {
     "inputs": [
       {
-        "name": "items",
-        "type": "readonly ClinicalListItem[]",
-        "required": false,
-        "defaultValue": "[]"
+        "name": "model",
+        "type": "ClinicalListViewModel",
+        "required": true
       },
       {
-        "name": "allowAdd",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "true"
+        "name": "headingId",
+        "type": "string",
+        "required": false
       },
       {
-        "name": "emptyMessage",
-        "type": "unknown",
+        "name": "headingLevel",
+        "type": "EmrClinicalListHeadingLevel",
         "required": false,
-        "defaultValue": "'Status not supplied.'"
+        "defaultValue": "2"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrClinicalListLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
-        "name": "action",
-        "type": "ClinicalListAction"
+        "name": "intent",
+        "type": "ClinicalListIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-chronic-disease-list": {
     "inputs": [
       {
-        "name": "items",
-        "type": "readonly ClinicalListItem[]",
-        "required": false,
-        "defaultValue": "[]"
+        "name": "model",
+        "type": "ClinicalListViewModel",
+        "required": true
       },
       {
-        "name": "allowAdd",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "true"
+        "name": "headingId",
+        "type": "string",
+        "required": false
       },
       {
-        "name": "emptyMessage",
-        "type": "unknown",
+        "name": "headingLevel",
+        "type": "EmrClinicalListHeadingLevel",
         "required": false,
-        "defaultValue": "'Status not supplied.'"
+        "defaultValue": "2"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrClinicalListLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
-        "name": "action",
-        "type": "ClinicalListAction"
+        "name": "intent",
+        "type": "ClinicalListIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-personal-history-list": {
     "inputs": [
       {
-        "name": "items",
-        "type": "readonly ClinicalListItem[]",
-        "required": false,
-        "defaultValue": "[]"
+        "name": "model",
+        "type": "ClinicalListViewModel",
+        "required": true
       },
       {
-        "name": "allowAdd",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "true"
+        "name": "headingId",
+        "type": "string",
+        "required": false
       },
       {
-        "name": "emptyMessage",
-        "type": "unknown",
+        "name": "headingLevel",
+        "type": "EmrClinicalListHeadingLevel",
         "required": false,
-        "defaultValue": "'Status not supplied.'"
+        "defaultValue": "2"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrClinicalListLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
-        "name": "action",
-        "type": "ClinicalListAction"
+        "name": "intent",
+        "type": "ClinicalListIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3705,126 +3933,158 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "headingId",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'emr-field-generator-heading'"
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrFieldGeneratorLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "FieldGeneratorIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-terminology-search": {
     "inputs": [
       {
-        "name": "role",
-        "type": "TerminologyBindingRole",
+        "name": "model",
+        "type": "TerminologySearchViewModel",
         "required": true
       },
       {
-        "name": "sources",
-        "type": "readonly TerminologySource[]",
-        "required": false,
-        "defaultValue": "[]"
-      },
-      {
-        "name": "model",
-        "type": "TerminologySearchState",
-        "required": false
-      },
-      {
-        "name": "bindings",
-        "type": "readonly TerminologyBinding[]",
-        "required": false,
-        "defaultValue": "[]"
-      },
-      {
-        "name": "readOnly",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "false"
-      },
-      {
         "name": "headingId",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'emr-terminology-heading'"
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrTerminologySearchLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
-        "type": "FieldGeneratorIntent"
+        "type": "TerminologySearchIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-validation-rule-editor": {
     "inputs": [
       {
-        "name": "rules",
-        "type": "readonly FieldValidationRule[]",
-        "required": false,
-        "defaultValue": "[]"
+        "name": "model",
+        "type": "ValidationRuleEditorViewModel",
+        "required": true
       },
       {
-        "name": "readOnly",
-        "type": "unknown",
+        "name": "headingId",
+        "type": "string",
         "required": false,
-        "defaultValue": "false"
+        "defaultValue": "'emr-validation-heading'"
       },
       {
         "name": "idPrefix",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'emr-validation'"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrValidationRuleEditorLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
-        "type": "FieldGeneratorIntent"
+        "type": "ValidationRuleEditorIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
   "emr-field-library-picker": {
     "inputs": [
       {
-        "name": "fields",
-        "type": "readonly EmrGeneratedFieldDefinition[]",
-        "required": false,
-        "defaultValue": "[]"
+        "name": "model",
+        "type": "FieldLibraryPickerViewModel",
+        "required": true
       },
       {
-        "name": "query",
-        "type": "unknown",
+        "name": "headingId",
+        "type": "string",
+        "required": false,
+        "defaultValue": "'emr-field-library-heading'"
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
         "required": false,
         "defaultValue": "''"
       },
       {
-        "name": "selectedSectionId",
-        "type": "string",
-        "required": false
-      },
-      {
-        "name": "readOnly",
-        "type": "unknown",
+        "name": "labels",
+        "type": "Partial<EmrFieldLibraryPickerLabels>",
         "required": false,
-        "defaultValue": "false"
-      },
-      {
-        "name": "headingId",
-        "type": "unknown",
-        "required": false,
-        "defaultValue": "'emr-field-library-heading'"
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
-        "type": "EhrTemplateIntent"
+        "type": "FieldLibraryPickerIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3832,20 +4092,40 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
     "inputs": [
       {
         "name": "model",
-        "type": "EhrTemplateViewModel",
+        "type": "TemplateComposerViewModel",
         "required": true
       },
       {
         "name": "headingId",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'emr-template-composer-heading'"
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrTemplateComposerLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
-        "type": "EhrTemplateIntent"
+        "type": "TemplateComposerIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3853,20 +4133,40 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
     "inputs": [
       {
         "name": "model",
-        "type": "EhrTemplateViewModel",
+        "type": "TemplatePreviewViewModel",
         "required": true
       },
       {
         "name": "headingId",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'emr-template-preview-heading'"
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrTemplatePreviewLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
-        "type": "EhrTemplateIntent"
+        "type": "TemplatePreviewIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3901,12 +4201,31 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "EmrAnnotationToolbarLabels",
+        "required": false
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "AnnotationToolbarIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -3921,12 +4240,31 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "EmrAnnotationListLabels",
+        "required": false
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "AnnotationListIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -4178,12 +4516,37 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "labels",
+        "type": "EmrImageTemplatePickerLabels",
+        "required": false
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "ImageTemplatePickerIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -4770,12 +5133,31 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "EmrTimeAxisLabels",
+        "required": false
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "TimeAxisIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -4807,6 +5189,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "intent",
         "type": "EmrDataTableIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -10955,12 +11345,32 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrSplitWorkspaceLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "EmrSplitWorkspaceIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -10975,12 +11385,32 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrCommandPaletteLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "EmrCommandPaletteIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -10995,12 +11425,32 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrMasterDetailLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "EmrMasterDetailIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -11015,12 +11465,32 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "headingId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "idPrefix",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "labels",
+        "type": "Partial<EmrSynchronizedTimeGridLabels>",
+        "required": false,
+        "defaultValue": "{}"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "EmrSynchronizedTimeGridIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },

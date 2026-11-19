@@ -3,10 +3,12 @@
 import { useId, useMemo, useRef, useState } from 'react';
 import { PanResponder, Platform, Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
+  EmrLikertOption,
   EmrLikertSize,
   EmrTone,
   EmrVasAnchorsProp,
   EmrVasOrientation,
+  EmrVasPrecision,
   EmrVasSize,
 } from '@drguptavivek/emr-controller';
 import {
@@ -91,6 +93,8 @@ export function EmrLikert({
   fullWidth,
   value,
   anchors = [],
+  options,
+  showOptionLabels = false,
   disabled = false,
   readOnly = false,
   required = false,
@@ -122,6 +126,8 @@ export function EmrLikert({
   fullWidth?: boolean;
   value: number | null | undefined;
   anchors?: readonly EmrScaleAnchor[];
+  options?: readonly EmrLikertOption[];
+  showOptionLabels?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
   required?: boolean;
@@ -141,8 +147,8 @@ export function EmrLikert({
   const id = controlId ?? generated;
   const pipRefs = useRef<Array<{ focus?: () => void } | null>>([]);
   const points = useMemo(
-    () => buildLikertPoints({ min, max, step, value: value ?? null, anchors, tone, optionTones }),
-    [min, max, step, value, anchors, tone, optionTones],
+    () => buildLikertPoints({ min, max, step, value: value ?? null, anchors, options, showOptionLabels, tone, optionTones }),
+    [min, max, step, value, anchors, options, showOptionLabels, tone, optionTones],
   );
   const anchorsSummary = useMemo(() => resolveLikertAnchors(points, anchors), [points, anchors]);
   const stopIdx = resolveLikertTabStopIndex(points, value ?? null, disabled);
@@ -257,7 +263,9 @@ export function EmrLikert({
                   minHeight: minTarget,
                   minWidth: minTarget,
                   flex: fullWidth ? 1 : undefined,
-                  paddingHorizontal: size === 'sm' ? 8 : size === 'lg' ? 12 : 10,
+                  paddingHorizontal: point.description || point.label.length > 3 ? 12 : size === 'sm' ? 8 : size === 'lg' ? 12 : 10,
+                  paddingVertical: point.description ? 6 : 0,
+                  gap: 2,
                   borderColor: isInvalid
                     ? t.danger
                     : isWarning
@@ -285,15 +293,28 @@ export function EmrLikert({
                 style={[
                   {
                     color: selected ? colors?.color ?? t.primaryContrast : t.text,
-                    fontSize: pipFontSize,
+                    fontSize: point.description || point.label.length > 3 ? t.textSm : pipFontSize,
                     fontFamily: fontFamily(t),
-                    fontWeight: fontWeight(selected ? t.weightBold : t.weightMedium),
+                    fontWeight: fontWeight(selected || !point.description ? t.weightBold : t.weightMedium),
                   },
                   Platform.OS === 'web' ? ({ fontVariantNumeric: 'tabular-nums' } as unknown as object) : null,
                 ]}
               >
                 {point.label}
               </Text>
+              {point.description ? (
+                <Text
+                  aria-hidden
+                  style={{
+                    color: t.textMuted,
+                    fontSize: t.textXs,
+                    fontFamily: fontFamily(t),
+                    textAlign: 'center',
+                  }}
+                >
+                  {point.description}
+                </Text>
+              ) : null}
             </Pressable>
           );
         })}
@@ -352,6 +373,7 @@ export function EmrVas({
   max = 100,
   value,
   step: stepProp,
+  precision = 'integer',
   majorInterval = 10,
   minorInterval,
   orientation = 'horizontal',
@@ -385,8 +407,9 @@ export function EmrVas({
   min?: number;
   max?: number;
   value: number | null | undefined;
-  /** Snap granularity; defaults to 0.1 for 0-10 / small ranges and 1 for 0-100. Pass 0 for raw continuous. */
+  /** Snap granularity; defaults to 1 (integer) or 0.1/0.5 (decimal). Pass 0 for raw continuous. */
   step?: number;
+  precision?: EmrVasPrecision;
   majorInterval?: number;
   minorInterval?: number;
   orientation?: EmrVasOrientation;
@@ -416,8 +439,8 @@ export function EmrVas({
   const isInvalid = Boolean(invalid || error);
   const canClear = Boolean(clearable && value != null && interactive);
   const span = Math.abs(max - min);
-  const step = resolveVasStep(min, max, stepProp);
-  const effectiveMinor = minorInterval ?? (span <= 20 ? 0.5 : 2);
+  const step = resolveVasStep(min, max, stepProp, precision);
+  const effectiveMinor = minorInterval ?? (precision === 'integer' && span <= 20 ? 1 : span <= 20 ? 0.5 : 2);
   const [length, setLength] = useState(0);
   const [focused, setFocused] = useState(false);
   const trackRef = useRef<{ getBoundingClientRect?: () => { left: number; top: number; width: number; height: number } } | null>(null);
@@ -583,7 +606,7 @@ export function EmrVas({
             <View style={[vertical ? styles.ruleV : styles.ruleH, { backgroundColor: t.border }]} />
             {ticks.map(tick => (
               <View key={tick.value} style={[styles.tickBox, pos(tick.percent), vertical ? styles.tickBoxV : styles.tickBoxH]}>
-                <View style={{ backgroundColor: tick.major ? t.textMuted : t.border, ...(vertical ? { height: tick.major ? 2 : 1, width: tick.major ? 18 : 8 } : { width: tick.major ? 2 : 1, height: tick.major ? 18 : 8 }) }} />
+                <View style={{ backgroundColor: tick.major ? t.text : t.textMuted, opacity: tick.major ? 1 : 0.65, ...(vertical ? { height: tick.major ? 2 : 1, width: tick.major ? 18 : 9 } : { width: tick.major ? 2 : 1, height: tick.major ? 18 : 9 }) }} />
                 {tick.label !== null ? <Text style={[styles.tickLabel, { color: t.textMuted, fontSize: t.text2xs, fontFamily: fontFamily(t) }]}>{tick.label}</Text> : null}
               </View>
             ))}

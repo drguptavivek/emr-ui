@@ -30,6 +30,14 @@ describe('l6 authoring logic', () => {
     expect(canAddValidationRule('minimum', '', '')).toBe(false);
     expect(canAddValidationRule('minimum', '0', '')).toBe(true);
     expect(canAddValidationRule('minimum', 'abc', '')).toBe(false);
+    expect(canAddValidationRule('min-length', '-1', '')).toBe(false);
+    expect(canAddValidationRule('min-length', '2.5', '')).toBe(false);
+    expect(canAddValidationRule('min-length', '3', '')).toBe(true);
+    expect(canAddValidationRule('precision', '2', '')).toBe(true);
+    expect(canAddValidationRule('pattern', '[', '')).toBe(false);
+    expect(canAddValidationRule('pattern', '^[A-Z]+$', '')).toBe(true);
+    expect(canAddValidationRule('earliest-date', '2026-02-31', '')).toBe(false);
+    expect(canAddValidationRule('earliest-date', '2026-02-28', '')).toBe(true);
     expect(canAddValidationRule('custom', 'systolic-range', '')).toBe(false);
     expect(canAddValidationRule('custom', 'systolic-range', 'Out of range.')).toBe(true);
     expect(canAddValidationRule('allowed-values', ' , ', '')).toBe(false);
@@ -120,6 +128,7 @@ describe('l6 authoring logic', () => {
       ],
     };
     const preview = deriveTemplatePreview(template);
+    expect(preview.readOnly).toBe(true);
     expect(preview.schema.id).toBe('exam-form');
     expect(preview.fields).toEqual({ 'p-weight': { value: null } });
     expect(preview.repeatableGroups).toEqual({ 'p-allergy': [] });

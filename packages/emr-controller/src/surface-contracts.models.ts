@@ -23,7 +23,7 @@ import type {
   PatientIdentityViewModel,
 } from './identity.models.js';
 import type {
-  ClinicalListItem,
+  ClinicalListViewModel,
   EmrBadge,
   EmrTone,
   FavouritesIntent,
@@ -200,7 +200,40 @@ export interface EmrDataTableModel extends EmrDataTablePagination {
   summaryLabel: string;
   status?: 'ready' | 'loading' | 'error';
   error?: string;
+  /** Disables row-selection and filter/saved-filter mutation while keeping sort, pagination, and inspection working. */
+  readOnly?: boolean;
 }
+
+export interface EmrDataTableLabels {
+  readonly selectAll?: string;
+  readonly selectRow?: string;
+  readonly filters?: string;
+  readonly removeFilter?: string;
+  readonly addFilter?: string;
+  readonly savedFilters?: string;
+  readonly saveFilter?: string;
+  readonly exportCsv?: string;
+  readonly density?: string;
+  readonly comfortable?: string;
+  readonly compact?: string;
+  readonly bulkActions?: string;
+  readonly selectedCount?: string;
+  readonly sortedAscending?: string;
+  readonly sortedDescending?: string;
+  readonly sortBy?: string;
+  readonly previous?: string;
+  readonly next?: string;
+  readonly rowsPerPage?: string;
+  readonly pageOf?: string;
+  readonly loading?: string;
+  readonly emptyTitle?: string;
+  readonly emptyMessage?: string;
+  readonly errorTitle?: string;
+  readonly retry?: string;
+  readonly nativeUnavailable?: string;
+}
+
+export type EmrDataTableSelectAllState = 'none' | 'some' | 'all';
 
 export type EmrDataTableIntent =
   | { type: 'sortChanged'; columnId: string; direction: EmrDataTableSortDirection }
@@ -216,6 +249,122 @@ export type EmrDataTableIntent =
   | { type: 'pageChanged'; page: number }
   | { type: 'pageSizeChanged'; pageSize: number }
   | { type: 'retryRequested' };
+
+export function canSelectDataTableRows(
+  model: Pick<EmrDataTableModel, 'readOnly' | 'status'>,
+): boolean {
+  return !model.readOnly && model.status !== 'loading' && model.status !== 'error';
+}
+
+export function canMutateDataTableFilters(
+  model: Pick<EmrDataTableModel, 'readOnly' | 'status'>,
+): boolean {
+  return !model.readOnly && model.status !== 'loading';
+}
+
+export function canMutateDataTableSavedFilter(
+  model: Pick<EmrDataTableModel, 'readOnly' | 'status'>,
+): boolean {
+  return !model.readOnly && model.status !== 'loading';
+}
+
+export function canTriggerDataTableBulkAction(
+  model: Pick<EmrDataTableModel, 'readOnly' | 'status' | 'selectedIds'>,
+): boolean {
+  return !model.readOnly && model.status !== 'loading' && model.status !== 'error' && model.selectedIds.length > 0;
+}
+
+export function canSortDataTableColumn(
+  model: Pick<EmrDataTableModel, 'columns' | 'status'>,
+  columnId: string,
+): boolean {
+  if (model.status === 'loading' || model.status === 'error') return false;
+  return model.columns.some((col) => col.id === columnId && Boolean(col.sortable));
+}
+
+export function canChangeDataTablePage(
+  model: Pick<EmrDataTableModel, 'page' | 'pageCount' | 'status'>,
+  targetPage: number,
+): boolean {
+  if (model.status === 'loading' || model.status === 'error') return false;
+  return targetPage >= 1 && targetPage <= model.pageCount && targetPage !== model.page;
+}
+
+export function canChangeDataTablePageSize(
+  model: Pick<EmrDataTableModel, 'pageSizeOptions' | 'status'>,
+  pageSize: number,
+): boolean {
+  if (model.status === 'loading' || model.status === 'error') return false;
+  return model.pageSizeOptions.includes(pageSize);
+}
+
+export function resolveDataTableId(idPrefix = '', fallbackId = ''): string {
+  const prefix = idPrefix.trim().replace(/-+$/, '');
+  if (prefix) return `${prefix}-emr-data-table`;
+  return fallbackId.trim() || 'emr-data-table';
+}
+
+export function resolveDataTableHeadingId(
+  idPrefix = '',
+  headingId?: string | null,
+  fallbackId = '',
+): string {
+  const explicit = headingId?.trim();
+  if (explicit) return explicit;
+  return `${resolveDataTableId(idPrefix, fallbackId)}-caption`;
+}
+
+export function resolveDataTableColumnWidth(width?: number | string): string | undefined {
+  if (width === undefined || width === null || width === '') return undefined;
+  return typeof width === 'number' ? `${width}px` : width;
+}
+
+export function selectAllDataTableState(
+  pageIds: readonly string[],
+  selected: readonly string[],
+): EmrDataTableSelectAllState {
+  if (pageIds.length === 0) return 'none';
+  const set = new Set(selected);
+  const n = pageIds.filter((id) => set.has(id)).length;
+  return n === 0 ? 'none' : n === pageIds.length ? 'all' : 'some';
+}
+
+export function toggleAllDataTableSelection(
+  pageIds: readonly string[],
+  selected: readonly string[],
+): string[] {
+  const page = new Set(pageIds);
+  const rest = selected.filter((id) => !page.has(id));
+  return selectAllDataTableState(pageIds, selected) === 'all' ? rest : [...rest, ...pageIds];
+}
+
+export function toggleDataTableRowSelection(selected: readonly string[], id: string): string[] {
+  return selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id];
+}
+
+export function nextDataTableRowIndex(current: number, count: number, key: string): number {
+  if (count <= 0) return 0;
+  const last = count - 1;
+  switch (key) {
+    case 'ArrowDown':
+      return Math.min(current + 1, last);
+    case 'ArrowUp':
+      return Math.max(current - 1, 0);
+    case 'Home':
+      return 0;
+    case 'End':
+      return last;
+    default:
+      return Math.min(Math.max(current, 0), last);
+  }
+}
+
+export function nextDataTableSortDirection(
+  current: EmrDataTableSort | undefined,
+  columnId: string,
+): EmrDataTableSortDirection {
+  return current?.columnId === columnId && current.direction === 'asc' ? 'desc' : 'asc';
+}
 
 // ---------------------------------------------------------------------------
 // 4. Upload Queue
@@ -319,11 +468,7 @@ export interface EmrStage {
 // ---------------------------------------------------------------------------
 
 /** View model for a clinical list. An empty list has no clinical meaning; the controller supplies `emptyMessage`. */
-export interface EmrClinicalListModel {
-  items: readonly ClinicalListItem[];
-  allowAdd?: boolean;
-  emptyMessage?: string;
-}
+export type EmrClinicalListModel = ClinicalListViewModel;
 
 // ---------------------------------------------------------------------------
 // 7. Identity, Cards, Merge, Contact & Drafts aliases

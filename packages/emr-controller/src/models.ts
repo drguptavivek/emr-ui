@@ -230,6 +230,7 @@ export interface ClinicalColumnGroup {
 
 export type ClinicalCellType =
   | 'text'
+  | 'multiline'
   | 'integer'
   | 'decimal'
   | 'select'
@@ -244,7 +245,17 @@ export interface ClinicalRow {
   type: ClinicalCellType;
   applicableColumnIds?: readonly string[];
   unit?: string;
+  unitOptions?: readonly ClinicalOption[];
   precision?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  maxLength?: number;
+  required?: boolean;
+  placeholder?: string;
+  minDate?: string;
+  maxDate?: string;
+  clearable?: boolean;
   options?: readonly ClinicalOption[];
   assessmentStatusOptions?: readonly ClinicalAssessmentPresentation[];
   customRendererKey?: string;
@@ -254,6 +265,8 @@ export interface ClinicalRow {
 export interface ClinicalMatrixSchema {
   id: string;
   label: string;
+  description?: string;
+  showRemarks?: boolean;
   columnGroups?: readonly ClinicalColumnGroup[];
   columns: readonly ClinicalColumn[];
   rows: readonly ClinicalRow[];
@@ -320,13 +333,102 @@ export type ClinicalMatrixIntent =
   | { type: 'columnCopyRequested'; fromColumnId: string; toColumnId: string }
   | { type: 'macroNormalRequested'; columnId?: string };
 
+export type EmrClinicalListVariant = 'outlined' | 'elevated' | 'filled' | 'subtle';
+export type EmrClinicalListHeadingLevel = 2 | 3 | 4 | 5 | 6;
+
 export interface ClinicalListItem {
   id: string;
   title: string;
   subtitle?: string;
   detail?: string;
+  meta?: string;
+  tone?: EmrTone;
   badges?: readonly EmrBadge[];
   readOnly?: boolean;
+  canEdit?: boolean;
+  canRemove?: boolean;
+  selectable?: boolean;
+}
+
+export interface ClinicalListViewModel {
+  title?: string;
+  description?: string;
+  items: readonly ClinicalListItem[];
+  selectedId?: string;
+  status?: EmrBadge;
+  allowAdd?: boolean;
+  addLabel?: string;
+  emptyTitle?: string;
+  emptyMessage?: string;
+  loading?: boolean;
+  loadingLabel?: string;
+  error?: string;
+  readOnly?: boolean;
+  variant?: EmrClinicalListVariant;
+}
+
+export interface EmrClinicalListLabels {
+  readonly title?: string;
+  readonly add?: string;
+  readonly edit?: string;
+  readonly remove?: string;
+  readonly retry?: string;
+  readonly loading?: string;
+  readonly emptyTitle?: string;
+  readonly emptyMessage?: string;
+  readonly errorTitle?: string;
+  readonly readOnlyItem?: string;
+}
+
+const VALID_CLINICAL_LIST_VARIANTS = new Set<EmrClinicalListVariant>([
+  'outlined',
+  'elevated',
+  'filled',
+  'subtle',
+]);
+
+export function normalizeClinicalListVariant(variant?: unknown): EmrClinicalListVariant {
+  return typeof variant === 'string' && VALID_CLINICAL_LIST_VARIANTS.has(variant as EmrClinicalListVariant)
+    ? (variant as EmrClinicalListVariant)
+    : 'outlined';
+}
+
+export function normalizeClinicalListHeadingLevel(level?: unknown): EmrClinicalListHeadingLevel {
+  if (level === 2 || level === 3 || level === 4 || level === 5 || level === 6) {
+    return level;
+  }
+  return 2;
+}
+
+export function canAddClinicalListItem(
+  model?: Pick<ClinicalListViewModel, 'readOnly' | 'allowAdd'>,
+): boolean {
+  return Boolean(model && !model.readOnly && model.allowAdd !== false);
+}
+
+export function canEditClinicalListItem(
+  model?: Pick<ClinicalListViewModel, 'readOnly'>,
+  item?: Pick<ClinicalListItem, 'readOnly' | 'canEdit'>,
+): boolean {
+  return Boolean(model && item && !model.readOnly && !item.readOnly && item.canEdit !== false);
+}
+
+export function canRemoveClinicalListItem(
+  model?: Pick<ClinicalListViewModel, 'readOnly'>,
+  item?: Pick<ClinicalListItem, 'readOnly' | 'canRemove'>,
+): boolean {
+  return Boolean(model && item && !model.readOnly && !item.readOnly && item.canRemove !== false);
+}
+
+export function isClinicalListItemSelectable(item?: Pick<ClinicalListItem, 'selectable'>): boolean {
+  return Boolean(item && item.selectable !== false);
+}
+
+export function resolveClinicalListHeadingId(
+  headingId?: string | null,
+  fallback = 'emr-clinical-list-title',
+): string {
+  return headingId && headingId.trim() ? headingId.trim() : fallback;
 }
 
 export interface HierarchyNode {
@@ -448,7 +550,8 @@ export type ClinicalListIntent =
   | { type: 'addRequested' }
   | { type: 'selected'; id: string }
   | { type: 'editRequested'; id: string }
-  | { type: 'removeRequested'; id: string };
+  | { type: 'removeRequested'; id: string }
+  | { readonly type: 'retryRequested' };
 
 /** Replaces the UI-declared `OrderDetailChange` plus a separate remove output. */
 export type OrderDetailsIntent =
@@ -473,4 +576,4 @@ export type RightFlyoutIntent =
   | { type: 'backRequested' };
 
 export type SectionCardIntent =
-  | { type: 'toggleRequested'; sectionId: string };
+  | { readonly type: 'toggleRequested'; readonly sectionId: string };

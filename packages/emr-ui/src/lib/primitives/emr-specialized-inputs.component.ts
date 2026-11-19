@@ -59,7 +59,9 @@ let nextSpecializedInputId = 0;
             aria-label="Clear search"
             (click)="clear()"
           >
-            ✕
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+            </svg>
           </button>
         }
       </div>
@@ -301,52 +303,54 @@ export class EmrPasswordInputComponent implements AfterViewChecked {
           <span class="emr-field__required" aria-hidden="true">*</span>
         }
       </label>
-      <div
-        class="emr-input-affix"
-        [attr.data-invalid]="!!error() || null"
-        [attr.data-readonly]="readOnly() || null"
-      >
-        <button
-          type="button"
-          class="emr-input-affix__btn emr-input-affix__btn--leading"
-          [disabled]="disabled() || readOnly() || !canDecrement()"
-          [attr.aria-label]="'Decrease ' + (label() || 'value')"
-          (click)="stepBy(-1)"
+      <div class="emr-quantity">
+        <div
+          class="emr-input-affix"
+          [attr.data-invalid]="!!error() || null"
+          [attr.data-readonly]="readOnly() || null"
         >
-          −
-        </button>
-        <input
-          #stepperEl
-          class="emr-input-affix__field"
-          type="number"
-          [attr.inputmode]="precision() === 0 ? 'numeric' : 'decimal'"
-          [id]="resolvedId()"
-          [value]="domValue()"
-          [attr.min]="min() ?? null"
-          [attr.max]="max() ?? null"
-          [attr.step]="step()"
-          [required]="required()"
-          [disabled]="disabled()"
-          [readOnly]="readOnly()"
-          [attr.aria-label]="labelHidden() ? (label() || 'Value') : null"
-          [attr.aria-invalid]="!!error() || null"
-          [attr.aria-describedby]="describedBy()"
-          (wheel)="onWheel($event)"
-          (input)="onInput($event)"
-          (blur)="syncDom(true)"
-        />
+          <button
+            type="button"
+            class="emr-input-affix__btn emr-input-affix__btn--leading"
+            [disabled]="disabled() || readOnly() || !canDecrement()"
+            [attr.aria-label]="'Decrease ' + (label() || 'value')"
+            (click)="stepBy(-1)"
+          >
+            −
+          </button>
+          <input
+            #stepperEl
+            class="emr-input-affix__field"
+            type="number"
+            [attr.inputmode]="precision() === 0 ? 'numeric' : 'decimal'"
+            [id]="resolvedId()"
+            [value]="domValue()"
+            [attr.min]="min() ?? null"
+            [attr.max]="max() ?? null"
+            [attr.step]="step()"
+            [required]="required()"
+            [disabled]="disabled()"
+            [readOnly]="readOnly()"
+            [attr.aria-label]="labelHidden() ? (label() || 'Value') : null"
+            [attr.aria-invalid]="!!error() || null"
+            [attr.aria-describedby]="describedBy()"
+            (wheel)="onWheel($event)"
+            (input)="onInput($event)"
+            (blur)="syncDom(true)"
+          />
+          <button
+            type="button"
+            class="emr-input-affix__btn"
+            [disabled]="disabled() || readOnly() || !canIncrement()"
+            [attr.aria-label]="'Increase ' + (label() || 'value')"
+            (click)="stepBy(1)"
+          >
+            +
+          </button>
+        </div>
         @if (unit()) {
-          <span class="emr-input-affix__unit" aria-hidden="true">{{ unit() }}</span>
+          <span class="emr-field__label" style="font-weight:600;color:var(--emr-text-muted);" aria-hidden="true">{{ unit() }}</span>
         }
-        <button
-          type="button"
-          class="emr-input-affix__btn"
-          [disabled]="disabled() || readOnly() || !canIncrement()"
-          [attr.aria-label]="'Increase ' + (label() || 'value')"
-          (click)="stepBy(1)"
-        >
-          +
-        </button>
       </div>
       @if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>

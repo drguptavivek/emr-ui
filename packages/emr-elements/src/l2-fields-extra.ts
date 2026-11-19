@@ -1235,6 +1235,7 @@ export class EmrPairedFieldElement extends EmrLitElement {
     sideLabel: string;
     placeholder: string;
     mode: PairedFieldMode;
+    options?: readonly EmrOption[];
     min: number | undefined;
     max: number | undefined;
     step: number | undefined;
@@ -1254,6 +1255,7 @@ export class EmrPairedFieldElement extends EmrLitElement {
       sideLabel,
       placeholder,
       mode,
+      options,
       min,
       max,
       step,
@@ -1267,7 +1269,7 @@ export class EmrPairedFieldElement extends EmrLitElement {
       showSteppers,
       rawValue,
     } = params;
-    const isNumeric = mode !== 'text';
+    const isNumeric = mode === 'integer' || mode === 'decimal';
     const externalText = rawValue == null ? '' : String(rawValue);
     const activeDraft = part === 'first' ? this.firstDraft : this.secondDraft;
     if (locked) {
@@ -1304,7 +1306,7 @@ export class EmrPairedFieldElement extends EmrLitElement {
         target.value = externalText;
         return;
       }
-      if (mode === 'text') {
+      if (mode !== 'decimal' && mode !== 'integer') {
         const next = target.value === '' ? null : target.value;
         if (part === 'first') {
           this.firstDraft = { text: target.value, base: rawValue, parsed: next };
@@ -1389,7 +1391,31 @@ export class EmrPairedFieldElement extends EmrLitElement {
       <label class="sub-label" for=${inputId}>
         ${sideLabel}${required ? html`<span class="emr-error" aria-hidden="true"> *</span>` : nothing}
       </label>
-      ${showSteppers && isNumeric
+      ${mode === 'select'
+        ? html`<emr-select
+            .controlId=${inputId}
+            .label=${sideLabel}
+            ?labelHidden=${true}
+            .options=${options ?? []}
+            .value=${rawValue == null ? null : String(rawValue)}
+            .placeholder=${placeholder || 'Select…'}
+            ?required=${required}
+            ?invalid=${hasError}
+            ?hasWarning=${!hasError && hasWarning}
+            ?readOnly=${locked}
+            .ariaDescribedBy=${describedBy ?? ''}
+            @valueChange=${(e: Event) => {
+              e.stopPropagation();
+              if (locked) return;
+              const detail = (e as CustomEvent<unknown>).detail;
+              this.emitIntent<PairedFieldIntent>({
+                type: part === 'first' ? 'firstChangeRequested' : 'secondChangeRequested',
+                value: typeof detail === 'string' ? detail : null,
+              });
+            }}
+            @blurred=${() => this.emitFocus(false)}
+          ></emr-select>`
+        : showSteppers && isNumeric
         ? html`<div
             class="pf-affix"
             data-invalid=${hasError ? 'true' : nothing}
@@ -1483,6 +1509,7 @@ export class EmrPairedFieldElement extends EmrLitElement {
             sideLabel: m.firstLabel,
             placeholder: m.firstPlaceholder ?? '',
             mode: firstMode,
+            options: m.firstOptions ?? m.options,
             min: m.firstMin ?? m.min,
             max: m.firstMax ?? m.max,
             step: m.firstStep ?? m.step,
@@ -1503,6 +1530,7 @@ export class EmrPairedFieldElement extends EmrLitElement {
             sideLabel: m.secondLabel,
             placeholder: m.secondPlaceholder ?? '',
             mode: secondMode,
+            options: m.secondOptions ?? m.options,
             min: m.secondMin ?? m.min,
             max: m.secondMax ?? m.max,
             step: m.secondStep ?? m.step,

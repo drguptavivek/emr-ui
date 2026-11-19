@@ -113,11 +113,58 @@ export function EmrTabs({
   const t = useEmrTheme();
   const l = { ...interactiveLabelDefaults, ...labels };
   const refs = useRef<FocusRef>([]);
+  const scrollHostRef = useRef<unknown>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const resolvedActive = resolveActiveTabValue(tabs, value, active);
   const tabStopIndex = resolveTabStopIndex(tabs, resolvedActive, disabled);
   const isVertical = orientation === 'vertical';
   const minH = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
   const fontSize = size === 'sm' ? t.textSm : size === 'lg' ? t.textLg : t.textMd;
+
+  const updateScrollOverflow = () => {
+    if (Platform.OS !== 'web' || isVertical) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      return;
+    }
+    const el = scrollHostRef.current as unknown as {
+      scrollLeft?: number;
+      clientWidth?: number;
+      scrollWidth?: number;
+    } | null;
+    if (!el || typeof el.scrollWidth !== 'number' || typeof el.clientWidth !== 'number') return;
+    const sl = el.scrollLeft ?? 0;
+    setCanScrollLeft(sl > 2);
+    setCanScrollRight(sl + el.clientWidth < el.scrollWidth - 2);
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || isVertical) return;
+    const el = scrollHostRef.current as unknown as HTMLElement | null;
+    if (!el || typeof el.addEventListener !== 'function') return;
+    const onScroll = () => updateScrollOverflow();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => updateScrollOverflow());
+      ro.observe(el);
+    }
+    queueMicrotask(updateScrollOverflow);
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      ro?.disconnect();
+    };
+  }, [isVertical, tabs.length, size, fitted, variant]);
+
+  const scrollTabsBy = (dir: -1 | 1) => {
+    const el = scrollHostRef.current as unknown as {
+      clientWidth?: number;
+      scrollBy?: (opts: { left: number; behavior?: 'smooth' | 'auto' }) => void;
+    } | null;
+    if (!el?.scrollBy) return;
+    el.scrollBy({ left: dir * Math.max(140, Math.round((el.clientWidth ?? 240) * 0.65)), behavior: 'smooth' });
+  };
 
   const emitTab = (next: string) => {
     if (next === resolvedActive) return;
@@ -164,7 +211,7 @@ export function EmrTabs({
           borderLeftColor: t.border,
           gap: 2,
         },
-        variant === 'underline' && !isVertical && { borderBottomColor: t.border, borderBottomWidth: 1, width: '100%', gap: 4 },
+        variant === 'underline' && !isVertical && { borderBottomColor: t.border, borderBottomWidth: 1, minWidth: '100%', gap: 4 },
         variant === 'pill' && {
           borderBottomWidth: 0,
           backgroundColor: t.surfaceSoft,
@@ -175,8 +222,8 @@ export function EmrTabs({
           gap: 4,
           alignSelf: fitted && !isVertical ? 'stretch' : 'flex-start',
         },
-        variant === 'soft' && { borderBottomWidth: 0, gap: 6, width: '100%' },
-        fitted && !isVertical && { width: '100%' },
+        variant === 'soft' && { borderBottomWidth: 0, gap: 6, minWidth: '100%' },
+        fitted && !isVertical && { width: '100%', minWidth: '100%' },
       ]}
     >
       {tabs.map((tab, i) => {
@@ -289,13 +336,65 @@ export function EmrTabs({
   if (isVertical) return listNode;
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={variant !== 'pill' || fitted ? { flexGrow: 1 } : undefined}
-    >
-      {listNode}
-    </ScrollView>
+    <View style={{ flexDirection: 'row', alignItems: 'center', maxWidth: '100%', minWidth: 0 }}>
+      {Platform.OS === 'web' && canScrollLeft ? (
+        <Pressable
+          role="button"
+          aria-label="Scroll tabs left"
+          onPress={() => scrollTabsBy(-1)}
+          {...(webProps({ 'data-emr-print': 'hide' }) as object)}
+          style={({ hovered, focused }: PressState & { hovered?: boolean; focused?: boolean }) => ({
+            minWidth: 44,
+            width: 44,
+            minHeight: Math.max(44, minH),
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: hovered ? t.surfaceSoft : t.surface,
+            borderBottomWidth: variant === 'underline' ? 1 : 0,
+            borderBottomColor: t.border,
+            flexShrink: 0,
+            ...focusRing(t, !!focused),
+          })}
+        >
+          <SvgIcon name="chevron-left" size={16} color={t.textMuted} />
+        </Pressable>
+      ) : null}
+      <ScrollView
+        ref={el => {
+          scrollHostRef.current = el;
+        }}
+        horizontal
+        showsHorizontalScrollIndicator
+        style={{ flex: 1, minWidth: 0 }}
+        contentContainerStyle={variant !== 'pill' || fitted ? { flexGrow: 1 } : undefined}
+        onContentSizeChange={() => updateScrollOverflow()}
+        onLayout={() => updateScrollOverflow()}
+      >
+        {listNode}
+      </ScrollView>
+      {Platform.OS === 'web' && canScrollRight ? (
+        <Pressable
+          role="button"
+          aria-label="Scroll tabs right"
+          onPress={() => scrollTabsBy(1)}
+          {...(webProps({ 'data-emr-print': 'hide' }) as object)}
+          style={({ hovered, focused }: PressState & { hovered?: boolean; focused?: boolean }) => ({
+            minWidth: 44,
+            width: 44,
+            minHeight: Math.max(44, minH),
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: hovered ? t.surfaceSoft : t.surface,
+            borderBottomWidth: variant === 'underline' ? 1 : 0,
+            borderBottomColor: t.border,
+            flexShrink: 0,
+            ...focusRing(t, !!focused),
+          })}
+        >
+          <SvgIcon name="chevron-right" size={16} color={t.textMuted} />
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -1172,6 +1271,7 @@ export function EmrStageStepper({
   const t = useEmrTheme();
   const l = { ...interactiveLabelDefaults, ...labels };
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [narrowContainer, setNarrowContainer] = useState(false);
   const refs = useRef<FocusRef>([]);
   const orientation = normalizeEmrStageStepperOrientation(orientationProp);
   const size = normalizeEmrStageStepperSize(sizeProp);
@@ -1182,9 +1282,18 @@ export function EmrStageStepper({
     e.preventDefault();
     refs.current[target]?.focus();
   };
-  const vertical = orientation === 'vertical';
+  const vertical = orientation === 'vertical' || narrowContainer;
   return (
-    <View nativeID={controlId} role="navigation" aria-label={ariaLabel ?? l.stagesAria} style={disabled ? { opacity: 0.55 } : undefined}>
+    <View
+      nativeID={controlId}
+      role="navigation"
+      aria-label={ariaLabel ?? l.stagesAria}
+      onLayout={e => {
+        const w = e.nativeEvent.layout.width;
+        if (w > 0) setNarrowContainer(w < 560);
+      }}
+      style={disabled ? { opacity: 0.55 } : undefined}
+    >
       <View
         role="list"
         style={[

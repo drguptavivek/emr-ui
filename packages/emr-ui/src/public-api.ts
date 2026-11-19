@@ -50,16 +50,23 @@ export * from './lib/structures/emr-repeatable-group.component';
 export * from './lib/structures/emr-clinical-form.component';
 export * from './lib/structures/emr-clinical-list.component';
 export * from './lib/structures/emr-clinical-matrix.component';
+export * from './lib/structures/emr-annotation-toolbar.logic';
 export * from './lib/structures/emr-annotation-toolbar.component';
+export * from './lib/structures/emr-annotation-list.logic';
 export * from './lib/structures/emr-annotation-list.component';
+export * from './lib/structures/emr-image-template-picker.logic';
 export * from './lib/structures/emr-image-template-picker.component';
+export * from './lib/structures/emr-time-axis.logic';
 export * from './lib/structures/emr-time-axis.component';
+export * from './lib/structures/emr-data-table.logic';
 export * from './lib/structures/emr-data-table.component';
+export * from './lib/structures/emr-workstation-containers.logic';
 export * from './lib/structures/emr-workstation-containers.component';
 
 // ---------------------------------------------------------------------
 // L4 domain
 // ---------------------------------------------------------------------
+export * from './lib/domain/emr-clinical-lists.component';
 export * from './lib/domain/emr-patient-banner.component';
 export * from './lib/domain/emr-patient-list.component';
 export * from './lib/domain/emr-timeline.component';
@@ -101,6 +108,7 @@ export * from './lib/recipes/clinical-schemas/index';
 // ---------------------------------------------------------------------
 // L6 authoring
 // ---------------------------------------------------------------------
+export * from './lib/authoring/emr-authoring.logic';
 export * from './lib/authoring/emr-field-generator.component';
 export * from './lib/authoring/emr-terminology-search.component';
 export * from './lib/authoring/emr-validation-rule-editor.component';

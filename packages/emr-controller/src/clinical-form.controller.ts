@@ -1,12 +1,101 @@
 import { StateController } from './contracts.js';
+import { isEmptyValue } from './form-logic.js';
 import type {
   ClinicalFieldDefinition,
+  ClinicalFieldState,
+  ClinicalFieldValue,
   ClinicalFormIntent,
+  ClinicalFormSection,
   ClinicalFormViewModel,
   RepeatableGroupDefinition,
   RepeatableItemState,
-  ClinicalFieldState,
 } from './clinical-form.models.js';
+
+function normalizePrefix(idPrefix?: string): string {
+  return idPrefix ? idPrefix.trim().replace(/-+$/, '') : '';
+}
+
+/** A hidden field is skipped only while empty: a hidden field with a value stays visible. */
+export function isFieldShown(state?: { hidden?: boolean; value: ClinicalFieldValue }): boolean {
+  return !state?.hidden || !isEmptyValue(state.value);
+}
+
+/** A section is drawn while any block in it would show; repeatables always count (they carry Add). */
+export function isSectionShown(
+  section: Pick<ClinicalFormSection, 'blocks'>,
+  fields: Readonly<Record<string, ClinicalFieldState | undefined>>,
+): boolean {
+  return section.blocks.some(block => {
+    if (block.kind === 'repeatable') return true;
+    if (block.kind === 'matrix') {
+      return block.rows.some(row => Object.values(row.cells).some(cell => isFieldShown(fields[cell.id])));
+    }
+    return isFieldShown(fields[block.id]);
+  });
+}
+
+/** Resolves a deterministic DOM id for a clinical form section or element. */
+export function resolveClinicalFormDomId(value: string, idPrefix?: string): string {
+  const prefix = normalizePrefix(idPrefix);
+  return prefix ? `${prefix}-${value}` : value;
+}
+
+/** Resolves a deterministic control id for a field inside a clinical form. */
+export function resolveClinicalFormControlId(
+  schemaId: string,
+  fieldId: string,
+  idPrefix?: string,
+  itemId?: string,
+): string {
+  const base = `${schemaId}-${itemId ? `${itemId}-` : ''}${fieldId}`;
+  return resolveClinicalFormDomId(base, idPrefix);
+}
+
+/** Resolves the deterministic heading id for a repeatable group region. */
+export function resolveRepeatableHeadingId(
+  groupId: string,
+  idPrefix?: string,
+  headingId?: string,
+): string {
+  if (headingId && headingId.trim()) return headingId.trim();
+  const prefix = normalizePrefix(idPrefix);
+  return prefix ? `${prefix}-${groupId}-heading` : `${groupId}-heading`;
+}
+
+/** Resolves the deterministic control id for a field inside a repeatable item. */
+export function resolveRepeatableControlId(
+  groupId: string,
+  itemId: string,
+  fieldId: string,
+  idPrefix?: string,
+): string {
+  const prefix = normalizePrefix(idPrefix);
+  const base = `${groupId}-${itemId}-${fieldId}`;
+  return prefix ? `${prefix}-${base}` : base;
+}
+
+/** Returns true when a repeatable group can accept another item. */
+export function canAddRepeatableItem(
+  definition: Pick<RepeatableGroupDefinition, 'maxItems'>,
+  items: readonly RepeatableItemState[],
+  readOnly = false,
+): boolean {
+  if (readOnly) return false;
+  if (definition.maxItems !== undefined && items.length >= definition.maxItems) return false;
+  return true;
+}
+
+/** Returns true when a specific item in a repeatable group can be removed. */
+export function canRemoveRepeatableItem(
+  definition: Pick<RepeatableGroupDefinition, 'minItems'>,
+  items: readonly RepeatableItemState[],
+  item: Pick<RepeatableItemState, 'readOnly'>,
+  readOnly = false,
+): boolean {
+  if (readOnly || item.readOnly) return false;
+  if (items.length <= (definition.minItems ?? 0)) return false;
+  return true;
+}
 
 /** Pure state adapter for the schema-driven clinical form presentation. */
 export class ClinicalFormController extends StateController<ClinicalFormViewModel, ClinicalFormIntent> {
@@ -81,8 +170,9 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
     if (!this.fieldDefinition(fieldId)) return;
     this.setState(state => {
       const current = state.fields[fieldId];
-      if (!current || state.readOnly || current.readOnly || current.disabled) return state;
-      return { ...state, fields: { ...state.fields, [fieldId]: { ...current, value } } };
+      if (state.readOnly || current?.readOnly || current?.disabled) return state;
+      const next: ClinicalFieldState = current ? { ...current, value } : { value };
+      return { ...state, fields: { ...state.fields, [fieldId]: next } };
     });
   }
 
@@ -90,8 +180,11 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
     if (!this.fieldDefinition(fieldId)) return;
     this.setState(state => {
       const current = state.fields[fieldId];
-      if (!current || state.readOnly || current.readOnly || current.disabled) return state;
-      return { ...state, fields: { ...state.fields, [fieldId]: { ...current, assessmentStatus: status } } };
+      if (state.readOnly || current?.readOnly || current?.disabled) return state;
+      const next: ClinicalFieldState = current
+        ? { ...current, assessmentStatus: status }
+        : { value: null, assessmentStatus: status };
+      return { ...state, fields: { ...state.fields, [fieldId]: next } };
     });
   }
 
@@ -100,9 +193,11 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
     if (!definition) return;
     this.setState(state => {
       if (state.readOnly) return state;
+      const existing = state.repeatableGroups[groupId] ?? [];
+      if (definition.maxItems !== undefined && existing.length >= definition.maxItems) return state;
       // Rehydrated models may already hold ids from a prior session; never reuse one —
       // a duplicate id makes editItem/removeItem hit every matching row.
-      const taken = new Set((state.repeatableGroups[groupId] ?? []).map(item => item.id));
+      const taken = new Set(existing.map(item => item.id));
       let id = `${groupId}-${++this.sequence}`;
       while (taken.has(id)) id = `${groupId}-${++this.sequence}`;
       const fields: Readonly<Record<string, ClinicalFieldState>> = Object.fromEntries(
@@ -111,7 +206,7 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
       const item: RepeatableItemState = { id, fields };
       return {
         ...state,
-        repeatableGroups: { ...state.repeatableGroups, [groupId]: [...(state.repeatableGroups[groupId] ?? []), item] },
+        repeatableGroups: { ...state.repeatableGroups, [groupId]: [...existing, item] },
       };
     });
   }
@@ -122,10 +217,12 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
     this.setState(state => {
       if (state.readOnly) return state;
       const item = state.repeatableGroups[groupId]?.find(candidate => candidate.id === itemId);
-      const current = item?.fields[fieldId];
-      if (!item || !current || item.readOnly || current.readOnly || current.disabled) return state;
+      if (!item || item.readOnly) return state;
+      const current = item.fields[fieldId];
+      if (current?.readOnly || current?.disabled) return state;
+      const nextField: ClinicalFieldState = current ? { ...current, value } : { value };
       const items = state.repeatableGroups[groupId].map(candidate => candidate.id === itemId
-        ? { ...candidate, fields: { ...candidate.fields, [fieldId]: { ...current, value } } }
+        ? { ...candidate, fields: { ...candidate.fields, [fieldId]: nextField } }
         : candidate);
       return { ...state, repeatableGroups: { ...state.repeatableGroups, [groupId]: items } };
     });
@@ -137,20 +234,31 @@ export class ClinicalFormController extends StateController<ClinicalFormViewMode
     this.setState(state => {
       if (state.readOnly) return state;
       const item = state.repeatableGroups[groupId]?.find(candidate => candidate.id === itemId);
-      const current = item?.fields[fieldId];
-      if (!item || !current || item.readOnly || current.readOnly || current.disabled) return state;
+      if (!item || item.readOnly) return state;
+      const current = item.fields[fieldId];
+      if (current?.readOnly || current?.disabled) return state;
+      const nextField: ClinicalFieldState = current
+        ? { ...current, assessmentStatus: status }
+        : { value: null, assessmentStatus: status };
       const items = state.repeatableGroups[groupId].map(candidate => candidate.id === itemId
-        ? { ...candidate, fields: { ...candidate.fields, [fieldId]: { ...current, assessmentStatus: status } } }
+        ? { ...candidate, fields: { ...candidate.fields, [fieldId]: nextField } }
         : candidate);
       return { ...state, repeatableGroups: { ...state.repeatableGroups, [groupId]: items } };
     });
   }
 
   private removeItem(groupId: string, itemId: string): void {
-    if (!this.groupDefinition(groupId)) return;
-    this.setState(state => state.readOnly ? state : {
-      ...state,
-      repeatableGroups: { ...state.repeatableGroups, [groupId]: (state.repeatableGroups[groupId] ?? []).filter(item => item.id !== itemId) },
+    const definition = this.groupDefinition(groupId);
+    if (!definition) return;
+    this.setState(state => {
+      if (state.readOnly) return state;
+      const items = state.repeatableGroups[groupId] ?? [];
+      const item = items.find(candidate => candidate.id === itemId);
+      if (!item || item.readOnly || items.length <= (definition.minItems ?? 0)) return state;
+      return {
+        ...state,
+        repeatableGroups: { ...state.repeatableGroups, [groupId]: items.filter(candidate => candidate.id !== itemId) },
+      };
     });
   }
 

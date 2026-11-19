@@ -15,6 +15,20 @@ import type {
 } from './terminology.models.js';
 
 const DEFAULT_PAGE_SIZE = 20;
+const clinicalFieldTypes = new Set([
+  'text',
+  'multiline',
+  'integer',
+  'decimal',
+  'date',
+  'time',
+  'datetime',
+  'select',
+  'multiselect',
+  'boolean',
+  'quantity',
+  'custom',
+]);
 
 type SearchRequest = { controller: AbortController; sequence: number };
 
@@ -336,6 +350,13 @@ export function validateFieldDefinition(draft: EmrGeneratedFieldDefinition): Rea
   const value = draft.defaultValue;
   if (!draft.id.trim()) errors['field-id'] = 'A stable field id is required.';
   if (!draft.label.trim()) errors['field-label'] = 'A field label is required.';
+  if (!clinicalFieldTypes.has(draft.type)) errors['type'] = 'Unsupported field value type.';
+  if (draft.type === 'time' && !isEmpty(value) && (typeof value !== 'string' || !isValidIsoTime(value))) {
+    errors['defaultValue'] = 'Default value must be a valid HH:MM or HH:MM:SS time.';
+  }
+  if (draft.type === 'datetime' && !isEmpty(value) && (typeof value !== 'string' || !isValidIsoDateTime(value))) {
+    errors['defaultValue'] = 'Default value must be a valid ISO-8601 date-time.';
+  }
   if (draft.type === 'quantity' && !draft.unitCode?.trim()) errors['unitCode'] = 'A unit code is required for quantity fields.';
   if (draft.type === 'quantity' && !draft.unitSystem?.trim()) errors['unitSystem'] = 'A unit system is required for quantity fields.';
   if (draft.type === 'select' || draft.type === 'multiselect') {
@@ -420,10 +441,11 @@ function validationMessage(rule: FieldValidationRule, draft: EmrGeneratedFieldDe
       return undefined;
     case 'earliest-date':
     case 'latest-date':
-      if (type !== 'date') return `Validation rule ${rule.kind} is not compatible with ${type}.`;
+      if (type !== 'date' && type !== 'datetime') return `Validation rule ${rule.kind} is not compatible with ${type}.`;
       if (!isValidIsoDate(rule.value)) return 'Date validation boundary must use a valid YYYY-MM-DD date.';
       if (!isEmpty(value)) {
-        const actual = String(value);
+        const raw = String(value);
+        const actual = type === 'datetime' ? raw.slice(0, 10) : raw;
         if (rule.kind === 'earliest-date' && actual < rule.value) return rule.message ?? `Date must be on or after ${rule.value}.`;
         if (rule.kind === 'latest-date' && actual > rule.value) return rule.message ?? `Date must be on or before ${rule.value}.`;
       }
@@ -451,6 +473,16 @@ function isValidIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function isValidIsoTime(value: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value);
+}
+
+function isValidIsoDateTime(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?$/.test(value)) return false;
+  const datePart = value.slice(0, 10);
+  return isValidIsoDate(datePart) && !Number.isNaN(Date.parse(value));
 }
 
 function lengthOf(value: unknown): number | undefined {

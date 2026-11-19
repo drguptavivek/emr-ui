@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type {
   EmrCommandPaletteViewModel,
@@ -14,6 +16,7 @@ import {
   registerL3WorkstationElements,
 } from './l3-workstation.js';
 
+const litSource = readFileSync(join(process.cwd(), 'packages/emr-elements/src/l3-workstation.ts'), 'utf8');
 const mounted: HTMLElement[] = [];
 
 async function mount<T extends HTMLElement & { updateComplete: Promise<boolean> }>(
@@ -35,15 +38,23 @@ afterEach(() => {
 });
 
 describe('Lit L3 Workstation Elements', () => {
-  it('registers all 4 workstation elements and emits presetChanged, paneResized, paneCollapsedToggled, and mobilePaneSelected on <emr-split-workspace>', async () => {
+  it('uses monochrome SVG icons, >=44px targets, @container rules, zero native ?disabled, and zero raw glyphs', () => {
+    expect(litSource).not.toMatch(/[✕★●‹›⋮▸▾←✓◷]/);
+    expect(litSource).not.toContain('?disabled=');
+    expect(litSource).toContain('min-height: 44px');
+    expect(litSource).toContain('@container (max-width: 720px)');
+    expect(litSource).toContain('renderEmrSvgIcon');
+  });
+
+  it('registers all 4 workstation elements and emits presetChanged, paneResized (with minWidthPct + Home/End), paneCollapsedToggled, and mobilePaneSelected on <emr-split-workspace>', async () => {
     const model: EmrSplitWorkspaceViewModel = {
       id: 'ws-lit',
       title: 'Retina Split Workstation',
       preset: '3-pane',
       paneSizes: [25, 50, 25],
       panes: [
-        { id: 'p1', slot: 'pane-primary', title: 'Chart Review', summaryItems: ['OCT OD 412 µm'] },
-        { id: 'p2', slot: 'pane-secondary', title: 'Clinical Note' },
+        { id: 'p1', slot: 'pane-primary', title: 'Chart Review', minWidthPct: 20, summaryItems: ['OCT OD 412 µm'] },
+        { id: 'p2', slot: 'pane-secondary', title: 'Clinical Note', minWidthPct: 30 },
         { id: 'p3', slot: 'pane-tertiary', title: 'PACS & CDS', collapsible: true, collapsed: false },
       ],
     };
@@ -61,12 +72,31 @@ describe('Lit L3 Workstation Elements', () => {
     });
 
     const divider = element.shadowRoot!.querySelector('[role="separator"]') as HTMLElement;
+    expect(divider.querySelectorAll('button')).toHaveLength(0);
+    expect(divider.getAttribute('aria-valuemin')).toBe('20');
+    expect(divider.getAttribute('aria-valuemax')).toBe('45');
     divider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     expect(intents.at(-1)).toEqual({
       type: 'paneResized',
       dividerIndex: 0,
       deltaPct: 5,
       paneSizes: [30, 45, 25],
+    });
+
+    divider.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    expect(intents.at(-1)).toEqual({
+      type: 'paneResized',
+      dividerIndex: 0,
+      deltaPct: -100,
+      paneSizes: [20, 55, 25],
+    });
+
+    divider.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    expect(intents.at(-1)).toEqual({
+      type: 'paneResized',
+      dividerIndex: 0,
+      deltaPct: 100,
+      paneSizes: [45, 30, 25],
     });
 
     buttons.find((b) => b.textContent?.trim() === 'Collapse')!.click();
@@ -84,7 +114,7 @@ describe('Lit L3 Workstation Elements', () => {
     });
   });
 
-  it('emits queryChanged, categoryChanged, itemHighlighted, commandExecuted, and dismissed on <emr-command-palette>', async () => {
+  it('emits queryChanged, categoryChanged, itemHighlighted, commandExecuted, and dismissed on <emr-command-palette> with combobox ARIA + inline/modal presentation', async () => {
     const model: EmrCommandPaletteViewModel = {
       id: 'cmd-lit',
       title: 'Clinical Command Palette',
@@ -102,6 +132,10 @@ describe('Lit L3 Workstation Elements', () => {
     expect(element.shadowRoot!.textContent).toContain('Order Macular OCT');
 
     const input = element.shadowRoot!.querySelector('input[type="search"]') as HTMLInputElement;
+    expect(input.getAttribute('role')).toBe('combobox');
+    expect(input.getAttribute('aria-expanded')).toBe('true');
+    expect(input.getAttribute('aria-activedescendant')).toBe('emr-cmd-cmd-lit-opt-c1');
+
     input.value = 'oct';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(intents.at(-1)).toEqual({ type: 'queryChanged', query: 'oct' });
@@ -123,9 +157,14 @@ describe('Lit L3 Workstation Elements', () => {
 
     dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(intents.at(-1)).toEqual({ type: 'dismissed' });
+
+    element.model = { ...model, presentation: 'inline' };
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('[role="dialog"]')).toBeNull();
+    expect(element.shadowRoot!.querySelector('[role="region"]')).not.toBeNull();
   });
 
-  it('emits searchChanged, filterChanged, itemSelected, detailClosed, batchSelectionToggled, and actionTriggered on <emr-master-detail>', async () => {
+  it('emits searchChanged, filterChanged, itemSelected, detailClosed, batchSelectionToggled, and actionTriggered on <emr-master-detail> without nested interactive options', async () => {
     const model: EmrMasterDetailViewModel = {
       id: 'md-lit',
       title: 'Clinical Inbox',
@@ -157,6 +196,7 @@ describe('Lit L3 Workstation Elements', () => {
     const { element, intents } = await mount<EmrMasterDetailElement>('emr-master-detail', { model });
     expect(element.shadowRoot!.textContent).toContain('Critical IOP 38 mmHg OD');
     expect(element.shadowRoot!.textContent).toContain('Stat Acetazolamide advised.');
+    expect(element.shadowRoot!.querySelector('[role="option"]')).toBeNull();
 
     const search = element.shadowRoot!.querySelector('input[type="search"]') as HTMLInputElement;
     search.value = 'iop';
@@ -169,8 +209,8 @@ describe('Lit L3 Workstation Elements', () => {
     filterBtn.click();
     expect(intents.at(-1)).toEqual({ type: 'filterChanged', filterId: 'critical' });
 
-    const options = [...element.shadowRoot!.querySelectorAll('[role="option"]')] as HTMLButtonElement[];
-    options[1]!.click();
+    const itemButtons = [...element.shadowRoot!.querySelectorAll('button.md-item-btn')] as HTMLButtonElement[];
+    itemButtons[1]!.click();
     expect(intents.at(-1)).toEqual({ type: 'itemSelected', itemId: 'm2' });
 
     const checkboxes = [...element.shadowRoot!.querySelectorAll('input[type="checkbox"]')] as HTMLInputElement[];
@@ -193,7 +233,7 @@ describe('Lit L3 Workstation Elements', () => {
     });
   });
 
-  it('emits resolutionChanged, scrollOffsetChanged, columnSelected, trackToggled, and cellSelected on <emr-synchronized-time-grid>', async () => {
+  it('emits resolutionChanged, scrollOffsetChanged, columnSelected, trackToggled, and cellSelected on <emr-synchronized-time-grid> and gates Later at max offset', async () => {
     const model: EmrSynchronizedTimeGridViewModel = {
       id: 'stg-lit',
       title: 'Synchronized ICU Time Grid',
@@ -210,13 +250,22 @@ describe('Lit L3 Workstation Elements', () => {
           id: 'trk-vitals',
           title: 'Vitals Flowsheet',
           kind: 'vitals',
+          badge: { label: 'Live', tone: 'info' },
           rows: [
             {
               id: 'r-iop',
               label: 'IOP OD',
               unitLabel: 'mmHg',
               cells: {
-                c08: { columnId: 'c08', valueLabel: '24', secondaryLabel: 'GAT' },
+                c08: {
+                  columnId: 'c08',
+                  valueLabel: '24',
+                  secondaryLabel: 'GAT',
+                  abnormalTone: 'warning',
+                  badge: { label: 'High', tone: 'warning' },
+                  sparklineNorm: 0.8,
+                  note: 'Verify CCT',
+                },
               },
             },
           ],
@@ -229,27 +278,49 @@ describe('Lit L3 Workstation Elements', () => {
       { model },
     );
     expect(element.shadowRoot!.textContent).toContain('Synchronized ICU Time Grid');
+    expect(element.shadowRoot!.textContent).toContain('Live');
+    expect(element.shadowRoot!.textContent).toContain('High');
+    expect(element.shadowRoot!.textContent).toContain('Verify CCT');
+    expect(element.shadowRoot!.querySelectorAll('[role="row"]')).toHaveLength(0);
+    expect(element.shadowRoot!.querySelectorAll('[role="rowheader"]')).toHaveLength(0);
 
     const buttons = [...element.shadowRoot!.querySelectorAll('button')];
+    const earlierBtn = buttons.find((b) => b.getAttribute('aria-label') === 'Scroll earlier')!;
+    const laterBtn = buttons.find((b) => b.getAttribute('aria-label') === 'Scroll later')!;
+    expect(earlierBtn.getAttribute('aria-disabled')).toBe('true');
+    expect(laterBtn.getAttribute('aria-disabled')).toBeNull();
+
     buttons.find((b) => b.textContent?.trim() === '15m')!.click();
     expect(intents.at(-1)).toEqual({ type: 'resolutionChanged', resolution: '15m' });
 
-    buttons.find((b) => b.textContent?.includes('Later'))!.click();
+    laterBtn.click();
     expect(intents.at(-1)).toEqual({ type: 'scrollOffsetChanged', offset: 1 });
 
-    buttons.find((b) => b.textContent?.includes('08:00'))!.click();
+    // At max offset (3 cols - 2 visible = 1), Later becomes aria-disabled="true" and guarded
+    element.model = { ...model, scrollOffset: 1 };
+    await element.updateComplete;
+    const laterAtMax = element.shadowRoot!.querySelector('[aria-label="Scroll later"]') as HTMLButtonElement;
+    expect(laterAtMax.getAttribute('aria-disabled')).toBe('true');
+    const prevLen = intents.length;
+    laterAtMax.click();
+    expect(intents).toHaveLength(prevLen);
+
+    element.model = model;
+    await element.updateComplete;
+    const resetButtons = [...element.shadowRoot!.querySelectorAll('button')];
+    resetButtons.find((b) => b.textContent?.includes('08:00'))!.click();
     expect(intents.at(-1)).toEqual({ type: 'columnSelected', columnId: 'c08' });
 
-    buttons.find((b) => b.textContent?.includes('Vitals Flowsheet'))!.click();
+    resetButtons.find((b) => b.textContent?.includes('Vitals Flowsheet'))!.click();
     expect(intents.at(-1)).toEqual({ type: 'trackToggled', trackId: 'trk-vitals', collapsed: true });
 
-    buttons.find((b) => b.textContent?.includes('GAT'))!.click();
+    resetButtons.find((b) => b.textContent?.includes('GAT'))!.click();
     expect(intents.at(-1)).toEqual({
       type: 'cellSelected',
       trackId: 'trk-vitals',
       rowId: 'r-iop',
       columnId: 'c08',
-      cell: { columnId: 'c08', valueLabel: '24', secondaryLabel: 'GAT' },
+      cell: model.tracks[0]!.rows[0]!.cells['c08'],
     });
   });
 });
