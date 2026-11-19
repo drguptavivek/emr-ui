@@ -74,7 +74,7 @@ export const gallery: GallerySection[] = [
   { id: 'status-cell', title: 'EmrStatusCell', render: () => (
     <View style={stack}>
       <EmrStatusCell status={badge('success', 'Recorded')} valueLabel="120/80" attribution={{ nameLabel: 'A. Example', roleLabel: 'Nurse', timeLabel: '09:30' }}
-        action={{ label: 'Edit', icon: '✎' }} secondaryNote="Synthetic note" onIntent={() => {}} />
+        action={{ label: 'Edit', icon: 'pen' }} secondaryNote="Synthetic note" onIntent={() => {}} />
       <EmrStatusCell status={badge('warning', 'Not assessed')} selectable onIntent={() => {}} />
       <EmrStatusCell status={badge('danger', 'Refused')} valueLabel="Hidden when compact" compact />
       <EmrStatusCell status={badge('neutral', 'Read only')} valueLabel="42" action={{ label: 'Edit' }} readOnly />
