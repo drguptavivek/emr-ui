@@ -25,6 +25,10 @@ import type {
   EmrSegmentedShape,
   EmrSegmentedSize,
   EmrSegmentedVariant,
+  EmrToggleGroupLabelPlacement,
+  EmrToggleGroupOrientation,
+  EmrToggleGroupSize,
+  EmrToggleGroupVariant,
   EmrTone,
 } from '@drguptavivek/emr-controller';
 import { NumberInput, ThemedInput } from './inputs-core';
@@ -35,6 +39,7 @@ import { webProps, type WebKeyEvent } from './l1-interactive-shared';
 import {
   canClearEmrSegmentedControl,
   clearCheckboxGroupValue,
+  clearEmrToggleGroupValues,
   computeSelectAllState,
   formatCheckboxSelectionCount,
   formatEmrSegmentedBadge,
@@ -48,10 +53,17 @@ import {
   normalizeEmrSegmentedShape,
   normalizeEmrSegmentedSize,
   normalizeEmrSegmentedVariant,
+  normalizeEmrToggleGroupLabelPlacement,
+  normalizeEmrToggleGroupOrientation,
+  normalizeEmrToggleGroupSize,
+  normalizeEmrToggleGroupVariant,
   resolveEmrSegmentedSelectAction,
   resolveEmrSegmentedTabStopValue,
   resolveEmrSegmentedValidationState,
+  resolveEmrToggleGroupValues,
+  resolveEmrToggleStateLabel,
   toggleCheckboxGroupValue,
+  toggleEmrToggleGroupValue,
   toggleSelectAllValues,
 } from './l1-wave2.logic';
 import { useEmrLabels } from './labels';
@@ -287,6 +299,8 @@ export function EmrSegmentedControl({
   label,
   labelHidden,
   ariaLabel,
+  ariaLabelledBy,
+  ariaDescribedBy,
   options,
   value,
   size = 'md',
@@ -300,6 +314,7 @@ export function EmrSegmentedControl({
   name,
   required,
   invalid,
+  hasWarning,
   warning,
   readOnly,
   disabled,
@@ -316,6 +331,8 @@ export function EmrSegmentedControl({
   label?: string;
   labelHidden?: boolean;
   ariaLabel?: string;
+  ariaLabelledBy?: string;
+  ariaDescribedBy?: string;
   options: readonly EmrSegmentedOption[];
   value: string | null;
   size?: EmrSegmentedSize;
@@ -329,6 +346,7 @@ export function EmrSegmentedControl({
   name?: string;
   required?: boolean;
   invalid?: boolean;
+  hasWarning?: boolean;
   warning?: string;
   readOnly?: boolean;
   disabled?: boolean;
@@ -368,11 +386,12 @@ export function EmrSegmentedControl({
   const resolvedVariant = normalizeEmrSegmentedVariant(variant);
   const resolvedShape = normalizeEmrSegmentedShape(shape);
   const resolvedOrientation = normalizeEmrSegmentedOrientation(orientation);
-  const validation = resolveEmrSegmentedValidationState({ error, warning, invalid });
+  const validation = resolveEmrSegmentedValidationState({ error, warning, invalid, hasWarning });
   const showClear = canClearEmrSegmentedControl({ clearable, value, disabled, readOnly });
   const resolvedClearLabel = clearLabel ?? labels.clear;
   const tabStopValue = resolveEmrSegmentedTabStopValue(options, activeFocusValue ?? value, disabled);
   const hasMessage = Boolean(hint || warning || error);
+  const computedDescribedBy = [ariaDescribedBy, hasMessage ? `${id}-message` : undefined].filter(Boolean).join(' ') || undefined;
 
   const handleChildFocus = () => {
     if (blurTimerRef.current) {
@@ -473,6 +492,7 @@ export function EmrSegmentedControl({
     <Pressable
       role="button"
       aria-label={`${resolvedClearLabel} ${ariaLabel ?? label ?? 'selection'}`}
+      {...(Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : {})}
       onPress={() => {
         if (disabled || readOnly) return;
         onValueChange(null);
@@ -515,14 +535,14 @@ export function EmrSegmentedControl({
         ref={groupRef as never}
         nativeID={id}
         role="radiogroup"
-        aria-labelledby={!ariaLabel && label && !labelHidden ? `${id}-label` : undefined}
-        aria-label={ariaLabel ?? (labelHidden ? (label || 'Segmented options') : (!label ? 'Segmented options' : undefined))}
+        aria-labelledby={ariaLabelledBy || (!ariaLabel && label && !labelHidden ? `${id}-label` : undefined)}
+        aria-label={ariaLabel ?? (!ariaLabelledBy && (labelHidden || !label) ? (label || 'Segmented options') : undefined)}
         aria-required={required || undefined}
         aria-readonly={readOnly || undefined}
         aria-disabled={disabled || undefined}
         aria-orientation={resolvedOrientation}
         aria-invalid={validation.isInvalid ? true : undefined}
-        aria-describedby={hasMessage ? `${id}-message` : undefined}
+        aria-describedby={computedDescribedBy}
         {...(Platform.OS === 'web'
           ? webProps({
               ...(name ? { 'data-name': name } : {}),
@@ -569,11 +589,10 @@ export function EmrSegmentedControl({
               disabled={optDisabled}
               onFocus={handleChildFocus}
               onBlur={handleChildBlur}
-              onPress={Platform.OS !== 'web' && !optDisabled && !optReadOnly ? () => handleSelect(opt) : undefined}
+              onPress={!optDisabled && !optReadOnly ? () => handleSelect(opt) : undefined}
               {...(Platform.OS === 'web'
                 ? ({
                     tabIndex: isTabStop ? 0 : -1,
-                    onClick: !optDisabled && !optReadOnly ? () => handleSelect(opt) : undefined,
                     onKeyDown: (e: {
                       key?: string;
                       preventDefault?: () => void;
@@ -588,11 +607,12 @@ export function EmrSegmentedControl({
                 resolvedOrientation === 'vertical' && styles.segmentBtnVertical,
                 resolvedShape === 'pill' && { borderRadius: 9999 },
                 resolvedSize === 'sm' && { paddingHorizontal: 10, paddingVertical: 4, gap: 4 },
+                resolvedSize === 'lg' && { paddingHorizontal: 14, paddingVertical: 8 },
                 opt.description ? { paddingVertical: 8 } : null,
                 focusRing(t, focused),
                 {
-                  minHeight: 44,
-                  minWidth: 44,
+                  minHeight: resolvedSize === 'lg' ? 48 : 44,
+                  minWidth: resolvedSize === 'lg' ? 48 : 44,
                   backgroundColor: selected
                     ? t.surface
                     : !optDisabled && !optReadOnly && pressed
@@ -617,7 +637,7 @@ export function EmrSegmentedControl({
                 <Text
                   style={{
                     color: selected ? activeColor : t.text,
-                    fontSize: resolvedSize === 'sm' ? t.textXs : t.textSm,
+                    fontSize: resolvedSize === 'sm' ? t.textSm : t.textMd,
                     fontWeight: fontWeight(selected ? t.weightBold : t.weightMedium),
                     fontFamily: fontFamily(t),
                   }}
@@ -700,193 +720,545 @@ export function EmrToggleGroup({
   value,
   values,
   allowEmpty = true,
-  orientation = 'horizontal',
+  variant = 'tile',
   size = 'md',
-  clearable,
+  orientation = 'vertical',
+  columns = 2,
+  labelPlacement = 'space-between',
+  showStateLabels = false,
+  onLabel = 'On',
+  offLabel = 'Off',
+  showSelectAll = false,
+  selectAllLabel = 'Enable all',
+  exclusiveValues = [],
+  minSelections: _minSelections,
+  maxSelections,
+  showSelectionCount = false,
+  clearable = false,
+  clearLabel = 'Clear',
   required,
   readOnly,
   disabled,
-  hint,
+  invalid,
+  warning,
   error,
+  hint,
   onValueChange,
   onValuesChange,
   onCleared,
+  onFocused,
+  onBlurred,
 }: {
   controlId?: string;
   label?: string;
   labelHidden?: boolean;
   ariaLabel?: string;
-  options: readonly (EmrSegmentedOption & { readonly icon?: string })[];
+  options: readonly EmrOption[];
   multiple?: boolean;
-  value?: string | null;
+  value?: readonly string[] | string | null;
   values?: readonly string[];
   allowEmpty?: boolean;
-  orientation?: 'horizontal' | 'vertical';
-  size?: EmrButtonSize;
+  variant?: EmrToggleGroupVariant | 'standard';
+  size?: EmrToggleGroupSize | 'lg';
+  orientation?: EmrToggleGroupOrientation;
+  columns?: number;
+  labelPlacement?: EmrToggleGroupLabelPlacement;
+  showStateLabels?: boolean;
+  onLabel?: string;
+  offLabel?: string;
+  showSelectAll?: boolean;
+  selectAllLabel?: string;
+  exclusiveValues?: readonly string[];
+  minSelections?: number;
+  maxSelections?: number;
+  showSelectionCount?: boolean;
   clearable?: boolean;
+  clearLabel?: string;
   required?: boolean;
   readOnly?: boolean;
   disabled?: boolean;
-  hint?: string;
+  invalid?: boolean;
+  warning?: string;
   error?: string;
-  onValueChange?: (v: string | null) => void;
+  hint?: string;
+  onValueChange?: ((v: readonly string[]) => void) | ((v: string | null) => void);
   onValuesChange?: (v: readonly string[]) => void;
   onCleared?: () => void;
+  onFocused?: () => void;
+  onBlurred?: () => void;
 }) {
   const t = useEmrTheme();
-  const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const isMulti = multiple ?? (values !== undefined || onValuesChange !== undefined);
-  const selectedList: readonly string[] = isMulti
-    ? (values ?? (value ? [value] : []))
-    : value != null && value !== ''
-      ? [value]
-      : [];
+  const { width: windowWidth } = useWindowDimensions();
+
+  const isMulti =
+    multiple !== undefined
+      ? multiple
+      : typeof value === 'string' || (value === null && values === undefined && onValuesChange === undefined)
+        ? false
+        : true;
+
+  const selectedList = resolveEmrToggleGroupValues({
+    value,
+    values,
+    multiple: isMulti,
+  });
   const selectedSet = new Set(selectedList);
-  const interactive = !disabled && !readOnly;
-  const minHeight = Math.max(44, size === 'lg' ? 48 : t.controlHeight);
-  const canClear = Boolean(clearable && selectedList.length > 0 && interactive);
+
+  const normalizedVariant = normalizeEmrToggleGroupVariant(variant);
+  const normalizedSize = normalizeEmrToggleGroupSize(size === 'lg' ? 'md' : size);
+  const normalizedOrientation = normalizeEmrToggleGroupOrientation(orientation);
+  const normalizedPlacement = normalizeEmrToggleGroupLabelPlacement(labelPlacement);
+  const isSm = normalizedSize === 'sm';
+  const isInvalid = Boolean(invalid || error);
+  const hasWarning = Boolean(!isInvalid && warning);
+  const hasMessage = Boolean(!labelHidden && (hint || warning || error));
+  const isNarrow = windowWidth > 0 && windowWidth <= 480;
+  const resolvedColumns =
+    normalizedOrientation === 'grid' ? (isNarrow ? 1 : Math.max(1, columns ?? 2)) : columns;
+
+  const optionGroups = groupOptions(options);
+  const selectAllState = computeSelectAllState(selectedList, options, exclusiveValues);
+  const hasClearableSelection = options.some(
+    o => selectedSet.has(o.value) && !isCheckboxOptionLocked(o)
+  );
+  const showClear = Boolean(clearable && !readOnly && !disabled && hasClearableSelection);
+
+  const focusActiveRef = useRef(false);
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChildFocus = () => {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current);
+      blurTimerRef.current = null;
+    }
+    if (!focusActiveRef.current) {
+      focusActiveRef.current = true;
+      onFocused?.();
+    }
+  };
+
+  const handleChildBlur = () => {
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+    blurTimerRef.current = setTimeout(() => {
+      focusActiveRef.current = false;
+      onBlurred?.();
+    }, 0);
+  };
+
+  const emitSelection = (next: readonly string[]) => {
+    onValuesChange?.(next);
+    (onValueChange as ((v: unknown) => void) | undefined)?.(isMulti ? next : (next[0] ?? null));
+  };
 
   const toggleItem = (itemValue: string) => {
-    if (!interactive) return;
-    if (isMulti) {
-      const exists = selectedSet.has(itemValue);
-      if (exists && !allowEmpty && selectedList.length <= 1) return;
-      const next = exists ? selectedList.filter(v => v !== itemValue) : [...selectedList, itemValue];
-      onValuesChange?.(next);
-      onValueChange?.(next[0] ?? null);
-    } else {
-      const exists = value === itemValue;
-      if (exists) {
-        if (!allowEmpty) return;
-        onValueChange?.(null);
-        onValuesChange?.([]);
+    const opt = options.find(o => o.value === itemValue);
+    if (disabled || readOnly || (opt && isCheckboxOptionLocked(opt))) return;
+    const next = toggleEmrToggleGroupValue({
+      current: selectedList,
+      toggledValue: itemValue,
+      options,
+      multiple: isMulti,
+      allowEmpty,
+      exclusiveValues,
+      maxSelections,
+    });
+    if (next !== selectedList) {
+      emitSelection(next);
+      if (!isMulti && next.length === 0) {
         onCleared?.();
-      } else {
-        onValueChange?.(itemValue);
-        onValuesChange?.([itemValue]);
       }
     }
   };
 
+  const handleSelectAll = () => {
+    if (disabled || readOnly || !isMulti) return;
+    emitSelection(
+      toggleSelectAllValues(selectedList, options, {
+        exclusiveValues,
+        maxSelections,
+      })
+    );
+  };
+
   const handleClear = () => {
-    if (!canClear) return;
-    onValueChange?.(null);
-    onValuesChange?.([]);
+    if (disabled || readOnly) return;
+    const next = clearEmrToggleGroupValues(selectedList, options);
+    emitSelection(next);
     onCleared?.();
   };
 
-  const groupNode = (
-    <View style={styles.segmentedRow}>
-      <View
-        id={id}
-        role="group"
-        aria-labelledby={label && !labelHidden ? `${id}-label` : undefined}
-        aria-label={ariaLabel ?? label ?? 'Toggle group'}
-        aria-readonly={readOnly}
-        aria-disabled={disabled}
-        style={[
-          styles.toggleGroupBar,
-          orientation === 'vertical' && styles.toggleGroupVertical,
-          { opacity: disabled ? 0.6 : 1 },
-        ]}
-      >
-        {options.map(opt => {
-          const active = selectedSet.has(opt.value);
-          const optDisabled = Boolean(disabled || opt.disabled);
-          return (
-            <Pressable
-              key={opt.value}
-              role="button"
-              aria-pressed={active}
-              aria-disabled={optDisabled || undefined}
-              disabled={optDisabled}
-              onPress={interactive && !optDisabled ? () => toggleItem(opt.value) : undefined}
-              style={({ pressed, focused }: PressState) => [
-                styles.toggleGroupBtn,
-                focusRing(t, focused),
-                {
-                  minHeight,
-                  minWidth: 44,
-                  borderColor: active ? t.primary : error ? t.danger : t.border,
-                  backgroundColor: active
-                    ? t.primarySoft
-                    : pressed && interactive && !optDisabled
-                      ? t.surfaceRaised
-                      : t.surface,
-                  opacity: opt.disabled && !disabled ? 0.5 : 1,
-                },
-              ]}
-            >
-              {opt.icon && isEmrIconName(opt.icon) ? (
-                <SvgIcon name={opt.icon} size={15} color={active ? t.primary : t.textMuted} />
-              ) : null}
-              <Text
-                numberOfLines={1}
-                style={{
-                  color: active ? t.primaryContrast : t.text,
-                  fontSize: size === 'sm' ? t.textXs : size === 'lg' ? t.textLg : t.textSm,
-                  fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
-                  fontFamily: fontFamily(t),
-                }}
-              >
-                {opt.label}
-              </Text>
-              {(() => {
-                const toggleBadge = formatEmrSegmentedBadge(opt.badge, opt.tone);
-                return toggleBadge ? (
-                  <View style={[styles.segmentBadge, { backgroundColor: active ? t.surface : t.neutralSoft }]}>
-                    <Text
-                      style={{
-                        color: active ? t.primary : t.textMuted,
-                        fontSize: t.text2xs,
-                        fontWeight: fontWeight(t.weightBold),
-                        fontFamily: fontFamily(t),
-                      }}
-                    >
-                      {toggleBadge.text}
-                    </Text>
-                  </View>
-                ) : null;
-              })()}
-            </Pressable>
-          );
-        })}
-      </View>
-      {canClear ? (
-        <Pressable
-          role="button"
-          aria-label={`${labels.clear} ${ariaLabel ?? label ?? 'toggle group'}`}
-          onPress={handleClear}
-          style={({ pressed, focused }: PressState) => [
-            styles.pageBtn,
-            focusRing(t, focused),
+  const minHeight = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const trackStyle = isSm
+    ? { width: 38, height: 22, borderRadius: 11, padding: 2 }
+    : { width: 42, height: 24, borderRadius: 12, padding: 2 };
+  const thumbStyle = isSm
+    ? { width: 16, height: 16, borderRadius: 8 }
+    : { width: 18, height: 18, borderRadius: 9 };
+  const thumbShadow =
+    Platform.OS === 'web'
+      ? ({ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)' } as Record<string, unknown>)
+      : {
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.22,
+          shadowRadius: 2,
+          elevation: 2,
+        };
+
+  const renderSwitchRow = (opt: EmrOption) => {
+    const active = selectedSet.has(opt.value);
+    const blockedByMax =
+      isMulti && isCheckboxOptionBlockedByMax(opt.value, selectedList, maxSelections);
+    const optDisabled = Boolean(disabled || opt.disabled || blockedByMax);
+    const optReadOnly = Boolean(readOnly || opt.readOnly);
+    const interactive = !optDisabled && !optReadOnly;
+    const toneColor = resolveToneColor(t, opt.tone);
+    const badge = formatEmrSegmentedBadge(opt.badge, opt.tone);
+    const stateText = resolveEmrToggleStateLabel(active, onLabel, offLabel);
+    const isCard = normalizedVariant === 'card';
+    const isInline = normalizedVariant === 'inline';
+
+    const rowBg = isInline
+      ? 'transparent'
+      : active
+        ? (toneColor ? withAlpha(toneColor, 0.1) : t.primarySoft)
+        : optReadOnly
+          ? t.surfaceSoft
+          : t.surface;
+
+    const rowBorder = isInline
+      ? 'transparent'
+      : isInvalid
+        ? t.danger
+        : hasWarning
+          ? t.warning
+          : active
+            ? (toneColor ?? t.primary)
+            : t.border;
+
+    const trackNode = (
+      <View style={styles.toggleCluster}>
+        <View
+          aria-hidden
+          style={[
+            styles.toggleTrack,
+            trackStyle,
             {
-              minWidth: 44,
-              minHeight,
-              borderColor: t.border,
-              backgroundColor: pressed ? t.surfaceRaised : t.surfaceSoft,
+              borderColor: isInvalid ? t.danger : hasWarning ? t.warning : 'transparent',
+              backgroundColor: active ? t.primary : t.border,
+              alignItems: active ? 'flex-end' : 'flex-start',
             },
           ]}
         >
-          <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
-            {labels.clear}
+          <View style={[styles.toggleThumb, thumbStyle, thumbShadow, { backgroundColor: t.surface }]} />
+        </View>
+        {showStateLabels ? (
+          <Text
+            style={{
+              color: active ? t.primary : t.textMuted,
+              fontSize: t.textXs,
+              fontWeight: fontWeight(t.weightBold),
+              fontFamily: fontFamily(t),
+            }}
+          >
+            {stateText}
+          </Text>
+        ) : null}
+      </View>
+    );
+
+    const copyNode = (
+      <View style={[styles.toggleCopy, isInline && normalizedPlacement !== 'space-between' && { flexGrow: 0, flexShrink: 1 }]}>
+        <View style={styles.toggleTitleRow}>
+          {opt.icon && isEmrIconName(opt.icon) ? (
+            <SvgIcon name={opt.icon} size={15} color={active ? t.primary : t.textMuted} />
+          ) : null}
+          <Text
+            style={{
+              color: t.text,
+              fontSize: isSm ? t.textSm : t.textMd,
+              fontWeight: fontWeight(active ? t.weightBold : t.weightMedium),
+              fontFamily: fontFamily(t),
+              flexShrink: 1,
+            }}
+          >
+            {opt.label}
+          </Text>
+          {opt.readOnly ? (
+            <SvgIcon name="lock" size={12} color={t.textMuted} />
+          ) : null}
+          {badge ? (
+            <View
+              style={[
+                styles.segmentBadge,
+                {
+                  backgroundColor: withAlpha(resolveToneColor(t, badge.tone) ?? t.textMuted, 0.14),
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  color: resolveToneColor(t, badge.tone) ?? t.textMuted,
+                  fontSize: t.text2xs,
+                  fontWeight: fontWeight(t.weightBold),
+                  fontFamily: fontFamily(t),
+                }}
+              >
+                {badge.text}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        {opt.description ? (
+          <Text
+            style={{
+              color: t.textMuted,
+              fontSize: t.textXs,
+              fontFamily: fontFamily(t),
+            }}
+          >
+            {opt.description}
+          </Text>
+        ) : null}
+      </View>
+    );
+
+    const flexDirection =
+      normalizedPlacement === 'end' ? 'row' : 'row-reverse';
+    const justifyContent =
+      normalizedPlacement === 'space-between' ? 'space-between' : 'flex-start';
+
+    return (
+      <Pressable
+        key={opt.value}
+        role="switch"
+        aria-checked={active}
+        aria-disabled={optDisabled || undefined}
+        aria-readonly={optReadOnly || undefined}
+        disabled={optDisabled}
+        onFocus={handleChildFocus}
+        onBlur={handleChildBlur}
+        onPress={interactive ? () => toggleItem(opt.value) : undefined}
+        {...webProps({
+          onKeyDown: (e: WebKeyEvent) => {
+            if (!interactive) return;
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              toggleItem(opt.value);
+            }
+          },
+        })}
+        style={({ hovered, pressed, focused }: PressState) => [
+          styles.toggleGroupRow,
+          focusRing(t, focused),
+          {
+            minHeight,
+            minWidth: 44,
+            flexDirection,
+            justifyContent,
+            alignItems: isCard && opt.description ? 'flex-start' : 'center',
+            paddingHorizontal: isInline ? 4 : isSm ? 10 : 12,
+            paddingVertical: isSm ? 8 : 10,
+            borderWidth: isInline ? 0 : 1,
+            borderStyle: optReadOnly && !isInline ? 'dashed' : 'solid',
+            borderRadius: isCard ? 9 : 8,
+            borderColor: hovered && interactive && !active && !isInline ? t.focus : rowBorder,
+            backgroundColor:
+              hovered && interactive && !active && !isInline
+                ? t.surfaceSoft
+                : pressed && interactive && !isInline
+                  ? t.surfaceRaised
+                  : rowBg,
+            opacity: optDisabled && !disabled ? 0.5 : 1,
+            width:
+              normalizedOrientation === 'vertical' ||
+              normalizedOrientation === 'grid' ||
+              (isInline && normalizedPlacement === 'space-between')
+                ? '100%'
+                : undefined,
+          },
+        ]}
+      >
+        {trackNode}
+        {copyNode}
+      </Pressable>
+    );
+  };
+
+  const groupNode = (
+    <View
+      id={id}
+      role="group"
+      aria-labelledby={!ariaLabel && label && !labelHidden ? `${id}-label` : undefined}
+      aria-label={ariaLabel ?? (label || 'Toggle group')}
+      aria-describedby={hasMessage ? `${id}-message` : undefined}
+      aria-required={required || undefined}
+      aria-readonly={readOnly || undefined}
+      aria-disabled={disabled || undefined}
+      aria-invalid={isInvalid ? true : undefined}
+      style={[styles.checkboxGroupStack, { opacity: disabled ? 0.6 : 1 }]}
+    >
+      {!labelHidden && (showSelectionCount || showClear) ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+          {showSelectionCount ? (
+            <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t) }}>
+              {formatCheckboxSelectionCount(selectedList, maxSelections)}
+            </Text>
+          ) : (
+            <View />
+          )}
+          {showClear ? (
+            <Pressable
+              role="button"
+              aria-label={`${clearLabel} ${label || ariaLabel || 'selection'}`}
+              onPress={handleClear}
+              onFocus={handleChildFocus}
+              onBlur={handleChildBlur}
+              style={({ focused }: PressState) => [
+                focusRing(t, focused),
+                {
+                  minHeight: 44,
+                  minWidth: 44,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 7,
+                  borderWidth: 1,
+                  borderColor: t.border,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                },
+              ]}
+            >
+              <SvgIcon name="close" size={14} color={t.textMuted} />
+              <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) }}>
+                {clearLabel}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {showSelectAll && isMulti ? (
+        <Pressable
+          role="checkbox"
+          aria-checked={selectAllState === 'all' ? true : selectAllState === 'mixed' ? 'mixed' : false}
+          aria-disabled={disabled || undefined}
+          aria-readonly={readOnly || undefined}
+          disabled={disabled}
+          onFocus={handleChildFocus}
+          onBlur={handleChildBlur}
+          onPress={readOnly ? undefined : handleSelectAll}
+          {...webProps({
+            onKeyDown: (e: WebKeyEvent) => {
+              if (readOnly || disabled) return;
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                handleSelectAll();
+              }
+            },
+          })}
+          style={({ focused }: PressState) => [
+            styles.selectAllRow,
+            focusRing(t, focused),
+            {
+              minHeight: Math.max(44, t.controlHeight),
+              borderColor: selectAllState !== 'none' ? t.primary : t.border,
+              backgroundColor: selectAllState === 'all' ? t.primarySoft : t.surfaceSoft,
+              opacity: disabled ? 0.6 : 1,
+            },
+          ]}
+        >
+          <View
+            aria-hidden
+            style={[
+              styles.selectAllBox,
+              {
+                width: isSm ? 16 : 18,
+                height: isSm ? 16 : 18,
+                borderColor: selectAllState !== 'none' ? t.primary : t.border,
+                backgroundColor: selectAllState === 'all' ? t.primary : t.surface,
+              },
+            ]}
+          >
+            {selectAllState === 'all' ? (
+              <SvgIcon name="check" size={isSm ? 10 : 12} color={t.surface} />
+            ) : selectAllState === 'mixed' ? (
+              <SvgIcon name="minus" size={isSm ? 10 : 12} color={t.primary} />
+            ) : null}
+          </View>
+          <Text
+            style={{
+              color: t.text,
+              fontSize: t.textSm,
+              fontWeight: fontWeight(t.weightBold),
+              fontFamily: fontFamily(t),
+            }}
+          >
+            {selectAllLabel}
           </Text>
         </Pressable>
       ) : null}
+
+      {optionGroups.map(grp => (
+        <View key={grp.label ?? '__ungrouped'} style={{ gap: 6 }}>
+          {grp.label ? (
+            <Text
+              style={{
+                color: t.textMuted,
+                fontSize: t.textXs,
+                fontWeight: fontWeight(t.weightBold),
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                fontFamily: fontFamily(t),
+                marginTop: 4,
+              }}
+            >
+              {grp.label}
+            </Text>
+          ) : null}
+          {normalizedOrientation === 'grid' && Platform.OS === 'web' ? (
+            <View
+              style={
+                {
+                  display: 'grid',
+                  gridTemplateColumns: isNarrow
+                    ? 'minmax(0, 1fr)'
+                    : `repeat(${Math.max(1, columns ?? 2)}, minmax(0, 1fr))`,
+                  gap: 8,
+                  width: '100%',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                } as Record<string, unknown>
+              }
+            >
+              {grp.options.map(renderSwitchRow)}
+            </View>
+          ) : (
+            <EmrRow
+              single={normalizedOrientation === 'vertical' || (normalizedOrientation === 'grid' && isNarrow)}
+              columns={resolvedColumns}
+            >
+              {grp.options.map(renderSwitchRow)}
+            </EmrRow>
+          )}
+        </View>
+      ))}
     </View>
   );
 
-  if (!label && !hint && !error) return groupNode;
+  if (!label && !hint && !warning && !error) return groupNode;
   return (
     <FieldChrome
       controlId={id}
       label={label}
       labelHidden={!label || labelHidden}
       required={required}
-      hint={hint}
-      error={error}
+      hint={labelHidden ? undefined : hint}
+      warning={labelHidden ? undefined : warning}
+      error={labelHidden ? undefined : error}
     >
       {groupNode}
     </FieldChrome>
@@ -1932,6 +2304,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    maxWidth: '100%',
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -1950,24 +2323,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  toggleGroupBar: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 6,
+  toggleGroupRow: {
+    gap: 10,
   },
-  toggleGroupVertical: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
-  toggleGroupBtn: {
+  toggleCluster: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
+    gap: 8,
+    flexShrink: 0,
+  },
+  toggleTrack: {
     borderWidth: 1,
-    borderRadius: 8,
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  toggleThumb: {},
+  toggleCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  toggleTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
   },
   checkboxGroupStack: {
     gap: 8,

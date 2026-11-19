@@ -346,10 +346,30 @@ export function typedFieldHasError(state: NormalizedTypedFieldState): boolean {
   return Boolean(state.error || state.messages.some((m) => m.severity === 'error'));
 }
 
-/** Extracts a trailing `.phrase` or `/phrase` macro trigger immediately before cursor. */
-export function extractActiveMacroTrigger(text: string, cursorIndex: number): string | null {
-  const safeCursor = Math.max(0, Math.min(text.length, cursorIndex));
-  const prefix = text.slice(0, safeCursor);
-  const match = /(?:^|\s)([./][A-Za-z0-9_-]*)$/.exec(prefix);
-  return match ? match[1] : null;
+export function mergeTypedFieldMessages(
+  state: NormalizedTypedFieldState,
+): readonly EmrValidationMessage[] {
+  const out: EmrValidationMessage[] = [];
+  const seen = new Set<string>();
+  const push = (
+    severity: EmrValidationMessage['severity'],
+    message?: string,
+    path: readonly (string | number)[] = [],
+  ) => {
+    const trimmed = typeof message === 'string' ? message.trim() : '';
+    if (!trimmed) return;
+    const key = `${severity}:${trimmed}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ path, severity, message: trimmed });
+  };
+  push('error', state.error);
+  push('warning', state.warning);
+  push('info', state.info);
+  for (const m of state.messages) {
+    push(m.severity, m.message, m.path);
+  }
+  return out;
 }
+
+export { extractActiveMacroTrigger } from './emr-fields.logic';

@@ -32,6 +32,7 @@ export type EmrIconName =
   | 'zoom-in'
   | 'zoom-out'
   | 'maximize'
+  | 'minimize'
   | 'download'
   | 'upload'
   | 'camera'
@@ -40,7 +41,15 @@ export type EmrIconName =
   | 'phone'
   | 'mic'
   | 'pen'
-  | 'sliders';
+  | 'sliders'
+  | 'crop'
+  | 'rotate-ccw'
+  | 'rotate-cw'
+  | 'flip-h'
+  | 'flip-v'
+  | 'copy'
+  | 'more-vertical'
+  | 'more-horizontal';
 
 export type IconName = EmrIconName;
 
@@ -126,6 +135,7 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
   'zoom-in': ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'm21 21-4.35-4.35', 'M11 8v6', 'M8 11h6'],
   'zoom-out': ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'm21 21-4.35-4.35', 'M8 11h6'],
   maximize: ['M15 3h6v6', 'M9 21H3v-6', 'M21 3l-7 7', 'M3 21l7-7'],
+  minimize: ['M4 14h6v6', 'M20 10h-6V4', 'M14 10l7-7', 'M3 21l7-7'],
   download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'],
   upload: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm17 8-5-5-5 5', 'M12 3v12'],
   camera: [
@@ -138,6 +148,25 @@ const ICON_PATHS: Record<EmrIconName, readonly string[]> = {
   mic: ['M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z', 'M19 10v2a7 7 0 0 1-14 0v-2', 'M12 19v3'],
   pen: ['M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'],
   sliders: ['M4 21v-7', 'M4 10V3', 'M12 21v-9', 'M12 8V3', 'M20 21v-5', 'M20 12V3', 'M2 14h4', 'M10 8h4', 'M18 16h4'],
+  crop: ['M6 2v14a2 2 0 0 0 2 2h14', 'M18 22V8a2 2 0 0 0-2-2H2'],
+  'rotate-ccw': ['M1 4v6h6', 'M3.51 15a9 9 0 1 0 2.13-9.36L1 10'],
+  'rotate-cw': ['M23 4v6h-6', 'M20.49 15a9 9 0 1 1-2.12-9.36L23 10'],
+  'flip-h': ['M12 3v18', 'M8 7l-5 5 5 5V7z', 'M16 7l5 5-5 5V7z'],
+  'flip-v': ['M3 12h18', 'M7 8l5-5 5 5H7z', 'M7 16l5 5 5-5H7z'],
+  copy: [
+    'M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z',
+    'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
+  ],
+  'more-vertical': [
+    'M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+  ],
+  'more-horizontal': [
+    'M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+  ],
 };
 
 const NATIVE_FALLBACK: Record<EmrIconName, string> = {
@@ -169,6 +198,7 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   'zoom-in': '+',
   'zoom-out': '−',
   maximize: '⤢',
+  minimize: '⤡',
   download: '↓',
   upload: '↑',
   camera: '◎',
@@ -178,6 +208,14 @@ const NATIVE_FALLBACK: Record<EmrIconName, string> = {
   mic: '●',
   pen: '✎',
   sliders: '≡',
+  crop: '◰',
+  'rotate-ccw': '↺',
+  'rotate-cw': '↻',
+  'flip-h': '⇄',
+  'flip-v': '⇅',
+  copy: '❐',
+  'more-vertical': '⋮',
+  'more-horizontal': '⋯',
 };
 
 export function isEmrIconName(value: string): value is EmrIconName {

@@ -634,6 +634,13 @@ export const emrShadowStyles = css`
     color: var(--emr-danger, #a44949);
   }
 
+  .swatch-check--dark {
+    color: #0f172a;
+  }
+  .swatch-check--light {
+    color: #ffffff;
+  }
+
   :host-context(.emr-print) {
     --emr-control-height: auto;
     --emr-compact-height: auto;
@@ -643,13 +650,22 @@ export const emrShadowStyles = css`
   :host-context(.emr-print) [data-emr-print="hide"],
   :host-context(.emr-print) .stepper-btn,
   :host-context(.emr-print) .date-icon-btn,
-  :host-context(.emr-print) .date-icon-box {
+  :host-context(.emr-print) .date-icon-box,
+  :host-context(.emr-print) .copy-btn {
     display: none !important;
   }
 
   :host-context(.emr-print) [hidden],
   :host-context(.emr-print) [data-collapsed] {
     display: revert !important;
+  }
+
+  :host-context(.emr-print) .accordion-panel[hidden] {
+    display: block !important;
+  }
+
+  :host-context(.emr-print) .accordion-item {
+    overflow: visible !important;
   }
 
   :host-context(.emr-print) .emr-control,
@@ -700,13 +716,22 @@ export const emrShadowStyles = css`
     [data-emr-print="hide"],
     .stepper-btn,
     .date-icon-btn,
-    .date-icon-box {
+    .date-icon-box,
+    .copy-btn {
       display: none !important;
     }
 
     [hidden],
     [data-collapsed] {
       display: revert !important;
+    }
+
+    .accordion-panel[hidden] {
+      display: block !important;
+    }
+
+    .accordion-item {
+      overflow: visible !important;
     }
 
     .emr-control,

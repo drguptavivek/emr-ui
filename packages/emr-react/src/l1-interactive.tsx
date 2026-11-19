@@ -13,6 +13,22 @@ import {
   View,
   type PressableStateCallbackType,
 } from 'react-native';
+import type {
+  EmrControlVariant,
+  EmrOption,
+  EmrSearchSelectFilterMode,
+  EmrSearchSelectSize,
+  EmrStage,
+  EmrStageStepperIntent,
+  EmrStageStepperOrientation,
+  EmrStageStepperSize,
+  EmrTabOption,
+  EmrTabsActivationMode,
+  EmrTabsIconPosition,
+  EmrTabsOrientation,
+  EmrTabsSize,
+  EmrTabsVariant,
+} from '@drguptavivek/emr-controller';
 import {
   canActivateTab,
   canSelectEmrStage,
@@ -23,21 +39,7 @@ import {
   resolveActiveTabValue,
   resolveStageStepperTabStopId,
   resolveTabStopIndex,
-  type EmrControlVariant,
-  type EmrOption,
-  type EmrSearchSelectFilterMode,
-  type EmrSearchSelectSize,
-  type EmrStage,
-  type EmrStageStepperIntent,
-  type EmrStageStepperOrientation,
-  type EmrStageStepperSize,
-  type EmrTabOption,
-  type EmrTabsActivationMode,
-  type EmrTabsIconPosition,
-  type EmrTabsOrientation,
-  type EmrTabsSize,
-  type EmrTabsVariant,
-} from '@drguptavivek/emr-controller';
+} from './l1-controller.logic';
 import { ThemedInput } from './inputs-core';
 import { SvgIcon, type EmrIconName } from './icons';
 import { EmrButton } from './primitives';

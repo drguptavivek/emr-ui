@@ -166,7 +166,12 @@ export function resolveQuantityStep(options: {
   return 1;
 }
 
-export function sanitizeQuantityText(raw: string, mode: 'decimal' | 'integer'): string {
+export function sanitizeQuantityText(
+  raw: string,
+  mode: 'decimal' | 'integer',
+  options?: { readonly allowNegative?: boolean },
+): string {
+  const allowNegative = options?.allowNegative ?? true;
   const noSpaces = raw.replace(/[\s\u00A0\u202F]+/g, '');
   const normalized =
     mode === 'decimal' && !noSpaces.includes('.') && noSpaces.includes(',')
@@ -178,7 +183,7 @@ export function sanitizeQuantityText(raw: string, mode: 'decimal' | 'integer'): 
     const ch = normalized[i];
     if (ch >= '0' && ch <= '9') {
       out += ch;
-    } else if (ch === '-' && out.length === 0) {
+    } else if (ch === '-' && allowNegative && out.length === 0) {
       out += ch;
     } else if (ch === '.' && mode === 'decimal' && !seenDot) {
       out += ch;
@@ -191,8 +196,9 @@ export function sanitizeQuantityText(raw: string, mode: 'decimal' | 'integer'): 
 export function parseQuantityDraft(
   raw: string,
   mode: 'decimal' | 'integer',
+  options?: { readonly allowNegative?: boolean },
 ): number | null | 'incomplete' {
-  const clean = sanitizeQuantityText(raw.trim(), mode);
+  const clean = sanitizeQuantityText(raw.trim(), mode, options);
   if (clean === '') return null;
   if (clean === '-' || clean === '.' || clean === '-.') return 'incomplete';
   if (mode === 'decimal' && clean.endsWith('.')) return 'incomplete';

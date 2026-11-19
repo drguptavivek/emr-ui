@@ -69,7 +69,7 @@ describe('Wave 2 Part 1 — Upgraded Lit L1 Choice & Select Elements', () => {
     host.remove();
   });
 
-  it('upgrades EmrSelectElement with grouped options (<optgroup>) and clearable button', async () => {
+  it('upgrades EmrSelectElement with grouped options ([role="group"]) and clearable button', async () => {
     const el = document.createElement('emr-select') as EmrSelectElement;
     el.label = 'Medication Route';
     el.clearable = true;
@@ -82,7 +82,12 @@ describe('Wave 2 Part 1 — Upgraded Lit L1 Choice & Select Elements', () => {
     host.appendChild(el);
     await el.updateComplete;
 
-    const optgroups = el.shadowRoot?.querySelectorAll('optgroup') ?? [];
+    const trigger = el.shadowRoot?.querySelector<HTMLButtonElement>('.select-trigger');
+    expect(trigger).toBeTruthy();
+    trigger?.click();
+    await el.updateComplete;
+
+    const optgroups = el.shadowRoot?.querySelectorAll('[role="group"]') ?? [];
     expect(optgroups.length).toBeGreaterThanOrEqual(2);
 
     const values: (string | null)[] = [];
@@ -275,12 +280,14 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
     host.appendChild(el);
     await el.updateComplete;
 
+    const selectAll = el.shadowRoot?.querySelector('button[role="checkbox"][data-select-all="true"]');
+    expect(selectAll).not.toBeNull();
     const switches = el.shadowRoot?.querySelectorAll('button[role="switch"]') ?? [];
-    expect(switches.length).toBe(4);
+    expect(switches.length).toBe(3);
 
     const emitted: (readonly string[])[] = [];
     el.addEventListener('valueChange', e => emitted.push((e as CustomEvent<readonly string[]>).detail));
-    (switches[3] as HTMLButtonElement).click();
+    (switches[2] as HTMLButtonElement).click();
     expect(emitted[0]).toEqual(['mute']);
   });
 
@@ -296,8 +303,9 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
 
     const parentRow = tree.shadowRoot?.querySelector<HTMLButtonElement>('button[data-node-id="ant"]')!;
     expect(parentRow.getAttribute('aria-checked')).toBe('mixed');
-    const checkbox = parentRow.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
-    expect(checkbox.indeterminate).toBe(true);
+    const checkboxBox = parentRow.querySelector('.checkbox-box[data-mixed="true"]');
+    expect(checkboxBox).not.toBeNull();
+    expect(checkboxBox?.querySelector('svg')).not.toBeNull();
 
     const treeSelect = document.createElement('emr-tree-select') as EmrTreeSelectElement;
     treeSelect.label = 'Finding Site';
@@ -482,9 +490,8 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
 
     const pairs: (readonly [number, number])[] = [];
     range.addEventListener('valueChange', e => pairs.push((e as CustomEvent<readonly [number, number]>).detail));
-    const lowInput = range.shadowRoot?.querySelector<HTMLInputElement>('input[data-thumb="low"]')!;
-    lowInput.value = '22';
-    lowInput.dispatchEvent(new Event('input', { bubbles: true }));
+    const lowThumb = range.shadowRoot?.querySelector<HTMLElement>('[data-thumb="low"][role="slider"]')!;
+    lowThumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
     expect(pairs[0]).toEqual([18, 18]);
 
     const masked = document.createElement('emr-masked-input') as EmrMaskedInputElement;
@@ -515,6 +522,92 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
     firstSlot.value = '9876';
     firstSlot.dispatchEvent(new Event('input', { bubbles: true }));
     expect(completedCodes).toEqual(['9876']);
+
+    // Wave 2 Batch C DOM parity & bug-fix regressions in Lit
+    const dr2 = document.createElement('emr-date-range-input') as EmrDateRangeInputElement;
+    dr2.label = 'Stay';
+    dr2.labelHidden = true;
+    dr2.mode = 'datetime';
+    dr2.weekStartsOn = 1;
+    dr2.clearable = true;
+    dr2.open = true;
+    dr2.error = 'Required window';
+    dr2.value = { start: '2026-03-08T09:30', end: '2026-03-10T17:15' };
+    host.appendChild(dr2);
+    await dr2.updateComplete;
+    expect(dr2.shadowRoot?.querySelector('[role="alert"]')?.textContent).toBe('Required window');
+    expect(dr2.shadowRoot?.querySelector('.dr-weekday')?.textContent).toBe('Mo');
+    const dr2Cleared: unknown[] = [];
+    dr2.addEventListener('valueChange', e => dr2Cleared.push((e as CustomEvent).detail));
+    dr2.shadowRoot?.querySelector<HTMLButtonElement>('[data-clear-btn="true"]')?.click();
+    expect(dr2Cleared[0]).toBeNull();
+
+    const sl2 = document.createElement('emr-slider') as EmrSliderElement;
+    sl2.label = 'Opacity';
+    sl2.labelHidden = true;
+    sl2.min = 0;
+    sl2.max = 100;
+    sl2.step = 5;
+    sl2.value = 25;
+    sl2.marks = [{ value: 50, label: 'Half' }];
+    sl2.hint = 'Adjust transparency';
+    host.appendChild(sl2);
+    await sl2.updateComplete;
+    expect(sl2.shadowRoot?.textContent).toContain('Adjust transparency');
+    const sl2Committed: unknown[] = [];
+    sl2.addEventListener('committed', e => sl2Committed.push((e as CustomEvent).detail));
+    sl2.shadowRoot?.querySelector<HTMLButtonElement>('.slider-mark')?.click();
+    expect(sl2Committed[0]).toBe(50);
+
+    const rs2 = document.createElement('emr-range-slider') as EmrRangeSliderElement;
+    rs2.label = 'IOP Band';
+    rs2.min = 6;
+    rs2.max = 30;
+    rs2.minDistance = 4;
+    rs2.value = [10, 18];
+    rs2.clearable = true;
+    host.appendChild(rs2);
+    await rs2.updateComplete;
+    const rs2Low = rs2.shadowRoot?.querySelector<HTMLElement>('[data-thumb="low"]');
+    const rs2High = rs2.shadowRoot?.querySelector<HTMLElement>('[data-thumb="high"]');
+    expect(rs2Low?.getAttribute('aria-valuemax')).toBe('14');
+    expect(rs2High?.getAttribute('aria-valuemin')).toBe('14');
+
+    const mk2 = document.createElement('emr-masked-input') as EmrMaskedInputElement;
+    mk2.label = 'Hex ID';
+    mk2.mask = '\\9A-99';
+    mk2.uppercase = true;
+    mk2.unmask = true;
+    host.appendChild(mk2);
+    await mk2.updateComplete;
+    const mk2Vals: unknown[] = [];
+    const mk2Done: unknown[] = [];
+    mk2.addEventListener('valueChange', e => mk2Vals.push((e as CustomEvent).detail));
+    mk2.addEventListener('completed', e => mk2Done.push((e as CustomEvent).detail));
+    const mk2In = mk2.shadowRoot?.querySelector<HTMLInputElement>('input')!;
+    mk2In.value = 'z12';
+    mk2In.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(mk2In.value).toBe('9Z-12');
+    expect(mk2Vals[0]).toBe('Z12');
+    expect(mk2Done[0]).toBe('Z12');
+
+    const otp2 = document.createElement('emr-otp-input') as EmrOtpInputElement;
+    otp2.label = 'Verify';
+    otp2.length = 6;
+    otp2.secret = true;
+    otp2.separatorAfter = 3;
+    otp2.value = '482910';
+    otp2.clearable = true;
+    host.appendChild(otp2);
+    await otp2.updateComplete;
+    expect(otp2.shadowRoot?.querySelectorAll('.otp-sep').length).toBe(1);
+    const slot1 = otp2.shadowRoot?.querySelector<HTMLInputElement>('input[data-slot-index="1"]')!;
+    expect(slot1.getAttribute('type')).toBe('password');
+    expect(slot1.getAttribute('maxlength')).toBe('6');
+    const otp2Vals: unknown[] = [];
+    otp2.addEventListener('valueChange', e => otp2Vals.push((e as CustomEvent).detail));
+    slot1.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+    expect(otp2Vals[0]).toBe('4 2910');
   });
 
   it('14, 15, 16, 17, 18 & 19. Menu, SplitButton, Accordion, Breadcrumbs, ColorPicker, and CopyButton', async () => {
@@ -528,7 +621,7 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
     await menu.updateComplete;
 
     const selectedItems: string[] = [];
-    menu.addEventListener('itemSelected', e => selectedItems.push((e as CustomEvent<string>).detail));
+    menu.addEventListener('itemSelected', e => selectedItems.push((e as CustomEvent<{ id: string }>).detail.id));
     menu.shadowRoot?.querySelector<HTMLButtonElement>('[data-item-id="print"]')?.click();
     expect(selectedItems).toEqual(['print']);
 
@@ -638,5 +731,369 @@ describe('Wave 2 Part 2 — 20 New Lit Custom Elements (19 L1 + 1 L2) & TypedFie
     host.appendChild(typed);
     await typed.updateComplete;
     expect(typed.shadowRoot?.querySelector('emr-tree-select')).toBeTruthy();
+  });
+
+  it('21. Wave 2 Batch A Lit parity: toggle-group clear/readOnly/checkbox selectAll, tree-view disabled-skipping roving tabindex, and tree-select sibling chips + Escape/outside dismissal', async () => {
+    // EmrToggleGroupElement: tri-state checkbox select-all, clearable preserving readOnly, maxSelections
+    const tg = document.createElement('emr-toggle-group') as EmrToggleGroupElement;
+    tg.label = 'Channels';
+    tg.showSelectAll = true;
+    tg.clearable = true;
+    tg.showSelectionCount = true;
+    tg.maxSelections = 2;
+    tg.options = [
+      { value: 'sms', label: 'SMS', readOnly: true },
+      { value: 'portal', label: 'Portal' },
+      { value: 'wa', label: 'WhatsApp' },
+    ];
+    tg.values = ['sms', 'portal'];
+    host.appendChild(tg);
+    await tg.updateComplete;
+
+    const selectAll = tg.shadowRoot?.querySelector<HTMLButtonElement>('button[role="checkbox"][data-select-all="true"]')!;
+    expect(selectAll.getAttribute('aria-checked')).toBe('mixed');
+    const waSwitch = tg.shadowRoot?.querySelectorAll<HTMLButtonElement>('button[role="switch"]')[2]!;
+    expect(waSwitch.disabled).toBe(true); // blocked by maxSelections=2
+
+    const tgChanges: (readonly string[])[] = [];
+    tg.addEventListener('valuesChange', e => tgChanges.push((e as CustomEvent<readonly string[]>).detail));
+    tg.shadowRoot?.querySelector<HTMLButtonElement>('.clear-inline-btn')?.click();
+    expect(tgChanges[0]).toEqual(['sms']); // locked readOnly preserved
+
+    // EmrTreeViewElement: roving tabindex + disabled row skip on ArrowDown + print attributes
+    const tree = document.createElement('emr-tree-view') as EmrTreeViewElement;
+    tree.label = 'Ocular';
+    tree.nodes = [
+      {
+        id: 'ant',
+        label: 'Anterior',
+        children: [
+          { id: 'cornea', label: 'Cornea', readOnly: true },
+          { id: 'disabled-node', label: 'Disabled', disabled: true },
+          { id: 'lens', label: 'Lens' },
+        ],
+      },
+    ];
+    tree.expandedIds = ['ant'];
+    tree.searchable = true;
+    host.appendChild(tree);
+    await tree.updateComplete;
+
+    const treeEl = tree.shadowRoot?.querySelector('[role="tree"]')!;
+    expect(treeEl.getAttribute('data-emr-print')).toBe('expand');
+    expect(tree.shadowRoot?.querySelector('.tree-toolbar')?.getAttribute('data-emr-print')).toBe('hide');
+
+    const corneaRow = tree.shadowRoot?.querySelector<HTMLButtonElement>('[data-node-id="cornea"]')!;
+    const lensRow = tree.shadowRoot?.querySelector<HTMLButtonElement>('[data-node-id="lens"]')!;
+    const focusSpy = vi.spyOn(lensRow, 'focus');
+    corneaRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(focusSpy).toHaveBeenCalled();
+
+    // EmrTreeSelectElement: sibling chips, cascade chip removal, uncontrolled sync, Escape & outside dismissal
+    const ts = document.createElement('emr-tree-select') as EmrTreeSelectElement;
+    ts.label = 'Site';
+    ts.nodes = SAMPLE_TREE;
+    ts.multiple = true;
+    ts.selectedIds = ['ant', 'cornea', 'lens'];
+    ts.maxTagCount = 2;
+    ts.open = true;
+    host.appendChild(ts);
+    await ts.updateComplete;
+
+    const chips = ts.shadowRoot?.querySelectorAll('.select-chip') ?? [];
+    expect(chips.length).toBe(3); // 2 visible + "+1" overflow
+    const tsMultiEvents: (readonly string[])[] = [];
+    ts.addEventListener('valuesChange', e => tsMultiEvents.push((e as CustomEvent<readonly string[]>).detail));
+    ts.shadowRoot?.querySelector<HTMLButtonElement>('.select-chip-remove')?.click();
+    await ts.updateComplete;
+    // Removing 'ant' in cascade mode unchecks 'ant', 'cornea', 'lens'
+    expect(tsMultiEvents[0]).toEqual([]);
+
+    // Escape closes panel & restores focus to trigger
+    const triggerBtn = ts.shadowRoot?.querySelector<HTMLButtonElement>('.trigger-btn')!;
+    const triggerFocusSpy = vi.spyOn(triggerBtn, 'focus');
+    ts.shadowRoot?.querySelector('.popover-anchor')?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await ts.updateComplete;
+    expect(ts.open).toBe(false);
+    expect(triggerFocusSpy).toHaveBeenCalled();
+
+    // Reopen and verify outside pointerdown dismisses
+    ts.open = true;
+    await ts.updateComplete;
+    document.body.dispatchEvent(new Event('pointerdown', { bubbles: true, composed: true }));
+    await ts.updateComplete;
+    expect(ts.open).toBe(false);
+  });
+
+  it('22. Wave 2 Batch B Lit parity: viewer wheel/keyboard/thumbnails/readOnly, cropper keyboard ROI & straighten sync, upload validation/cap/modal dialog, and L2 EmrImageField EmrFieldFrame status', async () => {
+    const viewer = document.createElement('emr-image-viewer') as EmrImageViewerElement;
+    viewer.images = [
+      { id: '1', src: 'data:image/png;base64,iVBORw0KGgo=', alt: 'OD Fundus' },
+      { id: '2', src: 'data:image/png;base64,iVBORw0KGgo=', alt: 'OS Fundus' },
+    ];
+    viewer.readOnly = true;
+    viewer.showThumbnails = true;
+    host.appendChild(viewer);
+    await viewer.updateComplete;
+
+    expect(viewer.shadowRoot?.querySelectorAll('.viewer-thumb-btn img').length).toBe(2);
+    expect(viewer.shadowRoot?.querySelector('.viewer-shell')?.getAttribute('data-readonly')).toBe('true');
+
+    // ReadOnly keeps inspection interactive (zoom/rotate/next still work!)
+    viewer.shadowRoot?.querySelector<HTMLButtonElement>('[data-action="rotate-cw"]')?.click();
+    await viewer.updateComplete;
+    expect(viewer.viewport.rotationDeg).toBe(90);
+    const straighten = viewer.shadowRoot?.querySelector<HTMLInputElement>('input[type="range"]')!;
+    straighten.value = '12';
+    straighten.dispatchEvent(new Event('input', { bubbles: true }));
+    await viewer.updateComplete;
+    expect(viewer.viewport.rotationDeg).toBe(102);
+
+    // Wheel zoom + Escape fullscreen closeRequested
+    const stage = viewer.shadowRoot?.querySelector<HTMLElement>('.viewer-stage')!;
+    stage.dispatchEvent(new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true }));
+    expect(viewer.viewport.zoom).toBe(1.15);
+
+    const closed: boolean[] = [];
+    viewer.addEventListener('closeRequested', () => closed.push(true));
+    viewer.fullscreen = true;
+    await viewer.updateComplete;
+    viewer.shadowRoot?.querySelector('.viewer-shell')?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await viewer.updateComplete;
+    expect(viewer.fullscreen).toBe(false);
+    expect(closed).toEqual([true]);
+
+    // EmrImageCropperElement: keyboard Shift+Arrow resize + outer scrim + 44px corner handles
+    const cropper = document.createElement('emr-image-cropper') as EmrImageCropperElement;
+    cropper.src = 'data:image/png;base64,iVBORw0KGgo=';
+    cropper.aspectPresets = [];
+    host.appendChild(cropper);
+    await cropper.updateComplete;
+
+    expect(cropper.shadowRoot?.querySelectorAll('[role="radio"]').length).toBe(5);
+    expect(cropper.shadowRoot?.querySelectorAll('.crop-handle').length).toBe(4);
+    const cropBox = cropper.shadowRoot?.querySelector<HTMLElement>('.crop-box')!;
+    const beforeW = cropper.transform.rect.width;
+    cropBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true }));
+    await cropper.updateComplete;
+    expect(cropper.transform.rect.width).toBeCloseTo(beforeW + 0.05, 2);
+
+    // EmrImageUploadElement: maxSizeBytes rejection alert + maxFiles cap + modal crop dialog + caption @input
+    const upload = document.createElement('emr-image-upload') as EmrImageUploadElement;
+    upload.label = 'Fundus Captures';
+    upload.labelHidden = true;
+    upload.maxFiles = 1;
+    upload.maxSizeBytes = 100;
+    upload.items = [{ id: 'u1', name: 'od.png', src: 'data:image/png;base64,', mimeType: 'image/png', sizeBytes: 512 }];
+    host.appendChild(upload);
+    await upload.updateComplete;
+
+    expect(upload.shadowRoot?.textContent).toContain('Maximum of 1 images reached');
+    expect(upload.shadowRoot?.textContent).toContain('512 B');
+
+    const captions: { id: string; caption: string }[] = [];
+    upload.addEventListener('captionChange', e => captions.push((e as CustomEvent<{ id: string; caption: string }>).detail));
+    const capInput = upload.shadowRoot?.querySelector<HTMLInputElement>('input[data-caption-id="u1"]')!;
+    capInput.value = 'OD baseline';
+    capInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(captions).toEqual([{ id: 'u1', caption: 'OD baseline' }]);
+
+    upload.shadowRoot?.querySelector<HTMLButtonElement>('[data-action="crop"]')?.click();
+    await upload.updateComplete;
+    const cropModal = upload.shadowRoot?.querySelector('.upload-modal-backdrop[role="dialog"][aria-modal="true"]');
+    expect(cropModal).toBeTruthy();
+
+    // EmrImageFieldElement: EmrFieldFrame delegation, non-empty aspectPresets fallback, readOnly gating
+    const imgField = document.createElement('emr-image-field') as EmrImageFieldElement;
+    imgField.model = {
+      label: 'Clinical Photos',
+      items: [{ id: 'f1', name: 'cornea.png', src: 'data:image/png;base64,', mimeType: 'image/png' }],
+      status: 'declined',
+      statusOptions: [
+        { value: 'recorded', label: 'Recorded', tone: 'success' },
+        { value: 'declined', label: 'Declined', tone: 'warning' },
+      ],
+    };
+    host.appendChild(imgField);
+    await imgField.updateComplete;
+
+    const frame = imgField.shadowRoot?.querySelector('emr-field-frame');
+    expect(frame).toBeTruthy();
+    const fieldIntents: ImageFieldIntent[] = [];
+    imgField.addEventListener('intent', e => fieldIntents.push((e as CustomEvent<ImageFieldIntent>).detail));
+    frame?.dispatchEvent(new CustomEvent('intent', { detail: { type: 'statusChangeRequested', status: 'recorded' }, bubbles: true, composed: true }));
+    expect(fieldIntents).toEqual([{ type: 'statusChangeRequested', status: 'recorded' }]);
+
+    // EmrTypedFieldElement widget: 'image-upload' delegates to EmrImageFieldElement
+    const typedImg = document.createElement('emr-typed-field') as EmrTypedFieldElement;
+    typedImg.definition = {
+      contract: {
+        linkId: 'photos',
+        valueType: 'attachment',
+        cardinality: { min: 0, max: 3 },
+        terminology: [],
+      },
+      presentation: {
+        label: 'Slit Lamp Photos',
+        widget: 'image-upload',
+      },
+    };
+    typedImg.model = { value: [] };
+    host.appendChild(typedImg);
+    await typedImg.updateComplete;
+    expect(typedImg.shadowRoot?.querySelector('emr-image-field')).toBeTruthy();
+  });
+
+  it('verifies Wave 2 Batch D Stage 1 parity across Menu, SplitButton, Accordion, Breadcrumbs, ColorPicker & CopyButton', async () => {
+    // 14. EmrMenuElement: disabled item focus skip, typeahead, readOnly, canonical label/variant, EmrMenuItem payload
+    const menu = document.createElement('emr-menu') as EmrMenuElement;
+    menu.label = 'Chart Actions';
+    menu.triggerIcon = 'more-vertical';
+    menu.variant = 'secondary';
+    menu.items = [
+      { id: 'view', label: 'View Chart', icon: 'eye' },
+      { id: 'locked', label: 'Locked Action', disabled: true },
+      { id: 'print', label: 'Print Summary', shortcut: '⌘P' },
+    ];
+    host.appendChild(menu);
+    await menu.updateComplete;
+    const trigger = menu.shadowRoot?.querySelector<HTMLButtonElement>('[data-menu-trigger="true"]')!;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    await menu.updateComplete;
+    expect(menu.open).toBe(true);
+    const viewItem = menu.shadowRoot?.querySelector<HTMLButtonElement>('[data-item-id="view"]')!;
+    const printItem = menu.shadowRoot?.querySelector<HTMLButtonElement>('[data-item-id="print"]')!;
+    viewItem.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(menu.shadowRoot?.activeElement).toBe(printItem);
+    printItem.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true }));
+    expect(menu.shadowRoot?.activeElement).toBe(viewItem);
+
+    const menuSelected: unknown[] = [];
+    menu.addEventListener('itemSelected', e => menuSelected.push((e as CustomEvent).detail));
+    printItem.click();
+    await menu.updateComplete;
+    expect(menuSelected).toEqual([{ id: 'print', label: 'Print Summary', shortcut: '⌘P' }]);
+    expect(menu.open).toBe(false);
+
+    menu.readOnly = true;
+    await menu.updateComplete;
+    trigger.click();
+    await menu.updateComplete;
+    expect(menu.open).toBe(false);
+
+    // 15. EmrSplitButtonElement: loading spinner, danger variant, size, readOnly, EmrMenuItem payload
+    const split = document.createElement('emr-split-button') as EmrSplitButtonElement;
+    split.label = 'Void Order';
+    split.variant = 'danger';
+    split.size = 'lg';
+    split.loading = true;
+    split.items = [{ id: 'draft', label: 'Save Draft', icon: 'file', description: 'Keep editable' }];
+    host.appendChild(split);
+    await split.updateComplete;
+    expect(split.shadowRoot?.querySelector('.split-spinner')).toBeTruthy();
+    let splitClicks = 0;
+    split.addEventListener('clicked', () => { splitClicks += 1; });
+    split.shadowRoot?.querySelector<HTMLButtonElement>('[data-split-primary="true"]')?.click();
+    expect(splitClicks).toBe(0);
+    split.loading = false;
+    await split.updateComplete;
+    split.shadowRoot?.querySelector<HTMLButtonElement>('[data-split-primary="true"]')?.click();
+    expect(splitClicks).toBe(1);
+
+    // 16. EmrAccordionElement: structured badge (never [object Object]), [hidden] panels in DOM, role=heading, arrow nav
+    const acc = document.createElement('emr-accordion') as EmrAccordionElement;
+    acc.headingLevel = 2;
+    acc.variant = 'card';
+    acc.items = [
+      { id: 'hx', title: 'History', icon: 'file', badge: { label: 'Verified', tone: 'success' }, content: 'Ocular history details' },
+      { id: 'rx', title: 'Medications', content: 'Timolol 0.5% BID' },
+    ];
+    host.appendChild(acc);
+    await acc.updateComplete;
+    expect(acc.shadowRoot?.textContent).not.toContain('[object Object]');
+    expect(acc.shadowRoot?.textContent).toContain('Verified');
+    const headings = acc.shadowRoot?.querySelectorAll('[role="heading"][aria-level="2"]');
+    expect(headings?.length).toBe(2);
+    const panels = acc.shadowRoot?.querySelectorAll<HTMLElement>('[role="region"]');
+    expect(panels?.length).toBe(2);
+    expect(panels?.[0]?.hasAttribute('hidden')).toBe(true);
+    const hdr0 = acc.shadowRoot?.querySelector<HTMLButtonElement>('button[data-header-index="0"]')!;
+    const hdr1 = acc.shadowRoot?.querySelector<HTMLButtonElement>('button[data-header-index="1"]')!;
+    hdr0.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(acc.shadowRoot?.activeElement).toBe(hdr1);
+
+    // 17. EmrBreadcrumbsElement: href anchor, chevron separator, overflowExpanded, reset on items change
+    const crumbs = document.createElement('emr-breadcrumbs') as EmrBreadcrumbsElement;
+    crumbs.maxItems = 3;
+    crumbs.separator = 'chevron';
+    crumbs.items = [
+      { id: 'home', label: 'Clinic', href: '/clinic' },
+      { id: 'retina', label: 'Retina' },
+      { id: 'pt', label: 'Patient' },
+      { id: 'oct', label: 'OCT' },
+    ];
+    host.appendChild(crumbs);
+    await crumbs.updateComplete;
+    expect(crumbs.shadowRoot?.querySelector('a.breadcrumb-btn[href="/clinic"]')).toBeTruthy();
+    const expandedEvents: unknown[] = [];
+    crumbs.addEventListener('overflowExpanded', e => expandedEvents.push((e as CustomEvent).detail));
+    crumbs.shadowRoot?.querySelector<HTMLButtonElement>('[data-expand-breadcrumbs="true"]')?.click();
+    await crumbs.updateComplete;
+    expect(expandedEvents.length).toBe(1);
+    crumbs.items = [...crumbs.items, { id: 'rnfl', label: 'RNFL' }];
+    await crumbs.updateComplete;
+    expect(crumbs.shadowRoot?.querySelector('[data-expand-breadcrumbs="true"]')).toBeTruthy();
+
+    // 18. EmrColorPickerElement: clearable default true, #RGB norm, blur rollback, contrast class, roving focus, warning under labelHidden
+    const color = document.createElement('emr-color-picker') as EmrColorPickerElement;
+    color.label = 'Ink';
+    color.labelHidden = true;
+    color.warning = 'Check contrast';
+    color.swatches = [
+      { value: '#fde68a', label: 'Bright Yellow' },
+      { value: '#0f172a', label: 'Dark Ink' },
+    ];
+    color.value = '#fde68a';
+    host.appendChild(color);
+    await color.updateComplete;
+    expect(color.clearable).toBe(true);
+    expect(color.shadowRoot?.querySelector('.swatch-check--dark')).toBeTruthy();
+    expect(color.shadowRoot?.querySelector('[role="status"]')?.textContent).toContain('Check contrast');
+    const hexInput = color.shadowRoot?.querySelector<HTMLInputElement>('input.hex-input')!;
+    const colorEvents: (string | null)[] = [];
+    color.addEventListener('valueChange', e => colorEvents.push((e as CustomEvent<string | null>).detail));
+    hexInput.value = '#f0a';
+    hexInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(colorEvents).toEqual(['#ff00aa']);
+    hexInput.value = '#ggg';
+    hexInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(colorEvents).toEqual(['#ff00aa']);
+    hexInput.dispatchEvent(new Event('blur', { bubbles: true }));
+    await color.updateComplete;
+    expect(hexInput.value).toBe('#fde68a');
+
+    // 19. EmrCopyButtonElement: outline default, empty value disabled, iconOnly, value change resets copied
+    const copy = document.createElement('emr-copy-button') as EmrCopyButtonElement;
+    copy.value = '';
+    copy.iconOnly = true;
+    host.appendChild(copy);
+    await copy.updateComplete;
+    const copyBtn = copy.shadowRoot?.querySelector<HTMLButtonElement>('button')!;
+    expect(copy.variant).toBe('outline');
+    expect(copyBtn.disabled).toBe(true);
+    copy.value = 'MRN-99';
+    await copy.updateComplete;
+    expect(copyBtn.disabled).toBe(false);
+    copyBtn.click();
+    await copy.updateComplete;
+    expect(copyBtn.getAttribute('data-copied')).toBe('true');
+    expect(copy.shadowRoot?.querySelector('[role="status"]')?.textContent).toContain('Copied');
+    copy.value = 'MRN-100';
+    await copy.updateComplete;
+    expect(copyBtn.getAttribute('data-copied')).toBe('false');
   });
 });

@@ -2,33 +2,85 @@ import { describe, expect, it } from 'vitest';
 import {
   addTagValues,
   applyInputMask,
+  buildDateRangeCalendarGrid,
   clearUnlockedTags,
+  commitDateRangeEndpoint,
   commitTagInputValues,
+  editMaskedInputWithCaret,
+  extractOtpTypedInput,
+  formatDateRangeMonthTitle,
+  formatSliderValue,
+  getDateRangeWeekdays,
+  inferMaskInputMode,
+  isIsoRangeEdge,
+  isValidDateRangeEndpoint,
+  normalizeOtpSlots,
   normalizeTagInputDraft,
   popLastUnlockedTag,
   rankTagSuggestions,
   removeTagInputAtIndex,
+  resolveClosestRangeThumb,
   resolveEmrTagsValue,
+  resolveInitialCalendarMonth,
+  resolveMaskedCaretPosition,
+  resolveOtpClearSlot,
+  resolveRangeThumbKeyValue,
+  resolveSliderKeyStepValue,
+  selectDateRangeCalendarDay,
+  sliderValuePercent,
+  stepCalendarMonth,
   applyOtpSlotEdit,
   buildEmrSelectTriggerSummary,
+  buildEmrTreeSelectSummary,
   canActivateEmrFieldValueRow,
   canActivateEmrStatTile,
+  canClearEmrColorPicker,
   canClearEmrSegmentedControl,
+  canCopyEmrValue,
   canMutateEmrToggle,
+  canOpenEmrMenu,
+  canOpenEmrSplitMenu,
+  canSelectEmrBreadcrumb,
+  canSelectEmrMenuItem,
   canSelectEmrStage,
   canSelectEmrStatusCell,
+  canToggleAccordionItem,
+  canTriggerCopy,
+  canTriggerEmrSplitPrimary,
   canTriggerEmrStatusCellAction,
   canClearRadioGroupValue,
+  DEFAULT_CLINICAL_COLOR_SWATCHES,
+  findEmrMenuTypeaheadIndex,
+  formatCopyButtonLabel,
+  getContrastCheckTone,
+  getEnabledMenuIndices,
+  isHexColorValid,
+  moveAccordionFocusIndex,
+  moveColorSwatchFocusIndex,
+  moveEmrMenuFocusIndex,
+  normalizeHexColor,
+  resolveAccordionExpandedIds,
+  resolveColorSwatchTabStopIndex,
+  resolveCopyFeedbackDurationMs,
   clampCropRect,
   clampRangeSliderPair,
   clampSliderValue,
+  computeAspectLockedCropRect,
+  computeCroppedCanvasPlan,
+  splitRotationDegrees,
+  validateUploadedImageFile,
   clearCheckboxGroupValue,
   clearEmrSelectValue,
+  clearEmrToggleGroupValues,
+  clearTreeSelection,
   collapseBreadcrumbs,
   computeSelectAllState,
+  computeTreeNodeCheckState,
   filterOptionsLocally,
   findNextEnabledEmrSelectOptionIndex,
+  findNextTreeRowIndex,
   findTypeaheadEmrSelectOptionIndex,
+  findTypeaheadTreeRowIndex,
   flattenVisibleTreeNodes,
   formatCheckboxSelectionCount,
   formatEmrSegmentedBadge,
@@ -42,6 +94,7 @@ import {
   isEmrSegmentedOptionLocked,
   isEmrSelectClearable,
   isEmrSelectOptionBlockedByMax,
+  isEmrTreeClearable,
   isIsoDateInRange,
   isRadioOptionLocked,
   moveEmrSegmentedFocusIndex,
@@ -59,9 +112,17 @@ import {
   normalizeEmrStageStepperSize,
   normalizeEmrStatTileSize,
   normalizeEmrStatTileTone,
+  normalizeEmrToggleGroupLabelPlacement,
+  normalizeEmrToggleGroupOrientation,
+  normalizeEmrToggleGroupSize,
+  normalizeEmrToggleGroupVariant,
   resolveEmrSegmentedSelectAction,
   resolveEmrSegmentedTabStopValue,
   resolveEmrSegmentedValidationState,
+  resolveEmrToggleGroupValues,
+  resolveEmrTreeSelectDefaultExpanded,
+  resolveDefaultExpandedTreeIds,
+  removeTreeSelectionChip,
   normalizeEmrStatusCellSize,
   normalizeEmrToggleLabelPlacement,
   normalizeEmrToggleSize,
@@ -93,9 +154,11 @@ import {
   toggleAccordionId,
   toggleCheckboxGroupValue,
   toggleEmrSelectOption,
+  toggleEmrToggleGroupValue,
   toggleSelectAllValues,
   toggleTreeNodeCheck,
   validateCheckboxGroupSelection,
+  validateEmrToggleGroupSelection,
   type EmrOption,
   type EmrTreeNode,
 } from './l1-primitives.models';
@@ -190,6 +253,82 @@ describe('l1-primitives.models pure logic', () => {
     expect(crop.x + crop.width).toBeLessThanOrEqual(1);
     expect(crop.y + crop.height).toBeLessThanOrEqual(1);
     expect(crop.width).toBeCloseTo(crop.height, 3);
+
+    expect(splitRotationDegrees(0)).toEqual({ base90: 0, straighten: 0 });
+    expect(splitRotationDegrees(95)).toEqual({ base90: 90, straighten: 5 });
+    expect(splitRotationDegrees(-175)).toEqual({ base90: -180, straighten: 5 });
+    expect(splitRotationDegrees(175)).toEqual({ base90: 180, straighten: -5 });
+
+    const lockedY = computeAspectLockedCropRect(
+      { x: 0.1, y: 0.1, width: 0.5, height: 0.5 },
+      { x: 0.1, y: 0.1, width: 0.5, height: 0.7 },
+      1,
+    );
+    expect(lockedY).toEqual({ x: 0.1, y: 0.1, width: 0.7, height: 0.7 });
+
+    const lockedNW = computeAspectLockedCropRect(
+      { x: 0.2, y: 0.2, width: 0.4, height: 0.4 },
+      { x: 0.1, y: 0.1, width: 0.5, height: 0.5 },
+      1,
+    );
+    expect(lockedNW).toEqual({ x: 0.1, y: 0.1, width: 0.5, height: 0.5 });
+
+    const plan = computeCroppedCanvasPlan(
+      1000,
+      800,
+      {
+        rect: { x: 0.25, y: 0.25, width: 0.5, height: 0.5 },
+        rotationDeg: 90,
+        zoom: 1.5,
+        panX: 10,
+        panY: -10,
+        flipH: true,
+        flipV: false,
+        aspectRatio: null,
+      },
+      2048,
+    );
+    expect(plan.outputWidth).toBe(500);
+    expect(plan.outputHeight).toBe(400);
+    expect(plan.scaleX).toBe(-1.5);
+    expect(plan.scaleY).toBe(1.5);
+
+    const cappedPlan = computeCroppedCanvasPlan(
+      8000,
+      4000,
+      {
+        rect: { x: 0, y: 0, width: 1, height: 1 },
+        rotationDeg: 0,
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        flipH: false,
+        flipV: false,
+        aspectRatio: null,
+      },
+      2048,
+    );
+    expect(cappedPlan.outputWidth).toBe(2048);
+    expect(cappedPlan.outputHeight).toBe(1024);
+
+    expect(
+      validateUploadedImageFile(
+        { name: 'fundus.png', sizeBytes: 1024, mimeType: 'image/png' },
+        { accept: 'image/*', maxSizeBytes: 5000 },
+      ),
+    ).toBeNull();
+    expect(
+      validateUploadedImageFile(
+        { name: 'huge.png', sizeBytes: 5 * 1024 * 1024, mimeType: 'image/png' },
+        { accept: 'image/*', maxSizeBytes: 2 * 1024 * 1024 },
+      ),
+    ).toContain('exceeds the maximum file size');
+    expect(
+      validateUploadedImageFile(
+        { name: 'notes.pdf', sizeBytes: 1024, mimeType: 'application/pdf' },
+        { accept: 'image/*' },
+      ),
+    ).toContain('not an accepted file type');
   });
 
   it('normalizes chronological date ranges and checks inclusion', () => {
@@ -216,6 +355,99 @@ describe('l1-primitives.models pure logic', () => {
     const otp = applyOtpSlotEdit('', 0, '482910', 6, true);
     expect(otp.value).toBe('482910');
     expect(otp.completed).toBe(true);
+  });
+
+  it('covers Wave 2 Batch C date-range calendar, slider/range-slider bounds, masked escaping/caret, and sparse OTP', () => {
+    // 1. Date range calendar & datetime preservation
+    expect(getDateRangeWeekdays(0)[0]).toBe('Su');
+    expect(getDateRangeWeekdays(1)[0]).toBe('Mo');
+    const sunGrid = buildDateRangeCalendarGrid(2026, 2, 0); // March 2026 (starts Sunday)
+    expect(sunGrid).toHaveLength(42);
+    expect(sunGrid[0]).toEqual({ iso: '2026-03-01', day: 1, inCurrentMonth: true });
+    const monGrid = buildDateRangeCalendarGrid(2026, 2, 1); // March 2026 Monday-first -> starts Feb 23
+    expect(monGrid[0]).toEqual({ iso: '2026-02-23', day: 23, inCurrentMonth: false });
+
+    expect(stepCalendarMonth(2026, 0, -1)).toEqual({ year: 2025, month0: 11 });
+    expect(stepCalendarMonth(2026, 11, 1)).toEqual({ year: 2027, month0: 0 });
+    expect(formatDateRangeMonthTitle(2026, 2)).toBe('March 2026');
+    expect(resolveInitialCalendarMonth({ start: '2026-08-10', end: null })).toEqual({ year: 2026, month0: 7 });
+    expect(resolveInitialCalendarMonth(null, '2025-12-01')).toEqual({ year: 2025, month0: 11 });
+
+    expect(isValidDateRangeEndpoint('2026-03-08', 'date')).toBe(true);
+    expect(isValidDateRangeEndpoint('2026-03', 'date')).toBe(false);
+    expect(isValidDateRangeEndpoint('2026-03-08 09:30', 'datetime')).toBe(true);
+
+    const committed = commitDateRangeEndpoint(
+      { start: '2026-03-10', end: '2026-03-15' },
+      'start',
+      '2026-03-20',
+      'date',
+      '2026-03-01',
+      '2026-03-18',
+    );
+    expect(committed.swapped).toBe(true);
+    expect(committed.value).toEqual({ start: '2026-03-15', end: '2026-03-20' });
+    expect(committed.startOutOfBounds).toBe(false);
+    expect(committed.endOutOfBounds).toBe(true);
+
+    const dtSelected = selectDateRangeCalendarDay(
+      { start: '2026-03-08T09:15', end: '2026-03-10T17:45' },
+      '2026-03-12',
+      'datetime',
+    );
+    expect(dtSelected).toEqual({ start: '2026-03-12T09:15', end: null });
+    expect(isIsoRangeEdge('2026-03-08', { start: '2026-03-08T09:15', end: '2026-03-10T17:45' })).toBe('start');
+    expect(isIsoDateInRange('2026-03-09', { start: '2026-03-08T09:15', end: '2026-03-10T17:45' })).toBe(true);
+
+    // 2. Slider & Range Slider
+    expect(clampSliderValue(Number.NaN, 0, 100, 1)).toBe(0);
+    expect(clampSliderValue(15, 20, 0, 5)).toBe(15); // min > max safe swap
+    expect(clampSliderValue(0.12346, 0, 1, 1e-4)).toBe(0.1235);
+    expect(sliderValuePercent(25, 0, 100)).toBe(25);
+    expect(formatSliderValue(null, '%')).toBe('—');
+    expect(formatSliderValue(12.5, 'mmHg', 1)).toBe('12.5 mmHg');
+    expect(resolveSliderKeyStepValue('PageUp', 10, 0, 100, 1)).toBe(20);
+    expect(resolveSliderKeyStepValue('Home', 50, 10, 90, 5)).toBe(10);
+
+    // Boundary minDistance bug fixes: high near max, low near min
+    expect(clampRangeSliderPair(95, 90, 0, 100, 1, 10, 'high')).toEqual([90, 100]);
+    expect(clampRangeSliderPair(5, 8, 0, 100, 1, 10, 'low')).toEqual([0, 10]);
+    expect(resolveClosestRangeThumb(0.1, 20, 80)).toBe('low');
+    expect(resolveClosestRangeThumb(0.9, 20, 80)).toBe('high');
+    expect(resolveClosestRangeThumb(0.65, 20, 80)).toBe('high');
+    expect(resolveRangeThumbKeyValue('low', 'End', [10, 40], 0, 100, 5, 10)).toEqual([30, 40]);
+
+    // 3. Masked input escaping, custom definitions, uppercase, inputMode & caret
+    const escaped = applyInputMask('1234', '\\9\\A-99-99');
+    expect(escaped).toEqual({ masked: '9A-12-34', unmasked: '1234', complete: true });
+    const customHex = applyInputMask('ab1f', '##-##', {
+      uppercase: true,
+      definitions: { '#': '[0-9A-Fa-f]' },
+    });
+    expect(customHex).toEqual({ masked: 'AB-1F', unmasked: 'AB1F', complete: true });
+    expect(inferMaskInputMode('99-9999-9999-9999')).toBe('numeric');
+    expect(inferMaskInputMode('AA-9999')).toBe('text');
+    expect(resolveMaskedCaretPosition('91-23', '91-23', 2, '99-9999')).toBe(3);
+    const backspacedLiteral = editMaskedInputWithCaret('91-', '91', 2, '99-9999');
+    expect(backspacedLiteral.result.masked).toBe('9');
+    expect(backspacedLiteral.caret).toBe(1);
+
+    // 4. Sparse OTP preservation, overwrite & clear resolution
+    const clearedMid = applyOtpSlotEdit('482910', 1, '', 6, true);
+    expect(clearedMid.value).toBe('4 2910');
+    expect(clearedMid.slots).toEqual(['4', '', '2', '9', '1', '0']);
+    expect(clearedMid.completed).toBe(false);
+    const refilled = applyOtpSlotEdit(clearedMid.value, 1, '5', 6, true);
+    expect(refilled.value).toBe('452910');
+    expect(refilled.completed).toBe(true);
+    expect(extractOtpTypedInput('4', '49')).toBe('9');
+    expect(extractOtpTypedInput('4', '94')).toBe('9');
+    expect(extractOtpTypedInput('4', '482910')).toBe('482910');
+    expect(resolveOtpClearSlot(['4', '', '2'], 1, 'Backspace')).toEqual({ targetIndex: 0, nextFocusIndex: 0 });
+    expect(resolveOtpClearSlot(['4', '', '2'], 1, 'Delete')).toEqual({ targetIndex: 2, nextFocusIndex: 1 });
+    const alphaOtp = applyOtpSlotEdit('', 0, 'ab12', 4, false, { uppercase: true });
+    expect(alphaOtp.value).toBe('AB12');
+    expect(alphaOtp.completed).toBe(true);
   });
 
   it('toggles single/multi accordions and collapses long breadcrumb trails', () => {
@@ -701,7 +933,8 @@ describe('l1-primitives.models pure logic', () => {
 
   it('normalizes segmented control props, validation, focus navigation, selection, and badges', () => {
     expect(normalizeEmrSegmentedSize('sm')).toBe('sm');
-    expect(normalizeEmrSegmentedSize('lg')).toBe('md');
+    expect(normalizeEmrSegmentedSize('lg')).toBe('lg');
+    expect(normalizeEmrSegmentedSize('xl')).toBe('md');
     expect(normalizeEmrSegmentedVariant('outline')).toBe('outline');
     expect(normalizeEmrSegmentedVariant('soft')).toBe('soft');
     expect(normalizeEmrSegmentedVariant('other')).toBe('default');
@@ -840,5 +1073,266 @@ describe('l1-primitives.models pure logic', () => {
       filterSuggestions: false,
     });
     expect(unfiltered).toEqual([{ value: 'Sulfa', isBestMatch: false }]);
+  });
+
+  it('normalizes, resolves, toggles, clears, and validates EmrToggleGroup state', () => {
+    expect(normalizeEmrToggleGroupVariant('standard')).toBe('tile');
+    expect(normalizeEmrToggleGroupVariant('card')).toBe('card');
+    expect(normalizeEmrToggleGroupVariant('inline')).toBe('inline');
+    expect(normalizeEmrToggleGroupSize('sm')).toBe('sm');
+    expect(normalizeEmrToggleGroupSize('unknown')).toBe('md');
+    expect(normalizeEmrToggleGroupOrientation('grid')).toBe('grid');
+    expect(normalizeEmrToggleGroupOrientation('bad')).toBe('vertical');
+    expect(normalizeEmrToggleGroupLabelPlacement(undefined)).toBe('space-between');
+    expect(normalizeEmrToggleGroupLabelPlacement('start')).toBe('start');
+
+    expect(resolveEmrToggleGroupValues({ value: ['a'], values: ['b', 'b'], multiple: true })).toEqual(['b']);
+    expect(resolveEmrToggleGroupValues({ value: 'sc', multiple: false })).toEqual(['sc']);
+    expect(resolveEmrToggleGroupValues({ value: null, values: ['sc'], multiple: false })).toEqual([]);
+
+    const opts: readonly EmrOption[] = [
+      { value: 'a', label: 'A', readOnly: true },
+      { value: 'b', label: 'B' },
+      { value: 'c', label: 'C' },
+      { value: 'none', label: 'None' },
+    ];
+    expect(
+      toggleEmrToggleGroupValue({
+        current: ['a', 'b'],
+        toggledValue: 'a',
+        options: opts,
+        multiple: true,
+      }),
+    ).toEqual(['a', 'b']);
+
+    expect(
+      toggleEmrToggleGroupValue({
+        current: ['a', 'b'],
+        toggledValue: 'c',
+        options: opts,
+        multiple: true,
+        maxSelections: 2,
+      }),
+    ).toEqual(['a', 'b']);
+
+    expect(
+      toggleEmrToggleGroupValue({
+        current: ['a', 'b'],
+        toggledValue: 'none',
+        options: opts,
+        multiple: true,
+        exclusiveValues: ['none'],
+      }),
+    ).toEqual(['a', 'none']);
+
+    expect(
+      toggleEmrToggleGroupValue({
+        current: ['b'],
+        toggledValue: 'b',
+        options: opts,
+        multiple: false,
+        allowEmpty: false,
+      }),
+    ).toEqual(['b']);
+
+    expect(clearEmrToggleGroupValues(['a', 'b', 'c'], opts)).toEqual(['a']);
+    expect(validateEmrToggleGroupSelection(['a'], 2, 3)).toEqual({
+      valid: false,
+      count: 1,
+      minViolated: true,
+      maxViolated: false,
+      message: 'Select at least 2 options.',
+    });
+  });
+
+  it('handles EmrTreeView readOnly locking, maxSelections, keywords, keyboard traversal, and EmrTreeSelect chip/summary helpers', () => {
+    const richTree: readonly EmrTreeNode[] = [
+      {
+        id: 'ant',
+        label: 'Anterior Segment',
+        children: [
+          { id: 'epi', label: 'Epithelium', readOnly: true, keywords: ['superficial'] },
+          { id: 'stroma', label: 'Stroma', keywords: ['deep'] },
+          { id: 'endo', label: 'Endothelium', disabled: true },
+        ],
+      },
+      {
+        id: 'post',
+        label: 'Posterior Segment',
+        children: [{ id: 'macula', label: 'Macula' }],
+      },
+    ];
+
+    // Keyword search matches 'superficial' -> auto-expands 'ant'
+    const kwRows = flattenVisibleTreeNodes(richTree, [], { searchQuery: 'superficial' });
+    expect(kwRows.map((r) => r.node.id)).toEqual(['ant', 'epi']);
+
+    // Locked readOnly node cannot be directly toggled
+    expect(toggleTreeNodeCheck(richTree, ['epi'], 'epi', 'cascade')).toEqual(['epi']);
+
+    // Cascade unchecking 'ant' preserves locked 'epi' while unchecking 'stroma'
+    const allChecked = toggleTreeNodeCheck(richTree, ['epi'], 'ant', 'cascade');
+    expect(allChecked).toEqual(['ant', 'epi', 'stroma']);
+    const afterUncheck = toggleTreeNodeCheck(richTree, allChecked, 'ant', 'cascade');
+    expect(afterUncheck).toEqual(['epi']);
+    expect(computeTreeNodeCheckState(richTree[0]!, new Set(afterUncheck), 'cascade')).toBe('mixed');
+
+    // maxSelections caps 'all' / 'leaf' / 'cascade'
+    expect(toggleTreeNodeCheck(richTree, ['epi'], 'stroma', 'all', 1)).toEqual(['epi']);
+    expect(toggleTreeNodeCheck(richTree, ['epi'], 'stroma', 'all', 2)).toEqual(['epi', 'stroma']);
+
+    // clearTreeSelection preserves readOnly nodes
+    expect(clearTreeSelection(richTree, ['ant', 'epi', 'stroma', 'macula'])).toEqual(['epi']);
+
+    // Default expanded & keyboard traversal skip disabled rows
+    expect(resolveDefaultExpandedTreeIds(richTree)).toEqual(['ant', 'post']);
+    const flat = flattenVisibleTreeNodes(richTree, ['ant', 'post']);
+    // flat order: 0=ant, 1=epi, 2=stroma, 3=endo (disabled), 4=post, 5=macula
+    expect(findNextTreeRowIndex(flat, 2, 'ArrowDown')).toBe(4);
+    expect(findNextTreeRowIndex(flat, 4, 'ArrowUp')).toBe(2);
+    expect(findNextTreeRowIndex(flat, 0, 'End')).toBe(5);
+    expect(findTypeaheadTreeRowIndex(flat, 'm', 0)).toBe(5);
+
+    // removeTreeSelectionChip reconciles cascade parent and respects readOnly
+    expect(removeTreeSelectionChip(richTree, ['ant', 'epi', 'stroma'], 'epi', 'cascade')).toEqual([
+      'ant',
+      'epi',
+      'stroma',
+    ]);
+    expect(removeTreeSelectionChip(richTree, ['ant', 'epi', 'stroma'], 'stroma', 'cascade')).toEqual([
+      'epi',
+    ]);
+
+    // buildEmrTreeSelectSummary & resolveEmrTreeSelectDefaultExpanded & isEmrTreeClearable
+    const summary = buildEmrTreeSelectSummary({
+      nodes: richTree,
+      multiple: true,
+      values: ['epi', 'macula'],
+      displayMode: 'path',
+      placeholder: 'Select…',
+      maxTagCount: 1,
+    });
+    expect(summary.visibleChips.map((c) => c.id)).toEqual(['epi']);
+    expect(summary.visibleChips[0]?.readOnly).toBe(true);
+    expect(summary.overflowCount).toBe(1);
+    expect(resolveEmrTreeSelectDefaultExpanded(richTree, 'macula')).toEqual(['post']);
+    expect(
+      isEmrTreeClearable({
+        clearable: true,
+        disabled: false,
+        readOnly: false,
+        multiple: true,
+        values: ['epi'],
+        nodes: richTree,
+      }),
+    ).toBe(false);
+    expect(
+      isEmrTreeClearable({
+        clearable: true,
+        disabled: false,
+        readOnly: false,
+        multiple: true,
+        values: ['epi', 'macula'],
+        nodes: richTree,
+      }),
+    ).toBe(true);
+  });
+
+  it('handles Menu & SplitButton gating, enabled focus traversal, and typeahead', () => {
+    const items = [
+      { id: 'view', label: 'View Chart' },
+      { id: 'locked', label: 'Locked Action', disabled: true },
+      { id: 'print', label: 'Print Summary' },
+      { id: 'void', label: 'Void Order', tone: 'danger' as const, dividerBefore: true },
+    ];
+    expect(canOpenEmrMenu({ itemsCount: items.length })).toBe(true);
+    expect(canOpenEmrMenu({ itemsCount: 0 })).toBe(false);
+    expect(canOpenEmrMenu({ itemsCount: 2, readOnly: true })).toBe(false);
+    expect(canOpenEmrMenu({ itemsCount: 2, disabled: true })).toBe(false);
+
+    expect(canSelectEmrMenuItem(items[0]!)).toBe(true);
+    expect(canSelectEmrMenuItem(items[1]!)).toBe(false);
+    expect(canSelectEmrMenuItem(items[0]!, false, true)).toBe(false);
+
+    expect(getEnabledMenuIndices(items)).toEqual([0, 2, 3]);
+    expect(moveEmrMenuFocusIndex(items, 0, 'ArrowDown')).toBe(2);
+    expect(moveEmrMenuFocusIndex(items, 2, 'ArrowUp')).toBe(0);
+    expect(moveEmrMenuFocusIndex(items, 3, 'ArrowDown')).toBe(0);
+    expect(moveEmrMenuFocusIndex(items, 0, 'ArrowUp')).toBe(3);
+    expect(moveEmrMenuFocusIndex(items, 2, 'Home')).toBe(0);
+    expect(moveEmrMenuFocusIndex(items, 0, 'End')).toBe(3);
+    expect(moveEmrMenuFocusIndex([{ id: 'x', label: 'X', disabled: true }], 0, 'ArrowDown')).toBe(-1);
+
+    expect(findEmrMenuTypeaheadIndex(items, 'p', 0)).toBe(2);
+    expect(findEmrMenuTypeaheadIndex(items, 'l', 0)).toBe(-1);
+    expect(findEmrMenuTypeaheadIndex(items, 'v', 0)).toBe(3);
+
+    expect(canTriggerEmrSplitPrimary({})).toBe(true);
+    expect(canTriggerEmrSplitPrimary({ loading: true })).toBe(false);
+    expect(canTriggerEmrSplitPrimary({ readOnly: true })).toBe(false);
+    expect(canOpenEmrSplitMenu({ itemsCount: 2 })).toBe(true);
+    expect(canOpenEmrSplitMenu({ itemsCount: 2, loading: true })).toBe(false);
+    expect(canOpenEmrSplitMenu({ itemsCount: 0 })).toBe(false);
+  });
+
+  it('handles Accordion expansion resolution, locking, header focus nav, and Breadcrumb selection', () => {
+    const accItems = [
+      { id: 'hx', title: 'History', icon: 'file' },
+      { id: 'rx', title: 'Rx', disabled: true },
+      { id: 'plan', title: 'Plan' },
+    ];
+    expect(resolveAccordionExpandedIds(accItems, ['hx', 'unknown', 'hx', 'plan'], true)).toEqual(['hx', 'plan']);
+    expect(resolveAccordionExpandedIds(accItems, ['hx', 'plan'], false)).toEqual(['hx']);
+    expect(canToggleAccordionItem(accItems[0]!)).toBe(true);
+    expect(canToggleAccordionItem(accItems[1]!)).toBe(false);
+    expect(canToggleAccordionItem(accItems[0]!, false, true)).toBe(false);
+    expect(moveAccordionFocusIndex(accItems, 0, 'ArrowDown')).toBe(2);
+    expect(moveAccordionFocusIndex(accItems, 2, 'ArrowUp')).toBe(0);
+    expect(moveAccordionFocusIndex(accItems, 0, 'End')).toBe(2);
+    expect(moveAccordionFocusIndex(accItems, 2, 'Home')).toBe(0);
+
+    expect(canSelectEmrBreadcrumb({ disabled: false }, false)).toBe(true);
+    expect(canSelectEmrBreadcrumb({ disabled: true }, false)).toBe(false);
+    expect(canSelectEmrBreadcrumb({ disabled: false }, true)).toBe(false);
+  });
+
+  it('handles ColorPicker hex normalization, contrast tone, roving swatch index, and CopyButton helpers', () => {
+    expect(normalizeHexColor(' #F0A ')).toBe('#ff00aa');
+    expect(normalizeHexColor('2563EB')).toBe('#2563eb');
+    expect(normalizeHexColor('#12')).toBeNull();
+    expect(isHexColorValid('#2563eb')).toBe(true);
+    expect(isHexColorValid('#ggg')).toBe(false);
+
+    expect(getContrastCheckTone('#fde68a')).toBe('dark');
+    expect(getContrastCheckTone('#dc2626')).toBe('light');
+    expect(getContrastCheckTone('#0f172a')).toBe('light');
+    expect(getContrastCheckTone('#ffffff')).toBe('dark');
+
+    expect(resolveColorSwatchTabStopIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, '#2563EB')).toBe(1);
+    expect(resolveColorSwatchTabStopIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, null)).toBe(0);
+    expect(resolveColorSwatchTabStopIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, '#2563eb', true)).toBe(-1);
+
+    expect(moveColorSwatchFocusIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, 0, 'ArrowRight')).toBe(1);
+    expect(moveColorSwatchFocusIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, 0, 'ArrowLeft')).toBe(
+      DEFAULT_CLINICAL_COLOR_SWATCHES.length - 1,
+    );
+    expect(moveColorSwatchFocusIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, 3, 'Home')).toBe(0);
+    expect(moveColorSwatchFocusIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, 3, 'End')).toBe(
+      DEFAULT_CLINICAL_COLOR_SWATCHES.length - 1,
+    );
+
+    expect(canClearEmrColorPicker({ clearable: true, value: '#dc2626' })).toBe(true);
+    expect(canClearEmrColorPicker({ clearable: true, value: '#dc2626', readOnly: true })).toBe(false);
+    expect(canClearEmrColorPicker({ clearable: false, value: '#dc2626' })).toBe(false);
+    expect(canClearEmrColorPicker({ clearable: true, value: null })).toBe(false);
+
+    expect(canCopyEmrValue('MRN-1')).toBe(true);
+    expect(canTriggerCopy('MRN-1', true)).toBe(false);
+    expect(canCopyEmrValue('')).toBe(false);
+    expect(resolveCopyFeedbackDurationMs(undefined)).toBe(2000);
+    expect(resolveCopyFeedbackDurationMs(0)).toBe(0);
+    expect(resolveCopyFeedbackDurationMs(-10)).toBe(2000);
+    expect(formatCopyButtonLabel(false, 'Copy MRN', 'Copied!')).toBe('Copy MRN');
+    expect(formatCopyButtonLabel(true, 'Copy MRN', 'Copied!')).toBe('Copied!');
   });
 });

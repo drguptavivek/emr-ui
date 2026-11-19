@@ -41,6 +41,7 @@ import {
   type FieldFrameLayout,
   type IdentifierEntryIntent,
   type IdentifierEntryView,
+  type ImageFieldIntent,
   type PartialDateFieldIntent,
   type ScaleFieldIntent,
   type ScheduleAmountMode,
@@ -879,21 +880,65 @@ export class EmrTypedFieldElement extends EmrLitElement {
 
     if (def.widget === 'image-upload') {
       const imgItems = Array.isArray(value) ? (value as unknown as readonly EmrUploadedImageItem[]) : [];
-      return html`<emr-image-upload
+      const mergedMessages = mergeFieldFrameMessages(state.error, state.warning, state.info, state.messages);
+      return html`<emr-image-field
         .controlId=${id}
-        .label=${label}
-        .labelHidden=${true}
-        .items=${imgItems}
-        .multiple=${def.repeats}
-        .error=${errFlag}
+        .labelHidden=${this.labelHidden}
+        .layout=${this.layout}
+        .showMetadata=${this.showMetadata}
         .readOnly=${locked}
-        .disabled=${modelDisabled}
-        @valueChange=${(e: CustomEvent<readonly EmrUploadedImageItem[]>) => {
+        .model=${{
+          label: def.label,
+          items: imgItems,
+          multiple: def.repeats,
+          status: state.status,
+          statusOptions: def.assessmentStatusOptions,
+          hint: def.hint,
+          messages: mergedMessages,
+          required: state.requiredOverride ?? def.required,
+          readOnly: locked,
+        }}
+        @intent=${(e: CustomEvent<ImageFieldIntent>) => {
           e.stopPropagation();
-          this.change(def, state, e.detail as unknown as ClinicalFieldValue);
+          if (locked) return;
+          const intent = e.detail;
+          if (intent.type === 'itemsChangeRequested') {
+            this.change(def, state, intent.items as unknown as ClinicalFieldValue);
+          } else if (intent.type === 'imageCropped') {
+            this.change(
+              def,
+              state,
+              imgItems.map((it) =>
+                it.id === intent.id
+                  ? {
+                      ...it,
+                      cropTransform: intent.result.transform,
+                      previewSrc: intent.result.croppedDataUrl ?? it.previewSrc ?? it.src,
+                    }
+                  : it,
+              ) as unknown as ClinicalFieldValue,
+            );
+          } else if (intent.type === 'captionChangeRequested') {
+            this.change(
+              def,
+              state,
+              imgItems.map((it) =>
+                it.id === intent.id ? { ...it, caption: intent.caption } : it,
+              ) as unknown as ClinicalFieldValue,
+            );
+          } else if (intent.type === 'itemRemoveRequested') {
+            this.change(
+              def,
+              state,
+              imgItems.filter((it) => it.id !== intent.id) as unknown as ClinicalFieldValue,
+            );
+          } else if (intent.type === 'statusChangeRequested') {
+            this.changeStatus(def, state, intent.status);
+          }
         }}
         @focusin=${this.onFocus}
-      ></emr-image-upload>`;
+        @focusout=${this.onBlur}
+      ></emr-image-field>`;
     }
 
     if (def.widget === 'slider') {
@@ -954,12 +999,21 @@ export class EmrTypedFieldElement extends EmrLitElement {
 
     if (def.widget === 'signature') {
       const strokes = Array.isArray(value) ? (value as readonly EmrSignatureStroke[]) : [];
+      const mergedMessages = mergeFieldFrameMessages(state.error, state.warning, state.info, state.messages);
       return html`<emr-signature-capture-field
         .controlId=${id}
-        .labelHidden=${true}
+        .labelHidden=${this.labelHidden}
+        .layout=${this.layout}
+        .showMetadata=${this.showMetadata}
+        .readOnly=${locked}
         .model=${{
-          label,
+          label: def.label,
           strokes,
+          status: state.status,
+          statusOptions: def.assessmentStatusOptions,
+          hint: def.hint,
+          messages: mergedMessages,
+          required: state.requiredOverride ?? def.required,
           readOnly: locked,
         }}
         @intent=${(e: CustomEvent<SignatureCaptureIntent>) => {
@@ -967,11 +1021,16 @@ export class EmrTypedFieldElement extends EmrLitElement {
           if (locked) return;
           if (e.detail.type === 'strokeAdded') {
             this.change(def, state, [...strokes, e.detail.stroke]);
+          } else if (e.detail.type === 'undoRequested') {
+            this.change(def, state, strokes.slice(0, -1));
           } else if (e.detail.type === 'clearRequested') {
             this.change(def, state, []);
+          } else if (e.detail.type === 'statusChangeRequested') {
+            this.changeStatus(def, state, e.detail.status);
           }
         }}
         @focusin=${this.onFocus}
+        @focusout=${this.onBlur}
       ></emr-signature-capture-field>`;
     }
 
@@ -1676,7 +1735,12 @@ export class EmrTypedFieldElement extends EmrLitElement {
     const locked = this.computeLocked(def, state);
     const required = state.requiredOverride ?? def.required;
 
-    if (def.valueType === 'scale' || def.valueType === 'partial-date' || def.valueType === 'attachment') {
+    if (
+      def.valueType === 'scale' ||
+      def.valueType === 'partial-date' ||
+      def.valueType === 'attachment' ||
+      (def.valueType !== 'custom' && (def.widget === 'signature' || def.widget === 'image-upload'))
+    ) {
       return this.renderControl(def, state, id);
     }
 

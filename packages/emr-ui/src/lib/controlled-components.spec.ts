@@ -21,7 +21,7 @@ describe('controlled UI component contracts', () => {
   it('search-select is controlled by query/options/selected inputs and emits intents', () => {
     const source = component('primitives/emr-search-select.component.ts');
 
-    expect(source).toMatch(/readonly\s+query\s*=\s*input\(''\)/);
+    expect(source).toMatch(/readonly\s+query\s*=\s*input(?:<string>)?\(''\)/);
     expect(source).toMatch(/readonly\s+options\s*=\s*input<readonly\s+EmrOption\[\]>\(\[\]\)/);
     expect(source).toMatch(/readonly\s+selected\s*=\s*input<readonly\s+EmrOption\[\]>\(\[\]\)/);
     expect(source).toMatch(/readonly\s+queryChange\s*=\s*output<string>\(\)/);

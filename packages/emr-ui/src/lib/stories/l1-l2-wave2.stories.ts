@@ -236,22 +236,49 @@ export const ImageSuite: Story = {
         src: SAMPLE_SVG_FUNDUS,
         caption: 'OD baseline colour fundus',
       },
+      {
+        id: 'img-fundus-os',
+        name: 'fundus-os-baseline.svg',
+        mimeType: 'image/svg+xml',
+        sizeBytes: 16240,
+        src: SAMPLE_SVG_FUNDUS,
+        caption: 'OS optic disc — baseline',
+      },
     ];
     return {
       props: {
         fundusSrc: SAMPLE_SVG_FUNDUS,
+        galleryImages: [
+          {
+            id: 'fundus-od',
+            src: SAMPLE_SVG_FUNDUS,
+            alt: 'Simulated OD fundus diagram',
+            caption: 'OD posterior pole — 45° field',
+          },
+          {
+            id: 'fundus-os',
+            src: SAMPLE_SVG_FUNDUS,
+            alt: 'Simulated OS fundus diagram',
+            caption: 'OS optic disc — baseline',
+          },
+        ],
         presets: DEFAULT_ASPECT_PRESETS,
         sampleItems,
         imageFieldModel: {
-          fieldId: 'slit-lamp-photos',
           label: 'Slit-lamp & fundus photographs',
           hint: 'Upload, inspect fullscreen (pan/zoom/rotate), or crop clinical photos.',
           items: sampleItems,
           allowCamera: true,
           multiple: true,
+          maxFiles: 4,
+          maxSizeBytes: 5 * 1024 * 1024,
           statusOptions: [
+            { value: 'recorded', label: 'Recorded', tone: 'success' as const },
             { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' as const },
             { value: 'unable-to-assess', label: 'Media haze / unable', tone: 'warning' as const },
+            { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' as const },
+            { value: 'declined', label: 'Declined', tone: 'warning' as const },
+            { value: 'unknown', label: 'Unknown', tone: 'neutral' as const },
           ],
         },
       },
@@ -261,9 +288,9 @@ export const ImageSuite: Story = {
             <emr-image-viewer
               controlId="w2-image-viewer"
               label="Fundus photograph viewer (pan / zoom / rotate / fullscreen)"
-              [src]="fundusSrc"
-              alt="Simulated OD fundus diagram"
-              caption="OD posterior pole — 45° field"
+              [images]="galleryImages"
+              [showThumbnails]="true"
+              [allowFullscreen]="true"
             />
             <emr-image-cropper
               controlId="w2-image-cropper"
@@ -271,6 +298,7 @@ export const ImageSuite: Story = {
               [src]="fundusSrc"
               alt="Optic disc region crop"
               [aspectPresets]="presets"
+              outputMimeType="image/png"
             />
           </div>
           <emr-image-upload
@@ -278,7 +306,9 @@ export const ImageSuite: Story = {
             label="Anterior segment photo upload"
             [items]="sampleItems"
             [allowCamera]="true"
-            hint="Supports preview, fullscreen inspection, rotate, pan, zoom, and crop"
+            [maxFiles]="4"
+            [maxSizeBytes]="5242880"
+            hint="Supports preview, fullscreen inspection, rotate, pan, zoom, captions, and canvas crop"
           />
           <emr-image-field
             controlId="w2-image-field"
@@ -341,10 +371,16 @@ export const TemporalAndText: Story = {
 export const FormattedAndSliders: Story = {
   render: () => ({
     props: {
-      zoomMarks: [
+      opacityMarks: [
+        { value: 0, label: '0%' },
         { value: 50, label: '50%' },
         { value: 100, label: '100%' },
-        { value: 200, label: '200%' },
+      ],
+      iopMarks: [
+        { value: 6, label: '6' },
+        { value: 16, label: '16' },
+        { value: 22, label: '22' },
+        { value: 30, label: '30' },
       ],
     },
     template: `
@@ -357,6 +393,8 @@ export const FormattedAndSliders: Story = {
           [max]="100"
           [step]="5"
           unit="%"
+          [marks]="opacityMarks"
+          [showSteppers]="true"
           [clearable]="true"
         />
         <emr-range-slider
@@ -367,12 +405,16 @@ export const FormattedAndSliders: Story = {
           [max]="30"
           [minDistance]="2"
           unit="mmHg"
+          [marks]="iopMarks"
+          tone="info"
+          [clearable]="true"
         />
         <emr-masked-input
           controlId="w2-masked-abha"
           label="ABHA health identifier"
           mask="99-9999-9999-9999"
           value="91-2847-5510-3921"
+          [showMaskHint]="true"
           [clearable]="true"
           hint="14-digit formatted national health ID"
         />
@@ -381,6 +423,8 @@ export const FormattedAndSliders: Story = {
           label="Patient consent verification OTP"
           value="482910"
           [length]="6"
+          [separatorAfter]="3"
+          [clearable]="true"
           hint="6-digit SMS verification code"
         />
       </div>

@@ -50,6 +50,7 @@ import {
   EmrTreeSelect,
   EmrTreeView,
   EmrTypedField,
+  EmrThemeProvider,
   EmrVas,
   filterOptionsLocally,
   flattenVisibleTreeNodes,
@@ -538,6 +539,69 @@ describe('Part 2: All 20 New Wave 2 Components & Logic', () => {
       }),
     );
     expect(otpHtml).toContain('e-Sign PIN');
+
+    // Wave 2 Batch C parity checks (ARIA, unified dual-thumb range track, warning/error, separatorAfter, showMaskHint)
+    const drHtml = renderToStaticMarkup(
+      createElement(EmrDateRangeInput, {
+        label: 'Admission window',
+        labelHidden: true,
+        value: { start: '2026-03-08', end: '2026-03-15' },
+        weekStartsOn: 1,
+        open: true,
+        clearable: true,
+        warning: 'Verify discharge time',
+      }),
+    );
+    expect(drHtml).toContain('role="group"');
+    expect(drHtml).toContain('March 2026');
+    expect(drHtml).toContain('Verify discharge time');
+    expect(drHtml).toContain('role="status"');
+
+    const unifiedRangeHtml = renderToStaticMarkup(
+      createElement(EmrRangeSlider, {
+        label: 'IOP target',
+        value: [10, 18],
+        min: 6,
+        max: 30,
+        minDistance: 2,
+        unit: 'mmHg',
+        clearable: true,
+        marks: [{ value: 6, label: '6' }, { value: 30, label: '30' }],
+        error: 'Range required',
+      }),
+    );
+    expect(unifiedRangeHtml).toContain('data-thumb="low"');
+    expect(unifiedRangeHtml).toContain('data-thumb="high"');
+    expect(unifiedRangeHtml).toContain('aria-valuemax="16"');
+    expect(unifiedRangeHtml).toContain('aria-valuemin="12"');
+    expect(unifiedRangeHtml).toContain('role="alert"');
+    expect(unifiedRangeHtml).toContain('Clear IOP target');
+
+    const maskedDefaultHtml = renderToStaticMarkup(
+      createElement(EmrMaskedInput, {
+        label: 'ABHA ID',
+        mask: '99-9999-9999-9999',
+        value: '91284755103921',
+        clearable: true,
+      }),
+    );
+    expect(maskedDefaultHtml).toContain('inputMode="numeric"');
+    expect(maskedDefaultHtml).toContain('Clear ABHA ID');
+
+    const otpRichHtml = renderToStaticMarkup(
+      createElement(EmrOtpInput, {
+        label: 'ABDM OTP',
+        length: 6,
+        value: '4 2910',
+        separatorAfter: 3,
+        clearable: true,
+        warning: 'Expires soon',
+      }),
+    );
+    expect(otpRichHtml).toContain('autoComplete="one-time-code"');
+    expect(otpRichHtml).toContain('–');
+    expect(otpRichHtml).toContain('Clear ABDM OTP');
+    expect(otpRichHtml).toContain('Expires soon');
   });
 
   it('14, 15, 16, 17, 18 & 19. EmrMenu, EmrSplitButton, EmrAccordion, EmrBreadcrumbs, EmrColorPicker, and EmrCopyButton', () => {
@@ -676,5 +740,289 @@ describe('Part 2: All 20 New Wave 2 Components & Logic', () => {
       }),
     );
     expect(html).toContain('Anterior Segment / Cornea');
+  });
+
+  it('renders Wave 2 Batch A parity switch-group, tree-view, and sibling-chip tree-select semantics cleanly', () => {
+    const tgHtml = renderToStaticMarkup(
+      createElement(EmrToggleGroup, {
+        label: 'Alerts',
+        multiple: true,
+        showSelectAll: true,
+        selectAllLabel: 'Enable all',
+        showSelectionCount: true,
+        showStateLabels: true,
+        variant: 'card',
+        size: 'sm',
+        warning: 'Verify patient preference',
+        options: [
+          { value: 'sms', label: 'SMS', readOnly: true, badge: 'Verified', tone: 'success' },
+          { value: 'portal', label: 'Portal', group: 'Sync', description: 'Auto-publish' },
+        ],
+        values: ['sms'],
+      }),
+    );
+    expect(tgHtml).toContain('role="group"');
+    expect(tgHtml).toContain('role="checkbox"');
+    expect(tgHtml).toContain('role="switch"');
+    expect(tgHtml).toContain('Enable all');
+    expect(tgHtml).toContain('1 selected');
+    expect(tgHtml).toContain('Verify patient preference');
+
+    const treeHtml = renderToStaticMarkup(
+      createElement(EmrTreeView, {
+        label: 'Ocular Anatomy',
+        nodes: [
+          {
+            id: 'ant',
+            label: 'Anterior Segment',
+            children: [
+              { id: 'cornea', label: 'Cornea', code: 'H18', readOnly: true, badge: 'Locked', tone: 'warning' },
+              { id: 'endo', label: 'Endothelium', disabled: true },
+            ],
+          },
+        ],
+        multiple: true,
+        values: ['cornea'],
+        expandedIds: ['ant'],
+        size: 'sm',
+        required: true,
+        warning: 'Verify laterality',
+      }),
+    );
+    expect(treeHtml).toContain('role="tree"');
+    expect(treeHtml).toContain('aria-required="true"');
+    expect(treeHtml).toContain('Locked');
+    expect(treeHtml).toContain('Verify laterality');
+
+    const tsHtml = renderToStaticMarkup(
+      createElement(EmrTreeSelect, {
+        label: 'Finding Site',
+        nodes: [
+          {
+            id: 'ant',
+            label: 'Anterior Segment',
+            children: [
+              { id: 'cornea', label: 'Cornea', readOnly: true },
+              { id: 'lens', label: 'Lens' },
+            ],
+          },
+        ],
+        multiple: true,
+        values: ['cornea', 'lens'],
+        maxTagCount: 1,
+        clearable: true,
+        variant: 'filled',
+        required: true,
+      }),
+    );
+    expect(tsHtml).toContain('role="combobox"');
+    expect(tsHtml).toContain('aria-haspopup="tree"');
+    expect(tsHtml).toContain('Anterior Segment / Cornea');
+    expect(tsHtml).toContain('+1');
+    // Sibling chips: Remove button must never be nested inside role="combobox"
+    const comboboxIdx = tsHtml.indexOf('role="combobox"');
+    const chipsIdx = tsHtml.indexOf('Anterior Segment / Cornea');
+    expect(chipsIdx).toBeGreaterThan(-1);
+    expect(chipsIdx).toBeLessThan(comboboxIdx);
+  });
+
+  it('enforces Wave 2 Batch B Image Suite parity across React Web & L2 EmrImageField', () => {
+    const sampleItems = [
+      {
+        id: 'img-1',
+        name: 'fundus-od.png',
+        src: 'data:image/png;base64,iVBORw0KGgo=',
+        mimeType: 'image/png',
+        sizeBytes: 15360,
+        caption: 'OD baseline',
+      },
+    ];
+
+    const viewerHtml = renderToStaticMarkup(
+      createElement(EmrImageViewer, {
+        label: 'Fundus Inspector',
+        images: [
+          { id: '1', src: 'data:image/png;base64,iVBORw0KGgo=', alt: 'OD' },
+          { id: '2', src: 'data:image/png;base64,iVBORw0KGgo=', alt: 'OS' },
+        ],
+        showThumbnails: true,
+        readOnly: true,
+        warning: 'Verify laterality',
+      }),
+    );
+    expect(viewerHtml).toContain('1 / 2');
+    expect(viewerHtml).toContain('Verify laterality');
+    expect(viewerHtml).toContain('data-readonly="true"');
+
+    const cropperHtml = renderToStaticMarkup(
+      createElement(EmrImageCropper, {
+        label: 'Optic Disc Cropper',
+        src: 'data:image/png;base64,iVBORw0KGgo=',
+        labelHidden: true,
+        warning: 'Keep disc centered',
+      }),
+    );
+    expect(cropperHtml).toContain('role="radiogroup"');
+    expect(cropperHtml).toContain('Keep disc centered');
+
+    const defaultUploadHtml = renderToStaticMarkup(
+      createElement(EmrImageUpload, {
+        label: 'Slit Lamp',
+        items: sampleItems,
+        maxFiles: 1,
+        labelHidden: true,
+        error: 'Image quality warning',
+      }),
+    );
+    expect(defaultUploadHtml).not.toContain('Take photo');
+    expect(defaultUploadHtml).toContain('Maximum of 1 images reached');
+    expect(defaultUploadHtml).toContain('Image quality warning');
+
+    const imageFieldHtml = renderToStaticMarkup(
+      createElement(EmrImageField, {
+        labelHidden: false,
+        layout: 'horizontal',
+        showMetadata: true,
+        readOnly: false,
+        model: {
+          label: 'Anterior Segment Photos',
+          items: sampleItems,
+          status: 'unable-to-assess',
+          statusOptions: [
+            { value: 'recorded', label: 'Recorded', tone: 'success' },
+            { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+          ],
+        },
+      }),
+    );
+    expect(imageFieldHtml).toContain('Unable to assess');
+    expect(imageFieldHtml).toContain('role="radiogroup"');
+
+    const typedImageHtml = renderToStaticMarkup(
+      createElement(EmrTypedField, {
+        controlId: 'tf-img',
+        definition: {
+          schemaVersion: '1.0',
+          contract: {
+            linkId: 'fundus-photos',
+            valueType: 'attachment',
+            cardinality: { min: 1, max: 4 },
+            terminology: [],
+            validation: [],
+          },
+          presentation: {
+            label: 'Fundus Photos',
+            widget: 'image-upload',
+          },
+        },
+        model: {
+          value: sampleItems as unknown as [],
+          touched: false,
+          dirty: false,
+          enabled: true,
+          visible: true,
+          messages: [],
+        },
+        onValueChange: () => {},
+      }),
+    );
+    expect(typedImageHtml).toContain('Fundus Photos');
+    expect(typedImageHtml).toContain('fundus-od.png');
+  });
+
+  it('verifies Wave 2 Batch D React parity across Menu, SplitButton, Accordion, Breadcrumbs, ColorPicker & CopyButton', () => {
+    const menuHtml = renderToStaticMarkup(
+      createElement(EmrMenu, {
+        label: 'Row Overflow',
+        triggerIcon: 'more-vertical',
+        variant: 'outline',
+        align: 'end',
+        items: [{ id: 'view', label: 'View Chart', icon: 'eye', description: 'Open chart' }],
+        open: true,
+      }),
+    );
+    expect(menuHtml).toContain('Row Overflow');
+    expect(menuHtml).toContain('role="menu"');
+    expect(menuHtml).toContain('<svg');
+
+    // Dark-mode SplitButton must NOT hardcode #ffffff on primary background
+    const darkSplitHtml = renderToStaticMarkup(
+      createElement(
+        EmrThemeProvider,
+        { scheme: 'dark' },
+        createElement(EmrSplitButton, {
+          label: 'Sign Order',
+          variant: 'primary',
+          size: 'lg',
+          loading: true,
+          items: [{ id: 'draft', label: 'Save Draft' }],
+        }),
+      ),
+    );
+    expect(darkSplitHtml).toContain('Sign Order');
+    expect(darkSplitHtml).toContain('aria-busy="true"');
+    expect(darkSplitHtml.toLowerCase()).not.toContain('color:#ffffff');
+    expect(darkSplitHtml.toLowerCase()).not.toContain('color:rgb(255, 255, 255)');
+
+    // Accordion keeps collapsed panels in DOM with hidden on Web + heading semantics
+    const accHtml = renderToStaticMarkup(
+      createElement(EmrAccordion, {
+        headingLevel: 2,
+        variant: 'card',
+        items: [
+          { id: 'hx', title: 'Ocular History', badge: { label: 'Verified', tone: 'success' }, content: 'Hidden clinical details' },
+        ],
+      }),
+    );
+    expect(accHtml).toContain('role="heading"');
+    expect(accHtml).toContain('aria-level="2"');
+    expect(accHtml).toContain('Verified');
+    expect(accHtml).toContain('Hidden clinical details');
+    expect(accHtml).toContain('hidden');
+
+    // Breadcrumbs: semantic current page span (non-disabled), chevron SVG separator, more-horizontal SVG
+    const crumbsHtml = renderToStaticMarkup(
+      createElement(EmrBreadcrumbs, {
+        ariaLabel: 'Clinical path',
+        separator: 'chevron',
+        maxItems: 3,
+        items: [
+          { id: '1', label: 'Clinic', href: '/clinic' },
+          { id: '2', label: 'Retina' },
+          { id: '3', label: 'Patient' },
+          { id: '4', label: 'OCT' },
+        ],
+      }),
+    );
+    expect(crumbsHtml).toContain('aria-label="Clinical path"');
+    expect(crumbsHtml).toContain('aria-current="page"');
+    expect(crumbsHtml).toContain('<svg');
+    expect(crumbsHtml).not.toContain('…');
+
+    // ColorPicker: 44x44 radio swatches + labelHidden retains warning/error
+    const colorHtml = renderToStaticMarkup(
+      createElement(EmrColorPicker, {
+        label: 'Ink',
+        labelHidden: true,
+        value: '#fde68a',
+        warning: 'Low contrast warning',
+        swatches: [{ value: '#fde68a', label: 'Bright Yellow' }],
+      }),
+    );
+    expect(colorHtml).toContain('role="radiogroup"');
+    expect(colorHtml).toContain('role="radio"');
+    expect(colorHtml).toContain('Low contrast warning');
+
+    // CopyButton: outline default, iconOnly, empty value disabled, role="status" live region
+    const copyHtml = renderToStaticMarkup(
+      createElement(EmrCopyButton, {
+        value: '',
+        iconOnly: true,
+        label: 'Copy MRN',
+      }),
+    );
+    expect(copyHtml).toContain('role="status"');
+    expect(copyHtml).toContain('aria-live="polite"');
+    expect(copyHtml).toContain('aria-disabled="true"');
   });
 });

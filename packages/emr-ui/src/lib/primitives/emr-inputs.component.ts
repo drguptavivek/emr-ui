@@ -464,6 +464,8 @@ export class EmrNumberInputComponent extends EmrSignalFieldBase {
       @if (precision() === 'year') {
         <input
           class="emr-control"
+          [class.emr-control--sm]="size() === 'sm'"
+          [class.emr-control--lg]="size() === 'lg'"
           [id]="resolvedId()"
           type="number"
           inputmode="numeric"
@@ -475,16 +477,23 @@ export class EmrNumberInputComponent extends EmrSignalFieldBase {
           [required]="required()"
           [disabled]="disabled()"
           [readOnly]="readOnly()"
-          [attr.aria-label]="labelHidden() ? (label() || null) : null"
-          [attr.aria-invalid]="!!error() || null"
-          [attr.aria-describedby]="describedBy()"
+          [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
+          [attr.aria-required]="required() ? 'true' : null"
+          [attr.aria-readonly]="readOnly() ? 'true' : null"
+          [attr.aria-invalid]="isInvalid() ? 'true' : null"
+          [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
+          [attr.aria-describedby]="ariaDescribedBy() ?? describedBy()"
           (wheel)="onWheel($event)"
+          (focus)="focused.emit()"
           (input)="onInput($event)"
           (blur)="onBlur($event)"
+          (keydown.enter)="onEnter()"
         />
       } @else {
         <input
           class="emr-control"
+          [class.emr-control--sm]="size() === 'sm'"
+          [class.emr-control--lg]="size() === 'lg'"
           [id]="resolvedId()"
           [attr.type]="precision() === 'month' ? 'month' : 'date'"
           [value]="domValue()"
@@ -493,11 +502,16 @@ export class EmrNumberInputComponent extends EmrSignalFieldBase {
           [required]="required()"
           [disabled]="disabled()"
           [readOnly]="readOnly()"
-          [attr.aria-label]="labelHidden() ? (label() || null) : null"
-          [attr.aria-invalid]="!!error() || null"
-          [attr.aria-describedby]="describedBy()"
+          [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
+          [attr.aria-required]="required() ? 'true' : null"
+          [attr.aria-readonly]="readOnly() ? 'true' : null"
+          [attr.aria-invalid]="isInvalid() ? 'true' : null"
+          [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
+          [attr.aria-describedby]="ariaDescribedBy() ?? describedBy()"
+          (focus)="focused.emit()"
           (input)="onInput($event)"
           (blur)="onBlur($event)"
+          (keydown.enter)="onEnter()"
         />
       }
       @if (!labelHidden() && hint()) {
@@ -512,13 +526,21 @@ export class EmrNumberInputComponent extends EmrSignalFieldBase {
   encapsulation: ViewEncapsulation.None,
 })
 export class EmrDateInputComponent extends EmrSignalFieldBase {
+  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly ariaDescribedBy = input<string | undefined>(undefined);
   readonly value = input<string | null>(null);
   readonly min = input<string>();
   readonly max = input<string>();
   readonly precision = input<'day' | 'month' | 'year'>('day');
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly invalid = input<boolean, unknown>(false, { transform: booleanAttribute });
+  readonly warning = input<string>('');
   readonly valueChange = output<string | null>();
+  readonly focused = output<void>();
   readonly blurred = output<void>();
+  readonly submitted = output<void>();
 
+  protected readonly isInvalid = computed(() => Boolean(this.invalid() || this.error()));
   protected readonly domValue = computed(() => toDateInputDomValue(this.value(), this.precision()));
   protected readonly boundMin = computed(() => toDateBoundDomValue(this.min(), this.precision()));
   protected readonly boundMax = computed(() => toDateBoundDomValue(this.max(), this.precision()));
@@ -546,6 +568,11 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
     this.syncElementNow(target, this.domValue());
     this.blurred.emit();
   }
+
+  protected onEnter(): void {
+    if (this.readOnly() || this.disabled()) return;
+    this.submitted.emit();
+  }
 }
 
 /** Controlled time-of-day input. Wire value is always 24-hour `'HH:mm'` (or `'HH:mm:ss'`) or `null`. */
@@ -569,7 +596,7 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
           <span class="emr-field__required" aria-hidden="true">*</span>
         }
       </span>
-      <div class="emr-time-input__wrap" [style.max-width.px]="containerMaxWidth()">
+      <div class="emr-time-input__wrap" [style.max-width.px]="fullWidth() ? null : containerMaxWidth()">
         <input
           #textInput
           class="emr-time-input__field"
@@ -638,6 +665,8 @@ export class EmrDateInputComponent extends EmrSignalFieldBase {
 })
 export class EmrTimeInputComponent extends EmrSignalFieldBase {
   readonly ariaLabel = input<string | undefined>(undefined);
+  readonly ariaDescribedBy = input<string | undefined>(undefined);
+  readonly fullWidth = input<boolean, unknown>(false, { transform: booleanAttribute });
   readonly value = input<string | null>(null);
   readonly precision = input<EmrTimePrecision>('minute');
   readonly hourCycle = input<EmrTimeHourCycle>('24');
@@ -678,6 +707,7 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
     return this.clearable() ? base + 36 : base;
   });
   protected readonly timeDescribedBy = computed(() => {
+    if (this.ariaDescribedBy()) return this.ariaDescribedBy()!;
     if (this.labelHidden()) return null;
     const id = this.resolvedId();
     if (this.error()) return `${id}-error`;
@@ -900,6 +930,7 @@ export class EmrTimeInputComponent extends EmrSignalFieldBase {
 })
 export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
   readonly ariaLabel = input<string | undefined>(undefined);
+  readonly ariaDescribedBy = input<string | undefined>(undefined);
   readonly value = input<string | null>(null);
   readonly displayFormat = input<EmrDateTimeDisplayFormat>('dd-mm-yyyy');
   readonly timePrecision = input<EmrDateTimePrecision>('minute');
@@ -949,6 +980,7 @@ export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
   );
   protected readonly isInvalid = computed(() => Boolean(this.invalid() || this.error() || this.leftInvalid));
   protected readonly dtDescribedBy = computed(() => {
+    if (this.ariaDescribedBy()) return this.ariaDescribedBy()!;
     if (this.labelHidden()) return null;
     const id = this.resolvedId();
     if (this.error()) return `${id}-error`;
@@ -1145,10 +1177,12 @@ export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
     <div
       class="emr-field emr-select-field"
       [class.emr-select-field--sm]="size() === 'sm'"
+      [class.emr-select-field--lg]="size() === 'lg'"
+      [class.emr-select-field--tabular]="tabularNums()"
       [class.emr-select-field--filled]="variant() === 'filled'"
       [class.emr-select-field--subtle]="variant() === 'subtle'"
       [class.emr-select-field--invalid]="isInvalid()"
-      [class.emr-select-field--warning]="!isInvalid() && !!warning()"
+      [class.emr-select-field--warning]="isWarning()"
       [class.emr-select-field--readonly]="readOnly()"
       [class.emr-select-field--disabled]="disabled()"
       [class.emr-select-field--open]="open()"
@@ -1167,7 +1201,7 @@ export class EmrDateTimeInputComponent extends EmrSignalFieldBase {
           class="emr-select-shell"
           [attr.data-open]="open() ? 'true' : null"
           [attr.data-invalid]="isInvalid() ? 'true' : null"
-          [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
+          [attr.data-warning]="isWarning() ? 'true' : null"
           [attr.data-readonly]="readOnly() ? 'true' : null"
           [attr.data-disabled]="disabled() ? 'true' : null"
         >
@@ -1390,7 +1424,8 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly value = input<EmrSelectValue>(null);
   override readonly placeholder = input('Select…');
-  readonly size = input<EmrSelectSize>('md');
+  readonly size = input<EmrSelectSize | 'lg'>('md');
+  readonly tabularNums = input(false, { transform: booleanAttribute });
   readonly variant = input<EmrSelectVariant>('outline');
   readonly clearable = input(false, { transform: booleanAttribute });
   readonly clearLabel = input('Clear');
@@ -1400,7 +1435,9 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
   readonly emptyMessage = input('No options available');
   readonly loading = input(false, { transform: booleanAttribute });
   readonly invalid = input(false, { transform: booleanAttribute });
+  readonly hasWarning = input(false, { transform: booleanAttribute });
   readonly warning = input('');
+  readonly ariaDescribedBy = input<string | null>(null);
 
   readonly valueChange = output<EmrSelectValue>();
   readonly cleared = output<void>();
@@ -1419,10 +1456,13 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
     if (this.hint()) ids.push(`${id}-hint`);
     if (this.warning()) ids.push(`${id}-warning`);
     if (this.error()) ids.push(`${id}-error`);
+    const ext = this.ariaDescribedBy()?.trim();
+    if (ext) ids.push(ext);
     return ids.length ? ids.join(' ') : null;
   });
 
   protected readonly isInvalid = computed(() => Boolean(this.invalid() || this.error()));
+  protected readonly isWarning = computed(() => !this.isInvalid() && Boolean(this.hasWarning() || this.warning()));
   protected readonly optionGroups = computed(() => groupOptions(this.options()));
   protected readonly flatOptions = computed(() => this.optionGroups().flatMap((g) => g.options));
 
@@ -1703,6 +1743,7 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
         }
       </label>
       <div
+        #quantityGroup
         class="emr-quantity"
         [class.emr-quantity--sm]="size() === 'sm'"
         [class.emr-quantity--lg]="size() === 'lg'"
@@ -1711,7 +1752,7 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
           <div
             class="emr-input-affix emr-quantity__value"
             [attr.data-invalid]="numericInvalid() ? 'true' : null"
-            [attr.data-warning]="!numericInvalid() && !!warning() ? 'true' : null"
+            [attr.data-warning]="numericWarning() ? 'true' : null"
             [attr.data-readonly]="readOnly() ? 'true' : null"
           >
             <button
@@ -1721,6 +1762,8 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
               [disabled]="disabled() || readOnly() || !canDecrement()"
               [attr.aria-disabled]="readOnly() ? 'true' : null"
               [attr.aria-label]="'Decrease ' + (label() || 'value')"
+              (focus)="onControlFocus()"
+              (blur)="onControlBlur($event)"
               (click)="stepBy(-1)"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1746,9 +1789,10 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
               [attr.aria-label]="(label() || 'Quantity') + ' value'"
               [attr.aria-invalid]="numericInvalid() ? 'true' : null"
               [attr.aria-describedby]="quantityDescribedBy()"
+              (wheel)="onValueWheel($event)"
               (input)="emitQuantityValue($event)"
               (keydown)="onValueKeydown($event)"
-              (focus)="focused.emit()"
+              (focus)="onControlFocus()"
               (blur)="onValueBlur($event)"
             />
             <button
@@ -1758,6 +1802,8 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
               [disabled]="disabled() || readOnly() || !canIncrement()"
               [attr.aria-disabled]="readOnly() ? 'true' : null"
               [attr.aria-label]="'Increase ' + (label() || 'value')"
+              (focus)="onControlFocus()"
+              (blur)="onControlBlur($event)"
               (click)="stepBy(1)"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1784,11 +1830,12 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
             [attr.aria-readonly]="readOnly() ? 'true' : null"
             [attr.aria-label]="(label() || 'Quantity') + ' value'"
             [attr.aria-invalid]="numericInvalid() ? 'true' : null"
-            [attr.data-warning]="!numericInvalid() && !!warning() ? 'true' : null"
+            [attr.data-warning]="numericWarning() ? 'true' : null"
             [attr.aria-describedby]="quantityDescribedBy()"
+            (wheel)="onValueWheel($event)"
             (input)="emitQuantityValue($event)"
             (keydown)="onValueKeydown($event)"
-            (focus)="focused.emit()"
+            (focus)="onControlFocus()"
             (blur)="onValueBlur($event)"
           />
         }
@@ -1801,13 +1848,13 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
           [disabled]="disabled()"
           [attr.aria-readonly]="readOnly() || unitReadOnly() ? 'true' : null"
           [attr.aria-invalid]="unitInvalid() ? 'true' : null"
-          [attr.data-warning]="!unitInvalid() && !!warning() ? 'true' : null"
+          [attr.data-warning]="unitWarningActive() ? 'true' : null"
           [attr.aria-label]="(label() || 'Quantity') + ' ' + (unitLabel() || 'Unit')"
           [attr.aria-describedby]="quantityDescribedBy()"
           (mousedown)="guardReadOnlySelect($event)"
           (keydown)="guardReadOnlySelectKey($event)"
           (change)="emitUnit($event)"
-          (focus)="focused.emit()"
+          (focus)="onControlFocus()"
           (blur)="onUnitBlur($event)"
         >
           @if (!unit() || (clearable() && !(unitRequired() ?? required()))) {
@@ -1846,6 +1893,8 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
             class="emr-quantity__clear"
             data-emr-print="hide"
             [attr.aria-label]="clearLabel() + ' ' + (label() || 'quantity')"
+            (focus)="onControlFocus()"
+            (blur)="onControlBlur($event)"
             (click)="onClear()"
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1857,8 +1906,8 @@ export class EmrSelectComponent extends EmrSignalFieldBase {
       @if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
       }
-      @if (!labelHidden() && warning() && !combinedError()) {
-        <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ warning() }}</span>
+      @if (!labelHidden() && combinedWarning() && !combinedError()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ combinedWarning() }}</span>
       }
       @if (!labelHidden() && combinedError()) {
         <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">{{ combinedError() }}</span>
@@ -1886,9 +1935,16 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
   readonly valueRequired = input<boolean | undefined>(undefined);
   readonly unitRequired = input<boolean | undefined>(undefined);
   readonly unitReadOnly = input(false, { transform: booleanAttribute });
+  readonly allowNegative = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined || v === null ? undefined : booleanAttribute(v)),
+  });
   readonly warning = input('');
+  readonly valueWarning = input('');
+  readonly unitWarning = input('');
   readonly valueError = input('');
   readonly unitError = input('');
+  readonly ariaDescribedBy = input<string | null>(null);
+  readonly clearEmitsChanges = input(true, { transform: booleanAttribute });
 
   readonly valueChange = output<number | null>();
   readonly unitChange = output<string | null>();
@@ -1898,6 +1954,15 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
   readonly submitted = output<void>();
 
   private readonly valInputRef = viewChild<ElementRef<HTMLInputElement>>('valInput');
+  private readonly quantityGroupRef = viewChild<ElementRef<HTMLElement>>('quantityGroup');
+  private groupFocused = false;
+
+  protected readonly effectiveAllowNegative = computed(() => {
+    const explicit = this.allowNegative();
+    if (explicit !== undefined) return explicit;
+    const min = this.min();
+    return min === undefined || min < 0;
+  });
 
   protected readonly effectiveStep = computed(() =>
     resolveQuantityStep({ mode: this.mode(), precision: this.precision(), step: this.step() }),
@@ -1907,16 +1972,25 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
 
   protected readonly numericInvalid = computed(() => Boolean(this.error() || this.valueError()));
   protected readonly unitInvalid = computed(() => Boolean(this.error() || this.unitError()));
+  protected readonly numericWarning = computed(
+    () => !this.numericInvalid() && Boolean(this.warning() || this.valueWarning()),
+  );
+  protected readonly unitWarningActive = computed(
+    () => !this.unitInvalid() && Boolean(this.warning() || this.unitWarning()),
+  );
   protected readonly combinedError = computed(() =>
     [this.error(), this.valueError(), this.unitError()].filter(Boolean).join(' · '),
   );
+  protected readonly combinedWarning = computed(() =>
+    [this.warning(), this.valueWarning(), this.unitWarning()].filter(Boolean).join(' · '),
+  );
 
   protected readonly quantityDescribedBy = computed(() => {
-    if (this.labelHidden()) return null;
+    if (this.labelHidden()) return this.ariaDescribedBy() || null;
     const id = this.resolvedId();
     const ids: string[] = [];
     if (this.hint()) ids.push(`${id}-hint`);
-    if (this.warning() && !this.combinedError()) ids.push(`${id}-warning`);
+    if (this.combinedWarning() && !this.combinedError()) ids.push(`${id}-warning`);
     if (this.combinedError()) ids.push(`${id}-error`);
     return ids.length ? ids.join(' ') : null;
   });
@@ -1976,25 +2050,47 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
     }
   }
 
+  protected onValueWheel(event: WheelEvent): void {
+    (event.currentTarget as HTMLInputElement).blur();
+  }
+
+  protected onControlFocus(): void {
+    if (!this.groupFocused) {
+      this.groupFocused = true;
+      this.focused.emit();
+    }
+  }
+
+  protected onControlBlur(event: FocusEvent): void {
+    const related = event.relatedTarget as Node | null;
+    const group = this.quantityGroupRef()?.nativeElement;
+    if (related && group?.contains(related)) return;
+    if (this.groupFocused) {
+      this.groupFocused = false;
+      this.blurred.emit();
+    }
+  }
+
   protected emitQuantityValue(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (this.readOnly() || this.disabled()) {
       this.syncElementNow(target, this.domValue());
       return;
     }
-    const sanitized = sanitizeQuantityText(target.value, this.mode());
+    const allowNegative = this.effectiveAllowNegative();
+    const sanitized = sanitizeQuantityText(target.value, this.mode(), { allowNegative });
     if (target.value !== sanitized) {
       target.value = sanitized;
     }
-    const parsed = parseQuantityDraft(sanitized, this.mode());
+    const parsed = parseQuantityDraft(sanitized, this.mode(), { allowNegative });
     if (parsed === 'incomplete') return;
     this.scheduleDomSync(target, () => this.domValue(), () => this.value());
     this.valueChange.emit(parsed);
   }
 
-  protected onValueBlur(event: Event): void {
+  protected onValueBlur(event: FocusEvent): void {
     this.syncElementNow(event.target as HTMLInputElement, this.domValue());
-    this.blurred.emit();
+    this.onControlBlur(event);
   }
 
   protected guardReadOnlySelect(event: MouseEvent): void {
@@ -2020,16 +2116,18 @@ export class EmrQuantityInputComponent extends EmrSignalFieldBase {
     this.unitChange.emit(next);
   }
 
-  protected onUnitBlur(event: Event): void {
+  protected onUnitBlur(event: FocusEvent): void {
     this.syncElementNow(event.target as HTMLSelectElement, this.unit() ?? '');
-    this.blurred.emit();
+    this.onControlBlur(event);
   }
 
   protected onClear(): void {
     if (this.readOnly() || this.disabled()) return;
-    this.valueChange.emit(null);
-    if (!this.unitReadOnly() && this.unit() !== null) {
-      this.unitChange.emit(null);
+    if (this.clearEmitsChanges()) {
+      this.valueChange.emit(null);
+      if (!this.unitReadOnly() && this.unit() !== null) {
+        this.unitChange.emit(null);
+      }
     }
     this.cleared.emit();
   }

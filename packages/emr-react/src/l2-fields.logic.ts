@@ -1,5 +1,6 @@
 import type {
   EmrCodedValue,
+  EmrFieldDefinition,
   EmrPartialDate,
   EmrSignatureStroke,
 } from '@drguptavivek/emr-controller';
@@ -28,12 +29,68 @@ export const codedInputChips = (
 
 // Spreads `amounts` first so an existing slot keeps controller-added fields such as `householdLabel`.
 export {
+  ANATOMIC_LATERALITY_OPTIONS,
+  DEFAULT_ADDRESS_REQUIRED_PARTS,
+  DEFAULT_ADDRESS_USE_OPTIONS,
+  DEFAULT_LATERALITY_CONFIRMATION_LABEL,
+  OPHTHALMIC_LATERALITY_OPTIONS,
+  REFRACTION_DEFAULT_BOUNDS,
   applySlotPreset,
+  compareRangeBounds,
+  expandMacroTriggerAtCursor,
+  extractActiveMacroTrigger,
+  extractDurationPartValidation,
+  formatRefractionPartDisplay,
+  formatSignatureAttestation,
   formatSlotReadout,
+  hasAnyAddressValue,
+  hasMacroValidationState,
+  hasPhoneClearableValue,
+  hasRefractionValue,
+  hasSignatureValidationState,
+  isAddressPartInvalid,
+  isPhoneExtensionVisible,
   isPresetActive,
+  isRangeInverted,
+  isSignaturePadLocked,
+  mapPointerToSignaturePoint,
+  mergeFieldFrameMessages,
+  normalizeFieldFrameLayout,
+  normalizeLateralityDomain,
+  parsePairedNumberDraft,
+  resolveAddressPartValidation,
+  resolveAddressRootMessages,
+  resolveDurationFieldConfig,
+  resolveLateralityOptions,
+  resolveLateralityValidation,
+  resolvePairedNumberStep,
+  resolvePairedSideMode,
+  resolvePairedSideValidation,
+  resolvePhonePartValidation,
+  resolveRangeFieldMessages,
+  resolveRangeSideValidation,
+  resolveRefractionEyeDescription,
+  resolveRefractionPartValidation,
+  resolveSignatureCanvasGeometry,
+  resolveVisualAcuityEyeDescription,
+  resolveVisualAcuityPartValidation,
+  sanitizePairedNumberText,
   setSlotAmount,
+  stepPairedNumber,
+  stepRefractionPart,
   toggleSlot,
+  validateRangeField,
 } from '@drguptavivek/emr-controller';
+
+export function resolveRangeNumericMode(
+  numericMode?: 'decimal' | 'integer',
+  precision?: number,
+  definition?: EmrFieldDefinition,
+): 'decimal' | 'integer' {
+  if (numericMode === 'integer' || numericMode === 'decimal') return numericMode;
+  if (precision === 0 || definition?.contract?.valueType === 'integer') return 'integer';
+  return 'decimal';
+}
 
 // ---------------------------------------------------------------------------
 // Pure helpers for L2 contract & specialty fields
@@ -85,6 +142,32 @@ export interface SignatureSegmentGeometry {
   readonly cy: number;
   readonly length: number;
   readonly angleDeg: number;
+}
+
+/**
+ * Projects a stroke from viewBox coordinates into rendered box coordinates using uniform
+ * `xMidYMid meet` scaling for React Native `<View>` segment rendering.
+ */
+export function projectSignatureStrokeForBox(
+  stroke: EmrSignatureStroke,
+  boxWidth: number,
+  boxHeight: number,
+  viewBoxWidth = 420,
+  viewBoxHeight = 140,
+): EmrSignatureStroke {
+  const vbW = viewBoxWidth > 0 && Number.isFinite(viewBoxWidth) ? viewBoxWidth : 420;
+  const vbH = viewBoxHeight > 0 && Number.isFinite(viewBoxHeight) ? viewBoxHeight : 140;
+  if (boxWidth <= 0 || boxHeight <= 0) return stroke;
+  const scale = Math.min(boxWidth / vbW, boxHeight / vbH);
+  if (!Number.isFinite(scale) || scale <= 0) return stroke;
+  const offsetX = (boxWidth - vbW * scale) / 2;
+  const offsetY = (boxHeight - vbH * scale) / 2;
+  return {
+    points: stroke.points.map(p => ({
+      x: Number((p.x * scale + offsetX).toFixed(1)),
+      y: Number((p.y * scale + offsetY).toFixed(1)),
+    })),
+  };
 }
 
 /**

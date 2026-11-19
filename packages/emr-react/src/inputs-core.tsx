@@ -14,22 +14,12 @@ import {
   type KeyboardTypeOptions,
   type PressableStateCallbackType,
 } from 'react-native';
-import {
-  formatTimeDisplay,
-  isDateTimeOutOfBounds,
-  isTimeOutOfBounds,
-  joinDateTimeParts,
-  parseTimeText as parseControllerTimeText,
-  resolveQuantityStep,
-  resolveTimePlaceholder,
-  sanitizeTimeText as sanitizeControllerTimeText,
-  splitDateTimeParts,
-  stepQuantityValue,
-  type ClinicalFieldValue,
-  type EmrDateTimeWireFormat,
-  type EmrQuantitySize,
-  type EmrTimeHourCycle,
-  type EmrTimeSize,
+import type {
+  ClinicalFieldValue,
+  EmrDateTimeWireFormat,
+  EmrQuantitySize,
+  EmrTimeHourCycle,
+  EmrTimeSize,
 } from '@drguptavivek/emr-controller';
 import { SvgIcon } from './icons';
 import { useEmrLabels } from './labels';
@@ -42,9 +32,14 @@ import {
   CALENDAR_WEEKDAYS,
   formatDate,
   formatTime,
+  formatTimeDisplay,
+  isDateTimeOutOfBounds,
   isIsoDateOutOfBounds,
+  isTimeOutOfBounds,
   joinDateTime,
+  joinDateTimeParts,
   numberTextOf,
+  parseControllerTimeText,
   parseDateText,
   parseIsoParts,
   parseNumberDraft,
@@ -52,12 +47,17 @@ import {
   resolveControlledDateTimeParts,
   resolveControlledNumberDraft,
   resolveControlledTemporalDraft,
+  resolveQuantityStep,
+  resolveTimePlaceholder,
   sameInstant,
+  sanitizeControllerTimeText,
   sanitizeDateText,
   sanitizeNumberText,
   sanitizeTimeText,
   splitDateTime,
+  splitDateTimeParts,
   stepCalendarMonth,
+  stepQuantityValue,
   todayCalendarParts,
   type DateDisplayFormat,
   type DatePrecision,
@@ -122,6 +122,7 @@ export function ThemedInput({ invalid, ...props }: ThemedInputProps) {
 export function NumberInput({
   value,
   integer,
+  allowNegative = true,
   unit,
   min,
   max,
@@ -137,6 +138,7 @@ export function NumberInput({
 }: Omit<ThemedInputProps, 'value'> & {
   value: ClinicalFieldValue | undefined;
   integer: boolean;
+  allowNegative?: boolean;
   unit?: string;
   min?: number;
   max?: number;
@@ -245,7 +247,7 @@ export function NumberInput({
             }}
             onChangeText={(text) => {
               if (!canEdit) return;
-              const clean = sanitizeNumberText(text, integer);
+              const clean = sanitizeNumberText(text, integer, allowNegative);
               setDraft(clean);
               const parsed = parseNumberDraft(clean);
               if (parsed.complete) {
@@ -306,6 +308,10 @@ export function NumberInput({
           value={displayed}
           keyboardType={keyboardType}
           inputMode={integer ? 'numeric' : 'decimal'}
+          returnKeyType={onSubmitted ? 'done' : props.returnKeyType}
+          onSubmitEditing={() => {
+            onSubmitted?.();
+          }}
           style={styles.stepperInput}
           onFocus={e => {
             setFocused(true);
@@ -319,7 +325,7 @@ export function NumberInput({
           }}
           onChangeText={text => {
             if (!canEdit) return;
-            const clean = sanitizeNumberText(text, integer);
+            const clean = sanitizeNumberText(text, integer, allowNegative);
             setDraft(clean);
             const parsed = parseNumberDraft(clean);
             if (parsed.complete) onNumber(parsed.value);
@@ -1345,6 +1351,7 @@ export function EmrTypedText({
  * valid (or both cleared), otherwise holds half-typed pair while editable; Display order comes from `format`.
  */
 export function EmrDateTimeText({
+  id,
   value,
   format = 'dd-mm-yyyy',
   timePrecision = 'minute',
@@ -1358,6 +1365,8 @@ export function EmrDateTimeText({
   label,
   dateLabel,
   timeLabel,
+  ariaDescribedBy,
+  required,
   invalid,
   readOnly,
   editable,
@@ -1367,6 +1376,7 @@ export function EmrDateTimeText({
   onSubmit,
   onValueChange,
 }: {
+  id?: string;
   value: string | null;
   format: DateDisplayFormat;
   timePrecision?: 'minute' | 'second';
@@ -1380,6 +1390,8 @@ export function EmrDateTimeText({
   label: string;
   dateLabel: string;
   timeLabel: string;
+  ariaDescribedBy?: string;
+  required?: boolean;
   invalid?: boolean;
   readOnly?: boolean;
   editable?: boolean;
@@ -1464,6 +1476,9 @@ export function EmrDateTimeText({
     size,
     readOnly,
     editable,
+    'aria-describedby': ariaDescribedBy,
+    'aria-required': required || undefined,
+    'aria-readonly': readOnly || undefined,
     onFocus: handleHalfFocus,
     onBlur: handleHalfBlur,
     onSubmitEditing: () => {
@@ -1478,6 +1493,7 @@ export function EmrDateTimeText({
       <EmrTypedText
         key={format}
         {...common}
+        id={id ? `${id}-date` : undefined}
         aria-label={`${label}, ${dateLabel}`}
         placeholder={format}
         mode={format}
@@ -1487,6 +1503,7 @@ export function EmrDateTimeText({
       <EmrTypedText
         key={`${timeMode}-${hourCycle}`}
         {...common}
+        id={id ? `${id}-time` : undefined}
         aria-label={`${label}, ${timeLabel}`}
         placeholder={timePlaceholder}
         mode={timeMode}
@@ -1548,7 +1565,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
   },
-  temporalInput: { flex: 1, minWidth: 96, borderWidth: 0, borderRadius: 0, paddingHorizontal: 10 },
+  temporalInput: { flex: 1, minWidth: 0, borderWidth: 0, borderRadius: 0, paddingHorizontal: 10 },
   temporalBtn: { position: 'relative', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   flex: { flex: 1, minWidth: 0 },
   unsupported: { padding: 10, borderWidth: 1, borderStyle: 'dashed', borderRadius: 8 },

@@ -31,15 +31,19 @@ import { FieldChrome, type FieldValidationLine } from './l1-field-chrome';
 import { textInputKeys, type WebKeyEvent } from './l1-interactive-shared';
 import {
   addTagValues,
+  buildDateRangeCalendarGrid,
   clearUnlockedTags,
+  commitDateRangeEndpoint,
   commitTagInputValues,
   filterOptionsLocally,
   findNextEnabledSearchOptionIndex,
+  formatDateRangeMonthTitle,
+  getDateRangeWeekdays,
   groupOptions,
   isIsoDateInRange,
   isIsoRangeEdge,
   isTagLocked,
-  normalizeDateRangeSelection,
+  isValidDateRangeEndpoint,
   popLastUnlockedTag,
   rankAndFilterOptions,
   rankTagSuggestions,
@@ -48,8 +52,11 @@ import {
   resolveCustomSearchCandidate,
   resolveDefaultActiveOptionIndex,
   resolveEmrTagsValue,
+  resolveInitialCalendarMonth,
+  selectDateRangeCalendarDay,
   splitMatchHighlightSegments,
   splitTagTokens,
+  stepCalendarMonth,
 } from './l1-wave2.logic';
 import { EmrButton } from './primitives';
 import { fontFamily, fontWeight, useEmrTheme } from './theme';
@@ -80,34 +87,34 @@ export interface EmrDateRangeInputProps {
   readonly max?: string;
   readonly startPlaceholder?: string;
   readonly endPlaceholder?: string;
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly variant?: EmrControlVariant;
   readonly clearable?: boolean;
+  readonly clearLabel?: string;
+  readonly showCalendar?: boolean;
+  readonly open?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
+  readonly weekStartsOn?: 0 | 1;
   readonly onCleared?: () => void;
+  readonly onFocused?: () => void;
+  readonly onBlurred?: () => void;
+  readonly onSubmitted?: (value: EmrDateRangeValue | null) => void;
   readonly label?: string;
+  readonly ariaLabel?: string;
+  readonly labelHidden?: boolean;
   readonly hint?: string;
   readonly error?: string;
+  readonly startError?: string;
+  readonly endError?: string;
+  readonly invalid?: boolean;
   readonly warning?: string;
   readonly info?: string;
   readonly messages?: readonly FieldValidationLine[];
+  readonly ariaDescribedBy?: string;
   readonly required?: boolean;
   readonly disabled?: boolean;
   readonly readOnly?: boolean;
   readonly controlId?: string;
-}
-
-const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as const;
-
-function buildCalendarMonthGrid(year: number, monthZeroIndexed: number): readonly (string | null)[] {
-  const firstDay = new Date(Date.UTC(year, monthZeroIndexed, 1));
-  const startDow = firstDay.getUTCDay();
-  const daysInMonth = new Date(Date.UTC(year, monthZeroIndexed + 1, 0)).getUTCDate();
-  const cells: (string | null)[] = [];
-  for (let i = 0; i < startDow; i += 1) cells.push(null);
-  const mm = String(monthZeroIndexed + 1).padStart(2, '0');
-  for (let d = 1; d <= daysInMonth; d += 1) {
-    const dd = String(d).padStart(2, '0');
-    cells.push(`${year}-${mm}-${dd}`);
-  }
-  return cells;
 }
 
 export function EmrDateRangeInput({
@@ -119,14 +126,30 @@ export function EmrDateRangeInput({
   max,
   startPlaceholder,
   endPlaceholder,
-  clearable = true,
+  size = 'md',
+  variant = 'outline',
+  clearable = false,
+  clearLabel = 'Clear',
+  showCalendar = true,
+  open: controlledOpen,
+  onOpenChange,
+  weekStartsOn = 0,
   onCleared,
+  onFocused,
+  onBlurred,
+  onSubmitted,
   label,
+  ariaLabel,
+  labelHidden = false,
   hint,
   error,
+  startError,
+  endError,
+  invalid = false,
   warning,
   info,
   messages,
+  ariaDescribedBy,
   required,
   disabled = false,
   readOnly = false,
@@ -136,154 +159,301 @@ export function EmrDateRangeInput({
   const reactId = useId().replace(/:/g, '');
   const id = controlId ?? `emr-date-range-${reactId}`;
 
-  const [calendarOpen, setCalendarOpen] = useState(false);
-
-  const initialYearMonth = (() => {
-    const seed = value?.start ?? '2026-04-15';
-    const match = /^(\d{4})-(\d{2})/.exec(seed);
-    if (match) {
-      return { year: Number(match[1]), month: Number(match[2]) - 1 };
-    }
-    return { year: 2026, month: 3 };
-  })();
-
-  const [viewYear, setViewYear] = useState(initialYearMonth.year);
-  const [viewMonth, setViewMonth] = useState(initialYearMonth.month);
-
+  const [localOpen, setLocalOpen] = useState(false);
   const interactive = !disabled && !readOnly;
-  const startVal = value?.start ?? '';
-  const endVal = value?.end ?? '';
-  const hasValue = Boolean(startVal || endVal);
+  const calendarOpen = interactive && showCalendar && (controlledOpen !== undefined ? controlledOpen : localOpen);
 
+  const todayIso = useRef(new Date().toISOString().slice(0, 10)).current;
+  const initialSeed = resolveInitialCalendarMonth(value, min, todayIso);
+  const [viewYear, setViewYear] = useState(initialSeed.year);
+  const [viewMonth, setViewMonth] = useState(initialSeed.month0);
+  const [startDraft, setStartDraft] = useState(value?.start ?? '');
+  const [endDraft, setEndDraft] = useState(value?.end ?? '');
+  const [startOob, setStartOob] = useState(false);
+  const [endOob, setEndOob] = useState(false);
+  const containerRef = useRef<{ contains?: (node: unknown) => boolean } | null>(null);
+  const toggleRef = useRef<{ focus?: () => void } | null>(null);
+  const dayRefs = useRef<Array<{ focus?: () => void } | null>>([]);
+  const focusedInsideRef = useRef(false);
+
+  useEffect(() => {
+    setStartDraft(value?.start ?? '');
+    setEndDraft(value?.end ?? '');
+  }, [value?.start, value?.end]);
+
+  useEffect(() => {
+    if (!calendarOpen && (value?.start || value?.end || min)) {
+      const nextSeed = resolveInitialCalendarMonth(value, min, todayIso);
+      setViewYear(nextSeed.year);
+      setViewMonth(nextSeed.month0);
+    }
+  }, [value?.start, value?.end, min, calendarOpen, todayIso]);
+
+  const setCalendarOpen = (next: boolean) => {
+    if (controlledOpen === undefined) {
+      setLocalOpen(next);
+    }
+    onOpenChange?.(next);
+  };
+
+  useEffect(() => {
+    if (!calendarOpen || Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const onDocDown = (e: MouseEvent) => {
+      const node = containerRef.current;
+      if (node && typeof node.contains === 'function' && !node.contains(e.target)) {
+        setCalendarOpen(false);
+      }
+    };
+    const onDocKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setCalendarOpen(false);
+        toggleRef.current?.focus?.();
+      }
+    };
+    document.addEventListener('mousedown', onDocDown);
+    document.addEventListener('keydown', onDocKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocDown);
+      document.removeEventListener('keydown', onDocKey);
+    };
+  }, [calendarOpen]);
+
+  const hasValue = Boolean(value?.start || value?.end || startDraft || endDraft);
   const defaultStartPh = mode === 'datetime' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD';
   const defaultEndPh = mode === 'datetime' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD';
+  const resolvedLabel = ariaLabel ?? label ?? 'Date range';
+  const groupError = error ?? startError ?? endError;
+  const isGroupInvalid = Boolean(invalid || groupError || startOob || endOob);
+  const isStartInvalid = Boolean(invalid || error || startError || startOob);
+  const isEndInvalid = Boolean(invalid || error || endError || endOob);
 
-  const commitRange = (next: EmrDateRangeValue | null) => {
+  const describedIds = [
+    hint ? `${id}-hint` : '',
+    warning ? `${id}-msg-0` : '',
+    groupError ? `${id}-msg-0` : '',
+    ariaDescribedBy ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ') || undefined;
+
+  const commitEndpoint = (edge: 'start' | 'end', rawText: string, forceNormalize: boolean) => {
     if (!interactive) return;
-    if (!next || (!next.start && !next.end)) {
-      onValueChange?.(null);
+    const trimmed = rawText.trim();
+    if (!trimmed) {
+      const res = commitDateRangeEndpoint(value, edge, null, mode, min, max);
+      setStartOob(res.startOutOfBounds);
+      setEndOob(res.endOutOfBounds);
+      onValueChange?.(res.value);
       return;
     }
-    if (next.start && next.end && next.end < next.start) {
-      onValueChange?.({ start: next.end, end: next.start });
+    if (!isValidDateRangeEndpoint(trimmed, mode)) {
+      if (forceNormalize) {
+        setStartDraft(value?.start ?? '');
+        setEndDraft(value?.end ?? '');
+      }
       return;
     }
-    onValueChange?.(next);
+    const res = commitDateRangeEndpoint(value, edge, trimmed, mode, min, max);
+    setStartOob(res.startOutOfBounds);
+    setEndOob(res.endOutOfBounds);
+    onValueChange?.(res.value);
   };
 
   const handleDayClick = (isoDate: string) => {
     if (!interactive) return;
-    if (min && isoDate < min) return;
-    if (max && isoDate > max) return;
-    const next = normalizeDateRangeSelection(value, isoDate);
+    const minD = min?.slice(0, 10);
+    const maxD = max?.slice(0, 10);
+    if ((minD && isoDate < minD) || (maxD && isoDate > maxD)) return;
+    const next = selectDateRangeCalendarDay(value, isoDate, mode, min, max);
+    setStartOob(false);
+    setEndOob(false);
     onValueChange?.(next);
   };
 
   const handleClear = () => {
     if (!interactive) return;
+    setStartDraft('');
+    setEndDraft('');
+    setStartOob(false);
+    setEndOob(false);
     onValueChange?.(null);
     onCleared?.();
   };
 
   const stepMonth = (delta: number) => {
-    let nextM = viewMonth + delta;
-    let nextY = viewYear;
-    if (nextM < 0) {
-      nextM = 11;
-      nextY -= 1;
-    } else if (nextM > 11) {
-      nextM = 0;
-      nextY += 1;
-    }
-    setViewMonth(nextM);
-    setViewYear(nextY);
+    const next = stepCalendarMonth(viewYear, viewMonth, delta);
+    setViewYear(next.year);
+    setViewMonth(next.month0);
   };
 
-  const cells = buildCalendarMonthGrid(viewYear, viewMonth);
-  const monthLabel = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`;
+  const cells = buildDateRangeCalendarGrid(viewYear, viewMonth, weekStartsOn);
+  const weekdays = getDateRangeWeekdays(weekStartsOn);
+  const monthLabel = formatDateRangeMonthTitle(viewYear, viewMonth);
+  const minHeight = size === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const borderColor = isGroupInvalid
+    ? t.danger
+    : warning
+      ? t.warning
+      : calendarOpen
+        ? t.focus
+        : variant === 'filled'
+          ? 'transparent'
+          : t.border;
+  const backgroundColor = readOnly
+    ? t.surfaceSoft
+    : variant === 'filled'
+      ? t.surfaceSoft
+      : variant === 'subtle'
+        ? 'transparent'
+        : t.surface;
+
+  const dateOnlyRange: EmrDateRangeValue | null = value
+    ? {
+        start: value.start ? value.start.slice(0, 10) : null,
+        end: value.end ? value.end.slice(0, 10) : null,
+      }
+    : null;
+
+  const handleGroupFocus = () => {
+    if (!focusedInsideRef.current) {
+      focusedInsideRef.current = true;
+      onFocused?.();
+    }
+  };
+
+  const handleGroupBlurWeb = (e: { currentTarget?: { contains?: (n: unknown) => boolean }; relatedTarget?: unknown }) => {
+    const related = e.relatedTarget;
+    if (!related || (e.currentTarget?.contains && !e.currentTarget.contains(related))) {
+      focusedInsideRef.current = false;
+      onBlurred?.();
+    }
+  };
 
   return (
     <FieldChrome
       controlId={id}
       label={label}
+      labelHidden={labelHidden}
       hint={hint}
-      error={error}
+      error={groupError}
       warning={warning}
       info={info}
       messages={messages}
       required={required}
     >
-      <View style={styles.rangeContainer}>
+      <View
+        ref={(el) => {
+          containerRef.current = el as unknown as { contains?: (node: unknown) => boolean } | null;
+        }}
+        role="group"
+        aria-label={resolvedLabel}
+        style={styles.rangeContainer}
+        {...(Platform.OS === 'web'
+          ? ({
+              onFocusCapture: handleGroupFocus,
+              onBlurCapture: handleGroupBlurWeb,
+            } as object)
+          : {})}
+      >
         <View
           style={[
             styles.rangeInputsRow,
             {
-              minHeight: Math.max(44, t.controlHeight),
-              backgroundColor: readOnly ? t.surfaceSoft : t.surface,
-              borderColor: error ? t.danger : calendarOpen ? t.focus : t.border,
-              borderRadius: 8,
+              minHeight,
+              backgroundColor,
+              borderColor,
+              borderWidth: variant === 'subtle' ? 0 : 1,
+              borderBottomWidth: 1,
+              borderRadius: variant === 'subtle' ? 0 : 8,
+              borderStyle: readOnly ? 'dashed' : 'solid',
               opacity: disabled ? 0.55 : 1,
             },
           ]}
         >
           <TextInput
-            value={startVal}
+            nativeID={`${id}-start`}
+            value={startDraft}
             editable={interactive}
             placeholder={startPlaceholder ?? defaultStartPh}
             placeholderTextColor={t.textMuted}
-            accessibilityLabel={`${label ?? 'Date range'} start`}
-            onChangeText={(text) =>
-              commitRange({
-                start: text.trim() || null,
-                end: value?.end ?? null,
-              })
-            }
+            accessibilityLabel={`${resolvedLabel} start`}
+            onChangeText={(text) => {
+              setStartDraft(text);
+              commitEndpoint('start', text, false);
+            }}
+            onBlur={() => commitEndpoint('start', startDraft, true)}
+            onSubmitEditing={() => {
+              commitEndpoint('start', startDraft, true);
+              onSubmitted?.(value);
+            }}
+            {...(Platform.OS === 'web'
+              ? ({
+                  'aria-invalid': isStartInvalid || undefined,
+                  'aria-required': required || undefined,
+                  'aria-readonly': readOnly || undefined,
+                  'aria-describedby': describedIds,
+                  onKeyDown: (e: WebKeyEvent) => {
+                    if (e.key === 'Enter' && interactive) onSubmitted?.(value);
+                  },
+                } as object)
+              : {})}
             style={[
               styles.dateEndpointInput,
               {
-                fontSize: t.textSm,
+                fontSize: t.textMd,
                 color: t.text,
                 fontFamily: fontFamily(t),
               },
+              Platform.OS === 'web' ? ({ fontVariantNumeric: 'tabular-nums' } as object) : { fontVariant: ['tabular-nums'] },
             ]}
           />
 
-          <Text
-            style={{
-              fontSize: t.textSm,
-              color: t.textMuted,
-              fontFamily: fontFamily(t),
-            }}
-          >
-            →
-          </Text>
+          <View aria-hidden style={styles.sepIcon}>
+            <SvgIcon name="chevron-right" size={14} color={t.textMuted} />
+          </View>
 
           <TextInput
-            value={endVal}
+            nativeID={`${id}-end`}
+            value={endDraft}
             editable={interactive}
             placeholder={endPlaceholder ?? defaultEndPh}
             placeholderTextColor={t.textMuted}
-            accessibilityLabel={`${label ?? 'Date range'} end`}
-            onChangeText={(text) =>
-              commitRange({
-                start: value?.start ?? null,
-                end: text.trim() || null,
-              })
-            }
+            accessibilityLabel={`${resolvedLabel} end`}
+            onChangeText={(text) => {
+              setEndDraft(text);
+              commitEndpoint('end', text, false);
+            }}
+            onBlur={() => commitEndpoint('end', endDraft, true)}
+            onSubmitEditing={() => {
+              commitEndpoint('end', endDraft, true);
+              onSubmitted?.(value);
+            }}
+            {...(Platform.OS === 'web'
+              ? ({
+                  'aria-invalid': isEndInvalid || undefined,
+                  'aria-required': required || undefined,
+                  'aria-readonly': readOnly || undefined,
+                  'aria-describedby': describedIds,
+                  onKeyDown: (e: WebKeyEvent) => {
+                    if (e.key === 'Enter' && interactive) onSubmitted?.(value);
+                  },
+                } as object)
+              : {})}
             style={[
               styles.dateEndpointInput,
               {
-                fontSize: t.textSm,
+                fontSize: t.textMd,
                 color: t.text,
                 fontFamily: fontFamily(t),
               },
+              Platform.OS === 'web' ? ({ fontVariantNumeric: 'tabular-nums' } as object) : { fontVariant: ['tabular-nums'] },
             ]}
           />
 
           {clearable && hasValue && interactive ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Clear ${label ?? 'date range'}`}
+              accessibilityLabel={`${clearLabel} ${resolvedLabel}`}
               onPress={handleClear}
               style={styles.iconHit}
             >
@@ -291,42 +461,69 @@ export function EmrDateRangeInput({
             </Pressable>
           ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              calendarOpen ? 'Close range calendar' : 'Open range calendar'
-            }
-            disabled={!interactive}
-            onPress={() => {
-              if (interactive) setCalendarOpen((prev) => !prev);
-            }}
-            style={styles.iconHit}
-          >
-            <SvgIcon name="calendar" size={16} color={t.textMuted} />
-          </Pressable>
+          {showCalendar ? (
+            <Pressable
+              ref={(el) => {
+                toggleRef.current = el as unknown as { focus?: () => void } | null;
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={
+                calendarOpen ? `Close ${resolvedLabel} calendar` : `Open ${resolvedLabel} calendar`
+              }
+              aria-expanded={calendarOpen}
+              disabled={!interactive}
+              onPress={() => {
+                if (!interactive) return;
+                if (!calendarOpen) {
+                  const seed = resolveInitialCalendarMonth(value, min, todayIso);
+                  setViewYear(seed.year);
+                  setViewMonth(seed.month0);
+                }
+                setCalendarOpen(!calendarOpen);
+              }}
+              style={styles.iconHit}
+            >
+              <SvgIcon name="calendar" size={16} color={t.textMuted} />
+            </Pressable>
+          ) : null}
         </View>
 
-        {presets.length > 0 ? (
+        {presets.length > 0 && !readOnly ? (
           <View style={styles.presetsRow}>
             {presets.map((preset) => {
               const active =
                 value?.start === preset.range.start &&
                 value?.end === preset.range.end;
+              const minD = min?.slice(0, 10);
+              const maxD = max?.slice(0, 10);
+              const sD = preset.range.start?.slice(0, 10);
+              const eD = preset.range.end?.slice(0, 10);
+              const oob = Boolean(
+                (minD && ((sD && sD < minD) || (eD && eD < minD))) ||
+                  (maxD && ((sD && sD > maxD) || (eD && eD > maxD))),
+              );
               return (
                 <EmrButton
                   key={preset.id}
                   label={preset.label}
                   variant={active ? 'primary' : 'ghost'}
-                  disabled={!interactive}
-                  onPress={() => commitRange(preset.range)}
+                  disabled={!interactive || oob}
+                  onPress={() => {
+                    if (!interactive || oob) return;
+                    setStartOob(false);
+                    setEndOob(false);
+                    onValueChange?.(preset.range);
+                  }}
                 />
               );
             })}
           </View>
         ) : null}
 
-        {calendarOpen && interactive ? (
+        {calendarOpen ? (
           <View
+            role="region"
+            aria-label={`${resolvedLabel} calendar`}
             style={[
               styles.calendarPopover,
               {
@@ -366,7 +563,7 @@ export function EmrDateRangeInput({
             </View>
 
             <View style={styles.weekdayRow}>
-              {WEEKDAY_LABELS.map((dow) => (
+              {weekdays.map((dow) => (
                 <Text
                   key={dow}
                   style={{
@@ -384,27 +581,56 @@ export function EmrDateRangeInput({
             </View>
 
             <View style={styles.daysGrid}>
-              {cells.map((iso, idx) => {
-                if (!iso) {
-                  return <View key={`blank-${idx}`} style={styles.dayCellSpacer} />;
-                }
-                const dayNum = Number(iso.slice(-2));
-                const edge = isIsoRangeEdge(iso, value);
-                const inRange = isIsoDateInRange(iso, value);
+              {cells.map((cell, idx) => {
+                const edge = isIsoRangeEdge(cell.iso, dateOnlyRange);
+                const inRange = isIsoDateInRange(cell.iso, dateOnlyRange);
+                const minD = min?.slice(0, 10);
+                const maxD = max?.slice(0, 10);
                 const outOfBounds =
-                  Boolean(min && iso < min) || Boolean(max && iso > max);
+                  Boolean(minD && cell.iso < minD) || Boolean(maxD && cell.iso > maxD);
+                const isToday = cell.iso === todayIso;
 
                 return (
                   <Pressable
-                    key={iso}
+                    key={cell.iso}
+                    ref={(el) => {
+                      dayRefs.current[idx] = el as unknown as { focus?: () => void } | null;
+                    }}
                     accessibilityRole="button"
-                    accessibilityLabel={`Select ${iso}`}
+                    accessibilityLabel={`Select ${cell.iso}`}
                     accessibilityState={{
                       selected: Boolean(edge || inRange),
                       disabled: outOfBounds,
                     }}
                     disabled={outOfBounds}
-                    onPress={() => handleDayClick(iso)}
+                    onPress={() => handleDayClick(cell.iso)}
+                    {...(Platform.OS === 'web'
+                      ? ({
+                          'aria-current': isToday ? 'date' : undefined,
+                          onKeyDown: (e: WebKeyEvent) => {
+                            let nextIdx = idx;
+                            if (e.key === 'ArrowRight') nextIdx = Math.min(cells.length - 1, idx + 1);
+                            else if (e.key === 'ArrowLeft') nextIdx = Math.max(0, idx - 1);
+                            else if (e.key === 'ArrowDown') nextIdx = Math.min(cells.length - 1, idx + 7);
+                            else if (e.key === 'ArrowUp') nextIdx = Math.max(0, idx - 7);
+                            else if (e.key === 'Home') nextIdx = Math.floor(idx / 7) * 7;
+                            else if (e.key === 'End') nextIdx = Math.min(cells.length - 1, Math.floor(idx / 7) * 7 + 6);
+                            else if (e.key === 'PageUp') {
+                              e.preventDefault();
+                              stepMonth(-1);
+                              return;
+                            } else if (e.key === 'PageDown') {
+                              e.preventDefault();
+                              stepMonth(1);
+                              return;
+                            } else {
+                              return;
+                            }
+                            e.preventDefault();
+                            dayRefs.current[nextIdx]?.focus?.();
+                          },
+                        } as object)
+                      : {})}
                     style={[
                       styles.dayCell,
                       {
@@ -414,7 +640,9 @@ export function EmrDateRangeInput({
                             ? t.primarySoft
                             : 'transparent',
                         borderRadius: 6,
-                        opacity: outOfBounds ? 0.35 : 1,
+                        borderWidth: isToday && !edge ? 1 : 0,
+                        borderColor: isToday && !edge ? t.primary : 'transparent',
+                        opacity: outOfBounds ? 0.35 : cell.inCurrentMonth ? 1 : 0.45,
                       },
                     ]}
                   >
@@ -422,17 +650,17 @@ export function EmrDateRangeInput({
                       style={{
                         fontSize: t.textXs,
                         fontWeight: fontWeight(
-                          edge ? t.weightBold : t.weightMedium
+                          edge ? t.weightBold : t.weightMedium,
                         ),
                         color: edge
-                          ? '#ffffff'
+                          ? t.surface
                           : inRange
                             ? t.primaryContrast
                             : t.text,
                         fontFamily: fontFamily(t),
                       }}
                     >
-                      {String(dayNum)}
+                      {String(cell.day)}
                     </Text>
                   </Pressable>
                 );
@@ -1848,6 +2076,7 @@ const styles = StyleSheet.create({
   },
   rangeInputsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     borderWidth: 1,
     paddingLeft: 10,
@@ -1856,8 +2085,13 @@ const styles = StyleSheet.create({
   },
   dateEndpointInput: {
     flex: 1,
+    minWidth: 108,
     minHeight: 44,
     paddingVertical: 6,
+  },
+  sepIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconHit: {
     minWidth: 44,

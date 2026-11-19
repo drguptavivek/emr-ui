@@ -1591,20 +1591,24 @@ export class EmrStatTileComponent {
 ### EmrToggleGroup
 **Layer** L1 · **Selector** `emr-toggle-group` · **Status** stable · **Story** `foundations-wave2-primitives--choice-and-tree`
 
-**Need** — Settings panels, consent preferences, and device capability switches often group multiple `role="switch"` toggles in vertical, horizontal, or multi-column grid layouts with exclusive option support.
+**Need** — Settings panels, consent preferences, communication channels, and device sync controls group multiple `role="switch"` toggles with optional single/multi mode, master `Enable all`, exclusive options, selection caps, and per-option read-only locks.
 
-**Purpose** — Renders a `<fieldset>` of accessible switch controls bound to `value: readonly string[]`, supporting `orientation: 'vertical' | 'horizontal' | 'grid'`, `columns`, `labelPlacement`, `exclusiveValues`, `readOnly`, and controlled DOM rollback.
+**Purpose** — Renders a `role="group"` container of accessible `role="switch"` controls across Angular, React Web/Expo, and Lit. Supports `variant: 'tile' | 'inline' | 'card'` (normalizing `'standard'` -> `'tile'`), `size: 'md' | 'sm'`, `orientation: 'vertical' | 'horizontal' | 'grid'` (1-col collapse at `<=480px`), `labelPlacement` (default `'space-between'`), `multiple`/`allowEmpty`, `showSelectAll` (`role="checkbox"` tri-state master toggle), `exclusiveValues`, `minSelections`/`maxSelections`, `showSelectionCount`, `clearable` (preserving locked `readOnly` options), `showStateLabels`/`onLabel`/`offLabel`, grouped sections, monochrome SVG icons/badges/tones, validation (`invalid`/`warning`/`error` with `role="status"`/`role="alert"`), and coalesced `focused`/`blurred` outputs.
 
-**Depends on** — L0 tokens only
+**Keyboard** — `Tab` moves across switches; `Space` and `Enter` toggle focused switch (preventing scroll and rolling back when `readOnly`).
+
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` choice/toggle-group helpers
 
 ---
 
 ### EmrTreeView
 **Layer** L1 · **Selector** `emr-tree-view` · **Status** stable · **Story** `foundations-wave2-primitives--choice-and-tree`
 
-**Need** — Anatomical hierarchies, ICD/SNOMED chapter trees, hospital ward/bed hierarchies, and document folders require an expandable parent–child tree with keyboard traversal and cascading multi-select checkboxes.
+**Need** — Anatomical hierarchies, ICD/SNOMED chapter trees, hospital ward/bed hierarchies, and structured protocol templates require an expandable parent–child tree with WAI-ARIA keyboard traversal, keyword filtering, and cascading multi-select checkboxes.
 
-**Purpose** — Renders recursive `EmrTreeNode[]` with WAI-ARIA `role="tree"` / `role="treeitem"` keyboard navigation, single or multi-select (`checkStrategy: 'all' | 'cascade' | 'leaf'` with tri-state indeterminate parent checkboxes), auto-expanding search filter, and Expand/Collapse All controls.
+**Purpose** — Renders recursive `EmrTreeNode[]` (`readOnly`, `disabled`, `badge`, `tone`, `icon`, `keywords`) with WAI-ARIA `role="tree"` / `role="treeitem"` roving `tabindex`, `checkStrategy: 'cascade' | 'all' | 'leaf'` with custom monochrome SVG tri-state checkboxes, `maxSelections`, auto-expanding search with substring `<mark>` highlighting and `44x44px` clear button, `Expand all`/`Collapse all`/`Clear` toolbar (`data-emr-print="hide"`), scrollable container (`data-emr-print="expand"`), `size: 'md' | 'sm'`, and validation (`invalid`/`warning`/`error`).
+
+**Keyboard** — `ArrowDown`/`ArrowUp`/`Home`/`End` skip disabled rows cleanly and move DOM focus; `ArrowRight` expands or moves to first child; `ArrowLeft` collapses or moves to parent; `Enter`/`Space` activates or toggles; printable characters jump by typeahead.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` tree models
 
@@ -1613,9 +1617,11 @@ export class EmrStatTileComponent {
 ### EmrTreeSelect
 **Layer** L1 · **Selector** `emr-tree-select` · **Status** stable · **Story** `foundations-wave2-primitives--choice-and-tree`
 
-**Need** — Compact form fields frequently need parent–child hierarchical selection inside a clearable dropdown without dedicating permanent vertical space to an inline tree.
+**Need** — Compact form fields and `EmrTypedField` (`tree-select`) schemas need hierarchical parent–child selection inside a clearable `role="combobox"` trigger with sibling multi-select chips and responsive popover/sheet presentation.
 
-**Purpose** — Renders a field trigger displaying the selected node path or leaf label (or removable chips in `multiple` mode) with a one-click Clear button and a floating searchable parent–child tree panel.
+**Purpose** — Renders a `.emr-select-shell` with sibling `.emr-select-chips` (`maxTagCount`, locked `readOnly` chip protection, `removeTreeSelectionChip` cascade reconciliation) before `<button role="combobox" aria-haspopup="tree">` and an inline `Clear` button (`isEmrTreeClearable`). Supports `variant: 'outline' | 'filled' | 'subtle'`, `size: 'md' | 'sm'`, `displayMode: 'path' | 'leaf'`, `separator`, `closeOnSelect`, `maxSelections`, `loading`, `searchable` (`true` default), `showExpandControls`, floating desktop popover / `<520px` mobile `Modal` sheet in React, and full validation (`invalid`/`warning`/`error`).
+
+**Keyboard** — `Enter`/`Space`/`ArrowDown`/`ArrowUp` opens panel and focuses filter/tree; `Escape` or outside click closes panel and restores focus to the combobox trigger.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` tree models
 
@@ -1626,7 +1632,7 @@ export class EmrStatTileComponent {
 
 **Need** — Clinical photos, anterior-segment/fundus captures, wound images, and scanned referrals need pan, zoom, 90° rotation, fine straightening, horizontal/vertical flip, and fullscreen lightbox inspection without coupling to L4 folder models.
 
-**Purpose** — Renders an inline and fullscreen-expandable image inspector supporting single or multi-image galleries (`images`, `activeIndex`), pointer drag-to-pan, wheel/button zoom (`0.25x`–`5x`), `-90°`/`+90°` rotation, straighten slider, flip H/V, and Escape-dismissible modal fullscreen.
+**Purpose** — Renders an inline and fullscreen-expandable (`role="dialog" aria-modal="true"` with Escape dismiss and focus move/restore) image inspector supporting single or multi-image galleries (`images`, `activeIndex`, `showThumbnails` miniature previews), pointer/native `PanResponder` drag-to-pan, wheel/button zoom (`0.25x`–`5x`), `-90°`/`+90°` rotation, synchronized straighten slider (`-45°..+45°`), flip H/V, `height`, keyboard shortcuts (`+`/`-`/`0`/`r`/`ArrowLeft`/`ArrowRight`), `readOnly` inspection parity (interactive pan/zoom/rotate while marked `data-readonly`), `disabled` mute, and persistent validation chrome (`hint`, `warning`, `error`, `invalid`, `labelHidden`).
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` viewport helpers
 
@@ -1637,7 +1643,7 @@ export class EmrStatTileComponent {
 
 **Need** — Patient ID photos, external slit-lamp/wound photos, and camera document captures require interactive cropping, aspect-ratio locking, rotation, straightening, zoom, and pan prior to committing to the record.
 
-**Purpose** — Renders an interactive crop stage with aspect-ratio presets (`Free`, `1:1`, `4:3`, `16:9`, `3:4`), draggable/resizable normalized crop box (`0..1`), rotate/straighten/flip/zoom controls, and Apply/Reset actions emitting `EmrImageCropResult` (`transform` + cropped `dataUrl` when canvas rasterization is available).
+**Purpose** — Renders an interactive crop stage with `role="radiogroup"` aspect-ratio presets (`Free`, `1:1`, `4:3`, `16:9`, `3:4`), dimmed outer scrim with rule-of-thirds overlay, draggable and 4-corner resizable normalized crop box (`44x44px` hit handles + keyboard `Arrow`/`Shift+Arrow` nudging), stage pan, rotate/straighten/flip/zoom controls, `outputMimeType`, and Apply/Reset/Cancel actions emitting `EmrImageCropResult` (`transform` + real `<canvas>`-rasterized `croppedDataUrl` on Web/Angular/Lit).
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` crop helpers
 
@@ -1648,7 +1654,7 @@ export class EmrStatTileComponent {
 
 **Need** — Clinical photo entry requires an integrated upload + camera capture + thumbnail preview grid where clinicians can inspect full-screen (pan/zoom/rotate) and crop/straighten each image in place.
 
-**Purpose** — Combines file/camera selection and drag-and-drop with a thumbnail preview grid, fullscreen lightbox inspection, interactive per-image crop/rotate modal, and remove actions.
+**Purpose** — Combines file selection, drag-and-drop, and opt-in `allowCamera` (`false` default) capture with `accept` and `maxSizeBytes` validation (`role="alert"` inline feedback), `maxFiles` capacity indicator, race-free `FileReader` data URL loading, responsive thumbnail preview cards with `"Edited"` badge, byte-size label, editable captions (`captionChange`), `cropOutputMimeType`, fullscreen lightbox modal, interactive modal cropper, and `readOnly` inspection lock (`View` remains active while edits/dropzone are locked).
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` image models
 
@@ -1659,7 +1665,7 @@ export class EmrStatTileComponent {
 
 **Need** — Encounter filters, lab/vitals date spans, audit log queries, and leave/admission windows need a coordinated start–end range picker with quick presets rather than two unlinked date inputs.
 
-**Purpose** — Renders coordinated start/end date (or datetime) inputs, an interactive range calendar highlighting in-range days, quick preset chips, chronological ordering normalization, and a Clear action.
+**Purpose** — Renders coordinated start/end date or datetime inputs (`datetime` preserves `HH:mm` times across calendar clicks), a `weekStartsOn`-configurable interactive 2D-keyboard-navigable range calendar with monochrome SVG icons, quick preset chips, `min`/`max` per-side validation (`startError`/`endError`, `warning`, `role="alert"` errors), `size`/`variant` parity, `Escape`/outside-click close, chronological normalization, and a Clear action.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` date-range helpers
 
@@ -1692,7 +1698,7 @@ export class EmrStatTileComponent {
 
 **Need** — Image zoom, opacity, PACS window/level, brush thickness, and numeric thresholds need a general-purpose continuous or stepped single-thumb slider distinct from clinical `EmrVas`.
 
-**Purpose** — Renders an accessible range control with `min`, `max`, `step`, `unit`, live value display, optional `marks`, `clearable`, and focus-preserving `readOnly` support.
+**Purpose** — Renders an accessible pointer/touch-draggable (`PanResponder` on Expo Native) `role="slider"` track with `min`, `max`, `step`, `precision`, `unit`, `size`, `tone`, optional `showSteppers`, proportional clickable `marks`, live `valueChange` + release `committed` events, `warning`/`invalid` states, `clearable`, and focus-preserving `readOnly` support.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` slider helpers
 
@@ -1703,7 +1709,7 @@ export class EmrStatTileComponent {
 
 **Need** — Age-band filters, target physiological ranges, and numeric cohort filters require a dual-thumb `[low, high]` slider whose handles never cross.
 
-**Purpose** — Renders coordinated minimum and maximum range handles clamped via `clampRangeSliderPair` with configurable `minDistance`, `step`, and `unit`.
+**Purpose** — Renders a unified single dual-thumb track (`role="slider"` low & high thumbs with cross-bounded `aria-valuemin`/`aria-valuemax`, `44x44px` hit areas, overlapping thumb z-index promotion, and `PanResponder` drag on Expo Native) clamped via `clampRangeSliderPair` with `minDistance`, `step`, `precision`, `unit`, `size`, `tone`, proportional clickable `marks`, `clearable`, and `committed` support.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` slider helpers
 
@@ -1714,7 +1720,7 @@ export class EmrStatTileComponent {
 
 **Need** — National health IDs (e.g. `99-9999-9999-9999`), policy numbers, and structured serial codes require deterministic pattern formatting as the user types.
 
-**Purpose** — Applies a caller-supplied pattern mask (`9` digit, `A` letter, `*` alphanumeric, literal separators) via `applyInputMask`, emitting masked or unmasked values (`null` when empty) and `completed` when full.
+**Purpose** — Applies a caller-supplied pattern mask (`9` digit, `A` letter, `*` alphanumeric, `\` escaped literals, custom `definitions`, and `uppercase`) via `applyInputMask` and `editMaskedInputWithCaret`, preserving caret position & Backspace-across-literal UX, inferring `inputMode`, supporting `size`/`variant`, `showMaskHint`, `unmask`, inline clear button, and `completed` emission.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` mask helpers
 
@@ -1725,7 +1731,7 @@ export class EmrStatTileComponent {
 
 **Need** — Patient consent verification codes, ABDM/2FA OTPs, and witness PIN confirmations require segmented character slots with paste and auto-advance UX.
 
-**Purpose** — Renders `length` character slots supporting numeric or alphanumeric mode, secret masking, auto-focus advance, Backspace retreat, multi-character paste, and `completed` emission.
+**Purpose** — Renders `length` (`>= 44px`) character slots supporting sparse slot preservation, OS SMS `autocomplete="one-time-code"` multi-char autofill, numeric or alphanumeric `uppercase` mode, `secret` masking, `separatorAfter` grouping, `size`/`variant`, `Arrow`/`Home`/`End`/`Backspace`/`Delete` navigation, paste, `clearable`, and `completed`/`submitted` emission.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` OTP helpers
 
@@ -1736,9 +1742,9 @@ export class EmrStatTileComponent {
 
 **Need** — Row overflow (`⋯`) actions, print/export menus, and secondary workflow commands need a keyboard-navigable WAI-ARIA `role="menu"` primitive.
 
-**Purpose** — Renders a trigger button and floating `role="menu"` list supporting `role="menuitem"` buttons, dividers, keyboard shortcuts, danger tone items, Arrow/Home/End roving focus, and Escape dismissal.
+**Purpose** — Renders a trigger button (`label`, `triggerIcon`, `variant`, `size`, `align`, `defaultOpen`, `readOnly`) and floating `role="menu"` list supporting `role="menuitem"` buttons with monochrome SVG icons, descriptions, dividers, keyboard shortcuts, danger tone, typeahead, Arrow/Home/End roving focus, outside pointerdown dismissal, and Escape focus return.
 
-**Depends on** — L0 tokens only
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` menu helpers
 
 ---
 
@@ -1747,9 +1753,9 @@ export class EmrStatTileComponent {
 
 **Need** — Clinical commit actions (`Sign Encounter` + `▾` *Sign & Lock / Request Co-sign / Save Draft*) need a primary action paired with an adjacent secondary action menu.
 
-**Purpose** — Combines a primary action button (`clicked`) with an attached `>= 44px` menu toggle opening a keyboard-accessible `role="menu"` (`itemSelected`).
+**Purpose** — Combines a primary action button (`clicked`, `primary`/`secondary`/`outline`/`danger`, `size`, `loading`, `readOnly`) with an attached `>= 44px` menu toggle opening a keyboard-accessible `role="menu"` (`itemSelected` with `EmrMenuItem`, icons, descriptions, shortcuts, dividers).
 
-**Depends on** — L0 tokens only
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` menu/split-button helpers
 
 ---
 
@@ -1758,7 +1764,7 @@ export class EmrStatTileComponent {
 
 **Need** — Long clinical instructions, prior history summaries, and device settings need single- or multi-expand disclosure panels that automatically expand all content when printed.
 
-**Purpose** — Renders disclosure headers (`aria-expanded`, `aria-controls`, ArrowUp/Down/Home/End navigation) and `[hidden]` region panels that `.emr-print` automatically reveals on paper.
+**Purpose** — Renders heading-wrapped disclosure headers (`role="heading"`, `aria-level`, `variant` `outlined`/`flush`/`card`, `size`, `defaultExpandedIds`, `readOnly`, structured badges, monochrome icons, ArrowUp/Down/Home/End navigation) and `[hidden]` region panels that `.emr-print` automatically reveals on paper.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` accordion helpers
 
@@ -1769,7 +1775,7 @@ export class EmrStatTileComponent {
 
 **Need** — Deep document folders, hierarchical order catalogs, and admin configuration screens need path orientation and ancestor jump links.
 
-**Purpose** — Renders `<nav aria-label="Breadcrumb">` with `aria-current="page"` on the active item and an accessible `…` overflow button when `items.length > maxItems`.
+**Purpose** — Renders `<nav aria-label>` with `aria-current="page"` on the active item, optional `href` anchor links, `chevron` SVG or string separators, `size`, and an accessible monochrome `more-horizontal` overflow button (`overflowExpanded`) that restores focus to the first revealed level and resets on `items`/`maxItems` changes.
 
 **Depends on** — L0 tokens and `@drguptavivek/emr-controller` breadcrumb helpers
 
@@ -1780,9 +1786,9 @@ export class EmrStatTileComponent {
 
 **Need** — Clinical diagram annotations, calendar resource labels, and chart series configuration require an accessible named-swatch color selector rather than an unlabelled native color input alone.
 
-**Purpose** — Renders a `role="radiogroup"` of `>= 44px` named clinical color swatches (`DEFAULT_CLINICAL_COLOR_SWATCHES`), optional custom hex entry, and a Clear button.
+**Purpose** — Renders a `role="radiogroup"` of `44x44px` named clinical color swatches (`DEFAULT_CLINICAL_COLOR_SWATCHES`, roving `tabIndex`, arrow navigation, contrast-aware SVG checkmarks), live preview dot, custom hex normalization with blur/readOnly rollback, Clear button, and `warning`/`error` validation.
 
-**Depends on** — L0 tokens and `@drguptavivek/emr-controller` swatch models
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` swatch & color helpers
 
 ---
 
@@ -1791,7 +1797,7 @@ export class EmrStatTileComponent {
 
 **Need** — MRNs, national health IDs, accession numbers, and SNOMED/ICD codes frequently need one-click clipboard copy with screen-reader confirmation.
 
-**Purpose** — Copies `value` to the clipboard (with SSR-safe fallback), announces `copiedLabel` via `role="status" aria-live="polite"`, and emits `copied`.
+**Purpose** — Copies `value` to the clipboard (with SSR-safe fallback, empty-value guard, `outline` default variant, `sm`/`md`/`lg` sizes, `iconOnly`, timed `feedbackDurationMs` reset, immediate reset on `value` change), announces `copiedLabel` via `role="status" aria-live="polite"`, and emits `copied`.
 
-**Depends on** — L0 tokens only
+**Depends on** — L0 tokens and `@drguptavivek/emr-controller` copy helpers
 

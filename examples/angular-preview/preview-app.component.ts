@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal } from '@angular/core';
 import type {
+  AddressFieldIntent,
+  AddressFieldViewModel,
   AttestationIntent,
   AttestationViewModel,
   AttachmentFieldIntent,
@@ -9,9 +11,22 @@ import type {
   CodedInputIntent,
   CodedInputViewModel,
   DoseSlot,
+  DurationFieldIntent,
+  DurationFieldViewModel,
+  EmrAccordionItem,
   EmrBadge,
+  EmrBreadcrumbItem,
   EmrCodedValue,
+  EmrColorSwatch,
+  EmrDateRangePreset,
+  EmrDateRangeValue,
+  EmrImageCropTransform,
+  EmrImageItem,
+  EmrImageViewportState,
+  EmrMacroSuggestion,
+  EmrMenuItem,
   EmrOption,
+  EmrPhoneChannel,
   EmrSegmentedOption,
   EmrSegmentedOrientation,
   EmrSegmentedShape,
@@ -21,47 +36,104 @@ import type {
   EmrSelectValue,
   EmrSelectVariant,
   EmrStatTileModel,
+  EmrToggleGroupLabelPlacement,
+  EmrToggleGroupOrientation,
+  EmrToggleGroupSize,
+  EmrToggleGroupVariant,
   EmrTone,
+  EmrTreeCheckStrategy,
+  EmrTreeNode,
+  EmrUploadedImageItem,
+  FieldFrameLayout,
   IdentifierEntryIntent,
   IdentifierEntryView,
+  ImageFieldIntent,
+  ImageFieldViewModel,
+  LateralityFieldIntent,
+  LateralityFieldViewModel,
+  MacroTextFieldIntent,
+  MacroTextFieldViewModel,
+  PairedFieldIntent,
+  PairedFieldViewModel,
   PartialDateFieldIntent,
   PartialDateFieldViewModel,
+  PhoneFieldIntent,
+  PhoneFieldViewModel,
+  RangeFieldIntent,
+  RangeFieldViewModel,
+  RefractionFieldIntent,
+  RefractionFieldViewModel,
   ScaleFieldIntent,
   ScaleFieldViewModel,
   ScheduleAmountMode,
   ScheduleSlotDefinition,
   ScheduleSlotPreset,
+  SignatureCaptureIntent,
+  SignatureCaptureViewModel,
+  VisualAcuityFieldIntent,
+  VisualAcuityFieldViewModel,
 } from '@drguptavivek/emr-controller';
 import {
+  DEFAULT_ASPECT_PRESETS,
+  DEFAULT_CLINICAL_COLOR_SWATCHES,
+  DEFAULT_IMAGE_CROP_TRANSFORM,
+  DEFAULT_IMAGE_VIEWPORT,
+  expandMacroTriggerAtCursor,
+} from '@drguptavivek/emr-controller';
+import {
+  EmrAccordionComponent,
+  EmrAddressFieldComponent,
   EmrAlertComponent,
   EmrAttachmentFieldComponent,
   EmrAttestationComponent,
   EmrBadgeComponent,
+  EmrBreadcrumbsComponent,
   EmrButtonComponent,
   EmrCardComponent,
   EmrCheckboxComponent,
   EmrChipComponent,
   EmrCodedInputComponent,
+  EmrColorPickerComponent,
   EmrColumnsComponent,
+  EmrCopyButtonComponent,
   EmrDateInputComponent,
+  EmrDateRangeInputComponent,
   EmrDateTimeInputComponent,
+  EmrDurationInputComponent,
   EmrFieldFrameComponent,
   EmrFieldValueRowComponent,
   EmrIdentifierEntryComponent,
+  EmrImageCropperComponent,
+  EmrImageFieldComponent,
+  EmrImageUploadComponent,
+  EmrImageViewerComponent,
+  EmrLateralityFieldComponent,
   EmrLikertComponent,
+  EmrMacroTextFieldComponent,
+  EmrMaskedInputComponent,
+  EmrMenuComponent,
   EmrNumberInputComponent,
+  EmrOtpInputComponent,
+  EmrPairedFieldComponent,
   EmrPairedInputComponent,
   EmrCheckboxGroupComponent,
   EmrComboboxComponent,
   EmrPartialDateFieldComponent,
+  EmrPhoneInputComponent,
   EmrQuantityInputComponent,
   EmrRadioGroupComponent,
+  EmrRangeFieldComponent,
+  EmrRangeSliderComponent,
+  EmrRefractionFieldComponent,
   EmrScaleFieldComponent,
   EmrScheduleSlotPickerComponent,
   EmrSearchSelectComponent,
   EmrSegmentedControlComponent,
   EmrSelectComponent,
   EmrSeparatorComponent,
+  EmrSignatureCaptureFieldComponent,
+  EmrSliderComponent,
+  EmrSplitButtonComponent,
   EmrStageStepperComponent,
   EmrStatTileComponent,
   EmrStateMessageComponent,
@@ -71,31 +143,51 @@ import {
   EmrTextInputComponent,
   EmrTimeInputComponent,
   EmrToggleComponent,
+  EmrToggleGroupComponent,
+  EmrTreeSelectComponent,
+  EmrTreeViewComponent,
   EmrTypedFieldComponent,
   EmrVasComponent,
+  EmrVisualAcuityFieldComponent,
 } from '../../packages/emr-ui/src/public-api';
 
 @Component({
   selector: 'emr-angular-preview',
   standalone: true,
   imports: [
+    EmrAddressFieldComponent,
     EmrButtonComponent,
     EmrTextInputComponent,
     EmrNumberInputComponent,
     EmrDateInputComponent,
+    EmrDateRangeInputComponent,
     EmrDateTimeInputComponent,
     EmrTimeInputComponent,
     EmrSelectComponent,
     EmrQuantityInputComponent,
+    EmrPairedFieldComponent,
     EmrPairedInputComponent,
     EmrCheckboxComponent,
     EmrCheckboxGroupComponent,
     EmrToggleComponent,
+    EmrToggleGroupComponent,
+    EmrTreeViewComponent,
+    EmrTreeSelectComponent,
     EmrRadioGroupComponent,
     EmrSegmentedControlComponent,
     EmrSearchSelectComponent,
     EmrComboboxComponent,
     EmrTagInputComponent,
+    EmrSliderComponent,
+    EmrRangeSliderComponent,
+    EmrMaskedInputComponent,
+    EmrOtpInputComponent,
+    EmrMenuComponent,
+    EmrSplitButtonComponent,
+    EmrAccordionComponent,
+    EmrBreadcrumbsComponent,
+    EmrColorPickerComponent,
+    EmrCopyButtonComponent,
     EmrBadgeComponent,
     EmrChipComponent,
     EmrAlertComponent,
@@ -116,9 +208,21 @@ import {
     EmrAttestationComponent,
     EmrScheduleSlotPickerComponent,
     EmrIdentifierEntryComponent,
+    EmrLateralityFieldComponent,
+    EmrMacroTextFieldComponent,
     EmrScaleFieldComponent,
     EmrPartialDateFieldComponent,
     EmrAttachmentFieldComponent,
+    EmrDurationInputComponent,
+    EmrRangeFieldComponent,
+    EmrSignatureCaptureFieldComponent,
+    EmrPhoneInputComponent,
+    EmrVisualAcuityFieldComponent,
+    EmrRefractionFieldComponent,
+    EmrImageViewerComponent,
+    EmrImageCropperComponent,
+    EmrImageUploadComponent,
+    EmrImageFieldComponent,
   ],
   template: `
     @switch (selector()) {
@@ -350,6 +454,97 @@ import {
           (blurred)="emitState({ focused: false })"
         />
       }
+      @case ('emr-toggle-group') {
+        <emr-toggle-group
+          label="Communication preferences"
+          [options]="toggleGroupOptions"
+          [exclusiveValues]="['none']"
+          [values]="tgValues()"
+          [multiple]="tgMultiple()"
+          [allowEmpty]="tgAllowEmpty()"
+          [variant]="tgVariant()"
+          [size]="tgSize()"
+          [orientation]="tgOrientation()"
+          [columns]="tgColumns()"
+          [labelPlacement]="tgLabelPlacement()"
+          [showStateLabels]="tgShowStateLabels()"
+          [showSelectAll]="tgShowSelectAll()"
+          [showSelectionCount]="tgShowSelectionCount()"
+          [clearable]="tgClearable()"
+          [maxSelections]="tgMaxSelections()"
+          [required]="tgRequired()"
+          [readOnly]="tgReadOnly()"
+          [disabled]="tgDisabled()"
+          [invalid]="tgInvalid()"
+          [labelHidden]="tgLabelHidden()"
+          [warning]="tgWarning()"
+          [error]="tgError()"
+          (valuesChange)="tgValues.set($event); emitState({ values: $event })"
+          (cleared)="emitState({ values: tgValues(), cleared: true })"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
+      @case ('emr-tree-view') {
+        <emr-tree-view
+          label="Ocular examination hierarchy"
+          [nodes]="ocularTreeNodes"
+          [multiple]="tvMultiple()"
+          [checkStrategy]="tvCheckStrategy()"
+          [size]="tvSize()"
+          [searchable]="tvSearchable()"
+          [showExpandControls]="tvShowExpandControls()"
+          [clearable]="tvClearable()"
+          [maxSelections]="tvMaxSelections()"
+          [value]="tvValue()"
+          [values]="tvValues()"
+          [expandedIds]="tvExpandedIds()"
+          [required]="tvRequired()"
+          [readOnly]="tvReadOnly()"
+          [disabled]="tvDisabled()"
+          [invalid]="tvInvalid()"
+          [labelHidden]="tvLabelHidden()"
+          [warning]="tvWarning()"
+          [error]="tvError()"
+          (valueChange)="tvValue.set($event); emitState({ value: $event })"
+          (valuesChange)="tvValues.set($event); emitState({ values: $event })"
+          (expandedIdsChange)="tvExpandedIds.set($event); emitState({ expandedIds: $event })"
+          (cleared)="emitState({ value: tvValue(), values: tvValues(), cleared: true })"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
+      @case ('emr-tree-select') {
+        <emr-tree-select
+          label="Primary anatomical site"
+          [nodes]="ocularTreeNodes"
+          [multiple]="tsMultiple()"
+          [checkStrategy]="tsCheckStrategy()"
+          [displayMode]="tsDisplayMode()"
+          [variant]="tsVariant()"
+          [size]="tsSize()"
+          [searchable]="tsSearchable()"
+          [showExpandControls]="tsShowExpandControls()"
+          [clearable]="tsClearable()"
+          [maxTagCount]="tsMaxTagCount()"
+          [maxSelections]="tsMaxSelections()"
+          [loading]="tsLoading()"
+          [value]="tsValue()"
+          [values]="tsValues()"
+          [required]="tsRequired()"
+          [readOnly]="tsReadOnly()"
+          [disabled]="tsDisabled()"
+          [invalid]="tsInvalid()"
+          [labelHidden]="tsLabelHidden()"
+          [warning]="tsWarning()"
+          [error]="tsError()"
+          (valueChange)="tsValue.set($event); emitState({ value: $event })"
+          (valuesChange)="tsValues.set($event); emitState({ values: $event })"
+          (cleared)="emitState({ value: tsValue(), values: tsValues(), cleared: true })"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
       @case ('emr-segmented-control') {
         <emr-segmented-control
           label="Operative eye & verification"
@@ -532,6 +727,206 @@ import {
           [suggestions]="tagSuggestions"
           (tagsChange)="tagValues.set($event); emitState({ tags: $event, value: $event })"
           (cleared)="emitState({ tags: tagValues(), value: tagValues() })"
+        />
+      }
+      @case ('emr-date-range-input') {
+        <emr-date-range-input
+          label="Encounter filter window"
+          [value]="drValue()"
+          [mode]="drMode()"
+          [size]="drSize()"
+          [variant]="drVariant()"
+          [weekStartsOn]="drWeekStartsOn()"
+          [presets]="drPresets"
+          [showCalendar]="drShowCalendar()"
+          [clearable]="drClearable()"
+          [required]="drRequired()"
+          [readOnly]="drReadOnly() || readOnly()"
+          [disabled]="drDisabled()"
+          [invalid]="drInvalid()"
+          [labelHidden]="drLabelHidden()"
+          [warning]="drWarning()"
+          [error]="drError()"
+          (valueChange)="drValue.set($event); emitState({ value: $event })"
+          (cleared)="drValue.set(null); emitState({ value: null })"
+        />
+      }
+      @case ('emr-slider') {
+        <emr-slider
+          label="OCT overlay opacity"
+          [value]="sliderValue()"
+          [min]="0"
+          [max]="100"
+          [step]="5"
+          unit="%"
+          [marks]="sliderMarks"
+          [size]="sliderSize()"
+          [tone]="sliderTone()"
+          [showValue]="sliderShowValue()"
+          [showSteppers]="sliderShowSteppers()"
+          [clearable]="sliderClearable()"
+          [required]="sliderRequired()"
+          [readOnly]="sliderReadOnly() || readOnly()"
+          [disabled]="sliderDisabled()"
+          [invalid]="sliderInvalid()"
+          [labelHidden]="sliderLabelHidden()"
+          [warning]="sliderWarning()"
+          [error]="sliderError()"
+          (valueChange)="sliderValue.set($event); emitState({ value: $event })"
+          (cleared)="sliderValue.set(null); emitState({ value: null })"
+        />
+      }
+      @case ('emr-range-slider') {
+        <emr-range-slider
+          label="Target IOP therapeutic band"
+          [value]="rangeSliderValue()"
+          [min]="6"
+          [max]="30"
+          [minDistance]="2"
+          unit="mmHg"
+          [marks]="rangeSliderMarks"
+          [size]="rangeSliderSize()"
+          [tone]="rangeSliderTone()"
+          [showValue]="rangeSliderShowValue()"
+          [clearable]="rangeSliderClearable()"
+          [required]="rangeSliderRequired()"
+          [readOnly]="rangeSliderReadOnly() || readOnly()"
+          [disabled]="rangeSliderDisabled()"
+          [invalid]="rangeSliderInvalid()"
+          [labelHidden]="rangeSliderLabelHidden()"
+          [warning]="rangeSliderWarning()"
+          [error]="rangeSliderError()"
+          (valueChange)="rangeSliderValue.set($event); emitState({ value: $event })"
+          (cleared)="rangeSliderValue.set(null); emitState({ value: null })"
+        />
+      }
+      @case ('emr-masked-input') {
+        <emr-masked-input
+          label="ABHA health identifier"
+          mask="99-9999-9999-9999"
+          [value]="maskedValue()"
+          [size]="maskedSize()"
+          [variant]="maskedVariant()"
+          [unmask]="maskedUnmask()"
+          [showMaskHint]="maskedShowHint()"
+          [uppercase]="maskedUppercase()"
+          [clearable]="maskedClearable()"
+          [required]="maskedRequired()"
+          [readOnly]="maskedReadOnly() || readOnly()"
+          [disabled]="maskedDisabled()"
+          [invalid]="maskedInvalid()"
+          [labelHidden]="maskedLabelHidden()"
+          [warning]="maskedWarning()"
+          [error]="maskedError()"
+          (valueChange)="maskedValue.set($event); emitState({ value: $event })"
+          (cleared)="maskedValue.set(null); emitState({ value: null })"
+        />
+      }
+      @case ('emr-otp-input') {
+        <emr-otp-input
+          label="Patient consent verification OTP"
+          [length]="6"
+          [value]="otpValue()"
+          [secret]="otpSecret()"
+          [numericOnly]="otpNumericOnly()"
+          [uppercase]="otpUppercase()"
+          [separatorAfter]="otpSeparatorAfter() > 0 ? otpSeparatorAfter() : undefined"
+          [size]="otpSize()"
+          [variant]="otpVariant()"
+          [clearable]="otpClearable()"
+          [required]="otpRequired()"
+          [readOnly]="otpReadOnly() || readOnly()"
+          [disabled]="otpDisabled()"
+          [invalid]="otpInvalid()"
+          [labelHidden]="otpLabelHidden()"
+          [warning]="otpWarning()"
+          [error]="otpError()"
+          (valueChange)="otpValue.set($event); emitState({ value: $event })"
+          (cleared)="otpValue.set(''); emitState({ value: '' })"
+        />
+      }
+      @case ('emr-menu') {
+        <emr-menu
+          controlId="parity-menu-angular"
+          label="Encounter actions"
+          triggerIcon="more-vertical"
+          [items]="encounterMenuItems"
+          [variant]="menuVariant()"
+          [size]="menuSize()"
+          [align]="menuAlign()"
+          [readOnly]="menuReadOnly() || readOnly()"
+          [disabled]="menuDisabled()"
+          (itemSelected)="emitState({ lastAction: $event.id })"
+        />
+      }
+      @case ('emr-split-button') {
+        <emr-split-button
+          controlId="parity-split-button-angular"
+          label="Sign encounter"
+          [items]="signMenuItems"
+          [variant]="splitVariant()"
+          [size]="splitSize()"
+          [align]="splitAlign()"
+          [loading]="splitLoading()"
+          [readOnly]="splitReadOnly() || readOnly()"
+          [disabled]="splitDisabled()"
+          (clicked)="emitState({ lastCommit: 'sign-primary' })"
+          (itemSelected)="emitState({ lastCommit: $event.id })"
+        />
+      }
+      @case ('emr-accordion') {
+        <emr-accordion
+          controlId="parity-accordion-angular"
+          [items]="postopAccordionItems"
+          [expandedIds]="accordionExpandedIds()"
+          [multiple]="accordionMultiple()"
+          [variant]="accordionVariant()"
+          [size]="accordionSize()"
+          [readOnly]="accordionReadOnly() || readOnly()"
+          [disabled]="accordionDisabled()"
+          (expandedIdsChange)="accordionExpandedIds.set($event); emitState({ expandedIds: $event })"
+        />
+      }
+      @case ('emr-breadcrumbs') {
+        <emr-breadcrumbs
+          controlId="parity-breadcrumbs-angular"
+          [items]="clinicBreadcrumbs"
+          [maxItems]="breadcrumbsMaxItems() > 0 ? breadcrumbsMaxItems() : undefined"
+          [separator]="breadcrumbsSeparator()"
+          [size]="breadcrumbsSize()"
+          (itemSelected)="emitState({ activeCrumb: $event.id })"
+        />
+      }
+      @case ('emr-color-picker') {
+        <emr-color-picker
+          controlId="parity-color-picker-angular"
+          label="Retinal annotation pen colour"
+          [swatches]="clinicalColorSwatches"
+          [value]="colorPickerValue()"
+          [allowCustomHex]="colorPickerAllowCustomHex()"
+          [clearable]="colorPickerClearable()"
+          [size]="colorPickerSize()"
+          [required]="colorPickerRequired()"
+          [readOnly]="colorPickerReadOnly() || readOnly()"
+          [disabled]="colorPickerDisabled()"
+          [invalid]="colorPickerInvalid()"
+          [labelHidden]="colorPickerLabelHidden()"
+          [warning]="colorPickerWarning()"
+          [error]="colorPickerError()"
+          (valueChange)="colorPickerValue.set($event); emitState({ value: $event })"
+          (cleared)="colorPickerValue.set(null); emitState({ value: null })"
+        />
+      }
+      @case ('emr-copy-button') {
+        <emr-copy-button
+          controlId="parity-copy-button-angular"
+          value="MRN-2026-0419"
+          label="Copy MRN"
+          [variant]="copyButtonVariant()"
+          [size]="copyButtonSize()"
+          [iconOnly]="copyButtonIconOnly()"
+          [disabled]="copyButtonDisabled()"
+          (copied)="copyButtonCount.set(copyButtonCount() + 1); emitState({ copiedCount: copyButtonCount() })"
         />
       }
       @case ('emr-columns') {
@@ -778,6 +1173,182 @@ import {
           (intent)="onAttachmentIntent($event)"
         />
       }
+      @case ('emr-paired-field') {
+        <emr-paired-field
+          controlId="parity-paired-ng"
+          [model]="pairedModel()"
+          [labelHidden]="pairedLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onPairedIntent($event)"
+        />
+      }
+      @case ('emr-duration-input') {
+        <emr-duration-input
+          controlId="parity-duration-ng"
+          [model]="durationModel()"
+          [labelHidden]="durationLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onDurationIntent($event)"
+        />
+      }
+      @case ('emr-range-field') {
+        <emr-range-field
+          controlId="parity-range-ng"
+          [model]="rangeModel()"
+          [labelHidden]="rangeLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onRangeIntent($event)"
+        />
+      }
+      @case ('emr-phone-input') {
+        <emr-phone-input
+          controlId="parity-phone-ng"
+          [model]="phoneModel()"
+          [labelHidden]="phoneLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onPhoneIntent($event)"
+        />
+      }
+      @case ('emr-address-field') {
+        <emr-address-field
+          controlId="parity-address-ng"
+          [model]="addressModel()"
+          [labelHidden]="addressLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onAddressIntent($event)"
+        />
+      }
+      @case ('emr-macro-text-field') {
+        <emr-macro-text-field
+          controlId="parity-macro-ng"
+          [model]="macroTextModel()"
+          [labelHidden]="macroTextLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onMacroTextIntent($event)"
+        />
+      }
+      @case ('emr-laterality-field') {
+        <emr-laterality-field
+          controlId="parity-laterality-ng"
+          [model]="lateralityModel()"
+          [labelHidden]="lateralityLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onLateralityIntent($event)"
+        />
+      }
+      @case ('emr-visual-acuity-field') {
+        <emr-visual-acuity-field
+          controlId="parity-va-ng"
+          [model]="visualAcuityModel()"
+          [labelHidden]="visualAcuityLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onVisualAcuityIntent($event)"
+        />
+      }
+      @case ('emr-refraction-field') {
+        <emr-refraction-field
+          controlId="parity-refraction-ng"
+          [model]="refractionModel()"
+          [labelHidden]="refractionLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onRefractionIntent($event)"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
+      @case ('emr-signature-capture-field') {
+        <emr-signature-capture-field
+          controlId="parity-signature-ng"
+          [model]="signatureModel()"
+          [labelHidden]="signatureLabelHidden()"
+          [readOnly]="readOnly()"
+          (intent)="onSignatureIntent($event)"
+        />
+      }
+      @case ('emr-image-viewer') {
+        <emr-image-viewer
+          controlId="parity-image-viewer-ng"
+          label="Fundus photograph inspector"
+          [src]="sampleFundusSrc"
+          alt="Simulated OD colour fundus"
+          caption="OD posterior pole — 45° field"
+          [images]="ivMultiImage() ? ivGallery : []"
+          [activeIndex]="ivActiveIndex()"
+          [viewport]="ivViewport()"
+          [allowFullscreen]="ivAllowFullscreen()"
+          [showThumbnails]="ivShowThumbnails()"
+          [height]="ivHeight()"
+          [labelHidden]="ivLabelHidden()"
+          [readOnly]="ivReadOnly()"
+          [disabled]="ivDisabled()"
+          [warning]="ivWarning()"
+          [error]="ivError()"
+          (viewportChange)="ivViewport.set($event); emitState({ viewport: $event })"
+          (activeIndexChange)="ivActiveIndex.set($event); emitState({ activeIndex: $event })"
+          (fullscreenChange)="emitState({ fullscreen: $event })"
+          (closeRequested)="emitState({ fullscreen: false })"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
+      @case ('emr-image-cropper') {
+        <emr-image-cropper
+          controlId="parity-image-cropper-ng"
+          label="Optic disc ROI cropper"
+          [src]="sampleFundusSrc"
+          alt="Optic disc crop target"
+          [aspectPresets]="defaultAspectPresets"
+          [transform]="icTransform()"
+          [labelHidden]="icLabelHidden()"
+          [readOnly]="icReadOnly()"
+          [disabled]="icDisabled()"
+          [warning]="icWarning()"
+          [error]="icError()"
+          (cropChange)="icTransform.set($event); emitState({ transform: $event })"
+          (cropCommitted)="icTransform.set($event.transform); emitState({ transform: $event.transform, croppedDataUrl: $event.croppedDataUrl })"
+          (cancelRequested)="emitState({ canceled: true })"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
+      @case ('emr-image-upload') {
+        <emr-image-upload
+          controlId="parity-image-upload-ng"
+          label="Anterior segment & fundus upload"
+          [items]="iuItems()"
+          [multiple]="iuMultiple()"
+          [maxFiles]="iuMaxFiles()"
+          [allowCamera]="iuAllowCamera()"
+          [aspectPresets]="defaultAspectPresets"
+          [labelHidden]="iuLabelHidden()"
+          [required]="iuRequired()"
+          [readOnly]="iuReadOnly()"
+          [disabled]="iuDisabled()"
+          [warning]="iuWarning()"
+          [error]="iuError()"
+          (itemsChange)="iuItems.set($event); emitState({ items: $event })"
+          (filesSelected)="emitState({ filesSelected: $event })"
+          (imageCropped)="emitState({ imageCropped: $event })"
+          (captionChange)="emitState({ captionChange: $event })"
+          (removeRequested)="emitState({ removeRequested: $event })"
+          (captureRequested)="emitState({ captureRequested: $event })"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
+      @case ('emr-image-field') {
+        <emr-image-field
+          controlId="parity-image-field-ng"
+          [model]="imageFieldModel()"
+          [labelHidden]="ifLabelHidden()"
+          [layout]="ifLayout()"
+          [showMetadata]="ifShowMetadata()"
+          [readOnly]="ifReadOnly()"
+          (intent)="onImageFieldIntent($event)"
+          (focused)="emitState({ focused: true })"
+          (blurred)="emitState({ focused: false })"
+        />
+      }
       @default {
         <div style="font-size:var(--emr-text-sm);color:var(--emr-text-muted);padding:8px 0;">
           Standalone Angular preview fixture not yet wired for <code>&lt;{{ selector() }}&gt;</code>.
@@ -935,6 +1506,96 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
   readonly cbgLabelHidden = signal(false);
   readonly cbgWarning = signal('');
   readonly cbgError = signal('');
+
+  readonly toggleGroupOptions: readonly EmrOption[] = [
+    { value: 'sms', label: 'SMS appointment reminders', group: 'Patient Channels', icon: 'phone', badge: { label: 'Verified', tone: 'success' }, tone: 'success', readOnly: true },
+    { value: 'whatsapp', label: 'WhatsApp Rx & instructions', group: 'Patient Channels', description: 'Encrypted clinic dispatch', badge: { label: 'Preferred', tone: 'info' } },
+    { value: 'portal', label: 'Portal lab & OCT release', group: 'Clinical Sync', description: 'Auto-publish signed diagnostic reports' },
+    { value: 'legacy', label: 'Fax summary', group: 'Clinical Sync', disabled: true, description: 'Legacy gateway offline' },
+    { value: 'none', label: 'Opt out of non-urgent alerts', tone: 'warning' },
+  ];
+  readonly tgValues = signal<readonly string[]>(['sms', 'portal']);
+  readonly tgMultiple = signal(true);
+  readonly tgAllowEmpty = signal(true);
+  readonly tgVariant = signal<EmrToggleGroupVariant>('tile');
+  readonly tgSize = signal<EmrToggleGroupSize>('md');
+  readonly tgOrientation = signal<EmrToggleGroupOrientation>('vertical');
+  readonly tgColumns = signal(2);
+  readonly tgLabelPlacement = signal<EmrToggleGroupLabelPlacement>('space-between');
+  readonly tgShowStateLabels = signal(false);
+  readonly tgShowSelectAll = signal(true);
+  readonly tgShowSelectionCount = signal(true);
+  readonly tgClearable = signal(true);
+  readonly tgMaxSelections = signal<number | undefined>(undefined);
+  readonly tgRequired = signal(false);
+  readonly tgReadOnly = signal(false);
+  readonly tgDisabled = signal(false);
+  readonly tgInvalid = signal(false);
+  readonly tgLabelHidden = signal(false);
+  readonly tgWarning = signal('');
+  readonly tgError = signal('');
+
+  readonly ocularTreeNodes: readonly EmrTreeNode[] = [
+    {
+      id: 'ant-seg',
+      label: 'Anterior segment',
+      description: 'Slit-lamp biomicroscopy',
+      icon: 'eye',
+      children: [
+        { id: 'cornea', label: 'Cornea', code: 'H18', badge: { label: 'Primary', tone: 'info' }, tone: 'info', keywords: ['epithelium', 'stroma'] },
+        { id: 'ac', label: 'Anterior chamber', code: 'H20', readOnly: true, badge: 'Locked', tone: 'warning' },
+        { id: 'lens', label: 'Crystalline lens / IOL', code: 'H25' },
+      ],
+    },
+    {
+      id: 'post-seg',
+      label: 'Posterior segment',
+      icon: 'eye',
+      children: [
+        { id: 'disc', label: 'Optic nerve head', code: 'H40', badge: { label: 'Glaucoma', tone: 'danger' }, tone: 'danger' },
+        { id: 'macula', label: 'Macula & fovea', code: 'H35', keywords: ['oct', 'retina'] },
+        { id: 'vitreous', label: 'Vitreous (archived)', code: 'H43', disabled: true },
+      ],
+    },
+  ];
+  readonly tvValue = signal<string | null>('macula');
+  readonly tvValues = signal<readonly string[]>(['cornea', 'ac']);
+  readonly tvExpandedIds = signal<readonly string[]>(['ant-seg', 'post-seg']);
+  readonly tvMultiple = signal(true);
+  readonly tvCheckStrategy = signal<EmrTreeCheckStrategy>('cascade');
+  readonly tvSize = signal<'md' | 'sm'>('md');
+  readonly tvSearchable = signal(true);
+  readonly tvShowExpandControls = signal(true);
+  readonly tvClearable = signal(true);
+  readonly tvMaxSelections = signal<number | undefined>(undefined);
+  readonly tvRequired = signal(false);
+  readonly tvReadOnly = signal(false);
+  readonly tvDisabled = signal(false);
+  readonly tvInvalid = signal(false);
+  readonly tvLabelHidden = signal(false);
+  readonly tvWarning = signal('');
+  readonly tvError = signal('');
+
+  readonly tsValue = signal<string | null>('macula');
+  readonly tsValues = signal<readonly string[]>(['cornea', 'ac']);
+  readonly tsMultiple = signal(false);
+  readonly tsCheckStrategy = signal<EmrTreeCheckStrategy>('cascade');
+  readonly tsDisplayMode = signal<'path' | 'leaf'>('path');
+  readonly tsVariant = signal<'outline' | 'filled' | 'subtle'>('outline');
+  readonly tsSize = signal<'md' | 'sm'>('md');
+  readonly tsSearchable = signal(true);
+  readonly tsShowExpandControls = signal(false);
+  readonly tsClearable = signal(true);
+  readonly tsMaxTagCount = signal<number | undefined>(2);
+  readonly tsMaxSelections = signal<number | undefined>(undefined);
+  readonly tsLoading = signal(false);
+  readonly tsRequired = signal(false);
+  readonly tsReadOnly = signal(false);
+  readonly tsDisabled = signal(false);
+  readonly tsInvalid = signal(false);
+  readonly tsLabelHidden = signal(false);
+  readonly tsWarning = signal('');
+  readonly tsError = signal('');
   readonly badgeTone = signal<EmrTone>('warning');
   readonly badgeVariant = signal<'soft' | 'solid' | 'outline'>('soft');
   readonly badgeSize = signal<'md' | 'sm'>('md');
@@ -1060,6 +1721,487 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
     multiple: true,
     maxItems: 3,
     allowCamera: true,
+  });
+  readonly pairedLabelHidden = signal(false);
+  readonly pairedModel = signal<PairedFieldViewModel>({
+    label: 'Sitting blood pressure',
+    mode: 'integer',
+    firstLabel: 'Systolic',
+    secondLabel: 'Diastolic',
+    separator: '/',
+    unit: 'mmHg',
+    value: { first: 128, second: 78 },
+    firstMin: 50,
+    firstMax: 260,
+    secondMin: 30,
+    secondMax: 160,
+    hint: 'Seated cuff reading after 5 minutes rest',
+    clearable: true,
+    required: false,
+    readOnly: false,
+    size: 'md',
+    layout: 'vertical',
+    showMetadata: true,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly durationLabelHidden = signal(false);
+  readonly durationModel = signal<DurationFieldViewModel>({
+    label: 'Topical steroid course duration',
+    value: { amount: 4, unit: 'wk' },
+    unitOptions: [
+      { value: 'd', label: 'days' },
+      { value: 'wk', label: 'weeks' },
+      { value: 'mo', label: 'months' },
+    ],
+    min: 0,
+    hint: 'Tapering schedule starts after review',
+    clearable: true,
+    showSteppers: true,
+    required: false,
+    readOnly: false,
+    size: 'md',
+    layout: 'vertical',
+    showMetadata: true,
+    labelHidden: false,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly rangeLabelHidden = signal(false);
+  readonly rangeModel = signal<RangeFieldViewModel>({
+    label: 'Target intraocular pressure range (OD)',
+    kind: 'number',
+    value: { low: 10, high: 14 },
+    unit: 'mmHg',
+    hint: 'Target range used for glaucoma therapy alerts',
+    clearable: true,
+    showSteppers: false,
+    required: false,
+    readOnly: false,
+    size: 'md',
+    layout: 'vertical',
+    showMetadata: true,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly phoneLabelHidden = signal(false);
+  readonly phoneModel = signal<PhoneFieldViewModel>({
+    label: 'Primary contact number',
+    countryCode: '+91',
+    countryOptions: [
+      { code: '+91', label: 'India (+91)' },
+      { code: '+1', label: 'United States (+1)' },
+      { code: '+44', label: 'United Kingdom (+44)' },
+    ],
+    nationalNumber: '9876543210',
+    extension: '204',
+    showExtension: true,
+    clearable: true,
+    required: false,
+    readOnly: false,
+    size: 'md',
+    layout: 'vertical',
+    showMetadata: true,
+    hint: 'Used for appointment reminders and OTP verification',
+    formattedPreview: '+91 98765 43210 ext. 204',
+    channels: ['voice', 'sms', 'whatsapp'],
+    availableChannels: [
+      { id: 'voice', label: 'Voice' },
+      { id: 'sms', label: 'SMS' },
+      { id: 'whatsapp', label: 'WhatsApp' },
+    ],
+    verifiedBadge: { label: 'OTP verified', tone: 'success' },
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly addressLabelHidden = signal(false);
+  readonly addressModel = signal<AddressFieldViewModel>({
+    label: 'Residential address',
+    use: 'home',
+    useOptions: [
+      { value: 'home', label: 'Home' },
+      { value: 'work', label: 'Work' },
+      { value: 'temp', label: 'Temp' },
+      { value: 'billing', label: 'Billing' },
+    ],
+    value: {
+      line1: '14 Ansari Nagar East',
+      line2: 'Near AIIMS Metro Gate 2',
+      city: 'New Delhi',
+      district: 'South Delhi',
+      state: 'DL',
+      postalCode: '110029',
+      country: 'IN',
+    },
+    stateOptions: [
+      { value: 'DL', label: 'Delhi (DL)' },
+      { value: 'MH', label: 'Maharashtra (MH)' },
+      { value: 'KA', label: 'Karnataka (KA)' },
+      { value: 'TN', label: 'Tamil Nadu (TN)' },
+    ],
+    countryOptions: [
+      { value: 'IN', label: 'India (IN)' },
+      { value: 'US', label: 'United States (US)' },
+      { value: 'GB', label: 'United Kingdom (GB)' },
+    ],
+    showDistrict: true,
+    clearable: true,
+    required: false,
+    readOnly: false,
+    layout: 'vertical',
+    showMetadata: true,
+    hint: 'Used for patient correspondence, ABHA KYC, and home sample collection',
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly signatureLabelHidden = signal(false);
+
+  readonly defaultAspectPresets = DEFAULT_ASPECT_PRESETS;
+  readonly sampleFundusSrc =
+    'data:image/svg+xml;utf8,' +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="360" height="260" viewBox="0 0 360 260">' +
+        '<rect width="360" height="260" fill="#172026"/>' +
+        '<circle cx="180" cy="130" r="104" fill="#7c2d12" stroke="#f59e0b" stroke-width="3"/>' +
+        '<circle cx="145" cy="126" r="18" fill="#fde68a"/>' +
+        '<path d="M145 126 Q200 84 260 72 M145 126 Q205 172 265 184" stroke="#991b1b" stroke-width="4" fill="none"/>' +
+        '</svg>',
+    );
+  readonly ivGallery: readonly EmrImageItem[] = [
+    {
+      id: 'fundus-od',
+      src: this.sampleFundusSrc,
+      alt: 'Simulated OD colour fundus',
+      caption: 'OD posterior pole — 45° field',
+    },
+    {
+      id: 'fundus-os',
+      src: this.sampleFundusSrc,
+      alt: 'Simulated OS colour fundus',
+      caption: 'OS optic disc — baseline',
+    },
+  ];
+  readonly ivViewport = signal<EmrImageViewportState>({ ...DEFAULT_IMAGE_VIEWPORT });
+  readonly ivActiveIndex = signal(0);
+  readonly ivMultiImage = signal(false);
+  readonly ivAllowFullscreen = signal(true);
+  readonly ivShowThumbnails = signal(true);
+  readonly ivHeight = signal(300);
+  readonly ivLabelHidden = signal(false);
+  readonly ivReadOnly = signal(false);
+  readonly ivDisabled = signal(false);
+  readonly ivWarning = signal('');
+  readonly ivError = signal('');
+
+  readonly icTransform = signal<EmrImageCropTransform>({ ...DEFAULT_IMAGE_CROP_TRANSFORM });
+  readonly icLabelHidden = signal(false);
+  readonly icReadOnly = signal(false);
+  readonly icDisabled = signal(false);
+  readonly icWarning = signal('');
+  readonly icError = signal('');
+
+  readonly iuItems = signal<readonly EmrUploadedImageItem[]>([
+    {
+      id: 'img-fundus-od',
+      name: 'fundus-od-baseline.svg',
+      mimeType: 'image/svg+xml',
+      sizeBytes: 18420,
+      src: this.sampleFundusSrc,
+      caption: 'OD baseline colour fundus',
+    },
+  ]);
+  readonly iuMultiple = signal(true);
+  readonly iuMaxFiles = signal<number | undefined>(undefined);
+  readonly iuAllowCamera = signal(true);
+  readonly iuLabelHidden = signal(false);
+  readonly iuRequired = signal(false);
+  readonly iuReadOnly = signal(false);
+  readonly iuDisabled = signal(false);
+  readonly iuWarning = signal('');
+  readonly iuError = signal('');
+
+  readonly ifLabelHidden = signal(false);
+  readonly ifLayout = signal<FieldFrameLayout>('vertical');
+  readonly ifShowMetadata = signal(true);
+  readonly ifReadOnly = signal(false);
+  readonly imageFieldModel = signal<ImageFieldViewModel>({
+    label: 'Slit-lamp & fundus photographs',
+    hint: 'Upload, inspect fullscreen (pan/zoom/rotate), or crop clinical photos.',
+    items: [
+      {
+        id: 'img-fundus-od',
+        name: 'fundus-od-baseline.svg',
+        mimeType: 'image/svg+xml',
+        sizeBytes: 18420,
+        src: this.sampleFundusSrc,
+        caption: 'OD baseline colour fundus',
+      },
+    ],
+    allowCamera: true,
+    multiple: true,
+    aspectPresets: DEFAULT_ASPECT_PRESETS,
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Media haze / unable', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+
+  onImageFieldIntent(ev: ImageFieldIntent): void {
+    const cur = this.imageFieldModel();
+    let next: ImageFieldViewModel = cur;
+    switch (ev.type) {
+      case 'itemsChangeRequested':
+        next = { ...cur, items: ev.items };
+        break;
+      case 'imageCropped':
+        next = {
+          ...cur,
+          items: cur.items.map((item) =>
+            item.id === ev.id
+              ? {
+                  ...item,
+                  cropTransform: ev.result.transform,
+                  previewSrc: ev.result.croppedDataUrl ?? item.previewSrc ?? item.src,
+                }
+              : item,
+          ),
+        };
+        break;
+      case 'captionChangeRequested':
+        next = {
+          ...cur,
+          items: cur.items.map((item) =>
+            item.id === ev.id ? { ...item, caption: ev.caption } : item,
+          ),
+        };
+        break;
+      case 'itemRemoveRequested':
+        next = { ...cur, items: cur.items.filter((item) => item.id !== ev.id) };
+        break;
+      case 'statusChangeRequested':
+        next = { ...cur, status: ev.status };
+        break;
+      default:
+        break;
+    }
+    this.imageFieldModel.set(next);
+    this.emitState({ ...next, lastIntent: ev });
+  }
+  private readonly macroTextCatalog: readonly EmrMacroSuggestion[] = [
+    {
+      trigger: '.clearcornea',
+      label: 'Clear cornea, deep quiet AC',
+      expansionPreview: 'Cornea clear, anterior chamber deep and quiet, iris normal pattern.',
+      category: 'Anterior',
+    },
+    {
+      trigger: '.normfundus',
+      label: 'Normal fundus examination',
+      expansionPreview: 'Media clear, optic disc pink with sharp margins (CDR 0.3), macula healthy, vessels normal.',
+      category: 'Posterior',
+    },
+    {
+      trigger: '/postopd1',
+      label: 'Post-op Day 1 cataract note',
+      expansionPreview: 'POD1: Wound sealed, cornea clear, AC deep with trace cells, IOL well-centred, IOP 14 mmHg.',
+      category: 'Post-op',
+    },
+  ];
+  readonly macroTextLabelHidden = signal(false);
+  readonly macroTextModel = signal<MacroTextFieldViewModel>({
+    label: 'Anterior segment findings',
+    value: 'Lids and lashes normal. .clearcornea',
+    suggestionsOpen: true,
+    suggestions: this.macroTextCatalog,
+    clearable: true,
+    maxLength: 280,
+    rows: 4,
+    dictating: false,
+    layout: 'vertical',
+    showMetadata: true,
+    required: false,
+    readOnly: false,
+    hint: 'Type . or / to expand clinical SmartPhrases',
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly lateralityLabelHidden = signal(false);
+  readonly lateralityModel = signal<LateralityFieldViewModel>({
+    label: 'Operative site & laterality',
+    domain: 'ophthalmic',
+    value: 'OD',
+    requiresConfirmation: true,
+    confirmed: false,
+    confirmationLabel: 'Operative eye confirmed against consent and biometry',
+    hint: 'Verify laterality before surgical site marking',
+    clearable: true,
+    size: 'md',
+    layout: 'vertical',
+    orientation: 'horizontal',
+    showMetadata: true,
+    required: false,
+    readOnly: false,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'danger' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly visualAcuityLabelHidden = signal(false);
+  readonly visualAcuityModel = signal<VisualAcuityFieldViewModel>({
+    label: 'Distance visual acuity',
+    eye: 'OD',
+    notation: 'snellen-m',
+    notationOptions: [
+      { value: 'snellen-m', label: 'Snellen (6m)' },
+      { value: 'snellen-ft', label: 'Snellen (20ft)' },
+      { value: 'logmar', label: 'LogMAR' },
+      { value: 'etdrs', label: 'ETDRS' },
+      { value: 'low-vision', label: 'Low vision' },
+    ],
+    correction: 'unaided',
+    correctionOptions: [
+      { value: 'unaided', label: 'Unaided' },
+      { value: 'habitual', label: 'Habitual' },
+      { value: 'best-corrected', label: 'BCVA' },
+      { value: 'contact-lens', label: 'CL' },
+    ],
+    value: '6/18',
+    valueOptions: [
+      { value: '6/6', label: '6/6' },
+      { value: '6/9', label: '6/9' },
+      { value: '6/12', label: '6/12' },
+      { value: '6/18', label: '6/18' },
+      { value: '6/24', label: '6/24' },
+      { value: '6/36', label: '6/36' },
+      { value: '6/60', label: '6/60' },
+    ],
+    showPinhole: true,
+    pinholeValue: '6/9',
+    derivedDisplay: 'LogMAR 0.48 (PH 0.18)',
+    derivedTone: 'neutral',
+    hint: 'Record monocular distance acuity and pinhole when < 6/9',
+    clearable: true,
+    size: 'md',
+    layout: 'vertical',
+    showMetadata: true,
+    required: false,
+    readOnly: false,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'danger' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+  });
+  readonly refractionLabelHidden = signal(false);
+  readonly refractionModel = signal<RefractionFieldViewModel>({
+    label: 'Subjective refraction',
+    eye: 'OD',
+    value: { sphere: -2.25, cylinder: -0.75, axis: 95, nearAdd: 2.0 },
+    showNearAdd: true,
+    formattedSummary: '-2.25 / -0.75 × 095°  Add +2.00 D (SE -2.63 D)',
+    hint: 'Enter manifest refraction in minus-cylinder notation',
+    clearable: true,
+    size: 'md',
+    layout: 'vertical',
+    showMetadata: true,
+    required: false,
+    readOnly: false,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'danger' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
+    messages: [],
+  });
+  readonly signatureModel = signal<SignatureCaptureViewModel>({
+    label: 'Patient / guardian consent signature',
+    signatoryName: 'Suresh Menon',
+    signatoryRole: 'Patient',
+    strokes: [
+      {
+        points: [
+          { x: 24, y: 78 },
+          { x: 68, y: 42 },
+          { x: 118, y: 68 },
+          { x: 176, y: 48 },
+        ],
+      },
+    ],
+    hint: 'Sign inside the pad using stylus, mouse, or touch',
+    clearable: true,
+    undoable: true,
+    required: false,
+    readOnly: false,
+    layout: 'vertical',
+    showMetadata: true,
+    status: 'recorded',
+    statusOptions: [
+      { value: 'recorded', label: 'Recorded', tone: 'success' },
+      { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
+      { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+      { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+      { value: 'declined', label: 'Declined', tone: 'warning' },
+      { value: 'unknown', label: 'Unknown', tone: 'neutral' },
+    ],
   });
   readonly colsCount = signal(3);
   readonly colsGap = signal<number | string>(12);
@@ -1204,6 +2346,157 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
   readonly tagLabelHidden = signal(false);
   readonly tagWarning = signal('');
   readonly tagError = signal('');
+  readonly drPresets: readonly EmrDateRangePreset[] = [
+    { id: '7d', label: 'Last 7 days', range: { start: '2026-03-08', end: '2026-03-15' } },
+    { id: '30d', label: 'Last 30 days', range: { start: '2026-02-14', end: '2026-03-15' } },
+  ];
+  readonly drValue = signal<EmrDateRangeValue | null>({ start: '2026-03-08', end: '2026-03-15' });
+  readonly drMode = signal<'date' | 'datetime'>('date');
+  readonly drSize = signal<'sm' | 'md' | 'lg'>('md');
+  readonly drVariant = signal<'outline' | 'filled' | 'subtle'>('outline');
+  readonly drWeekStartsOn = signal<0 | 1>(0);
+  readonly drShowCalendar = signal(true);
+  readonly drClearable = signal(true);
+  readonly drRequired = signal(false);
+  readonly drReadOnly = signal(false);
+  readonly drDisabled = signal(false);
+  readonly drInvalid = signal(false);
+  readonly drLabelHidden = signal(false);
+  readonly drWarning = signal('');
+  readonly drError = signal('');
+  readonly sliderMarks = [
+    { value: 0, label: '0%' },
+    { value: 50, label: '50%' },
+    { value: 100, label: '100%' },
+  ];
+  readonly sliderValue = signal<number | null>(65);
+  readonly sliderSize = signal<'sm' | 'md' | 'lg'>('md');
+  readonly sliderTone = signal<'neutral' | 'info' | 'success' | 'warning' | 'danger'>('neutral');
+  readonly sliderShowValue = signal(true);
+  readonly sliderShowSteppers = signal(false);
+  readonly sliderClearable = signal(true);
+  readonly sliderRequired = signal(false);
+  readonly sliderReadOnly = signal(false);
+  readonly sliderDisabled = signal(false);
+  readonly sliderInvalid = signal(false);
+  readonly sliderLabelHidden = signal(false);
+  readonly sliderWarning = signal('');
+  readonly sliderError = signal('');
+  readonly rangeSliderMarks = [
+    { value: 6, label: '6' },
+    { value: 16, label: '16' },
+    { value: 22, label: '22' },
+    { value: 30, label: '30' },
+  ];
+  readonly rangeSliderValue = signal<readonly [number, number] | null>([10, 16]);
+  readonly rangeSliderSize = signal<'sm' | 'md' | 'lg'>('md');
+  readonly rangeSliderTone = signal<'neutral' | 'info' | 'success' | 'warning' | 'danger'>('neutral');
+  readonly rangeSliderShowValue = signal(true);
+  readonly rangeSliderClearable = signal(false);
+  readonly rangeSliderRequired = signal(false);
+  readonly rangeSliderReadOnly = signal(false);
+  readonly rangeSliderDisabled = signal(false);
+  readonly rangeSliderInvalid = signal(false);
+  readonly rangeSliderLabelHidden = signal(false);
+  readonly rangeSliderWarning = signal('');
+  readonly rangeSliderError = signal('');
+  readonly maskedValue = signal<string | null>('91-2847-5510-3921');
+  readonly maskedSize = signal<'sm' | 'md' | 'lg'>('md');
+  readonly maskedVariant = signal<'outline' | 'filled' | 'subtle'>('outline');
+  readonly maskedUnmask = signal(false);
+  readonly maskedShowHint = signal(false);
+  readonly maskedUppercase = signal(false);
+  readonly maskedClearable = signal(true);
+  readonly maskedRequired = signal(false);
+  readonly maskedReadOnly = signal(false);
+  readonly maskedDisabled = signal(false);
+  readonly maskedInvalid = signal(false);
+  readonly maskedLabelHidden = signal(false);
+  readonly maskedWarning = signal('');
+  readonly maskedError = signal('');
+  readonly otpValue = signal('482910');
+  readonly otpSecret = signal(false);
+  readonly otpNumericOnly = signal(true);
+  readonly otpUppercase = signal(false);
+  readonly otpSeparatorAfter = signal(3);
+  readonly otpSize = signal<'sm' | 'md' | 'lg'>('md');
+  readonly otpVariant = signal<'outline' | 'filled' | 'subtle'>('outline');
+  readonly otpClearable = signal(true);
+  readonly otpRequired = signal(false);
+  readonly otpReadOnly = signal(false);
+  readonly otpDisabled = signal(false);
+  readonly otpInvalid = signal(false);
+  readonly otpLabelHidden = signal(false);
+  readonly otpWarning = signal('');
+  readonly otpError = signal('');
+  readonly encounterMenuItems: readonly EmrMenuItem[] = [
+    { id: 'print-rx', label: 'Print prescription', shortcut: '⌘P' },
+    { id: 'export-fhir', label: 'Export FHIR Bundle' },
+    { id: 'strike-out', label: 'Mark entered-in-error', dividerBefore: true, tone: 'danger' },
+  ];
+  readonly menuVariant = signal<'outline' | 'primary' | 'secondary' | 'ghost'>('outline');
+  readonly menuSize = signal<'md' | 'sm'>('md');
+  readonly menuAlign = signal<'start' | 'end'>('start');
+  readonly menuReadOnly = signal(false);
+  readonly menuDisabled = signal(false);
+  readonly signMenuItems: readonly EmrMenuItem[] = [
+    { id: 'sign-lock', label: 'Sign & lock encounter' },
+    { id: 'cosign', label: 'Request consultant co-sign' },
+    { id: 'draft', label: 'Save unsigned draft' },
+  ];
+  readonly splitVariant = signal<'primary' | 'secondary' | 'outline' | 'danger'>('primary');
+  readonly splitSize = signal<'sm' | 'md' | 'lg'>('md');
+  readonly splitAlign = signal<'start' | 'end'>('end');
+  readonly splitLoading = signal(false);
+  readonly splitReadOnly = signal(false);
+  readonly splitDisabled = signal(false);
+  readonly postopAccordionItems: readonly EmrAccordionItem[] = [
+    {
+      id: 'drops',
+      title: 'Post-operative cataract drop taper',
+      subtitle: 'Weeks 1–4 topical schedule',
+      badge: { label: 'Standard', tone: 'info' },
+      content: 'Prednisolone acetate 1% 6x/day week 1, 4x/day week 2, 2x/day week 3, 1x/day week 4.',
+    },
+    {
+      id: 'rsvp',
+      title: 'Emergency return precautions (RSVP)',
+      subtitle: 'Redness, Sensitivity, Vision drop, Pain',
+      content: 'Return immediately to 24h eye casualty if pain worsens or vision drops.',
+    },
+  ];
+  readonly accordionExpandedIds = signal<readonly string[]>(['drops']);
+  readonly accordionMultiple = signal(true);
+  readonly accordionVariant = signal<'outlined' | 'flush' | 'card'>('outlined');
+  readonly accordionSize = signal<'sm' | 'md'>('md');
+  readonly accordionReadOnly = signal(false);
+  readonly accordionDisabled = signal(false);
+  readonly clinicBreadcrumbs: readonly EmrBreadcrumbItem[] = [
+    { id: 'clinic', label: 'Outpatient Clinic' },
+    { id: 'retina', label: 'Retina Service' },
+    { id: 'patient', label: 'MRN-2026-0419' },
+    { id: 'oct', label: 'Macular OCT' },
+  ];
+  readonly breadcrumbsMaxItems = signal(3);
+  readonly breadcrumbsSeparator = signal('/');
+  readonly breadcrumbsSize = signal<'sm' | 'md'>('md');
+  readonly clinicalColorSwatches: readonly EmrColorSwatch[] = DEFAULT_CLINICAL_COLOR_SWATCHES;
+  readonly colorPickerValue = signal<string | null>('#dc2626');
+  readonly colorPickerAllowCustomHex = signal(true);
+  readonly colorPickerClearable = signal(true);
+  readonly colorPickerSize = signal<'sm' | 'md'>('md');
+  readonly colorPickerRequired = signal(false);
+  readonly colorPickerReadOnly = signal(false);
+  readonly colorPickerDisabled = signal(false);
+  readonly colorPickerInvalid = signal(false);
+  readonly colorPickerLabelHidden = signal(false);
+  readonly colorPickerWarning = signal('');
+  readonly colorPickerError = signal('');
+  readonly copyButtonVariant = signal<'outline' | 'primary' | 'secondary' | 'ghost'>('outline');
+  readonly copyButtonSize = signal<'sm' | 'md' | 'lg'>('sm');
+  readonly copyButtonIconOnly = signal(false);
+  readonly copyButtonDisabled = signal(false);
+  readonly copyButtonCount = signal(0);
   readonly comboOptions: readonly EmrOption[] = [
     {
       value: 'Reduced distance vision',
@@ -1601,6 +2894,376 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
     }
   }
 
+  onPairedIntent(ev: PairedFieldIntent): void {
+    const cur = this.pairedModel();
+    const curVal = cur.value ?? { first: null, second: null };
+    if (ev.type === 'firstChangeRequested') {
+      const nextVal = { ...curVal, first: ev.value };
+      this.pairedModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'secondChangeRequested') {
+      const nextVal = { ...curVal, second: ev.value };
+      this.pairedModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'clearRequested') {
+      const nextVal = { first: null, second: null };
+      this.pairedModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.pairedModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onDurationIntent(ev: DurationFieldIntent): void {
+    const cur = this.durationModel();
+    const curVal = cur.value ?? { amount: null, unit: cur.unitOptions[0]?.value ?? 'd' };
+    if (ev.type === 'amountChangeRequested') {
+      const nextVal = { ...curVal, amount: ev.amount };
+      this.durationModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'unitChangeRequested') {
+      const nextVal = { ...curVal, unit: ev.unit };
+      this.durationModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'clearRequested') {
+      this.durationModel.set({ ...cur, value: null });
+      this.emitState({ value: null });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.durationModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onRangeIntent(ev: RangeFieldIntent): void {
+    const cur = this.rangeModel();
+    const curVal = cur.value ?? { low: null, high: null };
+    if (ev.type === 'lowChangeRequested') {
+      const nextVal = { ...curVal, low: ev.low };
+      this.rangeModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'highChangeRequested') {
+      const nextVal = { ...curVal, high: ev.high };
+      this.rangeModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'rangeChangeRequested') {
+      this.rangeModel.set({ ...cur, value: ev.value });
+      this.emitState({ value: ev.value });
+    } else if (ev.type === 'clearRequested') {
+      this.rangeModel.set({ ...cur, value: null });
+      this.emitState({ value: null });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.rangeModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onPhoneIntent(ev: PhoneFieldIntent): void {
+    const cur = this.phoneModel();
+    const formatPreview = (cc: string, num: string, ext?: string) =>
+      num ? `${cc} ${num}${ext ? ` ext. ${ext}` : ''}` : '';
+    if (ev.type === 'countryCodeChangeRequested') {
+      const formattedPreview = formatPreview(ev.countryCode, cur.nationalNumber, cur.extension);
+      this.phoneModel.set({ ...cur, countryCode: ev.countryCode, formattedPreview });
+      this.emitState({ countryCode: ev.countryCode, formattedPreview });
+    } else if (ev.type === 'numberChangeRequested') {
+      const formattedPreview = formatPreview(cur.countryCode, ev.nationalNumber, cur.extension);
+      this.phoneModel.set({ ...cur, nationalNumber: ev.nationalNumber, formattedPreview });
+      this.emitState({ nationalNumber: ev.nationalNumber, formattedPreview });
+    } else if (ev.type === 'extensionChangeRequested') {
+      const formattedPreview = formatPreview(cur.countryCode, cur.nationalNumber, ev.extension);
+      this.phoneModel.set({ ...cur, extension: ev.extension, formattedPreview });
+      this.emitState({ extension: ev.extension, formattedPreview });
+    } else if (ev.type === 'channelToggleRequested') {
+      const list = cur.channels ?? [];
+      const nextChannels: readonly EmrPhoneChannel[] = list.includes(ev.channel)
+        ? list.filter((c) => c !== ev.channel)
+        : [...list, ev.channel];
+      this.phoneModel.set({ ...cur, channels: nextChannels });
+      this.emitState({ channels: nextChannels });
+    } else if (ev.type === 'clearRequested') {
+      this.phoneModel.set({ ...cur, nationalNumber: '', extension: '', formattedPreview: '' });
+      this.emitState({ nationalNumber: '', extension: '', formattedPreview: '' });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.phoneModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onAddressIntent(ev: AddressFieldIntent): void {
+    const cur = this.addressModel();
+    if (ev.type === 'fieldChangeRequested') {
+      const nextVal = { ...cur.value, [ev.part]: ev.value };
+      this.addressModel.set({ ...cur, value: nextVal });
+      this.emitState({ value: nextVal });
+    } else if (ev.type === 'useChangeRequested') {
+      this.addressModel.set({ ...cur, use: ev.use });
+      this.emitState({ use: ev.use });
+    } else if (ev.type === 'cleared') {
+      const clearedVal = {
+        line1: '',
+        line2: '',
+        city: '',
+        district: '',
+        state: '',
+        postalCode: '',
+        country: '',
+      };
+      this.addressModel.set({ ...cur, value: clearedVal });
+      this.emitState({ value: clearedVal });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.addressModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onMacroTextIntent(ev: MacroTextFieldIntent): void {
+    const cur = this.macroTextModel();
+    if (ev.type === 'valueChangeRequested') {
+      this.macroTextModel.set({ ...cur, value: ev.value });
+      this.emitState({ value: ev.value });
+    } else if (ev.type === 'macroQueryRequested') {
+      const q = ev.trigger.toLowerCase();
+      const suggestions = this.macroTextCatalog.filter((m) =>
+        q === '.' || q === '/'
+          ? m.trigger.toLowerCase().startsWith(q)
+          : m.trigger.toLowerCase().includes(q) || m.label.toLowerCase().includes(q),
+      );
+      this.macroTextModel.set({ ...cur, suggestions, suggestionsOpen: true });
+      this.emitState({ suggestions, suggestionsOpen: true });
+    } else if (ev.type === 'macroSelected') {
+      const chosen = this.macroTextCatalog.find((m) => m.trigger === ev.trigger);
+      const expansion = chosen ? chosen.expansionPreview : ev.trigger;
+      const next = expandMacroTriggerAtCursor(cur.value, cur.value.length, expansion);
+      this.macroTextModel.set({
+        ...cur,
+        value: next.value,
+        suggestions: this.macroTextCatalog,
+        suggestionsOpen: false,
+      });
+      this.emitState({ value: next.value, suggestions: this.macroTextCatalog, suggestionsOpen: false });
+    } else if (ev.type === 'macroDismissRequested') {
+      this.macroTextModel.set({ ...cur, suggestionsOpen: false });
+      this.emitState({ suggestionsOpen: false });
+    } else if (ev.type === 'dictationToggleRequested') {
+      const dictating = !cur.dictating;
+      this.macroTextModel.set({ ...cur, dictating });
+      this.emitState({ dictating });
+    } else if (ev.type === 'clearRequested') {
+      this.macroTextModel.set({
+        ...cur,
+        value: '',
+        suggestions: this.macroTextCatalog,
+        suggestionsOpen: false,
+      });
+      this.emitState({ value: '', suggestions: this.macroTextCatalog, suggestionsOpen: false });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.macroTextModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onLateralityIntent(ev: LateralityFieldIntent): void {
+    const cur = this.lateralityModel();
+    if (ev.type === 'lateralitySelected') {
+      this.lateralityModel.set({ ...cur, value: ev.code, confirmed: false });
+      this.emitState({ value: ev.code, confirmed: false });
+    } else if (ev.type === 'confirmationChangeRequested') {
+      this.lateralityModel.set({ ...cur, confirmed: ev.confirmed });
+      this.emitState({ confirmed: ev.confirmed });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.lateralityModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onVisualAcuityIntent(ev: VisualAcuityFieldIntent): void {
+    const cur = this.visualAcuityModel();
+    const chartMap: Record<
+      VisualAcuityFieldViewModel['notation'],
+      {
+        readonly options: VisualAcuityFieldViewModel['valueOptions'];
+        readonly value: string;
+        readonly pinhole: string | null;
+        readonly derived: string;
+      }
+    > = {
+      'snellen-m': {
+        options: [
+          { value: '6/6', label: '6/6' },
+          { value: '6/9', label: '6/9' },
+          { value: '6/12', label: '6/12' },
+          { value: '6/18', label: '6/18' },
+          { value: '6/24', label: '6/24' },
+          { value: '6/36', label: '6/36' },
+          { value: '6/60', label: '6/60' },
+        ],
+        value: '6/18',
+        pinhole: '6/9',
+        derived: 'LogMAR 0.48 (PH 0.18)',
+      },
+      'snellen-ft': {
+        options: [
+          { value: '20/20', label: '20/20' },
+          { value: '20/30', label: '20/30' },
+          { value: '20/40', label: '20/40' },
+          { value: '20/60', label: '20/60' },
+          { value: '20/80', label: '20/80' },
+          { value: '20/200', label: '20/200' },
+        ],
+        value: '20/60',
+        pinhole: '20/30',
+        derived: 'Snellen 6/18 (LogMAR 0.48)',
+      },
+      logmar: {
+        options: [
+          { value: '0.00', label: '0.00' },
+          { value: '0.18', label: '0.18' },
+          { value: '0.30', label: '0.30' },
+          { value: '0.48', label: '0.48' },
+          { value: '0.60', label: '0.60' },
+          { value: '1.00', label: '1.00' },
+        ],
+        value: '0.48',
+        pinhole: '0.18',
+        derived: 'Snellen 6/18 (20/60)',
+      },
+      etdrs: {
+        options: [
+          { value: '85', label: '85 letters' },
+          { value: '75', label: '75 letters' },
+          { value: '70', label: '70 letters' },
+          { value: '61', label: '61 letters' },
+          { value: '55', label: '55 letters' },
+          { value: '35', label: '35 letters' },
+        ],
+        value: '61',
+        pinhole: '75',
+        derived: 'Snellen 6/18 (LogMAR 0.48)',
+      },
+      'low-vision': {
+        options: [
+          { value: 'CF-3m', label: 'CF 3m' },
+          { value: 'CF-1m', label: 'CF 1m' },
+          { value: 'HM', label: 'HM' },
+          { value: 'LP', label: 'LP' },
+          { value: 'NLP', label: 'NLP' },
+        ],
+        value: 'CF-3m',
+        pinhole: null,
+        derived: 'WHO Low Vision (LogMAR > 1.3)',
+      },
+    };
+    if (ev.type === 'notationChangeRequested') {
+      const preset = chartMap[ev.notation];
+      const next: VisualAcuityFieldViewModel = {
+        ...cur,
+        notation: ev.notation,
+        valueOptions: preset.options,
+        value: preset.value,
+        pinholeValue: cur.showPinhole ? preset.pinhole : null,
+        derivedDisplay: preset.derived,
+      };
+      this.visualAcuityModel.set(next);
+      this.emitState({
+        notation: next.notation,
+        valueOptions: next.valueOptions,
+        value: next.value,
+        pinholeValue: next.pinholeValue,
+        derivedDisplay: next.derivedDisplay,
+      });
+    } else if (ev.type === 'correctionChangeRequested') {
+      this.visualAcuityModel.set({ ...cur, correction: ev.correction });
+      this.emitState({ correction: ev.correction });
+    } else if (ev.type === 'valueChangeRequested') {
+      const derivedDisplay = ev.value
+        ? `${cur.notation.toUpperCase()} ${ev.value}${cur.pinholeValue ? ` (PH ${cur.pinholeValue})` : ''}`
+        : undefined;
+      this.visualAcuityModel.set({ ...cur, value: ev.value, derivedDisplay });
+      this.emitState({ value: ev.value, derivedDisplay });
+    } else if (ev.type === 'pinholeChangeRequested') {
+      const derivedDisplay = cur.value
+        ? `${cur.notation.toUpperCase()} ${cur.value}${ev.value ? ` (PH ${ev.value})` : ''}`
+        : cur.derivedDisplay;
+      this.visualAcuityModel.set({ ...cur, pinholeValue: ev.value, derivedDisplay });
+      this.emitState({ pinholeValue: ev.value, derivedDisplay });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.visualAcuityModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
+  onRefractionIntent(ev: RefractionFieldIntent): void {
+    const cur = this.refractionModel();
+    if (ev.type === 'statusChangeRequested') {
+      this.refractionModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+      return;
+    }
+
+    const nextValue: RefractionFieldViewModel['value'] =
+      ev.type === 'clearRequested'
+        ? { sphere: null, cylinder: null, axis: null, nearAdd: null }
+        : ev.type === 'sphereChangeRequested'
+          ? { ...cur.value, sphere: ev.sphere }
+          : ev.type === 'cylinderChangeRequested'
+            ? { ...cur.value, cylinder: ev.cylinder }
+            : ev.type === 'axisChangeRequested'
+              ? { ...cur.value, axis: ev.axis }
+              : { ...cur.value, nearAdd: ev.nearAdd };
+
+    const fmtSigned = (n: number | null | undefined) => {
+      if (n === null || n === undefined) return '—';
+      const fixed = Math.abs(n) < 0.005 ? '0.00' : n.toFixed(2);
+      return n > 0 ? `+${fixed}` : fixed;
+    };
+    const hasAny =
+      nextValue.sphere !== null ||
+      nextValue.cylinder !== null ||
+      nextValue.axis !== null ||
+      (cur.showNearAdd && nextValue.nearAdd != null);
+    const formattedSummary = hasAny
+      ? `${fmtSigned(nextValue.sphere)}${nextValue.cylinder !== null ? ` / ${fmtSigned(nextValue.cylinder)}` : ''}${nextValue.axis !== null ? ` × ${String(Math.round(nextValue.axis)).padStart(3, '0')}°` : ''}${cur.showNearAdd && nextValue.nearAdd != null ? `  Add ${fmtSigned(nextValue.nearAdd)} D` : ''}${nextValue.sphere !== null ? ` (SE ${fmtSigned(nextValue.sphere + (nextValue.cylinder ?? 0) / 2)} D)` : ''}`
+      : undefined;
+
+    const messages: NonNullable<RefractionFieldViewModel['messages']>[number][] = [];
+    if (nextValue.sphere !== null && (nextValue.sphere < -30 || nextValue.sphere > 30)) {
+      messages.push({ path: ['sphere'], severity: 'error', message: 'Sphere must be between -30.00 and +30.00 D.' });
+    } else if (nextValue.sphere !== null && nextValue.sphere <= -6) {
+      messages.push({ path: ['sphere'], severity: 'warning', message: 'High myopia (>= 6.00 D) — verify retinal exam.' });
+    }
+    if (nextValue.cylinder !== null && (nextValue.cylinder < -15 || nextValue.cylinder > 15)) {
+      messages.push({ path: ['cylinder'], severity: 'error', message: 'Cylinder must be between -15.00 and +15.00 D.' });
+    }
+    if (nextValue.cylinder !== null && nextValue.cylinder !== 0 && nextValue.axis === null) {
+      messages.push({ path: ['axis'], severity: 'error', message: 'Axis is required when cylinder is non-zero.' });
+    } else if (nextValue.axis !== null && (nextValue.axis < 1 || nextValue.axis > 180)) {
+      messages.push({ path: ['axis'], severity: 'error', message: 'Axis must be between 1° and 180°.' });
+    }
+
+    this.refractionModel.set({ ...cur, value: nextValue, formattedSummary, messages });
+    this.emitState({ value: nextValue, formattedSummary, messages });
+  }
+
+  onSignatureIntent(ev: SignatureCaptureIntent): void {
+    const cur = this.signatureModel();
+    if (ev.type === 'strokeAdded') {
+      const nextStrokes = [...cur.strokes, ev.stroke];
+      this.signatureModel.set({ ...cur, strokes: nextStrokes });
+      this.emitState({ strokes: nextStrokes });
+    } else if (ev.type === 'undoRequested') {
+      const nextStrokes = cur.strokes.slice(0, -1);
+      this.signatureModel.set({ ...cur, strokes: nextStrokes });
+      this.emitState({ strokes: nextStrokes });
+    } else if (ev.type === 'clearRequested') {
+      this.signatureModel.set({ ...cur, strokes: [] });
+      this.emitState({ strokes: [] });
+    } else if (ev.type === 'statusChangeRequested') {
+      this.signatureModel.set({ ...cur, status: ev.status });
+      this.emitState({ status: ev.status });
+    }
+  }
+
   private readonly onMessage = (event: MessageEvent) => {
     const data = event.data as {
       type?: string;
@@ -1723,6 +3386,91 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
       if (typeof s['labelHidden'] === 'boolean') this.cbgLabelHidden.set(s['labelHidden']);
       if (typeof s['warning'] === 'string') this.cbgWarning.set(s['warning']);
       if (typeof s['error'] === 'string') this.cbgError.set(s['error']);
+    } else if (sel === 'emr-toggle-group') {
+      if (Array.isArray(s['values'])) this.tgValues.set(s['values'] as readonly string[]);
+      else if (Array.isArray(s['value'])) this.tgValues.set(s['value'] as readonly string[]);
+      if (typeof s['multiple'] === 'boolean') this.tgMultiple.set(s['multiple']);
+      if (typeof s['allowEmpty'] === 'boolean') this.tgAllowEmpty.set(s['allowEmpty']);
+      if (s['variant'] === 'tile' || s['variant'] === 'inline' || s['variant'] === 'card') {
+        this.tgVariant.set(s['variant']);
+      } else if (s['variant'] === 'standard') {
+        this.tgVariant.set('tile');
+      }
+      if (s['size'] === 'md' || s['size'] === 'sm') this.tgSize.set(s['size']);
+      if (s['orientation'] === 'vertical' || s['orientation'] === 'horizontal' || s['orientation'] === 'grid') {
+        this.tgOrientation.set(s['orientation']);
+      }
+      if (typeof s['columns'] === 'number') this.tgColumns.set(s['columns']);
+      if (s['labelPlacement'] === 'end' || s['labelPlacement'] === 'start' || s['labelPlacement'] === 'space-between') {
+        this.tgLabelPlacement.set(s['labelPlacement']);
+      }
+      if (typeof s['showStateLabels'] === 'boolean') this.tgShowStateLabels.set(s['showStateLabels']);
+      if (typeof s['showSelectAll'] === 'boolean') this.tgShowSelectAll.set(s['showSelectAll']);
+      if (typeof s['showSelectionCount'] === 'boolean') this.tgShowSelectionCount.set(s['showSelectionCount']);
+      if (typeof s['clearable'] === 'boolean') this.tgClearable.set(s['clearable']);
+      if (typeof s['maxSelections'] === 'number' || s['maxSelections'] === undefined) {
+        this.tgMaxSelections.set(s['maxSelections'] as number | undefined);
+      }
+      if (typeof s['required'] === 'boolean') this.tgRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.tgReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.tgDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.tgInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.tgLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.tgWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.tgError.set(s['error']);
+    } else if (sel === 'emr-tree-view') {
+      if ('value' in s) this.tvValue.set((s['value'] as string | null) ?? null);
+      if (Array.isArray(s['values'])) this.tvValues.set(s['values'] as readonly string[]);
+      if (Array.isArray(s['expandedIds'])) this.tvExpandedIds.set(s['expandedIds'] as readonly string[]);
+      if (typeof s['multiple'] === 'boolean') this.tvMultiple.set(s['multiple']);
+      if (s['checkStrategy'] === 'cascade' || s['checkStrategy'] === 'all' || s['checkStrategy'] === 'leaf') {
+        this.tvCheckStrategy.set(s['checkStrategy']);
+      }
+      if (s['size'] === 'md' || s['size'] === 'sm') this.tvSize.set(s['size']);
+      if (typeof s['searchable'] === 'boolean') this.tvSearchable.set(s['searchable']);
+      if (typeof s['showExpandControls'] === 'boolean') this.tvShowExpandControls.set(s['showExpandControls']);
+      if (typeof s['clearable'] === 'boolean') this.tvClearable.set(s['clearable']);
+      if (typeof s['maxSelections'] === 'number' || s['maxSelections'] === undefined) {
+        this.tvMaxSelections.set(s['maxSelections'] as number | undefined);
+      }
+      if (typeof s['required'] === 'boolean') this.tvRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.tvReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.tvDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.tvInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.tvLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.tvWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.tvError.set(s['error']);
+    } else if (sel === 'emr-tree-select') {
+      if ('value' in s) this.tsValue.set((s['value'] as string | null) ?? null);
+      if (Array.isArray(s['values'])) this.tsValues.set(s['values'] as readonly string[]);
+      if (typeof s['multiple'] === 'boolean') this.tsMultiple.set(s['multiple']);
+      if (s['checkStrategy'] === 'cascade' || s['checkStrategy'] === 'all' || s['checkStrategy'] === 'leaf') {
+        this.tsCheckStrategy.set(s['checkStrategy']);
+      }
+      if (s['displayMode'] === 'path' || s['displayMode'] === 'leaf') {
+        this.tsDisplayMode.set(s['displayMode']);
+      }
+      if (s['variant'] === 'outline' || s['variant'] === 'filled' || s['variant'] === 'subtle') {
+        this.tsVariant.set(s['variant']);
+      }
+      if (s['size'] === 'md' || s['size'] === 'sm') this.tsSize.set(s['size']);
+      if (typeof s['searchable'] === 'boolean') this.tsSearchable.set(s['searchable']);
+      if (typeof s['showExpandControls'] === 'boolean') this.tsShowExpandControls.set(s['showExpandControls']);
+      if (typeof s['clearable'] === 'boolean') this.tsClearable.set(s['clearable']);
+      if (typeof s['maxTagCount'] === 'number' || s['maxTagCount'] === undefined) {
+        this.tsMaxTagCount.set(s['maxTagCount'] as number | undefined);
+      }
+      if (typeof s['maxSelections'] === 'number' || s['maxSelections'] === undefined) {
+        this.tsMaxSelections.set(s['maxSelections'] as number | undefined);
+      }
+      if (typeof s['loading'] === 'boolean') this.tsLoading.set(s['loading']);
+      if (typeof s['required'] === 'boolean') this.tsRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.tsReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.tsDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.tsInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.tsLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.tsWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.tsError.set(s['error']);
     } else if (sel === 'emr-segmented-control') {
       if ('value' in s) this.segVal.set((s['value'] as string | null) ?? null);
       if (Array.isArray(s['options'])) this.segOptions.set(s['options'] as readonly EmrSegmentedOption[]);
@@ -1981,6 +3729,347 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
         status: typeof s['status'] === 'string' ? (s['status'] as AttachmentFieldViewModel['status']) : undefined,
       });
       if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-paired-field') {
+      const cur = this.pairedModel();
+      this.pairedModel.set({
+        ...cur,
+        value: 'value' in s ? ((s['value'] as PairedFieldViewModel['value']) ?? null) : cur.value,
+        mode: s['mode'] === 'text' || s['mode'] === 'decimal' || s['mode'] === 'integer' ? s['mode'] : cur.mode,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        layout: s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline' ? s['layout'] : cur.layout,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        status: typeof s['status'] === 'string' ? (s['status'] as PairedFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.pairedLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-duration-input') {
+      const cur = this.durationModel();
+      this.durationModel.set({
+        ...cur,
+        value: 'value' in s ? ((s['value'] as DurationFieldViewModel['value']) ?? null) : cur.value,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        layout: s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline' ? s['layout'] : cur.layout,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        showSteppers: typeof s['showSteppers'] === 'boolean' ? s['showSteppers'] : cur.showSteppers,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        labelHidden: typeof s['labelHidden'] === 'boolean' ? s['labelHidden'] : cur.labelHidden,
+        status: typeof s['status'] === 'string' ? (s['status'] as DurationFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.durationLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-range-field') {
+      const cur = this.rangeModel();
+      this.rangeModel.set({
+        ...cur,
+        kind:
+          s['kind'] === 'number' || s['kind'] === 'date' || s['kind'] === 'time' || s['kind'] === 'datetime'
+            ? s['kind']
+            : cur.kind,
+        value: 'value' in s ? ((s['value'] as RangeFieldViewModel['value']) ?? null) : cur.value,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        showSteppers: typeof s['showSteppers'] === 'boolean' ? s['showSteppers'] : cur.showSteppers,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages']) ? (s['messages'] as RangeFieldViewModel['messages']) : cur.messages,
+        status: typeof s['status'] === 'string' ? (s['status'] as RangeFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.rangeLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-phone-input') {
+      const cur = this.phoneModel();
+      this.phoneModel.set({
+        ...cur,
+        countryCode: typeof s['countryCode'] === 'string' ? s['countryCode'] : cur.countryCode,
+        nationalNumber: typeof s['nationalNumber'] === 'string' ? s['nationalNumber'] : cur.nationalNumber,
+        extension: 'extension' in s ? (typeof s['extension'] === 'string' ? s['extension'] : undefined) : cur.extension,
+        showExtension: typeof s['showExtension'] === 'boolean' ? s['showExtension'] : cur.showExtension,
+        channels: Array.isArray(s['channels']) ? (s['channels'] as EmrPhoneChannel[]) : cur.channels,
+        formattedPreview: typeof s['formattedPreview'] === 'string' ? s['formattedPreview'] : cur.formattedPreview,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages']) ? (s['messages'] as PhoneFieldViewModel['messages']) : cur.messages,
+        status: typeof s['status'] === 'string' ? (s['status'] as PhoneFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.phoneLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-address-field') {
+      const cur = this.addressModel();
+      this.addressModel.set({
+        ...cur,
+        use:
+          s['use'] === 'home' || s['use'] === 'work' || s['use'] === 'temp' || s['use'] === 'billing'
+            ? s['use']
+            : cur.use,
+        value:
+          s['value'] && typeof s['value'] === 'object'
+            ? (s['value'] as AddressFieldViewModel['value'])
+            : cur.value,
+        showDistrict: typeof s['showDistrict'] === 'boolean' ? s['showDistrict'] : cur.showDistrict,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages']) ? (s['messages'] as AddressFieldViewModel['messages']) : cur.messages,
+        status: typeof s['status'] === 'string' ? (s['status'] as AddressFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.addressLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-macro-text-field') {
+      const cur = this.macroTextModel();
+      this.macroTextModel.set({
+        ...cur,
+        value: typeof s['value'] === 'string' ? s['value'] : cur.value,
+        suggestionsOpen: typeof s['suggestionsOpen'] === 'boolean' ? s['suggestionsOpen'] : cur.suggestionsOpen,
+        suggestions: Array.isArray(s['suggestions']) ? (s['suggestions'] as EmrMacroSuggestion[]) : cur.suggestions,
+        dictating: typeof s['dictating'] === 'boolean' ? s['dictating'] : cur.dictating,
+        dictationEnabled:
+          typeof s['dictationEnabled'] === 'boolean' ? s['dictationEnabled'] : cur.dictationEnabled,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        rows: typeof s['rows'] === 'number' ? s['rows'] : cur.rows,
+        maxLength: typeof s['maxLength'] === 'number' ? s['maxLength'] : cur.maxLength,
+        showCounter: typeof s['showCounter'] === 'boolean' ? s['showCounter'] : cur.showCounter,
+        autoResize: typeof s['autoResize'] === 'boolean' ? s['autoResize'] : cur.autoResize,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages']) ? (s['messages'] as MacroTextFieldViewModel['messages']) : cur.messages,
+        status: typeof s['status'] === 'string' ? (s['status'] as MacroTextFieldViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.macroTextLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-laterality-field') {
+      const cur = this.lateralityModel();
+      this.lateralityModel.set({
+        ...cur,
+        domain:
+          s['domain'] === 'ophthalmic' || s['domain'] === 'anatomic' || s['domain'] === 'anatomical'
+            ? s['domain']
+            : cur.domain,
+        value:
+          'value' in s
+            ? (s['value'] as LateralityFieldViewModel['value'])
+            : cur.value,
+        options: Array.isArray(s['options'])
+          ? (s['options'] as LateralityFieldViewModel['options'])
+          : undefined,
+        requiresConfirmation:
+          typeof s['requiresConfirmation'] === 'boolean'
+            ? s['requiresConfirmation']
+            : cur.requiresConfirmation,
+        confirmed: typeof s['confirmed'] === 'boolean' ? s['confirmed'] : cur.confirmed,
+        confirmationLabel:
+          typeof s['confirmationLabel'] === 'string'
+            ? s['confirmationLabel']
+            : cur.confirmationLabel,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        orientation:
+          s['orientation'] === 'horizontal' || s['orientation'] === 'vertical'
+            ? s['orientation']
+            : cur.orientation,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages'])
+          ? (s['messages'] as LateralityFieldViewModel['messages'])
+          : cur.messages,
+        status:
+          typeof s['status'] === 'string'
+            ? (s['status'] as LateralityFieldViewModel['status'])
+            : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.lateralityLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-visual-acuity-field') {
+      const cur = this.visualAcuityModel();
+      this.visualAcuityModel.set({
+        ...cur,
+        eye:
+          s['eye'] === 'OD' || s['eye'] === 'OS' || s['eye'] === 'OU'
+            ? s['eye']
+            : cur.eye,
+        notation:
+          s['notation'] === 'snellen-m' ||
+          s['notation'] === 'snellen-ft' ||
+          s['notation'] === 'logmar' ||
+          s['notation'] === 'etdrs' ||
+          s['notation'] === 'low-vision'
+            ? s['notation']
+            : cur.notation,
+        correction:
+          s['correction'] === 'unaided' ||
+          s['correction'] === 'habitual' ||
+          s['correction'] === 'best-corrected' ||
+          s['correction'] === 'contact-lens'
+            ? s['correction']
+            : cur.correction,
+        value: 'value' in s ? (s['value'] as VisualAcuityFieldViewModel['value']) : cur.value,
+        valueOptions: Array.isArray(s['valueOptions'])
+          ? (s['valueOptions'] as VisualAcuityFieldViewModel['valueOptions'])
+          : cur.valueOptions,
+        showPinhole: typeof s['showPinhole'] === 'boolean' ? s['showPinhole'] : cur.showPinhole,
+        pinholeValue:
+          'pinholeValue' in s
+            ? (s['pinholeValue'] as VisualAcuityFieldViewModel['pinholeValue'])
+            : cur.pinholeValue,
+        pinholeRequired:
+          typeof s['pinholeRequired'] === 'boolean'
+            ? s['pinholeRequired']
+            : cur.pinholeRequired,
+        derivedDisplay:
+          'derivedDisplay' in s
+            ? (s['derivedDisplay'] as VisualAcuityFieldViewModel['derivedDisplay'])
+            : cur.derivedDisplay,
+        derivedTone:
+          typeof s['derivedTone'] === 'string'
+            ? (s['derivedTone'] as VisualAcuityFieldViewModel['derivedTone'])
+            : cur.derivedTone,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages'])
+          ? (s['messages'] as VisualAcuityFieldViewModel['messages'])
+          : cur.messages,
+        status:
+          typeof s['status'] === 'string'
+            ? (s['status'] as VisualAcuityFieldViewModel['status'])
+            : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.visualAcuityLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-refraction-field') {
+      const cur = this.refractionModel();
+      this.refractionModel.set({
+        ...cur,
+        eye: s['eye'] === 'OD' || s['eye'] === 'OS' ? s['eye'] : cur.eye,
+        value:
+          s['value'] && typeof s['value'] === 'object'
+            ? (s['value'] as RefractionFieldViewModel['value'])
+            : cur.value,
+        showNearAdd: typeof s['showNearAdd'] === 'boolean' ? s['showNearAdd'] : cur.showNearAdd,
+        formattedSummary:
+          'formattedSummary' in s
+            ? (s['formattedSummary'] as RefractionFieldViewModel['formattedSummary'])
+            : cur.formattedSummary,
+        size: s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg' ? s['size'] : cur.size,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages'])
+          ? (s['messages'] as RefractionFieldViewModel['messages'])
+          : cur.messages,
+        status:
+          typeof s['status'] === 'string'
+            ? (s['status'] as RefractionFieldViewModel['status'])
+            : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.refractionLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-signature-capture-field') {
+      const cur = this.signatureModel();
+      this.signatureModel.set({
+        ...cur,
+        strokes: Array.isArray(s['strokes']) ? (s['strokes'] as SignatureCaptureViewModel['strokes']) : cur.strokes,
+        layout:
+          s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline'
+            ? s['layout']
+            : cur.layout,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        clearable: typeof s['clearable'] === 'boolean' ? s['clearable'] : cur.clearable,
+        undoable: typeof s['undoable'] === 'boolean' ? s['undoable'] : cur.undoable,
+        showMetadata: typeof s['showMetadata'] === 'boolean' ? s['showMetadata'] : cur.showMetadata,
+        messages: Array.isArray(s['messages']) ? (s['messages'] as SignatureCaptureViewModel['messages']) : cur.messages,
+        status: typeof s['status'] === 'string' ? (s['status'] as SignatureCaptureViewModel['status']) : undefined,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.signatureLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.readOnly.set(s['readOnly']);
+    } else if (sel === 'emr-image-viewer') {
+      if (s['viewport'] && typeof s['viewport'] === 'object') {
+        this.ivViewport.set(s['viewport'] as EmrImageViewportState);
+      }
+      if (typeof s['activeIndex'] === 'number') this.ivActiveIndex.set(s['activeIndex']);
+      if (typeof s['multiImage'] === 'boolean') this.ivMultiImage.set(s['multiImage']);
+      if (typeof s['allowFullscreen'] === 'boolean') this.ivAllowFullscreen.set(s['allowFullscreen']);
+      if (typeof s['showThumbnails'] === 'boolean') this.ivShowThumbnails.set(s['showThumbnails']);
+      if (typeof s['height'] === 'number') this.ivHeight.set(s['height']);
+      if (typeof s['labelHidden'] === 'boolean') this.ivLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.ivReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.ivDisabled.set(s['disabled']);
+      if (typeof s['warning'] === 'string') this.ivWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.ivError.set(s['error']);
+    } else if (sel === 'emr-image-cropper') {
+      if (s['transform'] && typeof s['transform'] === 'object') {
+        this.icTransform.set(s['transform'] as EmrImageCropTransform);
+      }
+      if (typeof s['labelHidden'] === 'boolean') this.icLabelHidden.set(s['labelHidden']);
+      if (typeof s['readOnly'] === 'boolean') this.icReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.icDisabled.set(s['disabled']);
+      if (typeof s['warning'] === 'string') this.icWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.icError.set(s['error']);
+    } else if (sel === 'emr-image-upload') {
+      if (Array.isArray(s['items'])) this.iuItems.set(s['items'] as readonly EmrUploadedImageItem[]);
+      if (typeof s['multiple'] === 'boolean') this.iuMultiple.set(s['multiple']);
+      if (typeof s['maxFiles'] === 'number' || s['maxFiles'] === undefined) {
+        this.iuMaxFiles.set(s['maxFiles'] as number | undefined);
+      }
+      if (typeof s['allowCamera'] === 'boolean') this.iuAllowCamera.set(s['allowCamera']);
+      if (typeof s['labelHidden'] === 'boolean') this.iuLabelHidden.set(s['labelHidden']);
+      if (typeof s['required'] === 'boolean') this.iuRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.iuReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.iuDisabled.set(s['disabled']);
+      if (typeof s['warning'] === 'string') this.iuWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.iuError.set(s['error']);
+    } else if (sel === 'emr-image-field') {
+      const cur = this.imageFieldModel();
+      this.imageFieldModel.set({
+        ...cur,
+        items: Array.isArray(s['items']) ? (s['items'] as readonly EmrUploadedImageItem[]) : cur.items,
+        multiple: typeof s['multiple'] === 'boolean' ? s['multiple'] : cur.multiple,
+        maxFiles: typeof s['maxFiles'] === 'number' ? s['maxFiles'] : undefined,
+        allowCamera: typeof s['allowCamera'] === 'boolean' ? s['allowCamera'] : cur.allowCamera,
+        required: typeof s['required'] === 'boolean' ? s['required'] : cur.required,
+        readOnly: typeof s['readOnly'] === 'boolean' ? s['readOnly'] : cur.readOnly,
+        status: typeof s['status'] === 'string' ? (s['status'] as ImageFieldViewModel['status']) : undefined,
+        messages: Array.isArray(s['messages']) ? (s['messages'] as ImageFieldViewModel['messages']) : cur.messages,
+      });
+      if (typeof s['labelHidden'] === 'boolean') this.ifLabelHidden.set(s['labelHidden']);
+      if (s['layout'] === 'vertical' || s['layout'] === 'horizontal' || s['layout'] === 'inline') {
+        this.ifLayout.set(s['layout']);
+      }
+      if (typeof s['showMetadata'] === 'boolean') this.ifShowMetadata.set(s['showMetadata']);
+      if (typeof s['readOnly'] === 'boolean') this.ifReadOnly.set(s['readOnly']);
     } else if (sel === 'emr-card') {
       if (typeof s['title'] === 'string') this.cardTitle.set(s['title']);
       if (typeof s['subtitle'] === 'string') this.cardSubtitle.set(s['subtitle']);
@@ -2111,6 +4200,163 @@ export class PreviewAppComponent implements OnInit, OnDestroy {
       if (typeof s['labelHidden'] === 'boolean') this.tagLabelHidden.set(s['labelHidden']);
       if (typeof s['warning'] === 'string') this.tagWarning.set(s['warning']);
       if (typeof s['error'] === 'string') this.tagError.set(s['error']);
+    } else if (sel === 'emr-date-range-input') {
+      if (s['value'] === null) {
+        this.drValue.set(null);
+      } else if (s['value'] && typeof s['value'] === 'object') {
+        const v = s['value'] as { start?: unknown; end?: unknown };
+        this.drValue.set({
+          start: typeof v.start === 'string' ? v.start : null,
+          end: typeof v.end === 'string' ? v.end : null,
+        });
+      }
+      if (s['mode'] === 'date' || s['mode'] === 'datetime') this.drMode.set(s['mode']);
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.drSize.set(s['size']);
+      if (s['variant'] === 'outline' || s['variant'] === 'filled' || s['variant'] === 'subtle') {
+        this.drVariant.set(s['variant']);
+      }
+      if (s['weekStartsOn'] === 0 || s['weekStartsOn'] === 1) this.drWeekStartsOn.set(s['weekStartsOn']);
+      if (typeof s['showCalendar'] === 'boolean') this.drShowCalendar.set(s['showCalendar']);
+      if (typeof s['clearable'] === 'boolean') this.drClearable.set(s['clearable']);
+      if (typeof s['required'] === 'boolean') this.drRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.drReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.drDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.drInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.drLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.drWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.drError.set(s['error']);
+    } else if (sel === 'emr-slider') {
+      if (s['value'] === null || typeof s['value'] === 'number') this.sliderValue.set(s['value']);
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.sliderSize.set(s['size']);
+      if (
+        s['tone'] === 'neutral' ||
+        s['tone'] === 'info' ||
+        s['tone'] === 'success' ||
+        s['tone'] === 'warning' ||
+        s['tone'] === 'danger'
+      ) {
+        this.sliderTone.set(s['tone']);
+      }
+      if (typeof s['showValue'] === 'boolean') this.sliderShowValue.set(s['showValue']);
+      if (typeof s['showSteppers'] === 'boolean') this.sliderShowSteppers.set(s['showSteppers']);
+      if (typeof s['clearable'] === 'boolean') this.sliderClearable.set(s['clearable']);
+      if (typeof s['required'] === 'boolean') this.sliderRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.sliderReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.sliderDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.sliderInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.sliderLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.sliderWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.sliderError.set(s['error']);
+    } else if (sel === 'emr-range-slider') {
+      if (s['value'] === null) {
+        this.rangeSliderValue.set(null);
+      } else if (Array.isArray(s['value']) && s['value'].length === 2) {
+        this.rangeSliderValue.set([Number(s['value'][0]), Number(s['value'][1])]);
+      }
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.rangeSliderSize.set(s['size']);
+      if (
+        s['tone'] === 'neutral' ||
+        s['tone'] === 'info' ||
+        s['tone'] === 'success' ||
+        s['tone'] === 'warning' ||
+        s['tone'] === 'danger'
+      ) {
+        this.rangeSliderTone.set(s['tone']);
+      }
+      if (typeof s['showValue'] === 'boolean') this.rangeSliderShowValue.set(s['showValue']);
+      if (typeof s['clearable'] === 'boolean') this.rangeSliderClearable.set(s['clearable']);
+      if (typeof s['required'] === 'boolean') this.rangeSliderRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.rangeSliderReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.rangeSliderDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.rangeSliderInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.rangeSliderLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.rangeSliderWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.rangeSliderError.set(s['error']);
+    } else if (sel === 'emr-masked-input') {
+      if (s['value'] === null || typeof s['value'] === 'string') this.maskedValue.set(s['value']);
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.maskedSize.set(s['size']);
+      if (s['variant'] === 'outline' || s['variant'] === 'filled' || s['variant'] === 'subtle') {
+        this.maskedVariant.set(s['variant']);
+      }
+      if (typeof s['unmask'] === 'boolean') this.maskedUnmask.set(s['unmask']);
+      if (typeof s['showMaskHint'] === 'boolean') this.maskedShowHint.set(s['showMaskHint']);
+      if (typeof s['uppercase'] === 'boolean') this.maskedUppercase.set(s['uppercase']);
+      if (typeof s['clearable'] === 'boolean') this.maskedClearable.set(s['clearable']);
+      if (typeof s['required'] === 'boolean') this.maskedRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.maskedReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.maskedDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.maskedInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.maskedLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.maskedWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.maskedError.set(s['error']);
+    } else if (sel === 'emr-otp-input') {
+      if (typeof s['value'] === 'string') this.otpValue.set(s['value']);
+      if (typeof s['secret'] === 'boolean') this.otpSecret.set(s['secret']);
+      if (typeof s['numericOnly'] === 'boolean') this.otpNumericOnly.set(s['numericOnly']);
+      if (typeof s['uppercase'] === 'boolean') this.otpUppercase.set(s['uppercase']);
+      if (typeof s['separatorAfter'] === 'number') this.otpSeparatorAfter.set(s['separatorAfter']);
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.otpSize.set(s['size']);
+      if (s['variant'] === 'outline' || s['variant'] === 'filled' || s['variant'] === 'subtle') {
+        this.otpVariant.set(s['variant']);
+      }
+      if (typeof s['clearable'] === 'boolean') this.otpClearable.set(s['clearable']);
+      if (typeof s['required'] === 'boolean') this.otpRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.otpReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.otpDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.otpInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.otpLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.otpWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.otpError.set(s['error']);
+    } else if (sel === 'emr-menu') {
+      if (s['variant'] === 'outline' || s['variant'] === 'primary' || s['variant'] === 'secondary' || s['variant'] === 'ghost') {
+        this.menuVariant.set(s['variant']);
+      }
+      if (s['size'] === 'sm' || s['size'] === 'md') this.menuSize.set(s['size']);
+      if (s['align'] === 'start' || s['align'] === 'end') this.menuAlign.set(s['align']);
+      if (typeof s['readOnly'] === 'boolean') this.menuReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.menuDisabled.set(s['disabled']);
+    } else if (sel === 'emr-split-button') {
+      if (s['variant'] === 'primary' || s['variant'] === 'secondary' || s['variant'] === 'outline' || s['variant'] === 'danger') {
+        this.splitVariant.set(s['variant']);
+      }
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.splitSize.set(s['size']);
+      if (s['align'] === 'start' || s['align'] === 'end') this.splitAlign.set(s['align']);
+      if (typeof s['loading'] === 'boolean') this.splitLoading.set(s['loading']);
+      if (typeof s['readOnly'] === 'boolean') this.splitReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.splitDisabled.set(s['disabled']);
+    } else if (sel === 'emr-accordion') {
+      if (Array.isArray(s['expandedIds'])) this.accordionExpandedIds.set(s['expandedIds'].map(String));
+      if (typeof s['multiple'] === 'boolean') this.accordionMultiple.set(s['multiple']);
+      if (s['variant'] === 'outlined' || s['variant'] === 'flush' || s['variant'] === 'card') {
+        this.accordionVariant.set(s['variant']);
+      }
+      if (s['size'] === 'sm' || s['size'] === 'md') this.accordionSize.set(s['size']);
+      if (typeof s['readOnly'] === 'boolean') this.accordionReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.accordionDisabled.set(s['disabled']);
+    } else if (sel === 'emr-breadcrumbs') {
+      if (typeof s['maxItems'] === 'number') this.breadcrumbsMaxItems.set(s['maxItems']);
+      if (typeof s['separator'] === 'string') this.breadcrumbsSeparator.set(s['separator']);
+      if (s['size'] === 'sm' || s['size'] === 'md') this.breadcrumbsSize.set(s['size']);
+    } else if (sel === 'emr-color-picker') {
+      if (s['value'] === null || typeof s['value'] === 'string') this.colorPickerValue.set(s['value']);
+      if (typeof s['allowCustomHex'] === 'boolean') this.colorPickerAllowCustomHex.set(s['allowCustomHex']);
+      if (typeof s['clearable'] === 'boolean') this.colorPickerClearable.set(s['clearable']);
+      if (s['size'] === 'sm' || s['size'] === 'md') this.colorPickerSize.set(s['size']);
+      if (typeof s['required'] === 'boolean') this.colorPickerRequired.set(s['required']);
+      if (typeof s['readOnly'] === 'boolean') this.colorPickerReadOnly.set(s['readOnly']);
+      if (typeof s['disabled'] === 'boolean') this.colorPickerDisabled.set(s['disabled']);
+      if (typeof s['invalid'] === 'boolean') this.colorPickerInvalid.set(s['invalid']);
+      if (typeof s['labelHidden'] === 'boolean') this.colorPickerLabelHidden.set(s['labelHidden']);
+      if (typeof s['warning'] === 'string') this.colorPickerWarning.set(s['warning']);
+      if (typeof s['error'] === 'string') this.colorPickerError.set(s['error']);
+    } else if (sel === 'emr-copy-button') {
+      if (s['variant'] === 'outline' || s['variant'] === 'primary' || s['variant'] === 'secondary' || s['variant'] === 'ghost') {
+        this.copyButtonVariant.set(s['variant']);
+      }
+      if (s['size'] === 'sm' || s['size'] === 'md' || s['size'] === 'lg') this.copyButtonSize.set(s['size']);
+      if (typeof s['iconOnly'] === 'boolean') this.copyButtonIconOnly.set(s['iconOnly']);
+      if (typeof s['disabled'] === 'boolean') this.copyButtonDisabled.set(s['disabled']);
+      if (typeof s['copiedCount'] === 'number') this.copyButtonCount.set(s['copiedCount']);
     } else if (sel === 'emr-tabs') {
       if (typeof s['active'] === 'string') this.activeTab.set(s['active']);
       if (s['variant'] === 'underline' || s['variant'] === 'pill' || s['variant'] === 'soft') {

@@ -57,8 +57,8 @@ let nextChoiceId = 0;
         [class.emr-choice--space-between]="labelPlacement() === 'space-between'"
         [attr.data-checked]="!mixed() && isChecked() ? 'true' : null"
         [attr.data-mixed]="mixed() ? 'true' : null"
-        [attr.data-invalid]="!!error() ? 'true' : null"
-        [attr.data-warning]="!error() && !!warning() ? 'true' : null"
+        [attr.data-invalid]="(invalid() || !!error()) ? 'true' : null"
+        [attr.data-warning]="!(invalid() || !!error()) && (hasWarning() || !!warning()) ? 'true' : null"
         [attr.data-readonly]="readOnly() ? 'true' : null"
         [attr.data-disabled]="disabled() ? 'true' : null"
         [attr.data-label-hidden]="labelHidden() ? 'true' : null"
@@ -76,7 +76,7 @@ let nextChoiceId = 0;
           [attr.aria-checked]="mixed() ? 'mixed' : isChecked()"
           [attr.aria-required]="required() || null"
           [attr.aria-readonly]="readOnly() || null"
-          [attr.aria-invalid]="!!error() || null"
+          [attr.aria-invalid]="(invalid() || !!error()) || null"
           [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || null) : null)"
           [attr.aria-describedby]="describedBy()"
           (click)="onClick($event)"
@@ -143,6 +143,9 @@ export class EmrCheckboxComponent implements AfterViewChecked {
   readonly hint = input('');
   readonly warning = input('');
   readonly error = input('');
+  readonly invalid = input(false, { transform: booleanAttribute });
+  readonly hasWarning = input(false, { transform: booleanAttribute });
+  readonly ariaDescribedBy = input<string | null | undefined>(undefined);
 
   readonly checkedChange = output<boolean>();
   readonly valueChange = output<boolean>();
@@ -158,6 +161,7 @@ export class EmrCheckboxComponent implements AfterViewChecked {
   protected readonly describedBy = computed(() => {
     const id = this.resolvedId();
     const ids: string[] = [];
+    if (this.ariaDescribedBy()) ids.push(this.ariaDescribedBy()!);
     if (this.hint()) ids.push(`${id}-hint`);
     if (this.warning()) ids.push(`${id}-warning`);
     if (this.error()) ids.push(`${id}-error`);

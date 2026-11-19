@@ -17,13 +17,18 @@ import type {
   EmrCollapsedBreadcrumbs,
   EmrColorSwatch,
   EmrControlVariant,
+  EmrCroppedCanvasPlan,
+  EmrDateRangeCalendarCell,
+  EmrDateRangeCommitResult,
   EmrDateRangeValue,
   EmrFlatTreeRow,
   EmrImageCropRect,
   EmrImageCropTransform,
   EmrImageViewportState,
+  EmrMaskOptions,
   EmrMaskResult,
   EmrMatchHighlightSegment,
+  EmrMenuItem,
   EmrOption,
   EmrOptionGroup,
   EmrOtpEditResult,
@@ -52,10 +57,17 @@ import type {
   EmrToggleLabelPlacement,
   EmrToggleSize,
   EmrToggleVariant,
+  EmrToggleGroupLabelPlacement,
+  EmrToggleGroupOrientation,
+  EmrToggleGroupSelectionValidation,
+  EmrToggleGroupSize,
+  EmrToggleGroupVariant,
   EmrTone,
   EmrTreeCheckState,
   EmrTreeCheckStrategy,
   EmrTreeNode,
+  EmrTreeSelectChipItem,
+  EmrTreeSelectSummary,
 } from '@drguptavivek/emr-controller';
 
 // ─────────────────────────────────────────────────────────────
@@ -116,6 +128,13 @@ export type {
   EmrToggleLabelPlacement,
   EmrToggleSize,
   EmrToggleVariant,
+  EmrToggleGroupLabelPlacement,
+  EmrToggleGroupOrientation,
+  EmrToggleGroupSelectionValidation,
+  EmrToggleGroupSize,
+  EmrToggleGroupVariant,
+  EmrTreeSelectChipItem,
+  EmrTreeSelectSummary,
 };
 
 export function resolveEmrToggleChecked(value?: boolean | null, checked?: boolean): boolean {
@@ -414,6 +433,138 @@ export function toggleCheckboxGroupValue(
 }
 
 // ─────────────────────────────────────────────────────────────
+// 1b. Toggle Group Helpers
+// ─────────────────────────────────────────────────────────────
+
+export function normalizeEmrToggleGroupVariant(variant?: unknown): EmrToggleGroupVariant {
+  if (variant === 'inline' || variant === 'card') {
+    return variant;
+  }
+  return 'tile';
+}
+
+export function normalizeEmrToggleGroupSize(size?: unknown): EmrToggleGroupSize {
+  return size === 'sm' ? 'sm' : 'md';
+}
+
+export function normalizeEmrToggleGroupOrientation(orientation?: unknown): EmrToggleGroupOrientation {
+  if (orientation === 'horizontal' || orientation === 'grid') {
+    return orientation;
+  }
+  return 'vertical';
+}
+
+export function normalizeEmrToggleGroupLabelPlacement(
+  placement?: unknown,
+): EmrToggleGroupLabelPlacement {
+  if (placement === 'end' || placement === 'start') {
+    return placement;
+  }
+  return 'space-between';
+}
+
+function dedupeToggleValues(items: readonly unknown[]): readonly string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of items) {
+    if (typeof item === 'string' && item !== '' && !seen.has(item)) {
+      seen.add(item);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+export function resolveEmrToggleGroupValues(params: {
+  readonly value?: readonly string[] | string | null;
+  readonly values?: readonly string[];
+  readonly multiple?: boolean;
+}): readonly string[] {
+  const { value, values, multiple = true } = params;
+  if (!multiple) {
+    if (value !== undefined) {
+      if (typeof value === 'string') return value !== '' ? [value] : [];
+      if (Array.isArray(value)) {
+        const first = value.find((v): v is string => typeof v === 'string' && v !== '');
+        return first ? [first] : [];
+      }
+      return [];
+    }
+    if (Array.isArray(values)) {
+      const first = values.find((v): v is string => typeof v === 'string' && v !== '');
+      return first ? [first] : [];
+    }
+    return [];
+  }
+  if (values !== undefined) {
+    return dedupeToggleValues(values);
+  }
+  if (Array.isArray(value)) {
+    return dedupeToggleValues(value);
+  }
+  if (typeof value === 'string' && value !== '') {
+    return [value];
+  }
+  return [];
+}
+
+export function toggleEmrToggleGroupValue(params: {
+  readonly current: readonly string[];
+  readonly toggledValue: string;
+  readonly options: readonly EmrOption[];
+  readonly multiple?: boolean;
+  readonly allowEmpty?: boolean;
+  readonly exclusiveValues?: readonly string[];
+  readonly maxSelections?: number;
+}): readonly string[] {
+  const {
+    current,
+    toggledValue,
+    options,
+    multiple = true,
+    allowEmpty = true,
+    exclusiveValues = [],
+    maxSelections,
+  } = params;
+  const targetOption = options.find((o) => o.value === toggledValue);
+  if (targetOption && isCheckboxOptionLocked(targetOption)) {
+    return current;
+  }
+  if (!multiple) {
+    const isActive = current.includes(toggledValue);
+    if (isActive) {
+      return allowEmpty ? [] : current;
+    }
+    if (typeof maxSelections === 'number' && Number.isFinite(maxSelections) && Math.trunc(maxSelections) < 1) {
+      return current;
+    }
+    return [toggledValue];
+  }
+  if (!allowEmpty && current.includes(toggledValue) && current.length <= 1) {
+    return current;
+  }
+  return toggleCheckboxGroupValue(current, toggledValue, options, {
+    exclusiveValues,
+    maxSelections,
+  });
+}
+
+export function clearEmrToggleGroupValues(
+  current: readonly string[],
+  options: readonly EmrOption[],
+): readonly string[] {
+  return clearCheckboxGroupValue(current, options);
+}
+
+export function validateEmrToggleGroupSelection(
+  current: readonly string[],
+  minSelections?: number,
+  maxSelections?: number,
+): EmrToggleGroupSelectionValidation {
+  return validateCheckboxGroupSelection(current, minSelections, maxSelections);
+}
+
+// ─────────────────────────────────────────────────────────────
 // 2. Hierarchical Tree View & Tree Select Algorithms
 // ─────────────────────────────────────────────────────────────
 
@@ -421,6 +572,7 @@ function collectEnabledLeafOrSelectableIds(
   node: EmrTreeNode,
   strategy: EmrTreeCheckStrategy,
   acc: string[] = [],
+  mutableOnly = false,
 ): string[] {
   const hasChildren = Boolean(node.children && node.children.length > 0);
   const isSelectable =
@@ -429,17 +581,81 @@ function collectEnabledLeafOrSelectableIds(
       : strategy === 'leaf'
         ? !hasChildren
         : true;
-  if (!node.disabled && isSelectable) {
+  if (!node.disabled && (!mutableOnly || !node.readOnly) && isSelectable) {
     acc.push(node.id);
   }
-  if (node.children) {
+  if (node.children && !node.disabled) {
     for (const child of node.children) {
-      if (!node.disabled) {
-        collectEnabledLeafOrSelectableIds(child, strategy, acc);
-      }
+      collectEnabledLeafOrSelectableIds(child, strategy, acc, mutableOnly);
     }
   }
   return acc;
+}
+
+function collectMutablePostOrderIds(
+  node: EmrTreeNode,
+  strategy: EmrTreeCheckStrategy,
+  acc: string[] = [],
+): string[] {
+  if (node.disabled) return acc;
+  if (node.children) {
+    for (const child of node.children) {
+      collectMutablePostOrderIds(child, strategy, acc);
+    }
+  }
+  const hasChildren = Boolean(node.children && node.children.length > 0);
+  const isSelectable =
+    node.selectable !== undefined
+      ? node.selectable
+      : strategy === 'leaf'
+        ? !hasChildren
+        : true;
+  if (!node.readOnly && isSelectable) {
+    acc.push(node.id);
+  }
+  return acc;
+}
+
+function findTreeNodeById(list: readonly EmrTreeNode[], targetId: string): EmrTreeNode | null {
+  for (const n of list) {
+    if (n.id === targetId) return n;
+    if (n.children) {
+      const found = findTreeNodeById(n.children, targetId);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function collectCanonicalTreeOrder(
+  nodes: readonly EmrTreeNode[],
+  selectedSet: ReadonlySet<string>,
+): readonly string[] {
+  const canonical: string[] = [];
+  const seen = new Set<string>();
+  const walk = (list: readonly EmrTreeNode[]) => {
+    for (const n of list) {
+      if (selectedSet.has(n.id)) {
+        canonical.push(n.id);
+        seen.add(n.id);
+      }
+      if (n.children) walk(n.children);
+    }
+  };
+  walk(nodes);
+  for (const id of selectedSet) {
+    if (!seen.has(id)) canonical.push(id);
+  }
+  return canonical;
+}
+
+function treeNodeMatchesQuery(node: EmrTreeNode, query: string): boolean {
+  return (
+    node.label.toLowerCase().includes(query) ||
+    (node.code?.toLowerCase().includes(query) ?? false) ||
+    (node.description?.toLowerCase().includes(query) ?? false) ||
+    (node.keywords?.some((k) => k.toLowerCase().includes(query)) ?? false)
+  );
 }
 
 export function computeTreeNodeCheckState(
@@ -483,10 +699,7 @@ export function flattenVisibleTreeNodes(
 
   if (query) {
     const visitMatch = (node: EmrTreeNode): boolean => {
-      const selfMatches =
-        node.label.toLowerCase().includes(query) ||
-        (node.code?.toLowerCase().includes(query) ?? false) ||
-        (node.description?.toLowerCase().includes(query) ?? false);
+      const selfMatches = treeNodeMatchesQuery(node, query);
       let childMatches = false;
       for (const child of node.children ?? []) {
         if (visitMatch(child)) childMatches = true;
@@ -516,11 +729,7 @@ export function flattenVisibleTreeNodes(
       if (query && !ancestorMatchedSearch && !matchingSubtreeIds.has(node.id)) {
         continue;
       }
-      const selfMatched =
-        query.length > 0 &&
-        (node.label.toLowerCase().includes(query) ||
-          (node.code?.toLowerCase().includes(query) ?? false) ||
-          (node.description?.toLowerCase().includes(query) ?? false));
+      const selfMatched = query.length > 0 && treeNodeMatchesQuery(node, query);
       const hasChildren = Boolean(node.children && node.children.length > 0);
       const expanded =
         hasChildren &&
@@ -561,72 +770,293 @@ export function flattenVisibleTreeNodes(
   return rows;
 }
 
+function reconcileCascadeParents(
+  nodes: readonly EmrTreeNode[],
+  selected: Set<string>,
+  max: number | null,
+): void {
+  const walk = (list: readonly EmrTreeNode[]): void => {
+    for (const n of list) {
+      if (n.children && n.children.length > 0) {
+        walk(n.children);
+        const childSelectableIds = n.children.flatMap((c) =>
+          collectEnabledLeafOrSelectableIds(c, 'cascade'),
+        );
+        if (childSelectableIds.length > 0 && n.selectable !== false && !n.disabled && !n.readOnly) {
+          const allChildrenChecked = childSelectableIds.every((id) => selected.has(id));
+          if (allChildrenChecked) {
+            if (max === null || selected.has(n.id) || selected.size < max) {
+              selected.add(n.id);
+            }
+          } else {
+            selected.delete(n.id);
+          }
+        }
+      }
+    }
+  };
+  walk(nodes);
+}
+
 export function toggleTreeNodeCheck(
   nodes: readonly EmrTreeNode[],
   currentIds: readonly string[],
   targetId: string,
   strategy: EmrTreeCheckStrategy = 'cascade',
+  maxSelections?: number,
 ): readonly string[] {
+  const target = findTreeNodeById(nodes, targetId);
+  if (!target || target.disabled || target.readOnly) return currentIds;
+
   const selected = new Set(currentIds);
-
-  const findNode = (list: readonly EmrTreeNode[]): EmrTreeNode | null => {
-    for (const n of list) {
-      if (n.id === targetId) return n;
-      if (n.children) {
-        const found = findNode(n.children);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  const target = findNode(nodes);
-  if (!target || target.disabled) return currentIds;
+  const max =
+    typeof maxSelections === 'number' && Number.isFinite(maxSelections) && maxSelections >= 1
+      ? Math.trunc(maxSelections)
+      : null;
 
   if (strategy === 'all' || strategy === 'leaf') {
     const hasChildren = Boolean(target.children && target.children.length > 0);
     if (strategy === 'leaf' && hasChildren && target.selectable !== true) {
       return currentIds;
     }
-    if (selected.has(targetId)) selected.delete(targetId);
-    else selected.add(targetId);
-    return [...selected];
+    if (target.selectable === false) {
+      return currentIds;
+    }
+    if (selected.has(targetId)) {
+      selected.delete(targetId);
+    } else {
+      if (max !== null && selected.size >= max) {
+        return currentIds;
+      }
+      selected.add(targetId);
+    }
+    return collectCanonicalTreeOrder(nodes, selected);
   }
 
-  const currentState = computeTreeNodeCheckState(target, selected, 'cascade');
-  const shouldCheck = currentState !== 'checked';
-  const subtreeIds = collectEnabledLeafOrSelectableIds(target, 'cascade');
-  for (const id of subtreeIds) {
-    if (shouldCheck) selected.add(id);
-    else selected.delete(id);
+  const mutableSubtreeIds = collectMutablePostOrderIds(target, 'cascade');
+  if (mutableSubtreeIds.length === 0) return currentIds;
+
+  const allMutableChecked = mutableSubtreeIds.every((id) => selected.has(id));
+  const shouldCheck = !allMutableChecked;
+  if (shouldCheck) {
+    if (max !== null && selected.size >= max) {
+      return currentIds;
+    }
+    for (const id of mutableSubtreeIds) {
+      if (max !== null && !selected.has(id) && selected.size >= max) {
+        break;
+      }
+      selected.add(id);
+    }
+  } else {
+    for (const id of mutableSubtreeIds) {
+      selected.delete(id);
+    }
   }
 
-  const reconcileParents = (list: readonly EmrTreeNode[]): void => {
+  reconcileCascadeParents(nodes, selected, max);
+  return collectCanonicalTreeOrder(nodes, selected);
+}
+
+export function clearTreeSelection(
+  nodes: readonly EmrTreeNode[],
+  currentIds: readonly string[],
+): readonly string[] {
+  if (currentIds.length === 0) return [];
+  const currentSet = new Set(currentIds);
+  const lockedSelected = new Set<string>();
+  const walk = (list: readonly EmrTreeNode[]) => {
     for (const n of list) {
-      if (n.children && n.children.length > 0) {
-        reconcileParents(n.children);
-        const childSelectableIds = n.children.flatMap((c) =>
-          collectEnabledLeafOrSelectableIds(c, 'cascade'),
-        );
-        if (childSelectableIds.length > 0 && n.selectable !== false && !n.disabled) {
-          const allChildrenChecked = childSelectableIds.every((id) => selected.has(id));
-          if (allChildrenChecked) selected.add(n.id);
-          else selected.delete(n.id);
-        }
+      if ((n.readOnly || n.disabled) && currentSet.has(n.id)) {
+        lockedSelected.add(n.id);
+      }
+      if (n.children) walk(n.children);
+    }
+  };
+  walk(nodes);
+  return collectCanonicalTreeOrder(nodes, lockedSelected);
+}
+
+export function resolveDefaultExpandedTreeIds(
+  nodes: readonly EmrTreeNode[],
+  defaultExpandedIds?: readonly string[],
+): readonly string[] {
+  if (defaultExpandedIds !== undefined) {
+    return [...defaultExpandedIds];
+  }
+  return nodes
+    .filter((n) => Boolean(n.children && n.children.length > 0))
+    .map((n) => n.id);
+}
+
+export function findNextTreeRowIndex(
+  rows: readonly EmrFlatTreeRow[],
+  currentIndex: number,
+  key: 'ArrowDown' | 'ArrowUp' | 'Home' | 'End',
+): number {
+  const enabledIndices: number[] = [];
+  for (let i = 0; i < rows.length; i += 1) {
+    if (!rows[i]!.node.disabled) enabledIndices.push(i);
+  }
+  if (enabledIndices.length === 0) return -1;
+  if (key === 'Home') return enabledIndices[0]!;
+  if (key === 'End') return enabledIndices[enabledIndices.length - 1]!;
+  if (key === 'ArrowDown') {
+    const next = enabledIndices.find((idx) => idx > currentIndex);
+    return next !== undefined ? next : enabledIndices[enabledIndices.length - 1]!;
+  }
+  for (let i = enabledIndices.length - 1; i >= 0; i -= 1) {
+    if (enabledIndices[i]! < currentIndex) return enabledIndices[i]!;
+  }
+  return enabledIndices[0]!;
+}
+
+export function findTypeaheadTreeRowIndex(
+  rows: readonly EmrFlatTreeRow[],
+  query: string,
+  startIndex = -1,
+): number {
+  const q = query.trim().toLowerCase();
+  if (!q || rows.length === 0) return -1;
+  const len = rows.length;
+  const start = startIndex >= 0 && startIndex < len ? (startIndex + 1) % len : 0;
+  for (let offset = 0; offset < len; offset += 1) {
+    const idx = (start + offset) % len;
+    const row = rows[idx]!;
+    if (row.node.disabled) continue;
+    if (row.node.label.toLowerCase().startsWith(q)) return idx;
+  }
+  return -1;
+}
+
+export function removeTreeSelectionChip(
+  nodes: readonly EmrTreeNode[],
+  currentIds: readonly string[],
+  targetId: string,
+  strategy: EmrTreeCheckStrategy = 'cascade',
+): readonly string[] {
+  const target = findTreeNodeById(nodes, targetId);
+  if (target && (target.disabled || target.readOnly)) {
+    return currentIds;
+  }
+  if (!currentIds.includes(targetId)) {
+    return currentIds;
+  }
+  if (strategy !== 'cascade' || !target) {
+    return currentIds.filter((id) => id !== targetId);
+  }
+  const selected = new Set(currentIds);
+  const mutableSubtreeIds = collectMutablePostOrderIds(target, 'cascade');
+  for (const id of mutableSubtreeIds) {
+    selected.delete(id);
+  }
+  selected.delete(targetId);
+  reconcileCascadeParents(nodes, selected, null);
+  return collectCanonicalTreeOrder(nodes, selected);
+}
+
+export function buildEmrTreeSelectSummary(params: {
+  readonly nodes: readonly EmrTreeNode[];
+  readonly multiple: boolean;
+  readonly value?: string | null;
+  readonly values?: readonly string[];
+  readonly displayMode?: 'path' | 'leaf';
+  readonly separator?: string;
+  readonly placeholder: string;
+  readonly maxTagCount?: number;
+}): EmrTreeSelectSummary {
+  const {
+    nodes,
+    multiple,
+    value,
+    values = [],
+    displayMode = 'path',
+    separator = ' / ',
+    placeholder,
+    maxTagCount,
+  } = params;
+  if (!multiple) {
+    if (!value) {
+      return { hasSelection: false, text: placeholder, visibleChips: [], overflowCount: 0 };
+    }
+    const label = formatTreeSelectionLabel(nodes, value, displayMode, separator) || value;
+    return { hasSelection: true, text: label, visibleChips: [], overflowCount: 0 };
+  }
+  if (values.length === 0) {
+    return { hasSelection: false, text: placeholder, visibleChips: [], overflowCount: 0 };
+  }
+  const chips: EmrTreeSelectChipItem[] = values.map((id) => {
+    const node = findTreeNodeById(nodes, id);
+    const label = formatTreeSelectionLabel(nodes, id, displayMode, separator) || id;
+    return {
+      id,
+      label,
+      readOnly: Boolean(node?.readOnly),
+      disabled: Boolean(node?.disabled),
+    };
+  });
+  const cap =
+    typeof maxTagCount === 'number' && Number.isFinite(maxTagCount) && maxTagCount >= 0
+      ? Math.trunc(maxTagCount)
+      : chips.length;
+  const visibleChips = chips.slice(0, cap);
+  const overflowCount = Math.max(0, chips.length - visibleChips.length);
+  const text =
+    cap === 0 ? `${chips.length} selected` : chips.map((c) => c.label).join(', ');
+  return {
+    hasSelection: true,
+    text,
+    visibleChips,
+    overflowCount,
+  };
+}
+
+export function resolveEmrTreeSelectDefaultExpanded(
+  nodes: readonly EmrTreeNode[],
+  value?: string | null,
+  values?: readonly string[],
+  defaultExpandedIds?: readonly string[],
+): readonly string[] {
+  if (defaultExpandedIds !== undefined) {
+    return [...defaultExpandedIds];
+  }
+  const ids = new Set<string>();
+  const targets = [
+    ...(value ? [value] : []),
+    ...(values ?? []),
+  ];
+  for (const targetId of targets) {
+    const trail = resolveTreeNodePath(nodes, targetId);
+    for (let i = 0; i < trail.length - 1; i += 1) {
+      const node = trail[i]!;
+      if (node.children && node.children.length > 0) {
+        ids.add(node.id);
       }
     }
-  };
-  reconcileParents(nodes);
+  }
+  if (ids.size > 0) {
+    return [...ids];
+  }
+  return resolveDefaultExpandedTreeIds(nodes);
+}
 
-  const canonical: string[] = [];
-  const collectOrder = (list: readonly EmrTreeNode[]) => {
-    for (const n of list) {
-      if (selected.has(n.id)) canonical.push(n.id);
-      if (n.children) collectOrder(n.children);
-    }
-  };
-  collectOrder(nodes);
-  return canonical;
+export function isEmrTreeClearable(params: {
+  readonly clearable: boolean;
+  readonly disabled: boolean;
+  readonly readOnly: boolean;
+  readonly multiple: boolean;
+  readonly value?: string | null;
+  readonly values?: readonly string[];
+  readonly nodes: readonly EmrTreeNode[];
+}): boolean {
+  const { clearable, disabled, readOnly, multiple, value, values = [], nodes } = params;
+  if (!clearable || disabled || readOnly) return false;
+  const selectedIds = multiple ? values : value ? [value] : [];
+  if (selectedIds.length === 0) return false;
+  return selectedIds.some((id) => {
+    const node = findTreeNodeById(nodes, id);
+    return !(node?.readOnly || node?.disabled);
+  });
 }
 
 export function collectAllExpandableTreeIds(nodes: readonly EmrTreeNode[]): readonly string[] {
@@ -712,6 +1142,21 @@ export function clampStraightenAngle(deg: number): number {
   return Math.max(-180, Math.min(180, Math.round(deg * 10) / 10));
 }
 
+export function splitRotationDegrees(totalDeg: number): {
+  readonly base90: number;
+  readonly straighten: number;
+} {
+  if (!Number.isFinite(totalDeg)) {
+    return { base90: 0, straighten: 0 };
+  }
+  let norm = ((totalDeg % 360) + 360) % 360;
+  if (norm > 180) norm -= 360;
+  const rawBase90 = Math.round(norm / 90) * 90;
+  const straighten = Math.round((norm - rawBase90) * 10) / 10;
+  const base90 = rawBase90 === -180 && straighten <= 0 ? 180 : rawBase90;
+  return { base90, straighten };
+}
+
 export function formatImageTransformCss(state: EmrImageViewportState): string {
   const sx = (state.flipH ? -1 : 1) * state.zoom;
   const sy = (state.flipV ? -1 : 1) * state.zoom;
@@ -765,6 +1210,160 @@ export function clampCropRect(
   };
 }
 
+export function computeAspectLockedCropRect(
+  prevRect: EmrImageCropRect,
+  nextRect: EmrImageCropRect,
+  aspectRatio: number | null = null,
+  minSize = 0.1,
+): EmrImageCropRect {
+  if (aspectRatio === null || !Number.isFinite(aspectRatio) || aspectRatio <= 0) {
+    return clampCropRect(nextRect, null, minSize);
+  }
+  const prevW = Number.isFinite(prevRect.width) ? prevRect.width : 0.8;
+  const prevH = Number.isFinite(prevRect.height) ? prevRect.height : 0.8;
+  const candW = Number.isFinite(nextRect.width) ? nextRect.width : prevW;
+  const candH = Number.isFinite(nextRect.height) ? nextRect.height : prevH;
+  const dw = Math.abs(candW - prevW);
+  const dh = Math.abs(candH - prevH);
+
+  let width: number;
+  let height: number;
+  if (dh > dw) {
+    height = Math.max(minSize, Math.min(1, candH));
+    width = height * aspectRatio;
+    if (width > 1) {
+      width = 1;
+      height = width / aspectRatio;
+    }
+    if (width < minSize) {
+      width = minSize;
+      height = width / aspectRatio;
+    }
+  } else {
+    width = Math.max(minSize, Math.min(1, candW));
+    height = width / aspectRatio;
+    if (height > 1) {
+      height = 1;
+      width = height * aspectRatio;
+    }
+    if (height < minSize) {
+      height = minSize;
+      width = height * aspectRatio;
+    }
+  }
+
+  const candX = Number.isFinite(nextRect.x) ? nextRect.x : prevRect.x;
+  const candY = Number.isFinite(nextRect.y) ? nextRect.y : prevRect.y;
+  const leftMoved =
+    Math.abs(candX - prevRect.x) > 1e-4 &&
+    Math.abs(candX + candW - (prevRect.x + prevW)) < 1e-3;
+  const topMoved =
+    Math.abs(candY - prevRect.y) > 1e-4 &&
+    Math.abs(candY + candH - (prevRect.y + prevH)) < 1e-3;
+
+  const rawX = leftMoved ? prevRect.x + prevW - width : candX;
+  const rawY = topMoved ? prevRect.y + prevH - height : candY;
+  const x = Math.max(0, Math.min(1 - width, rawX));
+  const y = Math.max(0, Math.min(1 - height, rawY));
+
+  return {
+    x: Math.round(x * 1000) / 1000,
+    y: Math.round(y * 1000) / 1000,
+    width: Math.round(width * 1000) / 1000,
+    height: Math.round(height * 1000) / 1000,
+  };
+}
+
+export function computeCroppedCanvasPlan(
+  naturalWidth: number,
+  naturalHeight: number,
+  transform: EmrImageCropTransform,
+  maxOutputDim = 2048,
+): EmrCroppedCanvasPlan {
+  const sourceWidth =
+    Number.isFinite(naturalWidth) && naturalWidth > 0 ? Math.round(naturalWidth) : 360;
+  const sourceHeight =
+    Number.isFinite(naturalHeight) && naturalHeight > 0 ? Math.round(naturalHeight) : 260;
+  const rect = clampCropRect(transform.rect, transform.aspectRatio);
+  const rawW = Math.max(1, Math.round(rect.width * sourceWidth));
+  const rawH = Math.max(1, Math.round(rect.height * sourceHeight));
+  const limit = Number.isFinite(maxOutputDim) && maxOutputDim >= 1 ? Math.round(maxOutputDim) : 2048;
+  const downscale = Math.max(rawW, rawH) > limit ? limit / Math.max(rawW, rawH) : 1;
+  const outputWidth = Math.max(1, Math.round(rawW * downscale));
+  const outputHeight = Math.max(1, Math.round(rawH * downscale));
+  const drawWidth = sourceWidth * downscale;
+  const drawHeight = sourceHeight * downscale;
+  const zoom = stepImageZoom(transform.zoom, 0);
+
+  return {
+    sourceWidth,
+    sourceHeight,
+    outputWidth,
+    outputHeight,
+    drawWidth,
+    drawHeight,
+    offsetX: -rect.x * drawWidth,
+    offsetY: -rect.y * drawHeight,
+    centerX: drawWidth / 2 + transform.panX * downscale,
+    centerY: drawHeight / 2 + transform.panY * downscale,
+    rotationRad: (clampStraightenAngle(transform.rotationDeg) * Math.PI) / 180,
+    scaleX: (transform.flipH ? -1 : 1) * zoom,
+    scaleY: (transform.flipV ? -1 : 1) * zoom,
+    rect,
+  };
+}
+
+export function formatImageByteSize(bytes?: number): string {
+  if (bytes === undefined || !Number.isFinite(bytes)) return '';
+  if (bytes < 1024) return `${Math.max(0, Math.round(bytes))} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function validateUploadedImageFile(
+  file: { readonly name: string; readonly sizeBytes: number; readonly mimeType: string },
+  opts: { readonly accept?: string; readonly maxSizeBytes?: number } = {},
+): string | null {
+  const acceptRaw = (opts.accept ?? '').trim();
+  if (acceptRaw) {
+    const tokens = acceptRaw
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter((t) => t.length > 0);
+    if (tokens.length > 0 && !tokens.includes('*/*') && !tokens.includes('*')) {
+      const mime = (file.mimeType || '').trim().toLowerCase();
+      const extMatch = file.name.toLowerCase().match(/\.[a-z0-9]+$/)?.[0] ?? '';
+      const accepted = tokens.some((tok) => {
+        if (tok.startsWith('.')) return extMatch === tok;
+        if (tok.endsWith('/*')) {
+          const prefix = tok.slice(0, -1);
+          if (mime.startsWith(prefix)) return true;
+          if (
+            prefix === 'image/' &&
+            /\.(png|jpe?g|gif|webp|svg|bmp|avif|heic|heif|tiff?)$/i.test(file.name)
+          ) {
+            return true;
+          }
+          return false;
+        }
+        return mime === tok;
+      });
+      if (!accepted) {
+        return `"${file.name}" is not an accepted file type (${acceptRaw}).`;
+      }
+    }
+  }
+  if (
+    opts.maxSizeBytes !== undefined &&
+    Number.isFinite(opts.maxSizeBytes) &&
+    opts.maxSizeBytes > 0 &&
+    file.sizeBytes > opts.maxSizeBytes
+  ) {
+    return `"${file.name}" exceeds the maximum file size (${formatImageByteSize(opts.maxSizeBytes)}).`;
+  }
+  return null;
+}
+
 // ─────────────────────────────────────────────────────────────
 // 4. Date Range Picker Helpers & Calendar Grid
 // ─────────────────────────────────────────────────────────────
@@ -789,7 +1388,9 @@ export function isIsoDateInRange(
   range: EmrDateRangeValue | null | undefined,
 ): boolean {
   if (!range?.start || !range?.end) return false;
-  return iso >= range.start && iso <= range.end;
+  const startCmp = iso.length === 10 && range.start.length > 10 ? range.start.slice(0, 10) : range.start;
+  const endCmp = iso.length === 10 && range.end.length > 10 ? range.end.slice(0, 10) : range.end;
+  return iso >= startCmp && iso <= endCmp;
 }
 
 export function isIsoRangeEdge(
@@ -797,29 +1398,53 @@ export function isIsoRangeEdge(
   range: EmrDateRangeValue | null | undefined,
 ): 'start' | 'end' | 'both' | null {
   if (!range) return null;
-  const isStart = range.start === iso;
-  const isEnd = range.end === iso;
+  const startCmp = range.start && iso.length === 10 && range.start.length > 10 ? range.start.slice(0, 10) : range.start;
+  const endCmp = range.end && iso.length === 10 && range.end.length > 10 ? range.end.slice(0, 10) : range.end;
+  const isStart = startCmp === iso;
+  const isEnd = endCmp === iso;
   if (isStart && isEnd) return 'both';
   if (isStart) return 'start';
   if (isEnd) return 'end';
   return null;
 }
 
-export interface EmrCalendarCell {
-  readonly iso: string;
-  readonly day: number;
-  readonly inCurrentMonth: boolean;
-}
+export type EmrCalendarCell = EmrDateRangeCalendarCell;
+
+const DATE_RANGE_WEEKDAYS_SUN = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as const;
+const DATE_RANGE_WEEKDAYS_MON = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] as const;
+const DATE_RANGE_MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+] as const;
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const pad4 = (n: number): string => String(n).padStart(4, '0');
 
-export function buildCalendarMonthCells(year: number, monthIndex0: number): readonly EmrCalendarCell[] {
+export function getDateRangeWeekdays(weekStartsOn: 0 | 1 = 0): readonly string[] {
+  return weekStartsOn === 1 ? DATE_RANGE_WEEKDAYS_MON : DATE_RANGE_WEEKDAYS_SUN;
+}
+
+export function buildDateRangeCalendarGrid(
+  year: number,
+  monthIndex0: number,
+  weekStartsOn: 0 | 1 = 0,
+): readonly EmrDateRangeCalendarCell[] {
   const firstOfMonth = new Date(Date.UTC(year, monthIndex0, 1));
-  const startWeekday = firstOfMonth.getUTCDay(); // 0 = Sun .. 6 = Sat
-  const cells: EmrCalendarCell[] = [];
+  const rawDow = firstOfMonth.getUTCDay();
+  const offset = weekStartsOn === 1 ? (rawDow + 6) % 7 : rawDow;
+  const cells: EmrDateRangeCalendarCell[] = [];
   for (let i = 0; i < 42; i += 1) {
-    const d = new Date(Date.UTC(year, monthIndex0, 1 - startWeekday + i));
+    const d = new Date(Date.UTC(year, monthIndex0, 1 - offset + i));
     const y = d.getUTCFullYear();
     const m = d.getUTCMonth();
     const day = d.getUTCDate();
@@ -830,6 +1455,157 @@ export function buildCalendarMonthCells(year: number, monthIndex0: number): read
     });
   }
   return cells;
+}
+
+export function buildCalendarMonthCells(year: number, monthIndex0: number): readonly EmrCalendarCell[] {
+  return buildDateRangeCalendarGrid(year, monthIndex0, 0);
+}
+
+export function stepCalendarMonth(
+  year: number,
+  monthIndex0: number,
+  delta: number,
+): { readonly year: number; readonly month0: number } {
+  const totalMonths = year * 12 + monthIndex0 + Math.trunc(delta);
+  const nextYear = Math.floor(totalMonths / 12);
+  const nextMonth0 = ((totalMonths % 12) + 12) % 12;
+  return { year: nextYear, month0: nextMonth0 };
+}
+
+export function resolveInitialCalendarMonth(
+  value?: EmrDateRangeValue | null,
+  min?: string,
+  fallbackTodayIso?: string,
+): { readonly year: number; readonly month0: number } {
+  const candidates = [value?.start, value?.end, min, fallbackTodayIso];
+  for (const cand of candidates) {
+    if (!cand) continue;
+    const m = /^(\d{4})-(\d{2})/.exec(cand.trim());
+    if (m) {
+      const year = Number(m[1]);
+      const month = Number(m[2]);
+      if (month >= 1 && month <= 12) {
+        return { year, month0: month - 1 };
+      }
+    }
+  }
+  const now = new Date();
+  return { year: now.getUTCFullYear(), month0: now.getUTCMonth() };
+}
+
+export function formatDateRangeMonthTitle(year: number, monthIndex0: number): string {
+  const normalized = stepCalendarMonth(year, monthIndex0, 0);
+  const name = DATE_RANGE_MONTH_NAMES[normalized.month0] ?? pad2(normalized.month0 + 1);
+  return `${name} ${normalized.year}`;
+}
+
+export function normalizeDateRangeEndpoint(
+  raw: string | null | undefined,
+  mode: 'date' | 'datetime' = 'date',
+): string | null {
+  const trimmed = raw?.trim() ?? '';
+  if (!trimmed) return null;
+  if (mode === 'datetime') {
+    const dtMatch = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::\d{2})?/.exec(trimmed);
+    if (dtMatch) return `${dtMatch[1]}T${dtMatch[2]}`;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return `${trimmed}T00:00`;
+    return trimmed;
+  }
+  const dMatch = /^(\d{4}-\d{2}-\d{2})/.exec(trimmed);
+  return dMatch ? dMatch[1]! : trimmed;
+}
+
+export function isValidDateRangeEndpoint(
+  raw: string | null | undefined,
+  mode: 'date' | 'datetime' = 'date',
+): boolean {
+  if (!raw) return false;
+  const trimmed = raw.trim();
+  if (mode === 'datetime') {
+    return /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?$/.test(trimmed);
+  }
+  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+}
+
+function compareBoundEndpoint(value: string, bound: string, mode: 'date' | 'datetime'): number {
+  const normVal = normalizeDateRangeEndpoint(value, mode) ?? value;
+  const normBound = normalizeDateRangeEndpoint(bound, mode) ?? bound;
+  if (normVal < normBound) return -1;
+  if (normVal > normBound) return 1;
+  return 0;
+}
+
+export function commitDateRangeEndpoint(
+  current: EmrDateRangeValue | null | undefined,
+  edge: 'start' | 'end',
+  raw: string | null | undefined,
+  mode: 'date' | 'datetime' = 'date',
+  min?: string,
+  max?: string,
+): EmrDateRangeCommitResult {
+  const normalizedInput = normalizeDateRangeEndpoint(raw, mode);
+  const curStart = current?.start ? normalizeDateRangeEndpoint(current.start, mode) : null;
+  const curEnd = current?.end ? normalizeDateRangeEndpoint(current.end, mode) : null;
+  let nextStart = edge === 'start' ? normalizedInput : curStart;
+  let nextEnd = edge === 'end' ? normalizedInput : curEnd;
+  let swapped = false;
+
+  if (nextStart && nextEnd && nextEnd < nextStart) {
+    const tmp = nextStart;
+    nextStart = nextEnd;
+    nextEnd = tmp;
+    swapped = true;
+  }
+
+  const startOutOfBounds = Boolean(
+    nextStart &&
+      ((min && compareBoundEndpoint(nextStart, min, mode) < 0) ||
+        (max && compareBoundEndpoint(nextStart, max, mode) > 0)),
+  );
+  const endOutOfBounds = Boolean(
+    nextEnd &&
+      ((min && compareBoundEndpoint(nextEnd, min, mode) < 0) ||
+        (max && compareBoundEndpoint(nextEnd, max, mode) > 0)),
+  );
+
+  const value = !nextStart && !nextEnd ? null : { start: nextStart, end: nextEnd };
+  return { value, swapped, startOutOfBounds, endOutOfBounds };
+}
+
+export function selectDateRangeCalendarDay(
+  current: EmrDateRangeValue | null | undefined,
+  clickedIso: string,
+  mode: 'date' | 'datetime' = 'date',
+  min?: string,
+  max?: string,
+): EmrDateRangeValue | null {
+  const dateOnlyClicked = clickedIso.slice(0, 10);
+  const minDate = min?.slice(0, 10);
+  const maxDate = max?.slice(0, 10);
+  if ((minDate && dateOnlyClicked < minDate) || (maxDate && dateOnlyClicked > maxDate)) {
+    return current ?? null;
+  }
+  const baseRange: EmrDateRangeValue | null = current
+    ? {
+        start: current.start ? current.start.slice(0, 10) : null,
+        end: current.end ? current.end.slice(0, 10) : null,
+      }
+    : null;
+  const nextDateRange = normalizeDateRangeSelection(baseRange, dateOnlyClicked);
+  if (mode !== 'datetime') {
+    return nextDateRange;
+  }
+  const extractTime = (iso: string | null | undefined, fallback: string): string => {
+    if (!iso) return fallback;
+    const m = /[T ](\d{2}:\d{2})/.exec(iso);
+    return m ? m[1]! : fallback;
+  };
+  const startTime = extractTime(current?.start, '00:00');
+  const endTime = extractTime(current?.end, '23:59');
+  return {
+    start: nextDateRange.start ? `${nextDateRange.start}T${startTime}` : null,
+    end: nextDateRange.end ? `${nextDateRange.end}T${endTime}` : null,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1012,17 +1788,93 @@ export function rankTagSuggestions(
   }));
 }
 
+export function countSliderStepDecimals(step: number): number {
+  if (!Number.isFinite(step) || step <= 0) return 0;
+  const s = String(step).toLowerCase();
+  const expIdx = s.indexOf('e-');
+  if (expIdx !== -1) {
+    const mantissa = s.slice(0, expIdx);
+    const exp = Number(s.slice(expIdx + 2));
+    const frac = (mantissa.split('.')[1] ?? '').length;
+    return Math.min(10, Math.max(0, exp + frac));
+  }
+  return Math.min(10, (s.split('.')[1] ?? '').length);
+}
+
 export function clampSliderValue(
   value: number,
   min = 0,
   max = 100,
   step = 1,
 ): number {
-  const safeStep = step > 0 ? step : 1;
-  const clamped = Math.max(min, Math.min(max, value));
-  const stepped = min + Math.round((clamped - min) / safeStep) * safeStep;
-  const decimals = (String(safeStep).split('.')[1] ?? '').length;
-  return Number(Math.max(min, Math.min(max, stepped)).toFixed(decimals));
+  const safeMin = Number.isFinite(min) ? min : 0;
+  const safeMax = Number.isFinite(max) ? max : 100;
+  const lo = Math.min(safeMin, safeMax);
+  const hi = Math.max(safeMin, safeMax);
+  const safeStep = Number.isFinite(step) && step > 0 ? step : 1;
+  if (!Number.isFinite(value)) return lo;
+  const clamped = Math.max(lo, Math.min(hi, value));
+  const stepped = lo + Math.round((clamped - lo) / safeStep) * safeStep;
+  const decimals = Math.max(countSliderStepDecimals(safeStep), countSliderStepDecimals(lo));
+  return Number(Math.max(lo, Math.min(hi, stepped)).toFixed(decimals));
+}
+
+export function sliderValuePercent(
+  value: number | null | undefined,
+  min = 0,
+  max = 100,
+): number {
+  if (value === null || value === undefined || !Number.isFinite(value)) return 0;
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  if (hi <= lo) return 0;
+  return Math.max(0, Math.min(100, ((value - lo) / (hi - lo)) * 100));
+}
+
+export function formatSliderValue(
+  value: number | null | undefined,
+  unit = '',
+  precision?: number,
+  unsetLabel = '—',
+): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return unsetLabel;
+  const formatted =
+    precision !== undefined && Number.isFinite(precision) && precision >= 0
+      ? value.toFixed(Math.min(10, Math.trunc(precision)))
+      : String(value);
+  return unit ? `${formatted} ${unit}` : formatted;
+}
+
+export function resolveSliderKeyStepValue(
+  key: string,
+  current: number | null | undefined,
+  min = 0,
+  max = 100,
+  step = 1,
+): number | null {
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  const safeStep = Number.isFinite(step) && step > 0 ? step : 1;
+  const base = current !== null && current !== undefined && Number.isFinite(current) ? current : lo;
+  const coarse = Math.max(safeStep, clampSliderValue(lo + (hi - lo) / 10, lo, hi, safeStep) - lo || safeStep);
+  switch (key) {
+    case 'ArrowRight':
+    case 'ArrowUp':
+      return clampSliderValue(base + safeStep, lo, hi, safeStep);
+    case 'ArrowLeft':
+    case 'ArrowDown':
+      return clampSliderValue(base - safeStep, lo, hi, safeStep);
+    case 'PageUp':
+      return clampSliderValue(base + coarse, lo, hi, safeStep);
+    case 'PageDown':
+      return clampSliderValue(base - coarse, lo, hi, safeStep);
+    case 'Home':
+      return clampSliderValue(lo, lo, hi, safeStep);
+    case 'End':
+      return clampSliderValue(hi, lo, hi, safeStep);
+    default:
+      return null;
+  }
 }
 
 export function clampRangeSliderPair(
@@ -1034,36 +1886,151 @@ export function clampRangeSliderPair(
   minDistance = 0,
   movedThumb: 'low' | 'high' = 'low',
 ): readonly [number, number] {
-  const safeMinDist = Math.max(0, minDistance);
-  let nextLow = clampSliderValue(low, min, max, step);
-  let nextHigh = clampSliderValue(high, min, max, step);
+  const safeMin = Number.isFinite(min) ? min : 0;
+  const safeMax = Number.isFinite(max) ? max : 100;
+  const lo = Math.min(safeMin, safeMax);
+  const hi = Math.max(safeMin, safeMax);
+  const safeStep = Number.isFinite(step) && step > 0 ? step : 1;
+  const span = Math.max(0, hi - lo);
+  const safeMinDist = Math.min(
+    span,
+    Math.max(0, Number.isFinite(minDistance) ? minDistance : 0),
+  );
+
+  let nextLow = clampSliderValue(Number.isFinite(low) ? low : lo, lo, hi, safeStep);
+  let nextHigh = clampSliderValue(Number.isFinite(high) ? high : hi, lo, hi, safeStep);
+
   if (movedThumb === 'low') {
-    nextLow = Math.min(nextLow, clampSliderValue(nextHigh - safeMinDist, min, max, step));
+    const minHigh = clampSliderValue(lo + safeMinDist, lo, hi, safeStep);
+    if (nextHigh < minHigh) nextHigh = minHigh;
+    const maxLow = clampSliderValue(nextHigh - safeMinDist, lo, hi, safeStep);
+    if (nextLow > maxLow) nextLow = maxLow;
+    if (nextHigh - nextLow < safeMinDist - 1e-9) {
+      nextLow = clampSliderValue(nextLow - safeStep, lo, hi, safeStep);
+    }
   } else {
-    nextHigh = Math.max(nextHigh, clampSliderValue(nextLow + safeMinDist, min, max, step));
+    const maxLow = clampSliderValue(hi - safeMinDist, lo, hi, safeStep);
+    if (nextLow > maxLow) nextLow = maxLow;
+    const minHigh = clampSliderValue(nextLow + safeMinDist, lo, hi, safeStep);
+    if (nextHigh < minHigh) nextHigh = minHigh;
+    if (nextHigh - nextLow < safeMinDist - 1e-9) {
+      nextHigh = clampSliderValue(nextHigh + safeStep, lo, hi, safeStep);
+    }
   }
+
   if (nextLow > nextHigh) {
-    const mid = clampSliderValue((nextLow + nextHigh) / 2, min, max, step);
+    const mid = clampSliderValue((nextLow + nextHigh) / 2, lo, hi, safeStep);
     return [mid, mid];
   }
   return [nextLow, nextHigh];
 }
 
-const isMaskToken = (ch: string): boolean => ch === '9' || ch === 'A' || ch === '*';
+export function resolveClosestRangeThumb(
+  offsetFraction: number,
+  lowPct: number,
+  highPct: number,
+): 'low' | 'high' {
+  const pct = Math.max(0, Math.min(100, offsetFraction * 100));
+  if (pct <= lowPct && lowPct < highPct) return 'low';
+  if (pct >= highPct && lowPct < highPct) return 'high';
+  if (Math.abs(lowPct - highPct) < 1e-6) {
+    return pct < lowPct ? 'low' : 'high';
+  }
+  return Math.abs(pct - lowPct) <= Math.abs(pct - highPct) ? 'low' : 'high';
+}
 
-const matchesMaskToken = (token: string, char: string): boolean => {
+export function resolveRangeThumbKeyValue(
+  thumb: 'low' | 'high',
+  key: string,
+  pair: readonly [number, number],
+  min = 0,
+  max = 100,
+  step = 1,
+  minDistance = 0,
+): readonly [number, number] | null {
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  const safeDist = Math.min(hi - lo, Math.max(0, minDistance));
+  const [curLow, curHigh] = pair;
+  if (thumb === 'low') {
+    const thumbMax = Math.max(lo, curHigh - safeDist);
+    const next =
+      key === 'End'
+        ? clampSliderValue(thumbMax, lo, hi, step)
+        : resolveSliderKeyStepValue(key, curLow, lo, hi, step);
+    if (next === null) return null;
+    return clampRangeSliderPair(next, curHigh, lo, hi, step, safeDist, 'low');
+  }
+  const thumbMin = Math.min(hi, curLow + safeDist);
+  const next =
+    key === 'Home'
+      ? clampSliderValue(thumbMin, lo, hi, step)
+      : resolveSliderKeyStepValue(key, curHigh, lo, hi, step);
+  if (next === null) return null;
+  return clampRangeSliderPair(curLow, next, lo, hi, step, safeDist, 'high');
+}
+
+interface ParsedMaskToken {
+  readonly kind: 'token' | 'literal';
+  readonly char: string;
+}
+
+function parseMaskPattern(
+  mask: string,
+  definitions?: Readonly<Record<string, string>>,
+): readonly ParsedMaskToken[] {
+  const out: ParsedMaskToken[] = [];
+  for (let i = 0; i < mask.length; i += 1) {
+    const ch = mask[i]!;
+    if (ch === '\\' && i + 1 < mask.length) {
+      i += 1;
+      out.push({ kind: 'literal', char: mask[i]! });
+      continue;
+    }
+    if (ch === '9' || ch === 'A' || ch === '*' || Boolean(definitions && ch in definitions)) {
+      out.push({ kind: 'token', char: ch });
+    } else {
+      out.push({ kind: 'literal', char: ch });
+    }
+  }
+  return out;
+}
+
+function compileCustomMaskDef(pattern: string): RegExp | null {
+  try {
+    return new RegExp(`^(?:${pattern})$`);
+  } catch {
+    return null;
+  }
+}
+
+const matchesMaskToken = (
+  token: string,
+  char: string,
+  definitions?: Readonly<Record<string, string>>,
+): boolean => {
+  if (definitions && token in definitions) {
+    const rx = compileCustomMaskDef(definitions[token]!);
+    return rx ? rx.test(char) : false;
+  }
   if (token === '9') return /^[0-9]$/.test(char);
   if (token === 'A') return /^[A-Za-z]$/.test(char);
   if (token === '*') return /^[A-Za-z0-9]$/.test(char);
   return false;
 };
 
-export function applyInputMask(raw: string | null | undefined, mask: string): EmrMaskResult {
+export function applyInputMask(
+  raw: string | null | undefined,
+  mask: string,
+  options: EmrMaskOptions = {},
+): EmrMaskResult {
   const input = raw ?? '';
   if (!mask) {
-    return { masked: input, unmasked: input, complete: input.length > 0 };
+    const finalVal = options.uppercase ? input.toUpperCase() : input;
+    return { masked: finalVal, unmasked: finalVal, complete: finalVal.length > 0 };
   }
-  const requiredTokens = [...mask].filter(isMaskToken).length;
+  const parsed = parseMaskPattern(mask, options.definitions);
+  const requiredTokens = parsed.filter((t) => t.kind === 'token').length;
   if (!input) {
     return { masked: '', unmasked: '', complete: requiredTokens === 0 };
   }
@@ -1072,39 +2039,39 @@ export function applyInputMask(raw: string | null | undefined, mask: string): Em
   let masked = '';
   let unmasked = '';
   let matchedTokens = 0;
+  const emittedIsToken: boolean[] = [];
 
-  for (let mIdx = 0; mIdx < mask.length; mIdx += 1) {
-    const mChar = mask[mIdx]!;
-    if (isMaskToken(mChar)) {
+  for (let pIdx = 0; pIdx < parsed.length; pIdx += 1) {
+    const part = parsed[pIdx]!;
+    if (part.kind === 'token') {
       let found: string | null = null;
       while (rawIdx < input.length) {
         const candidate = input[rawIdx]!;
         rawIdx += 1;
-        if (matchesMaskToken(mChar, candidate)) {
-          found = candidate;
+        if (matchesMaskToken(part.char, candidate, options.definitions)) {
+          found = options.uppercase ? candidate.toUpperCase() : candidate;
           break;
         }
       }
       if (found === null) break;
       masked += found;
       unmasked += found;
+      emittedIsToken.push(true);
       matchedTokens += 1;
     } else {
       if (rawIdx < input.length) {
-        if (input[rawIdx] === mChar) {
+        if (input[rawIdx] === part.char) {
           rawIdx += 1;
         }
-        masked += mChar;
+        masked += part.char;
+        emittedIsToken.push(false);
       }
     }
   }
 
-  while (
-    masked.length > 0 &&
-    !isMaskToken(mask[masked.length - 1] ?? '9') &&
-    unmasked.length === 0
-  ) {
+  while (masked.length > 0 && !emittedIsToken[masked.length - 1] && unmasked.length === 0) {
     masked = masked.slice(0, -1);
+    emittedIsToken.pop();
   }
 
   return {
@@ -1114,13 +2081,145 @@ export function applyInputMask(raw: string | null | undefined, mask: string): Em
   };
 }
 
+export function inferMaskInputMode(
+  mask: string,
+  definitions?: Readonly<Record<string, string>>,
+): 'numeric' | 'text' {
+  const tokens = parseMaskPattern(mask, definitions).filter((p) => p.kind === 'token');
+  if (tokens.length === 0) return 'text';
+  return tokens.every((t) => t.char === '9') ? 'numeric' : 'text';
+}
+
+export function resolveMaskedCaretPosition(
+  prevMasked: string,
+  nextMasked: string,
+  prevCaret: number,
+  mask: string,
+  options: EmrMaskOptions = {},
+): number {
+  const safeCaret = Math.max(0, Math.min(prevMasked.length, prevCaret));
+  const prefixUnmasked = applyInputMask(prevMasked.slice(0, safeCaret), mask, options).unmasked.length;
+  if (prefixUnmasked === 0) {
+    return 0;
+  }
+  const parsed = parseMaskPattern(mask, options.definitions);
+  let tokenCount = 0;
+  let maskIdx = 0;
+  for (let i = 0; i < nextMasked.length; i += 1) {
+    while (maskIdx < parsed.length && parsed[maskIdx]!.kind === 'literal') {
+      if (nextMasked[i] === parsed[maskIdx]!.char) {
+        maskIdx += 1;
+        break;
+      }
+      maskIdx += 1;
+    }
+    const curPart = parsed[maskIdx];
+    if (curPart?.kind === 'token' && nextMasked[i] !== undefined) {
+      tokenCount += 1;
+      maskIdx += 1;
+      if (tokenCount >= prefixUnmasked) {
+        let pos = i + 1;
+        while (pos < nextMasked.length && maskIdx < parsed.length && parsed[maskIdx]!.kind === 'literal') {
+          if (nextMasked[pos] === parsed[maskIdx]!.char) {
+            pos += 1;
+            maskIdx += 1;
+          } else {
+            break;
+          }
+        }
+        return pos;
+      }
+    }
+  }
+  return nextMasked.length;
+}
+
+export function editMaskedInputWithCaret(
+  prevMasked: string,
+  rawNext: string,
+  rawCaret: number,
+  mask: string,
+  options: EmrMaskOptions = {},
+): { readonly result: EmrMaskResult; readonly caret: number } {
+  const prevRes = applyInputMask(prevMasked, mask, options);
+  const nextRes = applyInputMask(rawNext, mask, options);
+  const safeRawCaret = Math.max(0, Math.min(rawNext.length, rawCaret));
+
+  if (
+    rawNext.length < prevMasked.length &&
+    nextRes.unmasked === prevRes.unmasked &&
+    prevRes.unmasked.length > 0
+  ) {
+    const tokensBefore = applyInputMask(rawNext.slice(0, safeRawCaret), mask, options).unmasked.length;
+    const dropIdx = Math.max(0, tokensBefore - 1);
+    const trimmedUnmasked =
+      prevRes.unmasked.slice(0, dropIdx) + prevRes.unmasked.slice(dropIdx + 1);
+    const adjusted = applyInputMask(trimmedUnmasked, mask, options);
+    const caret = resolveMaskedCaretPosition(
+      rawNext.slice(0, safeRawCaret).slice(0, Math.max(0, safeRawCaret - 1)),
+      adjusted.masked,
+      Math.max(0, safeRawCaret - 1),
+      mask,
+      options,
+    );
+    return { result: adjusted, caret };
+  }
+
+  const caret = resolveMaskedCaretPosition(rawNext, nextRes.masked, safeRawCaret, mask, options);
+  return { result: nextRes, caret };
+}
+
 export function normalizeOtpSlots(
   value: string | null | undefined,
   length = 6,
 ): readonly string[] {
-  const safeLen = Math.max(1, Math.floor(length));
+  const safeLen = Math.max(1, Math.min(12, Math.floor(length)));
   const chars = [...(value ?? '')];
-  return Array.from({ length: safeLen }, (_, i) => chars[i] ?? '');
+  return Array.from({ length: safeLen }, (_, i) => {
+    const ch = chars[i] ?? '';
+    return ch === ' ' ? '' : ch;
+  });
+}
+
+function encodeOtpSlots(slots: readonly string[]): string {
+  return slots
+    .map((s) => (s && s.length === 1 ? s : ' '))
+    .join('')
+    .replace(/ +$/g, '');
+}
+
+export function extractOtpTypedInput(previousSlotChar: string, rawDomValue: string): string {
+  if (!rawDomValue) return '';
+  if (!previousSlotChar || rawDomValue.length > 2) return rawDomValue;
+  if (rawDomValue.length === 2) {
+    if (rawDomValue[0] === previousSlotChar) return rawDomValue[1]!;
+    if (rawDomValue[1] === previousSlotChar) return rawDomValue[0]!;
+  }
+  return rawDomValue;
+}
+
+export function resolveOtpClearSlot(
+  slots: readonly string[],
+  slotIndex: number,
+  key: 'Backspace' | 'Delete',
+): { readonly targetIndex: number; readonly nextFocusIndex: number } | null {
+  if (slotIndex < 0 || slotIndex >= slots.length) return null;
+  if (key === 'Backspace') {
+    if (slots[slotIndex]) {
+      return { targetIndex: slotIndex, nextFocusIndex: slotIndex };
+    }
+    if (slotIndex > 0) {
+      return { targetIndex: slotIndex - 1, nextFocusIndex: slotIndex - 1 };
+    }
+    return null;
+  }
+  if (slots[slotIndex]) {
+    return { targetIndex: slotIndex, nextFocusIndex: slotIndex };
+  }
+  if (slotIndex < slots.length - 1) {
+    return { targetIndex: slotIndex + 1, nextFocusIndex: slotIndex };
+  }
+  return null;
 }
 
 export function applyOtpSlotEdit(
@@ -1129,18 +2228,19 @@ export function applyOtpSlotEdit(
   typed: string,
   length = 6,
   numericOnly = true,
+  options: { readonly uppercase?: boolean } = {},
 ): EmrOtpEditResult {
-  const safeLen = Math.max(1, Math.floor(length));
+  const safeLen = Math.max(1, Math.min(12, Math.floor(length)));
   const slots = [...normalizeOtpSlots(currentValue, safeLen)];
-  const cleaned = [...typed].filter((ch) =>
-    numericOnly ? /^[0-9]$/.test(ch) : /^[A-Za-z0-9]$/.test(ch),
-  );
+  const cleaned = [...typed]
+    .filter((ch) => (numericOnly ? /^[0-9]$/.test(ch) : /^[A-Za-z0-9]$/.test(ch)))
+    .map((ch) => (!numericOnly && options.uppercase ? ch.toUpperCase() : ch));
 
   if (cleaned.length === 0) {
     if (slotIndex >= 0 && slotIndex < safeLen) {
       slots[slotIndex] = '';
     }
-    const value = slots.join('');
+    const value = encodeOtpSlots(slots);
     return {
       value,
       slots,
@@ -1155,7 +2255,7 @@ export function applyOtpSlotEdit(
     slots[cursor] = ch;
     cursor += 1;
   }
-  const value = slots.join('');
+  const value = encodeOtpSlots(slots);
   return {
     value,
     slots,
@@ -1165,8 +2265,83 @@ export function applyOtpSlotEdit(
 }
 
 // ─────────────────────────────────────────────────────────────
-// 6. Accordion, Breadcrumbs & Clinical Color Swatches
+// 6. Menu, SplitButton, Accordion, Breadcrumbs, ColorPicker & CopyButton
 // ─────────────────────────────────────────────────────────────
+
+export function canOpenEmrMenu(params: {
+  readonly disabled?: boolean;
+  readonly readOnly?: boolean;
+  readonly itemsCount: number;
+}): boolean {
+  return !params.disabled && !params.readOnly && params.itemsCount > 0;
+}
+
+export function canSelectEmrMenuItem(
+  item: Pick<EmrMenuItem, 'disabled'>,
+  menuDisabled = false,
+  menuReadOnly = false,
+): boolean {
+  return !menuDisabled && !menuReadOnly && !item.disabled;
+}
+
+export function getEnabledMenuIndices(items: readonly EmrMenuItem[]): readonly number[] {
+  const indices: number[] = [];
+  for (let i = 0; i < items.length; i += 1) {
+    if (!items[i]?.disabled) indices.push(i);
+  }
+  return indices;
+}
+
+export function moveEmrMenuFocusIndex(
+  items: readonly EmrMenuItem[],
+  currentIndex: number,
+  key: 'ArrowUp' | 'ArrowDown' | 'Home' | 'End',
+): number {
+  const enabled = getEnabledMenuIndices(items);
+  if (enabled.length === 0) return -1;
+  if (key === 'Home') return enabled[0]!;
+  if (key === 'End') return enabled[enabled.length - 1]!;
+  const pos = enabled.indexOf(currentIndex);
+  if (pos < 0) {
+    return key === 'ArrowUp' ? enabled[enabled.length - 1]! : enabled[0]!;
+  }
+  const delta = key === 'ArrowDown' ? 1 : -1;
+  return enabled[(pos + delta + enabled.length) % enabled.length]!;
+}
+
+export function findEmrMenuTypeaheadIndex(
+  items: readonly EmrMenuItem[],
+  query: string,
+  fromIndex = -1,
+): number {
+  const q = query.trim().toLowerCase();
+  if (!q || items.length === 0) return -1;
+  const start = fromIndex >= 0 && fromIndex < items.length ? fromIndex + 1 : 0;
+  for (let offset = 0; offset < items.length; offset += 1) {
+    const idx = (start + offset) % items.length;
+    const item = items[idx];
+    if (!item || item.disabled) continue;
+    if (item.label.trim().toLowerCase().startsWith(q)) return idx;
+  }
+  return -1;
+}
+
+export function canTriggerEmrSplitPrimary(params: {
+  readonly disabled?: boolean;
+  readonly readOnly?: boolean;
+  readonly loading?: boolean;
+}): boolean {
+  return !params.disabled && !params.readOnly && !params.loading;
+}
+
+export function canOpenEmrSplitMenu(params: {
+  readonly disabled?: boolean;
+  readonly readOnly?: boolean;
+  readonly loading?: boolean;
+  readonly itemsCount: number;
+}): boolean {
+  return !params.disabled && !params.readOnly && !params.loading && params.itemsCount > 0;
+}
 
 export function toggleAccordionId(
   currentIds: readonly string[],
@@ -1178,6 +2353,49 @@ export function toggleAccordionId(
     return exists ? currentIds.filter((item) => item !== id) : [...currentIds, id];
   }
   return exists ? [] : [id];
+}
+
+export function resolveAccordionExpandedIds(
+  items: readonly EmrAccordionItem[],
+  expandedIds: readonly string[],
+  multiple = false,
+): readonly string[] {
+  const validIds = new Set(items.map((item) => item.id));
+  const unique: string[] = [];
+  for (const id of expandedIds) {
+    if (validIds.has(id) && !unique.includes(id)) {
+      unique.push(id);
+    }
+  }
+  return multiple ? unique : unique.slice(0, 1);
+}
+
+export function canToggleAccordionItem(
+  item: Pick<EmrAccordionItem, 'disabled'>,
+  disabled = false,
+  readOnly = false,
+): boolean {
+  return !disabled && !readOnly && !item.disabled;
+}
+
+export function moveAccordionFocusIndex(
+  items: readonly EmrAccordionItem[],
+  currentIndex: number,
+  key: 'ArrowUp' | 'ArrowDown' | 'Home' | 'End',
+): number {
+  const enabled: number[] = [];
+  for (let i = 0; i < items.length; i += 1) {
+    if (!items[i]?.disabled) enabled.push(i);
+  }
+  if (enabled.length === 0) return -1;
+  if (key === 'Home') return enabled[0]!;
+  if (key === 'End') return enabled[enabled.length - 1]!;
+  const pos = enabled.indexOf(currentIndex);
+  if (pos < 0) {
+    return key === 'ArrowUp' ? enabled[enabled.length - 1]! : enabled[0]!;
+  }
+  const delta = key === 'ArrowDown' ? 1 : -1;
+  return enabled[(pos + delta + enabled.length) % enabled.length]!;
 }
 
 export function collapseBreadcrumbs(
@@ -1195,6 +2413,13 @@ export function collapseBreadcrumbs(
   };
 }
 
+export function canSelectEmrBreadcrumb(
+  item: Pick<EmrBreadcrumbItem, 'disabled'>,
+  isCurrent: boolean,
+): boolean {
+  return !item.disabled && !isCurrent;
+}
+
 export const DEFAULT_CLINICAL_COLOR_SWATCHES: readonly EmrColorSwatch[] = [
   { value: '#dc2626', label: 'Arterial Red' },
   { value: '#2563eb', label: 'Venous Blue' },
@@ -1205,6 +2430,151 @@ export const DEFAULT_CLINICAL_COLOR_SWATCHES: readonly EmrColorSwatch[] = [
   { value: '#db2777', label: 'Magenta' },
   { value: '#334155', label: 'Slate Ink' },
 ];
+
+export function normalizeHexColor(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+  if (/^#[0-9a-fA-F]{6}$/.test(withHash)) {
+    return withHash.toLowerCase();
+  }
+  if (/^#[0-9a-fA-F]{3}$/.test(withHash)) {
+    const r = withHash[1]!;
+    const g = withHash[2]!;
+    const b = withHash[3]!;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return null;
+}
+
+export function isHexColorValid(raw: string | null | undefined): boolean {
+  return normalizeHexColor(raw) !== null;
+}
+
+export function getContrastCheckTone(hex: string): 'light' | 'dark' {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return 'light';
+  const r8 = Number.parseInt(normalized.slice(1, 3), 16) / 255;
+  const g8 = Number.parseInt(normalized.slice(3, 5), 16) / 255;
+  const b8 = Number.parseInt(normalized.slice(5, 7), 16) / 255;
+  const toLin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = 0.2126 * toLin(r8) + 0.7152 * toLin(g8) + 0.0722 * toLin(b8);
+  return luminance > 0.179 ? 'dark' : 'light';
+}
+
+export function resolveColorSwatchTabStopIndex(
+  swatches: readonly EmrColorSwatch[],
+  value: string | null | undefined,
+  disabled = false,
+): number {
+  if (disabled || swatches.length === 0) return -1;
+  const normalized = normalizeHexColor(value);
+  if (normalized) {
+    const idx = swatches.findIndex((s) => normalizeHexColor(s.value) === normalized);
+    if (idx >= 0) return idx;
+  }
+  return 0;
+}
+
+export function moveColorSwatchFocusIndex(
+  swatches: readonly EmrColorSwatch[],
+  currentIndex: number,
+  key: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown' | 'Home' | 'End',
+  disabled = false,
+): number {
+  if (disabled || swatches.length === 0) return -1;
+  if (key === 'Home') return 0;
+  if (key === 'End') return swatches.length - 1;
+  const base = currentIndex >= 0 && currentIndex < swatches.length ? currentIndex : 0;
+  const delta = key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1;
+  return (base + delta + swatches.length) % swatches.length;
+}
+
+export function canClearEmrColorPicker(params: {
+  readonly clearable?: boolean;
+  readonly value: string | null | undefined;
+  readonly disabled?: boolean;
+  readonly readOnly?: boolean;
+}): boolean {
+  return Boolean(params.clearable && params.value && !params.disabled && !params.readOnly);
+}
+
+export function canCopyEmrValue(
+  value: string | null | undefined,
+  disabled = false,
+): boolean {
+  return Boolean(!disabled && value && value.length > 0);
+}
+
+export const canTriggerCopy = canCopyEmrValue;
+
+export function resolveCopyFeedbackDurationMs(ms?: number): number {
+  return typeof ms === 'number' && Number.isFinite(ms) && ms >= 0 ? Math.trunc(ms) : 2000;
+}
+
+export function formatCopyButtonLabel(
+  copied: boolean,
+  label = 'Copy',
+  copiedLabel = 'Copied',
+): string {
+  return copied ? copiedLabel || 'Copied' : label || 'Copy';
+}
+
+const WAVE2_NAV_ICON_PATHS: Readonly<Record<string, readonly string[]>> = {
+  check: ['M20 6 9 17l-5-5'],
+  close: ['M18 6 6 18', 'M6 6l12 12'],
+  'chevron-up': ['m18 15-6-6-6 6'],
+  'chevron-down': ['m6 9 6 6 6-6'],
+  'chevron-left': ['m15 18-6-6 6-6'],
+  'chevron-right': ['m9 18 6-6-6-6'],
+  copy: [
+    'M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z',
+    'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
+  ],
+  'more-vertical': [
+    'M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+  ],
+  'more-horizontal': [
+    'M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+    'M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+  ],
+  file: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6'],
+  eye: [
+    'M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z',
+    'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  ],
+  pen: ['M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'],
+  trash: [
+    'M3 6h18',
+    'M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6',
+    'M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2',
+  ],
+  download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5', 'M12 15V3'],
+  upload: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm17 8-5-5-5 5', 'M12 3v12'],
+  info: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 16v-4', 'M12 8h.01'],
+  warning: ['m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3', 'M12 9v4', 'M12 17h.01'],
+  danger: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'm15 9-6 6', 'm9 9 6 6'],
+  lock: ['M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z', 'M7 11V7a5 5 0 0 1 10 0v4'],
+  unlock: ['M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z', 'M7 11V7a5 5 0 0 1 9.9-1'],
+  plus: ['M5 12h14', 'M12 5v14'],
+  minus: ['M5 12h14'],
+  search: ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'm21 21-4.3-4.3'],
+  calendar: ['M8 2v4', 'M16 2v4', 'M3 10h18', 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'],
+  clock: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 6v6l4 2'],
+  user: ['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+  phone: ['M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z'],
+  undo: ['M3 7v6h6', 'M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13'],
+  redo: ['M21 7v6h-6', 'M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7'],
+};
+
+export function resolveWave2NavIconPaths(name?: string): readonly string[] {
+  if (!name) return [];
+  return WAVE2_NAV_ICON_PATHS[name] ?? [];
+}
 
 export type {
   EmrAccordionItem,
@@ -1724,7 +3094,8 @@ const VALID_SEG_BADGE_TONES = new Set<EmrTone>(['neutral', 'info', 'success', 'w
 const VALID_SEG_BADGE_VARIANTS = new Set<EmrBadgeVariant>(['soft', 'solid', 'outline']);
 
 export function normalizeEmrSegmentedSize(size?: unknown): EmrSegmentedSize {
-  return size === 'sm' ? 'sm' : 'md';
+  if (size === 'sm' || size === 'lg') return size;
+  return 'md';
 }
 
 export function normalizeEmrSegmentedVariant(variant?: unknown): EmrSegmentedVariant {
@@ -1744,9 +3115,10 @@ export function resolveEmrSegmentedValidationState(params: {
   error?: string;
   warning?: string;
   invalid?: boolean;
+  hasWarning?: boolean;
 }): EmrSegmentedValidationState {
   const isInvalid = Boolean(params.invalid) || Boolean(params.error);
-  const hasWarning = !isInvalid && Boolean(params.warning);
+  const hasWarning = !isInvalid && (Boolean(params.hasWarning) || Boolean(params.warning));
   return { isInvalid, hasWarning };
 }
 

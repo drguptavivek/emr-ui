@@ -7,13 +7,25 @@ import {
   DEFAULT_IMAGE_VIEWPORT,
   type EmrAccordionItem,
   type EmrBreadcrumbItem,
+  type EmrControlVariant,
   type EmrDateRangePreset,
   type EmrDateRangeValue,
+  type EmrImageCropResult,
   type EmrImageCropTransform,
+  type EmrImageItem,
   type EmrImageViewportState,
   type EmrMenuItem,
+  type EmrOption,
+  type EmrSliderMark,
+  type EmrToggleGroupLabelPlacement,
+  type EmrToggleGroupOrientation,
+  type EmrToggleGroupSize,
+  type EmrToggleGroupVariant,
+  type EmrTone,
+  type EmrTreeCheckStrategy,
   type EmrTreeNode,
   type EmrUploadedImageItem,
+  type FieldFrameLayout,
   type ImageFieldIntent,
   type ImageFieldViewModel,
 } from '@drguptavivek/emr-controller';
@@ -58,27 +70,32 @@ const OCULAR_TREE_NODES: readonly EmrTreeNode[] = [
     id: 'ant-seg',
     label: 'Anterior segment',
     description: 'Slit-lamp biomicroscopy',
+    icon: 'eye',
     children: [
-      { id: 'cornea', label: 'Cornea' },
-      { id: 'ac', label: 'Anterior chamber' },
-      { id: 'lens', label: 'Crystalline lens / IOL' },
+      { id: 'cornea', label: 'Cornea', code: 'H18', badge: { label: 'Primary', tone: 'info' }, tone: 'info', keywords: ['epithelium', 'stroma'] },
+      { id: 'ac', label: 'Anterior chamber', code: 'H20', readOnly: true, badge: 'Locked', tone: 'warning' },
+      { id: 'lens', label: 'Crystalline lens / IOL', code: 'H25' },
     ],
   },
   {
     id: 'post-seg',
     label: 'Posterior segment',
+    icon: 'eye',
     children: [
-      { id: 'disc', label: 'Optic nerve head' },
-      { id: 'macula', label: 'Macula & fovea' },
+      { id: 'disc', label: 'Optic nerve head', code: 'H40', badge: { label: 'Glaucoma', tone: 'danger' }, tone: 'danger' },
+      { id: 'macula', label: 'Macula & fovea', code: 'H35', keywords: ['oct', 'retina'] },
+      { id: 'vitreous', label: 'Vitreous (archived)', code: 'H43', disabled: true },
     ],
   },
 ];
 
-const COMM_PREF_OPTIONS = [
-  { value: 'sms', label: 'SMS reminder' },
-  { value: 'whatsapp', label: 'WhatsApp Rx' },
-  { value: 'portal', label: 'Portal release' },
-] as const;
+const COMM_PREF_OPTIONS: readonly EmrOption[] = [
+  { value: 'sms', label: 'SMS appointment reminders', group: 'Patient Channels', icon: 'phone', badge: { label: 'Verified', tone: 'success' }, tone: 'success', readOnly: true },
+  { value: 'whatsapp', label: 'WhatsApp Rx & instructions', group: 'Patient Channels', description: 'Encrypted clinic dispatch', badge: { label: 'Preferred', tone: 'info' } },
+  { value: 'portal', label: 'Portal lab & OCT release', group: 'Clinical Sync', description: 'Auto-publish signed diagnostic reports' },
+  { value: 'legacy', label: 'Fax summary', group: 'Clinical Sync', disabled: true, description: 'Legacy gateway offline' },
+  { value: 'none', label: 'Opt out of non-urgent alerts', tone: 'warning' },
+];
 
 const DATE_PRESETS: readonly EmrDateRangePreset[] = [
   { id: '7d', label: 'Last 7 days', range: { start: '2026-03-08', end: '2026-03-15' } },
@@ -134,6 +151,19 @@ const ENCOUNTER_MENU_ITEMS: readonly EmrMenuItem[] = [
   { id: 'strike-out', label: 'Mark entered-in-error', dividerBefore: true, tone: 'danger' },
 ];
 
+const SLIDER_MARKS: readonly EmrSliderMark[] = [
+  { value: 0, label: '0%' },
+  { value: 50, label: '50%' },
+  { value: 100, label: '100%' },
+];
+
+const RANGE_SLIDER_MARKS: readonly EmrSliderMark[] = [
+  { value: 6, label: '6' },
+  { value: 16, label: '16' },
+  { value: 22, label: '22' },
+  { value: 30, label: '30' },
+];
+
 const SIGN_MENU_ITEMS: readonly EmrMenuItem[] = [
   { id: 'sign-lock', label: 'Sign & lock encounter' },
   { id: 'cosign', label: 'Request consultant co-sign' },
@@ -163,6 +193,21 @@ const CLINIC_BREADCRUMBS: readonly EmrBreadcrumbItem[] = [
   { id: 'oct', label: 'Macular OCT' },
 ];
 
+const VIEWER_GALLERY_ITEMS: readonly EmrImageItem[] = [
+  {
+    id: 'fundus-od',
+    src: SAMPLE_FUNDUS_SVG,
+    alt: 'Simulated OD colour fundus',
+    caption: 'OD posterior pole — 45° field',
+  },
+  {
+    id: 'fundus-os',
+    src: SAMPLE_FUNDUS_SVG,
+    alt: 'Simulated OS colour fundus',
+    caption: 'OS optic disc — baseline',
+  },
+];
+
 const INITIAL_UPLOAD_ITEMS: readonly EmrUploadedImageItem[] = [
   {
     id: 'img-fundus-od',
@@ -175,19 +220,73 @@ const INITIAL_UPLOAD_ITEMS: readonly EmrUploadedImageItem[] = [
 ];
 
 export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
-  defineParityEntry<{ values: readonly string[] }>({
+  defineParityEntry<{
+    values: readonly string[];
+    multiple: boolean;
+    allowEmpty: boolean;
+    variant: EmrToggleGroupVariant;
+    size: EmrToggleGroupSize;
+    orientation: EmrToggleGroupOrientation;
+    labelPlacement: EmrToggleGroupLabelPlacement;
+    showStateLabels: boolean;
+    showSelectAll: boolean;
+    showSelectionCount: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-toggle-group',
-    createInitialState: () => ({ values: ['sms', 'portal'] }),
+    createInitialState: () => ({
+      values: ['sms', 'portal'],
+      multiple: true,
+      allowEmpty: true,
+      variant: 'tile',
+      size: 'md',
+      orientation: 'vertical',
+      labelPlacement: 'space-between',
+      showStateLabels: false,
+      showSelectAll: true,
+      showSelectionCount: true,
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrToggleGroup
         controlId="parity-toggle-group-react"
         label="Communication preferences"
-        multiple
-        clearable
         options={COMM_PREF_OPTIONS}
+        exclusiveValues={['none']}
         values={state.values}
-        readOnly={readOnly}
-        onValuesChange={(v) => update('react', 'onValuesChange', v, () => ({ values: v }))}
+        multiple={state.multiple}
+        allowEmpty={state.allowEmpty}
+        variant={state.variant}
+        size={state.size}
+        orientation={state.orientation}
+        labelPlacement={state.labelPlacement}
+        showStateLabels={state.showStateLabels}
+        showSelectAll={state.showSelectAll}
+        showSelectionCount={state.showSelectionCount}
+        clearable={state.clearable}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
+        onValuesChange={(v) => update('react', 'onValuesChange', v, (prev) => ({ ...prev, values: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => prev)}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -196,42 +295,104 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         props={{
           controlId: 'parity-toggle-group-lit',
           label: 'Communication preferences',
-          orientation: 'horizontal',
           options: COMM_PREF_OPTIONS,
+          exclusiveValues: ['none'],
+          values: state.values,
           value: state.values,
-          readOnly,
+          multiple: state.multiple,
+          allowEmpty: state.allowEmpty,
+          variant: state.variant,
+          size: state.size,
+          orientation: state.orientation,
+          labelPlacement: state.labelPlacement,
+          showStateLabels: state.showStateLabels,
+          showSelectAll: state.showSelectAll,
+          showSelectionCount: state.showSelectionCount,
+          clearable: state.clearable,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
-          valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({
+          valuesChange: (v) =>
+            update('lit', 'valuesChange', v, (prev) => ({
+              ...prev,
               values: Array.isArray(v) ? (v as readonly string[]) : [],
             })),
+          cleared: () => update('lit', 'cleared', null, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ values: readonly string[]; expandedIds: readonly string[] }>({
+  defineParityEntry<{
+    value: string | null;
+    values: readonly string[];
+    expandedIds: readonly string[];
+    multiple: boolean;
+    checkStrategy: EmrTreeCheckStrategy;
+    size: 'md' | 'sm';
+    searchable: boolean;
+    showExpandControls: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-tree-view',
     createInitialState: () => ({
-      values: ['cornea', 'macula'],
+      value: 'macula',
+      values: ['cornea', 'ac'],
       expandedIds: ['ant-seg', 'post-seg'],
+      multiple: true,
+      checkStrategy: 'cascade',
+      size: 'md',
+      searchable: true,
+      showExpandControls: true,
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
     }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrTreeView
         controlId="parity-tree-view-react"
         label="Ocular examination hierarchy"
         nodes={OCULAR_TREE_NODES}
-        multiple
-        searchable
-        showExpandControls
+        multiple={state.multiple}
+        checkStrategy={state.checkStrategy}
+        size={state.size}
+        searchable={state.searchable}
+        showExpandControls={state.showExpandControls}
+        clearable={state.clearable}
+        value={state.value}
         values={state.values}
         expandedIds={state.expandedIds}
-        readOnly={readOnly}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
         onValuesChange={(v) => update('react', 'onValuesChange', v, (prev) => ({ ...prev, values: v }))}
         onExpandedChange={(ids) =>
           update('react', 'onExpandedChange', ids, (prev) => ({ ...prev, expandedIds: ids }))
         }
+        onCleared={() => update('react', 'onCleared', null, (prev) => prev)}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -241,37 +402,111 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           controlId: 'parity-tree-view-lit',
           label: 'Ocular examination hierarchy',
           nodes: OCULAR_TREE_NODES,
-          multiple: true,
-          searchable: true,
-          showExpandControls: true,
-          selectedIds: state.values,
+          multiple: state.multiple,
+          checkStrategy: state.checkStrategy,
+          size: state.size,
+          searchable: state.searchable,
+          showExpandControls: state.showExpandControls,
+          clearable: state.clearable,
+          selectedIds: state.multiple ? state.values : state.value ? [state.value] : [],
+          values: state.values,
           expandedIds: state.expandedIds,
-          readOnly,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
-          valueChange: (v) =>
-            update('lit', 'valueChange', v, (prev) => ({
+          valuesChange: (v) =>
+            update('lit', 'valuesChange', v, (prev) => ({
               ...prev,
               values: Array.isArray(v) ? (v as readonly string[]) : prev.values,
+              value: !prev.multiple ? ((v as readonly string[])?.[0] ?? null) : prev.value,
             })),
+          expandedIdsChange: (ids) =>
+            update('lit', 'expandedIdsChange', ids, (prev) => ({
+              ...prev,
+              expandedIds: Array.isArray(ids) ? (ids as readonly string[]) : prev.expandedIds,
+            })),
+          cleared: () => update('lit', 'cleared', null, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ value: string | null }>({
+  defineParityEntry<{
+    value: string | null;
+    values: readonly string[];
+    multiple: boolean;
+    checkStrategy: EmrTreeCheckStrategy;
+    displayMode: 'path' | 'leaf';
+    variant: 'outline' | 'filled' | 'subtle';
+    size: 'md' | 'sm';
+    searchable: boolean;
+    showExpandControls: boolean;
+    clearable: boolean;
+    maxTagCount: number;
+    loading: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-tree-select',
-    createInitialState: () => ({ value: 'macula' }),
+    createInitialState: () => ({
+      value: 'macula',
+      values: ['cornea', 'ac'],
+      multiple: false,
+      checkStrategy: 'cascade',
+      displayMode: 'path',
+      variant: 'outline',
+      size: 'md',
+      searchable: true,
+      showExpandControls: false,
+      clearable: true,
+      maxTagCount: 2,
+      loading: false,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrTreeSelect
         controlId="parity-tree-select-react"
         label="Primary anatomical site"
         nodes={OCULAR_TREE_NODES}
         value={state.value}
-        displayMode="path"
-        clearable
-        readOnly={readOnly}
+        values={state.values}
+        multiple={state.multiple}
+        checkStrategy={state.checkStrategy}
+        displayMode={state.displayMode}
+        variant={state.variant}
+        size={state.size}
+        searchable={state.searchable}
+        showExpandControls={state.showExpandControls}
+        clearable={state.clearable}
+        maxTagCount={state.maxTagCount}
+        loading={state.loading}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
         onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onValuesChange={(v) => update('react', 'onValuesChange', v, (prev) => ({ ...prev, values: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => prev)}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -282,33 +517,108 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           label: 'Primary anatomical site',
           nodes: OCULAR_TREE_NODES,
           value: state.value,
-          displayMode: 'path',
-          clearable: true,
-          readOnly,
+          values: state.values,
+          selectedIds: state.values,
+          multiple: state.multiple,
+          checkStrategy: state.checkStrategy,
+          displayMode: state.displayMode,
+          variant: state.variant,
+          size: state.size,
+          searchable: state.searchable,
+          showExpandControls: state.showExpandControls,
+          clearable: state.clearable,
+          maxTagCount: state.maxTagCount,
+          loading: state.loading,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) =>
+              Array.isArray(v)
+                ? { ...prev, values: v as readonly string[] }
+                : { ...prev, value: (v as string | null) ?? null },
+            ),
+          valuesChange: (v) =>
+            update('lit', 'valuesChange', v, (prev) => ({
+              ...prev,
+              values: Array.isArray(v) ? (v as readonly string[]) : prev.values,
+            })),
+          cleared: () => update('lit', 'cleared', null, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ viewport: EmrImageViewportState }>({
+  defineParityEntry<{
+    viewport: EmrImageViewportState;
+    activeIndex: number;
+    multiImage: boolean;
+    showThumbnails: boolean;
+    allowFullscreen: boolean;
+    height: number;
+    labelHidden: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-image-viewer',
-    createInitialState: () => ({ viewport: { ...DEFAULT_IMAGE_VIEWPORT } }),
-    renderReact: ({ state, update }) => (
+    createInitialState: () => ({
+      viewport: { ...DEFAULT_IMAGE_VIEWPORT },
+      activeIndex: 0,
+      multiImage: false,
+      showThumbnails: true,
+      allowFullscreen: true,
+      height: 300,
+      labelHidden: false,
+      readOnly: false,
+      disabled: false,
+      warning: '',
+      error: '',
+    }),
+    renderReact: ({ state, readOnly, update }) => (
       <EmrImageViewer
         controlId="parity-image-viewer-react"
         label="Fundus photograph inspector"
         src={SAMPLE_FUNDUS_SVG}
         alt="Simulated OD colour fundus"
         caption="OD posterior pole — 45° field"
+        images={state.multiImage ? VIEWER_GALLERY_ITEMS : undefined}
+        activeIndex={state.activeIndex}
         viewport={state.viewport}
-        onViewportChange={(vp) => update('react', 'onViewportChange', vp, () => ({ viewport: vp }))}
+        showThumbnails={state.showThumbnails}
+        allowFullscreen={state.allowFullscreen}
+        height={state.height}
+        labelHidden={state.labelHidden}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        warning={state.warning}
+        error={state.error}
+        onViewportChange={(vp) =>
+          update('react', 'onViewportChange', vp, (prev) => ({ ...prev, viewport: vp }))
+        }
+        onActiveIndexChange={(idx) =>
+          update('react', 'onActiveIndexChange', idx, (prev) => ({
+            ...prev,
+            activeIndex: idx,
+            viewport: { ...DEFAULT_IMAGE_VIEWPORT },
+          }))
+        }
+        onFullscreenChange={(fs) =>
+          update('react', 'onFullscreenChange', fs, (prev) => prev)
+        }
+        onCloseRequested={() =>
+          update('react', 'onCloseRequested', null, (prev) => prev)
+        }
       />
     ),
-    renderLit: ({ state, readOnly }) => (
+    renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-image-viewer"
         props={{
@@ -317,16 +627,58 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           src: SAMPLE_FUNDUS_SVG,
           alt: 'Simulated OD colour fundus',
           caption: 'OD posterior pole — 45° field',
+          images: state.multiImage ? VIEWER_GALLERY_ITEMS : [],
+          activeIndex: state.activeIndex,
           viewport: state.viewport,
-          readOnly,
+          showThumbnails: state.showThumbnails,
+          allowFullscreen: state.allowFullscreen,
+          height: state.height,
+          labelHidden: state.labelHidden,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          warning: state.warning,
+          error: state.error,
+        }}
+        events={{
+          viewportChange: (vp) =>
+            update('lit', 'viewportChange', vp, (prev) => ({
+              ...prev,
+              viewport: (vp as EmrImageViewportState) ?? prev.viewport,
+            })),
+          activeIndexChange: (idx) =>
+            update('lit', 'activeIndexChange', idx, (prev) => ({
+              ...prev,
+              activeIndex: typeof idx === 'number' ? idx : prev.activeIndex,
+              viewport: { ...DEFAULT_IMAGE_VIEWPORT },
+            })),
+          fullscreenChange: (fs) =>
+            update('lit', 'fullscreenChange', fs, (prev) => prev),
+          closeRequested: () =>
+            update('lit', 'closeRequested', null, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ transform: EmrImageCropTransform }>({
+  defineParityEntry<{
+    transform: EmrImageCropTransform;
+    outputMimeType: string;
+    labelHidden: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-image-cropper',
-    createInitialState: () => ({ transform: { ...DEFAULT_IMAGE_CROP_TRANSFORM } }),
+    createInitialState: () => ({
+      transform: { ...DEFAULT_IMAGE_CROP_TRANSFORM },
+      outputMimeType: 'image/png',
+      labelHidden: false,
+      readOnly: false,
+      disabled: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrImageCropper
         controlId="parity-image-cropper-react"
@@ -335,8 +687,21 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         alt="Optic disc crop target"
         aspectPresets={DEFAULT_ASPECT_PRESETS}
         transform={state.transform}
-        readOnly={readOnly}
-        onCropChange={(tr) => update('react', 'onCropChange', tr, () => ({ transform: tr }))}
+        outputMimeType={state.outputMimeType}
+        labelHidden={state.labelHidden}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        warning={state.warning}
+        error={state.error}
+        onCropChange={(tr) =>
+          update('react', 'onCropChange', tr, (prev) => ({ ...prev, transform: tr }))
+        }
+        onCropCommitted={(res) =>
+          update('react', 'onCropCommitted', res, (prev) => ({
+            ...prev,
+            transform: res.transform,
+          }))
+        }
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -349,11 +714,22 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           alt: 'Optic disc crop target',
           aspectPresets: DEFAULT_ASPECT_PRESETS,
           transform: state.transform,
-          readOnly,
+          outputMimeType: state.outputMimeType,
+          labelHidden: state.labelHidden,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
-          valueChange: (res) =>
-            update('lit', 'valueChange', res, (prev) => ({
+          cropChange: (tr) =>
+            update('lit', 'cropChange', tr, (prev) => ({
+              ...prev,
+              transform: (tr as EmrImageCropTransform) ?? prev.transform,
+            })),
+          cropCommitted: (res) =>
+            update('lit', 'cropCommitted', res, (prev) => ({
+              ...prev,
               transform:
                 res && typeof res === 'object' && 'transform' in res
                   ? (res as { transform: EmrImageCropTransform }).transform
@@ -364,17 +740,69 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<{ items: readonly EmrUploadedImageItem[] }>({
+  defineParityEntry<{
+    items: readonly EmrUploadedImageItem[];
+    multiple: boolean;
+    allowCamera: boolean;
+    maxFiles: number;
+    maxSizeBytes: number;
+    cropOutputMimeType: string;
+    labelHidden: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-image-upload',
-    createInitialState: () => ({ items: INITIAL_UPLOAD_ITEMS }),
+    createInitialState: () => ({
+      items: INITIAL_UPLOAD_ITEMS,
+      multiple: true,
+      allowCamera: true,
+      maxFiles: 4,
+      maxSizeBytes: 5 * 1024 * 1024,
+      cropOutputMimeType: 'image/png',
+      labelHidden: false,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrImageUpload
         controlId="parity-image-upload-react"
         label="Anterior segment & fundus upload"
         items={state.items}
-        allowCamera
-        readOnly={readOnly}
-        onItemsChange={(next) => update('react', 'onItemsChange', next, () => ({ items: next }))}
+        multiple={state.multiple}
+        allowCamera={state.allowCamera}
+        maxFiles={state.maxFiles}
+        maxSizeBytes={state.maxSizeBytes}
+        cropOutputMimeType={state.cropOutputMimeType}
+        labelHidden={state.labelHidden}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        warning={state.warning}
+        error={state.error}
+        onItemsChange={(next) =>
+          update('react', 'onItemsChange', next, (prev) => ({ ...prev, items: next }))
+        }
+        onFilesSelected={(files) =>
+          update('react', 'onFilesSelected', files, (prev) => prev)
+        }
+        onImageCropped={(id, result) =>
+          update('react', 'onImageCropped', { id, result }, (prev) => prev)
+        }
+        onCaptionChange={(id, caption) =>
+          update('react', 'onCaptionChange', { id, caption }, (prev) => prev)
+        }
+        onRemoveRequested={(id) =>
+          update('react', 'onRemoveRequested', id, (prev) => prev)
+        }
+        onCameraRequested={() =>
+          update('react', 'onCameraRequested', 'camera', (prev) => prev)
+        }
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -384,31 +812,93 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           controlId: 'parity-image-upload-lit',
           label: 'Anterior segment & fundus upload',
           items: state.items,
-          allowCamera: true,
-          readOnly,
+          multiple: state.multiple,
+          allowCamera: state.allowCamera,
+          maxFiles: state.maxFiles,
+          maxSizeBytes: state.maxSizeBytes,
+          cropOutputMimeType: state.cropOutputMimeType,
+          labelHidden: state.labelHidden,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
-          valueChange: (next) =>
-            update('lit', 'valueChange', next, (prev) => ({
+          itemsChange: (next) =>
+            update('lit', 'itemsChange', next, (prev) => ({
+              ...prev,
               items: Array.isArray(next) ? (next as readonly EmrUploadedImageItem[]) : prev.items,
             })),
+          filesSelected: (files) =>
+            update('lit', 'filesSelected', files, (prev) => prev),
+          imageCropped: (payload) =>
+            update('lit', 'imageCropped', payload, (prev) => prev),
+          captionChange: (payload) =>
+            update('lit', 'captionChange', payload, (prev) => prev),
+          removeRequested: (id) =>
+            update('lit', 'removeRequested', id, (prev) => prev),
+          captureRequested: (mode) =>
+            update('lit', 'captureRequested', mode, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ value: EmrDateRangeValue | null }>({
+  defineParityEntry<{
+    value: EmrDateRangeValue | null;
+    mode: 'date' | 'datetime';
+    size: 'sm' | 'md' | 'lg';
+    variant: EmrControlVariant;
+    weekStartsOn: 0 | 1;
+    showCalendar: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-date-range-input',
-    createInitialState: () => ({ value: { start: '2026-03-08', end: '2026-03-15' } }),
+    createInitialState: () => ({
+      value: { start: '2026-03-08', end: '2026-03-15' },
+      mode: 'date',
+      size: 'md',
+      variant: 'outline',
+      weekStartsOn: 0,
+      showCalendar: true,
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrDateRangeInput
         controlId="parity-date-range-react"
         label="Encounter filter window"
         value={state.value}
+        mode={state.mode}
+        size={state.size}
+        variant={state.variant}
+        weekStartsOn={state.weekStartsOn}
         presets={DATE_PRESETS}
-        clearable
-        readOnly={readOnly}
+        showCalendar={state.showCalendar}
+        clearable={state.clearable}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
         onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: null }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -418,13 +908,25 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           controlId: 'parity-date-range-lit',
           label: 'Encounter filter window',
           value: state.value,
+          mode: state.mode,
+          size: state.size,
+          variant: state.variant,
+          weekStartsOn: state.weekStartsOn,
           presets: DATE_PRESETS,
-          clearable: true,
-          readOnly,
+          showCalendar: state.showCalendar,
+          clearable: state.clearable,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: (v as EmrDateRangeValue | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as EmrDateRangeValue | null) ?? null })),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: null })),
         }}
       />
     ),
@@ -643,9 +1145,37 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
     ),
   }),
 
-  defineParityEntry<{ value: number | null }>({
+  defineParityEntry<{
+    value: number | null;
+    size: 'sm' | 'md' | 'lg';
+    tone: EmrTone | 'neutral';
+    showValue: boolean;
+    showSteppers: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-slider',
-    createInitialState: () => ({ value: 65 }),
+    createInitialState: () => ({
+      value: 65,
+      size: 'md',
+      tone: 'neutral',
+      showValue: true,
+      showSteppers: false,
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrSlider
         controlId="parity-slider-react"
@@ -655,9 +1185,22 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         max={100}
         step={5}
         unit="%"
-        clearable
-        readOnly={readOnly}
+        marks={SLIDER_MARKS}
+        size={state.size}
+        tone={state.tone}
+        showValue={state.showValue}
+        showSteppers={state.showSteppers}
+        clearable={state.clearable}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
         onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCommitted={(v) => update('react', 'onCommitted', v, (prev) => ({ ...prev, value: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: null }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -671,20 +1214,60 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           max: 100,
           step: 5,
           unit: '%',
-          clearable: true,
-          readOnly,
+          marks: SLIDER_MARKS,
+          size: state.size,
+          tone: state.tone,
+          showValue: state.showValue,
+          showSteppers: state.showSteppers,
+          clearable: state.clearable,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: (v as number | null) ?? null })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as number | null) ?? null })),
+          committed: (v) =>
+            update('lit', 'committed', v, (prev) => ({ ...prev, value: (v as number | null) ?? null })),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: null })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ value: readonly [number, number] }>({
+  defineParityEntry<{
+    value: readonly [number, number] | null;
+    size: 'sm' | 'md' | 'lg';
+    tone: EmrTone | 'neutral';
+    showValue: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-range-slider',
-    createInitialState: () => ({ value: [10, 16] }),
+    createInitialState: () => ({
+      value: [10, 16],
+      size: 'md',
+      tone: 'neutral',
+      showValue: true,
+      clearable: false,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrRangeSlider
         controlId="parity-range-slider-react"
@@ -694,10 +1277,21 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         max={30}
         minDistance={2}
         unit="mmHg"
-        readOnly={readOnly}
-        onValueChange={(v) =>
-          update('react', 'onValueChange', v, (prev) => ({ value: v ?? prev.value }))
-        }
+        marks={RANGE_SLIDER_MARKS}
+        size={state.size}
+        tone={state.tone}
+        showValue={state.showValue}
+        clearable={state.clearable}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
+        onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCommitted={(v) => update('react', 'onCommitted', v, (prev) => ({ ...prev, value: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: null }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -711,33 +1305,101 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           max: 30,
           minDistance: 2,
           unit: 'mmHg',
-          readOnly,
+          marks: RANGE_SLIDER_MARKS,
+          size: state.size,
+          tone: state.tone,
+          showValue: state.showValue,
+          clearable: state.clearable,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
             update('lit', 'valueChange', v, (prev) => ({
+              ...prev,
               value:
-                Array.isArray(v) && v.length === 2
-                  ? ([Number(v[0]), Number(v[1])] as const)
-                  : prev.value,
+                v === null
+                  ? null
+                  : Array.isArray(v) && v.length === 2
+                    ? ([Number(v[0]), Number(v[1])] as const)
+                    : prev.value,
             })),
+          committed: (v) =>
+            update('lit', 'committed', v, (prev) => ({
+              ...prev,
+              value:
+                v === null
+                  ? null
+                  : Array.isArray(v) && v.length === 2
+                    ? ([Number(v[0]), Number(v[1])] as const)
+                    : prev.value,
+            })),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: null })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ value: string | null }>({
+  defineParityEntry<{
+    value: string | null;
+    size: 'sm' | 'md' | 'lg';
+    variant: EmrControlVariant;
+    unmask: boolean;
+    showMaskHint: boolean;
+    uppercase: boolean;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-masked-input',
-    createInitialState: () => ({ value: '91-2847-5510-3921' }),
+    createInitialState: () => ({
+      value: '91-2847-5510-3921',
+      size: 'md',
+      variant: 'outline',
+      unmask: false,
+      showMaskHint: false,
+      uppercase: false,
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrMaskedInput
         controlId="parity-masked-input-react"
         label="ABHA health identifier"
         mask="99-9999-9999-9999"
         value={state.value}
-        clearable
-        readOnly={readOnly}
+        size={state.size}
+        variant={state.variant}
+        unmask={state.unmask}
+        showMaskHint={state.showMaskHint}
+        uppercase={state.uppercase}
+        clearable={state.clearable}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
         onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCompleted={(v) => update('react', 'onCompleted', v, (prev) => prev)}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: null }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -748,28 +1410,88 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           label: 'ABHA health identifier',
           mask: '99-9999-9999-9999',
           value: state.value,
-          clearable: true,
-          readOnly,
+          size: state.size,
+          variant: state.variant,
+          unmask: state.unmask,
+          showMaskHint: state.showMaskHint,
+          uppercase: state.uppercase,
+          clearable: state.clearable,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
             update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
+          completed: (v) => update('lit', 'completed', v, (prev) => prev),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: null })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ value: string }>({
+  defineParityEntry<{
+    value: string;
+    secret: boolean;
+    numericOnly: boolean;
+    uppercase: boolean;
+    separatorAfter: number;
+    size: 'sm' | 'md' | 'lg';
+    variant: EmrControlVariant;
+    clearable: boolean;
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-otp-input',
-    createInitialState: () => ({ value: '482910' }),
+    createInitialState: () => ({
+      value: '482910',
+      secret: false,
+      numericOnly: true,
+      uppercase: false,
+      separatorAfter: 3,
+      size: 'md',
+      variant: 'outline',
+      clearable: true,
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrOtpInput
         controlId="parity-otp-input-react"
         label="Patient consent verification OTP"
         length={6}
         value={state.value}
-        readOnly={readOnly}
+        secret={state.secret}
+        numericOnly={state.numericOnly}
+        uppercase={state.uppercase}
+        separatorAfter={state.separatorAfter > 0 ? state.separatorAfter : undefined}
+        size={state.size}
+        variant={state.variant}
+        clearable={state.clearable}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
         onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCompleted={(v) => update('react', 'onCompleted', v, (prev) => prev)}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: '' }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -780,86 +1502,191 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           label: 'Patient consent verification OTP',
           length: 6,
           value: state.value,
-          readOnly,
+          secret: state.secret,
+          numericOnly: state.numericOnly,
+          uppercase: state.uppercase,
+          separatorAfter: state.separatorAfter > 0 ? state.separatorAfter : undefined,
+          size: state.size,
+          variant: state.variant,
+          clearable: state.clearable,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
-            update('lit', 'valueChange', v, () => ({ value: typeof v === 'string' ? v : '' })),
+            update('lit', 'valueChange', v, (prev) => ({ ...prev, value: typeof v === 'string' ? v : '' })),
+          completed: (v) => update('lit', 'completed', v, (prev) => prev),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: '' })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ lastAction: string }>({
+  defineParityEntry<{
+    variant: 'outline' | 'primary' | 'secondary' | 'ghost';
+    size: 'md' | 'sm';
+    align: 'start' | 'end';
+    readOnly: boolean;
+    disabled: boolean;
+    lastAction: string;
+  }>({
     selector: 'emr-menu',
-    createInitialState: () => ({ lastAction: 'none' }),
-    renderReact: ({ readOnly, update }) => (
+    createInitialState: () => ({
+      variant: 'outline',
+      size: 'md',
+      align: 'start',
+      readOnly: false,
+      disabled: false,
+      lastAction: 'none',
+    }),
+    renderReact: ({ state, readOnly, update }) => (
       <EmrMenu
         controlId="parity-menu-react"
-        triggerLabel="Encounter actions"
+        label="Encounter actions"
+        triggerIcon="more-vertical"
         items={ENCOUNTER_MENU_ITEMS}
-        disabled={readOnly}
-        onSelect={(id) => update('react', 'onSelect', id, () => ({ lastAction: id }))}
+        variant={state.variant}
+        size={state.size}
+        align={state.align}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        onItemSelected={(item) =>
+          update('react', 'onItemSelected', item, (prev) => ({ ...prev, lastAction: item.id }))
+        }
       />
     ),
-    renderLit: ({ readOnly, update }) => (
+    renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-menu"
         props={{
           controlId: 'parity-menu-lit',
-          triggerLabel: 'Encounter actions',
+          label: 'Encounter actions',
+          triggerIcon: 'more-vertical',
           items: ENCOUNTER_MENU_ITEMS,
-          disabled: readOnly,
+          variant: state.variant,
+          size: state.size,
+          align: state.align,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
         }}
         events={{
-          valueChange: (id) =>
-            update('lit', 'valueChange', id, () => ({ lastAction: String(id ?? '') })),
+          itemSelected: (item) =>
+            update('lit', 'itemSelected', item, (prev) => ({
+              ...prev,
+              lastAction:
+                typeof item === 'object' && item && 'id' in item
+                  ? String((item as { id: unknown }).id)
+                  : String(item ?? ''),
+            })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ lastCommit: string }>({
+  defineParityEntry<{
+    variant: 'primary' | 'secondary' | 'outline' | 'danger';
+    size: 'md' | 'sm' | 'lg';
+    align: 'end' | 'start';
+    loading: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    lastCommit: string;
+  }>({
     selector: 'emr-split-button',
-    createInitialState: () => ({ lastCommit: 'none' }),
-    renderReact: ({ readOnly, update }) => (
+    createInitialState: () => ({
+      variant: 'primary',
+      size: 'md',
+      align: 'end',
+      loading: false,
+      readOnly: false,
+      disabled: false,
+      lastCommit: 'none',
+    }),
+    renderReact: ({ state, readOnly, update }) => (
       <EmrSplitButton
         controlId="parity-split-button-react"
         label="Sign encounter"
         items={SIGN_MENU_ITEMS}
-        disabled={readOnly}
-        onPress={() => update('react', 'onPress', 'sign-primary', () => ({ lastCommit: 'sign-primary' }))}
-        onSelect={(id) => update('react', 'onSelect', id, () => ({ lastCommit: id }))}
+        variant={state.variant}
+        size={state.size}
+        align={state.align}
+        loading={state.loading}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        onClicked={() =>
+          update('react', 'onClicked', 'sign-primary', (prev) => ({ ...prev, lastCommit: 'sign-primary' }))
+        }
+        onItemSelected={(item) =>
+          update('react', 'onItemSelected', item, (prev) => ({ ...prev, lastCommit: item.id }))
+        }
       />
     ),
-    renderLit: ({ readOnly, update }) => (
+    renderLit: ({ state, readOnly, update }) => (
       <LitElementHost
         tag="emr-split-button"
         props={{
           controlId: 'parity-split-button-lit',
           label: 'Sign encounter',
           items: SIGN_MENU_ITEMS,
-          disabled: readOnly,
+          variant: state.variant,
+          size: state.size,
+          align: state.align,
+          loading: state.loading,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
         }}
         events={{
-          valueChange: (id) =>
-            update('lit', 'valueChange', id, () => ({ lastCommit: String(id ?? '') })),
+          clicked: () =>
+            update('lit', 'clicked', 'sign-primary', (prev) => ({ ...prev, lastCommit: 'sign-primary' })),
+          itemSelected: (item) =>
+            update('lit', 'itemSelected', item, (prev) => ({
+              ...prev,
+              lastCommit:
+                typeof item === 'object' && item && 'id' in item
+                  ? String((item as { id: unknown }).id)
+                  : String(item ?? ''),
+            })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ expandedIds: readonly string[] }>({
+  defineParityEntry<{
+    expandedIds: readonly string[];
+    multiple: boolean;
+    variant: 'outlined' | 'flush' | 'card';
+    size: 'md' | 'sm';
+    readOnly: boolean;
+    disabled: boolean;
+  }>({
     selector: 'emr-accordion',
-    createInitialState: () => ({ expandedIds: ['drops'] }),
+    createInitialState: () => ({
+      expandedIds: ['drops'],
+      multiple: true,
+      variant: 'outlined',
+      size: 'md',
+      readOnly: false,
+      disabled: false,
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrAccordion
         controlId="parity-accordion-react"
         items={POSTOP_ACCORDION_ITEMS}
         expandedIds={state.expandedIds}
-        multiple
-        disabled={readOnly}
-        onExpandedChange={(ids) => update('react', 'onExpandedChange', ids, () => ({ expandedIds: ids }))}
+        multiple={state.multiple}
+        variant={state.variant}
+        size={state.size}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        onExpandedIdsChange={(ids) =>
+          update('react', 'onExpandedIdsChange', ids, (prev) => ({ ...prev, expandedIds: ids }))
+        }
+        onItemToggled={(ev) => update('react', 'onItemToggled', ev, (prev) => prev)}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -869,53 +1696,120 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           controlId: 'parity-accordion-lit',
           items: POSTOP_ACCORDION_ITEMS,
           expandedIds: state.expandedIds,
-          multiple: true,
-          readOnly,
+          multiple: state.multiple,
+          variant: state.variant,
+          size: state.size,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
         }}
         events={{
-          valueChange: (ids) =>
-            update('lit', 'valueChange', ids, (prev) => ({
+          expandedIdsChange: (ids) =>
+            update('lit', 'expandedIdsChange', ids, (prev) => ({
+              ...prev,
               expandedIds: Array.isArray(ids) ? (ids as readonly string[]) : prev.expandedIds,
             })),
+          itemToggled: (ev) => update('lit', 'itemToggled', ev, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ activeCrumb: string }>({
+  defineParityEntry<{
+    maxItems: number;
+    separator: string;
+    size: 'md' | 'sm';
+    activeCrumb: string;
+  }>({
     selector: 'emr-breadcrumbs',
-    createInitialState: () => ({ activeCrumb: 'oct' }),
-    renderReact: ({ update }) => (
+    createInitialState: () => ({
+      maxItems: 3,
+      separator: '/',
+      size: 'md',
+      activeCrumb: 'oct',
+    }),
+    renderReact: ({ state, update }) => (
       <EmrBreadcrumbs
         controlId="parity-breadcrumbs-react"
         items={CLINIC_BREADCRUMBS}
-        onNavigate={(id) => update('react', 'onNavigate', id, () => ({ activeCrumb: id }))}
+        maxItems={state.maxItems > 0 ? state.maxItems : undefined}
+        separator={state.separator}
+        size={state.size}
+        onItemSelected={(item) =>
+          update('react', 'onItemSelected', item, (prev) => ({ ...prev, activeCrumb: item.id }))
+        }
+        onOverflowExpanded={(hidden) => update('react', 'onOverflowExpanded', hidden, (prev) => prev)}
       />
     ),
-    renderLit: () => (
+    renderLit: ({ state, update }) => (
       <LitElementHost
         tag="emr-breadcrumbs"
         props={{
           controlId: 'parity-breadcrumbs-lit',
           items: CLINIC_BREADCRUMBS,
+          maxItems: state.maxItems > 0 ? state.maxItems : undefined,
+          separator: state.separator,
+          size: state.size,
+        }}
+        events={{
+          itemSelected: (item) =>
+            update('lit', 'itemSelected', item, (prev) => ({
+              ...prev,
+              activeCrumb:
+                typeof item === 'object' && item && 'id' in item
+                  ? String((item as { id: unknown }).id)
+                  : prev.activeCrumb,
+            })),
+          overflowExpanded: (hidden) => update('lit', 'overflowExpanded', hidden, (prev) => prev),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ value: string | null }>({
+  defineParityEntry<{
+    value: string | null;
+    allowCustomHex: boolean;
+    clearable: boolean;
+    size: 'md' | 'sm';
+    required: boolean;
+    readOnly: boolean;
+    disabled: boolean;
+    invalid: boolean;
+    labelHidden: boolean;
+    warning: string;
+    error: string;
+  }>({
     selector: 'emr-color-picker',
-    createInitialState: () => ({ value: '#dc2626' }),
+    createInitialState: () => ({
+      value: '#dc2626',
+      allowCustomHex: true,
+      clearable: true,
+      size: 'md',
+      required: false,
+      readOnly: false,
+      disabled: false,
+      invalid: false,
+      labelHidden: false,
+      warning: '',
+      error: '',
+    }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrColorPicker
         controlId="parity-color-picker-react"
         label="Retinal annotation pen colour"
         swatches={DEFAULT_CLINICAL_COLOR_SWATCHES}
         value={state.value}
-        allowCustomHex
-        clearable
-        readOnly={readOnly}
+        allowCustomHex={state.allowCustomHex}
+        clearable={state.clearable}
+        size={state.size}
+        required={state.required}
+        readOnly={readOnly || state.readOnly}
+        disabled={state.disabled}
+        invalid={state.invalid}
+        labelHidden={state.labelHidden}
+        warning={state.warning}
+        error={state.error}
         onValueChange={(v) => update('react', 'onValueChange', v, (prev) => ({ ...prev, value: v }))}
+        onCleared={() => update('react', 'onCleared', null, (prev) => ({ ...prev, value: null }))}
       />
     ),
     renderLit: ({ state, readOnly, update }) => (
@@ -926,64 +1820,118 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
           label: 'Retinal annotation pen colour',
           swatches: DEFAULT_CLINICAL_COLOR_SWATCHES,
           value: state.value,
-          allowCustomHex: true,
-          clearable: true,
-          readOnly,
+          allowCustomHex: state.allowCustomHex,
+          clearable: state.clearable,
+          size: state.size,
+          required: state.required,
+          readOnly: readOnly || state.readOnly,
+          disabled: state.disabled,
+          invalid: state.invalid,
+          labelHidden: state.labelHidden,
+          warning: state.warning,
+          error: state.error,
         }}
         events={{
           valueChange: (v) =>
             update('lit', 'valueChange', v, (prev) => ({ ...prev, value: (v as string | null) ?? null })),
+          cleared: () => update('lit', 'cleared', null, (prev) => ({ ...prev, value: null })),
         }}
       />
     ),
   }),
 
-  defineParityEntry<{ copiedCount: number }>({
+  defineParityEntry<{
+    variant: 'outline' | 'primary' | 'secondary' | 'ghost';
+    size: 'sm' | 'md' | 'lg';
+    iconOnly: boolean;
+    disabled: boolean;
+    copiedCount: number;
+  }>({
     selector: 'emr-copy-button',
-    createInitialState: () => ({ copiedCount: 0 }),
-    renderReact: ({ readOnly, update }) => (
+    createInitialState: () => ({
+      variant: 'outline',
+      size: 'sm',
+      iconOnly: false,
+      disabled: false,
+      copiedCount: 0,
+    }),
+    renderReact: ({ state, update }) => (
       <EmrCopyButton
         controlId="parity-copy-button-react"
         value="MRN-2026-0419"
         label="Copy MRN"
-        disabled={readOnly}
-        onCopied={(val) => update('react', 'onCopied', val, (prev) => ({ copiedCount: prev.copiedCount + 1 }))}
+        variant={state.variant}
+        size={state.size}
+        iconOnly={state.iconOnly}
+        disabled={state.disabled}
+        onCopied={(val) =>
+          update('react', 'onCopied', val, (prev) => ({ ...prev, copiedCount: prev.copiedCount + 1 }))
+        }
       />
     ),
-    renderLit: ({ readOnly }) => (
+    renderLit: ({ state, update }) => (
       <LitElementHost
         tag="emr-copy-button"
         props={{
           controlId: 'parity-copy-button-lit',
           value: 'MRN-2026-0419',
           label: 'Copy MRN',
-          disabled: readOnly,
+          variant: state.variant,
+          size: state.size,
+          iconOnly: state.iconOnly,
+          disabled: state.disabled,
+        }}
+        events={{
+          copied: (val) =>
+            update('lit', 'copied', val, (prev) => ({ ...prev, copiedCount: prev.copiedCount + 1 })),
         }}
       />
     ),
   }),
 
   // ── L2 Clinical Image Field ───────────────────────────────────────────────
-  defineParityEntry<ImageFieldViewModel>({
+  defineParityEntry<
+    ImageFieldViewModel & {
+      readonly layout: FieldFrameLayout;
+      readonly showMetadata: boolean;
+      readonly labelHidden: boolean;
+    }
+  >({
     selector: 'emr-image-field',
     createInitialState: () => ({
-      fieldId: 'parity-slit-lamp-photos',
       label: 'Slit-lamp & fundus photographs',
       hint: 'Upload, inspect fullscreen (pan/zoom/rotate), or crop clinical photos.',
       items: INITIAL_UPLOAD_ITEMS,
       allowCamera: true,
       multiple: true,
+      maxFiles: 4,
+      required: false,
+      readOnly: false,
+      layout: 'vertical',
+      showMetadata: true,
+      labelHidden: false,
       statusOptions: [
+        { value: 'recorded', label: 'Recorded', tone: 'success' },
         { value: 'not-assessed', label: 'Not assessed', tone: 'neutral' },
         { value: 'unable-to-assess', label: 'Media haze / unable', tone: 'warning' },
+        { value: 'not-applicable', label: 'Not applicable', tone: 'neutral' },
+        { value: 'declined', label: 'Declined', tone: 'warning' },
+        { value: 'unknown', label: 'Unknown', tone: 'neutral' },
       ],
     }),
     renderReact: ({ state, readOnly, update }) => (
       <EmrImageField
         controlId="parity-image-field-react"
-        model={{ ...state, readOnly }}
+        labelHidden={state.labelHidden}
+        layout={state.layout}
+        showMetadata={state.showMetadata}
+        readOnly={readOnly || state.readOnly}
+        model={{ ...state, readOnly: readOnly || state.readOnly }}
         onIntent={(intent: ImageFieldIntent) =>
-          update('react', 'onIntent', intent, (prev) => reduceImageFieldDemo(prev, intent))
+          update('react', 'onIntent', intent, (prev) => ({
+            ...prev,
+            ...reduceImageFieldDemo(prev, intent),
+          }))
         }
       />
     ),
@@ -992,12 +1940,19 @@ export const PARITY_ENTRIES_L1_L2_WAVE2: readonly ParityEntry[] = [
         tag="emr-image-field"
         props={{
           controlId: 'parity-image-field-lit',
-          model: { ...state, readOnly },
+          labelHidden: state.labelHidden,
+          layout: state.layout,
+          showMetadata: state.showMetadata,
+          readOnly: readOnly || state.readOnly,
+          model: { ...state, readOnly: readOnly || state.readOnly },
         }}
         events={{
           intent: (raw) => {
             const intent = raw as ImageFieldIntent;
-            update('lit', 'intent', intent, (prev) => reduceImageFieldDemo(prev, intent));
+            update('lit', 'intent', intent, (prev) => ({
+              ...prev,
+              ...reduceImageFieldDemo(prev, intent),
+            }));
           },
         }}
       />
@@ -1012,6 +1967,19 @@ function reduceImageFieldDemo(
   switch (intent.type) {
     case 'itemsChangeRequested':
       return { ...prev, items: intent.items };
+    case 'imageCropped':
+      return {
+        ...prev,
+        items: prev.items.map((item) =>
+          item.id === intent.id
+            ? {
+                ...item,
+                cropTransform: intent.result.transform,
+                previewSrc: intent.result.croppedDataUrl ?? item.previewSrc ?? item.src,
+              }
+            : item,
+        ),
+      };
     case 'itemRemoveRequested':
       return { ...prev, items: prev.items.filter((item) => item.id !== intent.id) };
     case 'captionChangeRequested':
@@ -1023,6 +1991,8 @@ function reduceImageFieldDemo(
       };
     case 'statusChangeRequested':
       return { ...prev, status: intent.status };
+    case 'captureRequested':
+    case 'filesSelected':
     default:
       return prev;
   }

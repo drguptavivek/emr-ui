@@ -30,16 +30,18 @@ import type {
 import { emptyToNull } from './emr-inputs.logic';
 import {
   addTagValues,
-  buildCalendarMonthCells,
+  buildDateRangeCalendarGrid,
   clearUnlockedTags,
+  commitDateRangeEndpoint,
   commitTagInputValues,
   filterOptionsLocally,
   findNextEnabledSearchOptionIndex,
+  formatDateRangeMonthTitle,
+  getDateRangeWeekdays,
   groupOptions,
   isIsoDateInRange,
   isIsoRangeEdge,
   isTagLocked,
-  normalizeDateRangeSelection,
   popLastUnlockedTag,
   rankAndFilterOptions,
   rankTagSuggestions,
@@ -48,8 +50,11 @@ import {
   resolveCustomSearchCandidate,
   resolveDefaultActiveOptionIndex,
   resolveEmrTagsValue,
+  resolveInitialCalendarMonth,
+  selectDateRangeCalendarDay,
   splitMatchHighlightSegments,
   splitTagTokens,
+  stepCalendarMonth,
 } from './emr-wave2.logic';
 
 let nextWave2InputId = 0;
@@ -64,38 +69,48 @@ function optionalBooleanAttribute(value: unknown): boolean | undefined {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+  },
   template: `
-    <div class="emr-field" [id]="resolvedId()" role="group" [attr.aria-label]="label() || 'Date range'">
-      @if (label() || showClear()) {
-        <div [class.emr-choice-header]="showClear()">
-          @if (label()) {
-            <span class="emr-field__label" [class.emr-sr-only]="labelHidden()">
-              {{ label() }}
-              @if (required()) {
-                <span class="emr-field__required" aria-hidden="true">*</span>
-              }
-            </span>
+    <div
+      class="emr-field emr-date-range"
+      [class.emr-date-range--sm]="size() === 'sm'"
+      [class.emr-date-range--lg]="size() === 'lg'"
+      [class.emr-date-range--filled]="variant() === 'filled'"
+      [class.emr-date-range--subtle]="variant() === 'subtle'"
+      [class.emr-date-range--invalid]="isGroupInvalid()"
+      [class.emr-date-range--warning]="!isGroupInvalid() && !!warning()"
+      [class.emr-date-range--readonly]="readOnly()"
+      [class.emr-date-range--disabled]="disabled()"
+      [id]="resolvedId()"
+      role="group"
+      [attr.aria-label]="resolvedAriaLabel()"
+      [attr.aria-required]="required() || null"
+      [attr.data-warning]="!isGroupInvalid() && !!warning() ? 'true' : null"
+      (focusin)="onGroupFocusIn()"
+      (focusout)="onGroupFocusOut($event)"
+      (keydown)="onGroupKeydown($event)"
+    >
+      @if (label()) {
+        <span class="emr-field__label" [class.emr-sr-only]="labelHidden()">
+          {{ label() }}
+          @if (required()) {
+            <span class="emr-field__required" aria-hidden="true">*</span>
           }
-          @if (showClear()) {
-            <button
-              type="button"
-              class="emr-choice-clear"
-              [attr.aria-label]="'Clear ' + (label() || 'date range')"
-              (click)="clearRange()"
-            >
-              Clear
-            </button>
-          }
-        </div>
+        </span>
       }
 
       @if (presets().length > 0 && !readOnly()) {
-        <div class="emr-date-range__presets">
+        <div class="emr-date-range__presets" data-emr-print="hide">
           @for (preset of presets(); track preset.id) {
+            @let isActivePreset = isPresetActive(preset);
             <button
               type="button"
-              class="emr-button emr-button--small emr-button--outline"
-              [disabled]="disabled()"
+              class="emr-button emr-button--small"
+              [class.emr-button--primary]="isActivePreset"
+              [class.emr-button--outline]="!isActivePreset"
+              [disabled]="disabled() || isPresetOutOfBounds(preset)"
               (click)="applyPreset(preset)"
             >
               {{ preset.label }}
@@ -104,99 +119,146 @@ function optionalBooleanAttribute(value: unknown): boolean | undefined {
         </div>
       }
 
-      <div class="emr-quantity">
+      <div class="emr-date-range__bar">
         <input
           #startInput
-          class="emr-control"
+          class="emr-control emr-date-range__input"
           [id]="resolvedId() + '-start'"
           [attr.type]="mode() === 'datetime' ? 'datetime-local' : 'date'"
           [value]="startDomValue()"
+          [attr.placeholder]="resolvedStartPlaceholder()"
           [attr.min]="min() ?? null"
           [attr.max]="max() ?? null"
           [required]="required()"
           [disabled]="disabled()"
           [readOnly]="readOnly()"
-          [attr.aria-label]="(label() || 'Date range') + ' start'"
-          [attr.aria-invalid]="!!error() || null"
+          [attr.aria-label]="resolvedAriaLabel() + ' start'"
+          [attr.aria-required]="required() || null"
+          [attr.aria-invalid]="isStartInvalid() || null"
+          [attr.data-warning]="!isStartInvalid() && !!warning() ? 'true' : null"
           [attr.aria-describedby]="describedBy()"
           (input)="onBoundInput('start', $event)"
+          (keydown)="onBoundKeydown($event)"
           (blur)="syncDom()"
         />
-        <span class="emr-field__hint" aria-hidden="true">→</span>
+        <span class="emr-date-range__sep" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </span>
         <input
           #endInput
-          class="emr-control"
+          class="emr-control emr-date-range__input"
           [id]="resolvedId() + '-end'"
           [attr.type]="mode() === 'datetime' ? 'datetime-local' : 'date'"
           [value]="endDomValue()"
+          [attr.placeholder]="resolvedEndPlaceholder()"
           [attr.min]="min() ?? null"
           [attr.max]="max() ?? null"
           [required]="required()"
           [disabled]="disabled()"
           [readOnly]="readOnly()"
-          [attr.aria-label]="(label() || 'Date range') + ' end'"
-          [attr.aria-invalid]="!!error() || null"
+          [attr.aria-label]="resolvedAriaLabel() + ' end'"
+          [attr.aria-required]="required() || null"
+          [attr.aria-invalid]="isEndInvalid() || null"
+          [attr.data-warning]="!isEndInvalid() && !!warning() ? 'true' : null"
           [attr.aria-describedby]="describedBy()"
           (input)="onBoundInput('end', $event)"
+          (keydown)="onBoundKeydown($event)"
           (blur)="syncDom()"
         />
-        @if (showCalendar()) {
+        @if (showClear()) {
           <button
             type="button"
-            class="emr-button emr-button--outline emr-button--small"
-            [disabled]="disabled()"
-            [attr.aria-expanded]="calendarOpen()"
-            aria-label="Toggle calendar"
-            (click)="calendarOpen.set(!calendarOpen())"
+            class="emr-button emr-button--outline emr-button--small emr-date-range__icon-btn"
+            data-emr-print="hide"
+            [attr.aria-label]="clearLabel() + ' ' + resolvedAriaLabel()"
+            (click)="clearRange()"
           >
-            Calendar
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        }
+        @if (showCalendar()) {
+          <button
+            #calendarToggle
+            type="button"
+            class="emr-button emr-button--outline emr-button--small emr-date-range__icon-btn"
+            data-emr-print="hide"
+            [id]="resolvedId() + '-toggle'"
+            [disabled]="disabled() || readOnly()"
+            [attr.aria-expanded]="isCalendarOpen()"
+            [attr.aria-label]="(isCalendarOpen() ? 'Close ' : 'Open ') + resolvedAriaLabel() + ' calendar'"
+            (click)="toggleCalendar()"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+              <line x1="16" x2="16" y1="2" y2="6" />
+              <line x1="8" x2="8" y1="2" y2="6" />
+              <line x1="3" x2="21" y1="10" y2="10" />
+            </svg>
           </button>
         }
       </div>
 
-      @if (showCalendar() && calendarOpen()) {
+      @if (showCalendar() && isCalendarOpen()) {
         <div
-          class="emr-popover__panel"
-          style="position: static; max-width: 100%"
+          class="emr-popover__panel emr-date-range__popover"
+          data-emr-print="hide"
           role="region"
-          aria-label="Range calendar"
+          [attr.aria-label]="resolvedAriaLabel() + ' calendar'"
         >
-          <div class="emr-choice-header">
+          <div class="emr-date-range__cal-header">
             <button
               type="button"
-              class="emr-button emr-button--ghost emr-button--small"
+              class="emr-button emr-button--ghost emr-button--small emr-date-range__icon-btn"
               aria-label="Previous month"
               (click)="stepMonth(-1)"
             >
-              ‹
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
             </button>
             <strong>{{ calendarTitle() }}</strong>
             <button
               type="button"
-              class="emr-button emr-button--ghost emr-button--small"
+              class="emr-button emr-button--ghost emr-button--small emr-date-range__icon-btn"
               aria-label="Next month"
               (click)="stepMonth(1)"
             >
-              ›
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
             </button>
           </div>
           <div
-            class="emr-choice-list--grid"
-            style="--emr-choice-cols: 7; gap: 4px"
+            class="emr-date-range__cal-grid"
             role="grid"
             [attr.aria-label]="calendarTitle()"
+            (keydown)="onGridKeydown($event)"
           >
-            @for (cell of calendarCells(); track cell.iso) {
+            @for (wd of weekdayLabels(); track wd) {
+              <span class="emr-date-range__weekday" role="columnheader">{{ wd }}</span>
+            }
+            @for (cell of calendarCells(); track cell.iso; let idx = $index) {
               <button
+                #dayCell
                 type="button"
-                class="emr-button emr-button--small"
+                class="emr-button emr-button--small emr-date-range__cell"
                 [class.emr-button--primary]="isEdgeCell(cell.iso)"
                 [class.emr-button--secondary]="!isEdgeCell(cell.iso) && isInRangeCell(cell.iso)"
                 [class.emr-button--ghost]="!isEdgeCell(cell.iso) && !isInRangeCell(cell.iso)"
+                [class.emr-date-range__cell--outside]="!cell.inCurrentMonth"
+                [class.emr-date-range__cell--today]="cell.iso === todayIso"
                 [disabled]="disabled() || readOnly() || isDateOutOfBounds(cell.iso)"
                 [attr.data-iso]="cell.iso"
+                [attr.data-outside-month]="!cell.inCurrentMonth ? 'true' : null"
                 [attr.data-in-range]="isInRangeCell(cell.iso) || null"
                 [attr.data-range-edge]="rangeEdgeFor(cell.iso)"
+                [attr.aria-current]="cell.iso === todayIso ? 'date' : null"
+                [attr.aria-label]="cell.iso"
                 [attr.aria-pressed]="isEdgeCell(cell.iso) || isInRangeCell(cell.iso)"
                 (click)="onCalendarDayClick(cell.iso)"
               >
@@ -207,11 +269,16 @@ function optionalBooleanAttribute(value: unknown): boolean | undefined {
         </div>
       }
 
-      @if (!labelHidden() && hint()) {
-        <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
+      @if (error() || startError() || endError()) {
+        <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">
+          {{ error() || startError() || endError() }}
+        </span>
       }
-      @if (!labelHidden() && error()) {
-        <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
+      @if (warning()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ warning() }}</span>
+      }
+      @if (hint()) {
+        <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
       }
     </div>
   `,
@@ -219,32 +286,80 @@ function optionalBooleanAttribute(value: unknown): boolean | undefined {
 export class EmrDateRangeInputComponent implements AfterViewChecked {
   readonly controlId = input<string>();
   readonly label = input('');
+  readonly ariaLabel = input('');
   readonly labelHidden = input(false, { transform: booleanAttribute });
   readonly mode = input<'date' | 'datetime'>('date');
   readonly value = input<EmrDateRangeValue | null>(null);
   readonly min = input<string>();
   readonly max = input<string>();
   readonly presets = input<readonly EmrDateRangePreset[]>([]);
+  readonly startPlaceholder = input('');
+  readonly endPlaceholder = input('');
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly variant = input<EmrControlVariant>('outline');
   readonly clearable = input(false, { transform: booleanAttribute });
+  readonly clearLabel = input('Clear');
   readonly showCalendar = input(true, { transform: booleanAttribute });
+  readonly open = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
+  readonly weekStartsOn = input<0 | 1>(0);
   readonly required = input(false, { transform: booleanAttribute });
   readonly readOnly = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
+  readonly invalid = input(false, { transform: booleanAttribute });
+  readonly startError = input('');
+  readonly endError = input('');
+  readonly warning = input('');
   readonly hint = input('');
   readonly error = input('');
+  readonly ariaDescribedBy = input<string>();
 
   readonly valueChange = output<EmrDateRangeValue | null>();
   readonly cleared = output<void>();
+  readonly openChange = output<boolean>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+  readonly submitted = output<EmrDateRangeValue | null>();
 
+  private readonly hostRef = inject(ElementRef<HTMLElement>);
   private readonly fallbackId = `emr-date-range-${++nextWave2InputId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  protected readonly todayIso = new Date().toISOString().slice(0, 10);
 
-  protected readonly calendarOpen = signal(false);
-  protected readonly calendarYear = signal(2026);
-  protected readonly calendarMonth0 = signal(10); // Nov (0-indexed)
+  private readonly initialMonth = resolveInitialCalendarMonth(null, undefined, this.todayIso);
+  protected readonly localOpen = signal(false);
+  protected readonly calendarYear = signal(this.initialMonth.year);
+  protected readonly calendarMonth0 = signal(this.initialMonth.month0);
+  private readonly startOob = signal(false);
+  private readonly endOob = signal(false);
+  private calendarSeeded = false;
+  private groupFocused = false;
+
+  protected readonly isCalendarOpen = computed(() => {
+    if (this.disabled() || this.readOnly() || !this.showCalendar()) return false;
+    const controlled = this.open();
+    return controlled !== undefined ? controlled : this.localOpen();
+  });
+
+  protected readonly resolvedAriaLabel = computed(() => this.ariaLabel() || this.label() || 'Date range');
+  protected readonly resolvedStartPlaceholder = computed(
+    () => this.startPlaceholder() || (this.mode() === 'datetime' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD'),
+  );
+  protected readonly resolvedEndPlaceholder = computed(
+    () => this.endPlaceholder() || (this.mode() === 'datetime' ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD'),
+  );
 
   protected readonly startDomValue = computed(() => this.value()?.start ?? '');
   protected readonly endDomValue = computed(() => this.value()?.end ?? '');
+
+  protected readonly isGroupInvalid = computed(() =>
+    Boolean(this.invalid() || this.error() || this.startError() || this.endError() || this.startOob() || this.endOob()),
+  );
+  protected readonly isStartInvalid = computed(() =>
+    Boolean(this.invalid() || this.error() || this.startError() || this.startOob()),
+  );
+  protected readonly isEndInvalid = computed(() =>
+    Boolean(this.invalid() || this.error() || this.endError() || this.endOob()),
+  );
 
   protected readonly showClear = computed(() => {
     const v = this.value();
@@ -256,27 +371,28 @@ export class EmrDateRangeInputComponent implements AfterViewChecked {
     );
   });
 
-  protected readonly calendarTitle = computed(() => {
-    const y = this.calendarYear();
-    const m = String(this.calendarMonth0() + 1).padStart(2, '0');
-    return `${y}-${m}`;
-  });
-
+  protected readonly weekdayLabels = computed(() => getDateRangeWeekdays(this.weekStartsOn()));
+  protected readonly calendarTitle = computed(() =>
+    formatDateRangeMonthTitle(this.calendarYear(), this.calendarMonth0()),
+  );
   protected readonly calendarCells = computed(() =>
-    buildCalendarMonthCells(this.calendarYear(), this.calendarMonth0()),
+    buildDateRangeCalendarGrid(this.calendarYear(), this.calendarMonth0(), this.weekStartsOn()),
   );
 
   protected readonly describedBy = computed(() => {
-    if (this.labelHidden()) return null;
     const id = this.resolvedId();
     const ids: string[] = [];
+    if (this.error() || this.startError() || this.endError()) ids.push(`${id}-error`);
+    if (this.warning()) ids.push(`${id}-warning`);
     if (this.hint()) ids.push(`${id}-hint`);
-    if (this.error()) ids.push(`${id}-error`);
+    if (this.ariaDescribedBy()) ids.push(this.ariaDescribedBy()!);
     return ids.length ? ids.join(' ') : null;
   });
 
   private readonly startInputRef = viewChild<ElementRef<HTMLInputElement>>('startInput');
   private readonly endInputRef = viewChild<ElementRef<HTMLInputElement>>('endInput');
+  private readonly toggleBtnRef = viewChild<ElementRef<HTMLButtonElement>>('calendarToggle');
+  private readonly dayCellRefs = viewChildren<ElementRef<HTMLButtonElement>>('dayCell');
   private needsDomSync = false;
 
   ngAfterViewChecked(): void {
@@ -286,36 +402,144 @@ export class EmrDateRangeInputComponent implements AfterViewChecked {
     }
   }
 
+  protected onDocumentClick(event: MouseEvent): void {
+    if (!this.isCalendarOpen()) return;
+    const target = event.target as Node | null;
+    if (target && !this.hostRef.nativeElement.contains(target)) {
+      this.setCalendarOpen(false);
+    }
+  }
+
+  protected onGroupFocusIn(): void {
+    if (!this.groupFocused) {
+      this.groupFocused = true;
+      this.focused.emit();
+    }
+  }
+
+  protected onGroupFocusOut(event: FocusEvent): void {
+    const related = event.relatedTarget as Node | null;
+    if (!related || !this.hostRef.nativeElement.contains(related)) {
+      this.groupFocused = false;
+      this.blurred.emit();
+    }
+  }
+
+  protected onGroupKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.isCalendarOpen()) {
+      event.preventDefault();
+      this.setCalendarOpen(false);
+      this.toggleBtnRef()?.nativeElement.focus();
+    }
+  }
+
+  protected toggleCalendar(): void {
+    if (this.readOnly() || this.disabled()) return;
+    const next = !this.isCalendarOpen();
+    if (next) {
+      const seed = resolveInitialCalendarMonth(this.value(), this.min(), this.todayIso);
+      if (!this.calendarSeeded || this.value()?.start || this.value()?.end) {
+        this.calendarYear.set(seed.year);
+        this.calendarMonth0.set(seed.month0);
+        this.calendarSeeded = true;
+      }
+    }
+    this.setCalendarOpen(next);
+  }
+
+  private setCalendarOpen(next: boolean): void {
+    if (this.open() === undefined) {
+      this.localOpen.set(next);
+    }
+    this.openChange.emit(next);
+  }
+
+  protected onBoundKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !this.readOnly() && !this.disabled()) {
+      this.submitted.emit(this.value());
+    }
+  }
+
   protected onBoundInput(edge: 'start' | 'end', event: Event): void {
     if (this.readOnly() || this.disabled()) {
       this.syncDom();
       return;
     }
     const raw = emptyToNull((event.target as HTMLInputElement).value);
-    const cur = this.value() ?? { start: null, end: null };
-    let nextStart = edge === 'start' ? raw : cur.start;
-    let nextEnd = edge === 'end' ? raw : cur.end;
-    if (nextStart && nextEnd && nextEnd < nextStart) {
-      if (edge === 'start') nextEnd = nextStart;
-      else nextStart = nextEnd;
-    }
+    const res = commitDateRangeEndpoint(
+      this.value(),
+      edge,
+      raw,
+      this.mode(),
+      this.min(),
+      this.max(),
+    );
+    this.startOob.set(res.startOutOfBounds);
+    this.endOob.set(res.endOutOfBounds);
     this.scheduleDomSync();
-    if (!nextStart && !nextEnd) {
-      this.valueChange.emit(null);
-    } else {
-      this.valueChange.emit({ start: nextStart, end: nextEnd });
-    }
+    this.valueChange.emit(res.value);
   }
 
   protected onCalendarDayClick(iso: string): void {
     if (this.readOnly() || this.disabled() || this.isDateOutOfBounds(iso)) return;
-    const next = normalizeDateRangeSelection(this.value(), iso);
+    const next = selectDateRangeCalendarDay(
+      this.value(),
+      iso,
+      this.mode(),
+      this.min(),
+      this.max(),
+    );
+    this.startOob.set(false);
+    this.endOob.set(false);
     this.scheduleDomSync();
     this.valueChange.emit(next);
   }
 
+  protected onGridKeydown(event: KeyboardEvent): void {
+    const cells = this.calendarCells();
+    const target = event.target as HTMLElement | null;
+    const iso = target?.getAttribute('data-iso');
+    const curIdx = iso ? cells.findIndex((c) => c.iso === iso) : -1;
+    if (curIdx < 0) return;
+
+    let nextIdx = curIdx;
+    if (event.key === 'ArrowRight') nextIdx = Math.min(cells.length - 1, curIdx + 1);
+    else if (event.key === 'ArrowLeft') nextIdx = Math.max(0, curIdx - 1);
+    else if (event.key === 'ArrowDown') nextIdx = Math.min(cells.length - 1, curIdx + 7);
+    else if (event.key === 'ArrowUp') nextIdx = Math.max(0, curIdx - 7);
+    else if (event.key === 'Home') nextIdx = Math.floor(curIdx / 7) * 7;
+    else if (event.key === 'End') nextIdx = Math.min(cells.length - 1, Math.floor(curIdx / 7) * 7 + 6);
+    else if (event.key === 'PageUp') {
+      event.preventDefault();
+      this.stepMonth(-1);
+      return;
+    } else if (event.key === 'PageDown') {
+      event.preventDefault();
+      this.stepMonth(1);
+      return;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    const btns = this.dayCellRefs();
+    btns[nextIdx]?.nativeElement.focus();
+  }
+
+  protected isPresetActive(preset: EmrDateRangePreset): boolean {
+    const v = this.value();
+    return Boolean(v && v.start === preset.range.start && v.end === preset.range.end);
+  }
+
+  protected isPresetOutOfBounds(preset: EmrDateRangePreset): boolean {
+    const s = preset.range.start?.slice(0, 10);
+    const e = preset.range.end?.slice(0, 10);
+    return Boolean((s && this.isDateOutOfBounds(s)) || (e && this.isDateOutOfBounds(e)));
+  }
+
   protected applyPreset(preset: EmrDateRangePreset): void {
-    if (this.readOnly() || this.disabled()) return;
+    if (this.readOnly() || this.disabled() || this.isPresetOutOfBounds(preset)) return;
+    this.startOob.set(false);
+    this.endOob.set(false);
     this.scheduleDomSync();
     this.valueChange.emit({
       start: preset.range.start,
@@ -325,28 +549,21 @@ export class EmrDateRangeInputComponent implements AfterViewChecked {
 
   protected clearRange(): void {
     if (this.readOnly() || this.disabled()) return;
+    this.startOob.set(false);
+    this.endOob.set(false);
     this.scheduleDomSync();
     this.valueChange.emit(null);
     this.cleared.emit();
   }
 
-  protected stepMonth(delta: -1 | 1): void {
-    let m = this.calendarMonth0() + delta;
-    let y = this.calendarYear();
-    if (m < 0) {
-      m = 11;
-      y -= 1;
-    } else if (m > 11) {
-      m = 0;
-      y += 1;
-    }
-    this.calendarYear.set(y);
-    this.calendarMonth0.set(m);
+  protected stepMonth(delta: number): void {
+    const next = stepCalendarMonth(this.calendarYear(), this.calendarMonth0(), delta);
+    this.calendarYear.set(next.year);
+    this.calendarMonth0.set(next.month0);
   }
 
   protected isInRangeCell(iso: string): boolean {
-    const dateRange = this.toDateOnlyRange();
-    return isIsoDateInRange(iso, dateRange);
+    return isIsoDateInRange(iso, this.toDateOnlyRange());
   }
 
   protected rangeEdgeFor(iso: string): 'start' | 'end' | 'both' | null {

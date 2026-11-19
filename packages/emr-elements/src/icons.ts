@@ -29,6 +29,7 @@ export type EmrLitIconName =
   | 'zoom-in'
   | 'zoom-out'
   | 'maximize'
+  | 'minimize'
   | 'download'
   | 'upload'
   | 'camera'
@@ -43,7 +44,9 @@ export type EmrLitIconName =
   | 'rotate-ccw'
   | 'rotate-cw'
   | 'flip-h'
-  | 'flip-v';
+  | 'flip-v'
+  | 'more-vertical'
+  | 'more-horizontal';
 
 export function renderEmrSvgIcon(name: EmrLitIconName, size = 18): SVGTemplateResult {
   const inner = (() => {
@@ -86,6 +89,8 @@ export function renderEmrSvgIcon(name: EmrLitIconName, size = 18): SVGTemplateRe
         return svg`<circle cx="12" cy="12" r="9" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />`;
       case 'trash':
         return svg`<polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />`;
+      case 'undo':
+        return svg`<path d="M3 7v6h6" /><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />`;
       case 'upload':
         return svg`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />`;
       case 'download':
@@ -106,6 +111,10 @@ export function renderEmrSvgIcon(name: EmrLitIconName, size = 18): SVGTemplateRe
         return svg`<path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />`;
       case 'copy':
         return svg`<rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />`;
+      case 'more-vertical':
+        return svg`<circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" />`;
+      case 'more-horizontal':
+        return svg`<circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" />`;
       case 'crop':
         return svg`<path d="M6 2v14a2 2 0 0 0 2 2h14" /><path d="M18 22V8a2 2 0 0 0-2-2H2" />`;
       case 'rotate-ccw':
@@ -122,6 +131,8 @@ export function renderEmrSvgIcon(name: EmrLitIconName, size = 18): SVGTemplateRe
         return svg`<circle cx="11" cy="11" r="7" /><line x1="20" y1="20" x2="16.2" y2="16.2" /><line x1="8" y1="11" x2="14" y2="11" />`;
       case 'maximize':
         return svg`<polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />`;
+      case 'minimize':
+        return svg`<polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" /><line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" />`;
       default:
         return svg`<circle cx="12" cy="12" r="8" />`;
     }

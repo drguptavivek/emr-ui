@@ -1,5 +1,4 @@
 import {
-  AfterViewChecked,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -11,17 +10,28 @@ import {
   output,
   signal,
   viewChild,
-  viewChildren,
 } from '@angular/core';
 import type {
   EmrFlatTreeRow,
+  EmrMatchHighlightSegment,
+  EmrSegmentedBadgePresentation,
   EmrTreeCheckStrategy,
   EmrTreeNode,
 } from '@drguptavivek/emr-controller';
 import {
+  buildEmrTreeSelectSummary,
+  clearTreeSelection,
   collectAllExpandableTreeIds,
+  findNextTreeRowIndex,
+  findTypeaheadTreeRowIndex,
   flattenVisibleTreeNodes,
-  formatTreeSelectionLabel,
+  formatEmrSegmentedBadge,
+  isEmrTreeClearable,
+  removeTreeSelectionChip,
+  resolveDefaultExpandedTreeIds,
+  resolveEmrSelectCloseOnSelect,
+  resolveEmrTreeSelectDefaultExpanded,
+  splitMatchHighlightSegments,
   toggleTreeNodeCheck,
 } from './emr-wave2.logic';
 
@@ -33,9 +43,9 @@ let nextTreeId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="emr-field">
-      @if (label() || showExpandControls()) {
-        <div class="emr-choice-header">
+    <div class="emr-field" (focusin)="onFocusIn()" (focusout)="onFocusOut($event)">
+      @if (label() || (!labelHidden() && (showExpandControls() || showClear()))) {
+        <div class="emr-tree-view__toolbar">
           @if (label()) {
             <span
               class="emr-field__label"
@@ -48,66 +58,116 @@ let nextTreeId = 0;
               }
             </span>
           }
-          @if (showExpandControls()) {
-            <div class="emr-chip-row">
-              <button
-                type="button"
-                class="emr-choice-clear"
-                [disabled]="disabled()"
-                (click)="expandAll()"
-              >
-                Expand all
-              </button>
-              <button
-                type="button"
-                class="emr-choice-clear"
-                [disabled]="disabled()"
-                (click)="collapseAll()"
-              >
-                Collapse all
-              </button>
+          @if (!labelHidden() && (showExpandControls() || showClear())) {
+            <div class="emr-choice-header__actions" data-emr-print="hide">
+              @if (showExpandControls()) {
+                <button
+                  type="button"
+                  class="emr-choice-clear"
+                  [disabled]="disabled()"
+                  (click)="expandAll()"
+                >
+                  Expand all
+                </button>
+                <button
+                  type="button"
+                  class="emr-choice-clear"
+                  [disabled]="disabled()"
+                  (click)="collapseAll()"
+                >
+                  Collapse all
+                </button>
+              }
+              @if (showClear()) {
+                <button
+                  type="button"
+                  class="emr-choice-clear"
+                  [attr.aria-label]="clearLabel() + ' ' + (label() || ariaLabel() || 'selection')"
+                  (click)="clearAll()"
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                  </svg>
+                  <span>{{ clearLabel() }}</span>
+                </button>
+              }
             </div>
           }
         </div>
       }
       @if (searchable()) {
-        <input
-          class="emr-search-input"
-          type="search"
-          autocomplete="off"
-          [value]="activeSearchQuery()"
-          [placeholder]="searchPlaceholder()"
-          [disabled]="disabled()"
-          [attr.aria-label]="(label() || 'Tree') + ' search'"
-          (input)="onSearchInput($event)"
-        />
+        <div class="emr-search-select__input-wrap" data-emr-print="hide">
+          <span class="emr-search-select__leading-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="20" y1="20" x2="16.2" y2="16.2" />
+            </svg>
+          </span>
+          <input
+            #searchInputEl
+            class="emr-search-input"
+            [class.emr-tree-view__search-input--has-clear]="!!activeSearchQuery()"
+            style="padding-left: 36px; width: 100%;"
+            type="search"
+            autocomplete="off"
+            [value]="activeSearchQuery()"
+            [placeholder]="searchPlaceholder()"
+            [disabled]="disabled()"
+            [attr.aria-label]="(label() || ariaLabel() || 'Tree') + ' search'"
+            (input)="onSearchInput($event)"
+            (keydown.arrowdown)="onSearchArrowDown($event)"
+          />
+          @if (activeSearchQuery() && !disabled()) {
+            <button
+              type="button"
+              class="emr-tree-view__search-clear"
+              aria-label="Clear search"
+              (click)="clearSearch()"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+              </svg>
+            </button>
+          }
+        </div>
       }
       <div
+        #treeRoot
         class="emr-tree-view"
+        [class.emr-tree-view--sm]="size() === 'sm'"
+        [style.max-height.px]="maxHeight()"
+        data-emr-print="expand"
         role="tree"
         [id]="resolvedId()"
-        [attr.aria-labelledby]="label() ? resolvedId() + '-label' : null"
-        [attr.aria-label]="!label() ? ariaLabel() || 'Tree view' : null"
-        [attr.aria-multiselectable]="multiple() || null"
-        [attr.aria-readonly]="readOnly() || null"
-        [attr.aria-invalid]="!!error() || null"
+        [attr.aria-labelledby]="!ariaLabel() && !labelHidden() && label() ? resolvedId() + '-label' : null"
+        [attr.aria-label]="ariaLabel() || (labelHidden() ? (label() || 'Tree view') : (!label() ? 'Tree view' : null))"
+        [attr.aria-multiselectable]="multiple() ? 'true' : null"
+        [attr.aria-required]="required() ? 'true' : null"
+        [attr.aria-readonly]="readOnly() ? 'true' : null"
+        [attr.aria-invalid]="isInvalid() ? 'true' : null"
+        [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
+        [attr.data-disabled]="disabled() ? 'true' : null"
         [attr.aria-describedby]="describedBy()"
       >
         @if (visibleRows().length === 0) {
-          <div class="emr-empty">{{ emptyMessage() }}</div>
+          <div class="emr-empty" role="status">{{ emptyMessage() }}</div>
         }
         @for (row of visibleRows(); track row.node.id; let idx = $index) {
           <div
-            #treeRow
             class="emr-tree-view__row"
             role="treeitem"
             [style.padding-inline-start.px]="8 + row.depth * 20"
             [attr.data-node-id]="row.node.id"
-            [attr.tabindex]="tabStopNodeId() === row.node.id ? 0 : -1"
+            [attr.data-checked]="multiple() && row.checkState === 'checked' ? 'true' : null"
+            [attr.data-mixed]="multiple() && row.checkState === 'mixed' ? 'true' : null"
+            [attr.data-readonly]="row.node.readOnly ? 'true' : null"
+            [attr.data-tone]="row.node.tone || null"
+            [attr.tabindex]="disabled() ? -1 : (tabStopNodeId() === row.node.id ? 0 : -1)"
             [attr.aria-level]="row.depth + 1"
             [attr.aria-expanded]="row.hasChildren ? row.expanded : null"
             [attr.aria-selected]="isRowSelected(row)"
-            [attr.aria-checked]="multiple() ? row.checkState : null"
+            [attr.aria-checked]="multiple() && showRowCheckbox(row) ? (row.checkState === 'checked' ? 'true' : row.checkState === 'mixed' ? 'mixed' : 'false') : null"
+            [attr.aria-readonly]="readOnly() || row.node.readOnly ? 'true' : null"
             [attr.aria-disabled]="disabled() || !!row.node.disabled || null"
             (click)="onRowClick(row, $event)"
             (keydown)="onRowKeydown(row, idx, $event)"
@@ -121,37 +181,97 @@ let nextTreeId = 0;
                 [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.node.label"
                 (click)="onToggleNode(row.node.id, $event)"
               >
-                {{ row.expanded ? '▾' : '▸' }}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  @if (row.expanded) {
+                    <polyline points="6 9 12 15 18 9" />
+                  } @else {
+                    <polyline points="9 18 15 12 9 6" />
+                  }
+                </svg>
               </button>
             } @else {
               <span class="emr-tree-view__spacer" aria-hidden="true"></span>
             }
-            @if (multiple() && row.selectable) {
-              <input
-                #rowCheck
-                type="checkbox"
-                tabindex="-1"
-                [attr.data-node-id]="row.node.id"
-                [checked]="row.checkState === 'checked'"
-                [indeterminate]="row.checkState === 'mixed'"
-                [disabled]="disabled() || !!row.node.disabled"
-                [attr.aria-label]="'Select ' + row.node.label"
-                [attr.aria-readonly]="readOnly() || null"
-                (click)="onCheckboxClick(row, $event)"
-              />
+            @if (multiple() && showRowCheckbox(row)) {
+              <span class="emr-checkbox__box" aria-hidden="true">
+                @if (row.checkState === 'mixed') {
+                  <svg [attr.width]="size() === 'sm' ? 11 : 12" [attr.height]="size() === 'sm' ? 11 : 12" viewBox="0 0 16 16" fill="none">
+                    <path d="M3.5 8h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                } @else if (row.checkState === 'checked') {
+                  <svg [attr.width]="size() === 'sm' ? 11 : 12" [attr.height]="size() === 'sm' ? 11 : 12" viewBox="0 0 16 16" fill="none">
+                    <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                }
+              </span>
+            }
+            @if (row.node.icon) {
+              <span class="emr-tree-view__row-icon" aria-hidden="true">
+                @switch (row.node.icon) {
+                  @case ('eye') {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                  }
+                  @case ('lock') {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                  }
+                  @case ('warning') {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 16H3Z" /><path d="M12 10v4M12 17h.01" /></svg>
+                  }
+                  @case ('info') {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+                  }
+                  @default {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  }
+                }
+              </span>
             }
             <span class="emr-choice-option-copy">
-              <span>
-                @if (row.node.icon) {
-                  <span aria-hidden="true">{{ row.node.icon }} </span>
-                }
-                {{ row.node.label }}
+              <span class="emr-choice-option-title">
+                <span>
+                  @for (seg of highlightSegments(row.node.label); track $index) {
+                    @if (seg.matched) {
+                      <mark class="emr-tree-view__match">{{ seg.text }}</mark>
+                    } @else {
+                      {{ seg.text }}
+                    }
+                  }
+                </span>
                 @if (row.node.code) {
-                  <span class="emr-choice-option-desc">({{ row.node.code }})</span>
+                  <span class="emr-choice-option-desc">
+                    (
+                    @for (seg of highlightSegments(row.node.code); track $index) {
+                      @if (seg.matched) {
+                        <mark class="emr-tree-view__match">{{ seg.text }}</mark>
+                      } @else {
+                        {{ seg.text }}
+                      }
+                    }
+                    )
+                  </span>
+                }
+                @if (row.node.readOnly) {
+                  <span class="emr-tree-view__lock" aria-label="Read-only node">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="4" y="11" width="16" height="10" rx="2" />
+                      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                    </svg>
+                  </span>
+                }
+                @if (nodeBadge(row.node); as badge) {
+                  <span [class]="'emr-badge emr-badge--sm emr-badge--' + badge.variant + ' emr-tone-' + badge.tone">{{ badge.text }}</span>
                 }
               </span>
               @if (row.node.description) {
-                <span class="emr-choice-option-desc">{{ row.node.description }}</span>
+                <span class="emr-choice-option-desc">
+                  @for (seg of highlightSegments(row.node.description); track $index) {
+                    @if (seg.matched) {
+                      <mark class="emr-tree-view__match">{{ seg.text }}</mark>
+                    } @else {
+                      {{ seg.text }}
+                    }
+                  }
+                </span>
               }
             </span>
           </div>
@@ -160,13 +280,16 @@ let nextTreeId = 0;
       @if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
       }
+      @if (!labelHidden() && warning()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ warning() }}</span>
+      }
       @if (!labelHidden() && error()) {
-        <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
+        <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">{{ error() }}</span>
       }
     </div>
   `,
 })
-export class EmrTreeViewComponent implements AfterViewChecked {
+export class EmrTreeViewComponent {
   readonly controlId = input<string>();
   readonly label = input('');
   readonly labelHidden = input(false, { transform: booleanAttribute });
@@ -176,16 +299,25 @@ export class EmrTreeViewComponent implements AfterViewChecked {
   readonly values = input<readonly string[]>([]);
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly checkStrategy = input<EmrTreeCheckStrategy>('cascade');
+  readonly maxSelections = input<number>();
   readonly expandedIds = input<readonly string[] | undefined>(undefined);
+  readonly defaultExpandedIds = input<readonly string[] | undefined>(undefined);
   readonly searchable = input(false, { transform: booleanAttribute });
   readonly searchQuery = input<string | undefined>(undefined);
   readonly searchPlaceholder = input('Filter hierarchy…');
+  readonly highlightMatch = input(true, { transform: booleanAttribute });
   readonly showExpandControls = input(false, { transform: booleanAttribute });
+  readonly clearable = input(false, { transform: booleanAttribute });
+  readonly clearLabel = input('Clear');
+  readonly size = input<'md' | 'sm'>('md');
+  readonly maxHeight = input(320);
   readonly emptyMessage = input('No matching items');
   readonly required = input(false, { transform: booleanAttribute });
   readonly readOnly = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
+  readonly invalid = input(false, { transform: booleanAttribute });
   readonly hint = input('');
+  readonly warning = input('');
   readonly error = input('');
 
   readonly valueChange = output<string | null>();
@@ -193,6 +325,9 @@ export class EmrTreeViewComponent implements AfterViewChecked {
   readonly expandedIdsChange = output<readonly string[]>();
   readonly searchQueryChange = output<string>();
   readonly nodeSelected = output<EmrTreeNode>();
+  readonly cleared = output<void>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly fallbackId = `emr-tree-view-${++nextTreeId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
@@ -201,14 +336,17 @@ export class EmrTreeViewComponent implements AfterViewChecked {
   protected readonly localSearchQuery = signal('');
   protected readonly focusedNodeId = signal<string | null>(null);
   private expandedInitialized = false;
+  private isFocusedInside = false;
+  private typeaheadBuffer = '';
+  private typeaheadTimer: ReturnType<typeof setTimeout> | null = null;
+
+  protected readonly isInvalid = computed(() => this.invalid() || Boolean(this.error()));
 
   protected readonly activeExpandedIds = computed(() => {
     const controlled = this.expandedIds();
     if (controlled !== undefined) return controlled;
     if (!this.expandedInitialized) {
-      return this.nodes()
-        .filter((n) => n.children && n.children.length > 0)
-        .map((n) => n.id);
+      return resolveDefaultExpandedTreeIds(this.nodes(), this.defaultExpandedIds());
     }
     return this.localExpandedIds();
   });
@@ -232,12 +370,24 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     }),
   );
 
+  protected readonly showClear = computed(() =>
+    isEmrTreeClearable({
+      clearable: this.clearable(),
+      disabled: this.disabled(),
+      readOnly: this.readOnly(),
+      multiple: this.multiple(),
+      value: this.value(),
+      values: this.values(),
+      nodes: this.nodes(),
+    }),
+  );
+
   protected readonly tabStopNodeId = computed(() => {
     const rows = this.visibleRows();
     const focused = this.focusedNodeId();
-    if (focused && rows.some((r) => r.node.id === focused)) return focused;
+    if (focused && rows.some((r) => r.node.id === focused && !r.node.disabled)) return focused;
     const selected = this.effectiveSelectedIds()[0];
-    if (selected && rows.some((r) => r.node.id === selected)) return selected;
+    if (selected && rows.some((r) => r.node.id === selected && !r.node.disabled)) return selected;
     return rows.find((r) => !r.node.disabled)?.node.id ?? rows[0]?.node.id ?? null;
   });
 
@@ -246,15 +396,36 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     const id = this.resolvedId();
     const ids: string[] = [];
     if (this.hint()) ids.push(`${id}-hint`);
+    if (this.warning()) ids.push(`${id}-warning`);
     if (this.error()) ids.push(`${id}-error`);
     return ids.length ? ids.join(' ') : null;
   });
 
-  private readonly rowRefs = viewChildren<ElementRef<HTMLElement>>('treeRow');
-  private readonly checkRefs = viewChildren<ElementRef<HTMLInputElement>>('rowCheck');
+  private readonly treeRootRef = viewChild<ElementRef<HTMLElement>>('treeRoot');
+  private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInputEl');
 
-  ngAfterViewChecked(): void {
-    this.syncRowCheckboxes();
+  focusSearchOrTree(): void {
+    if (this.searchable()) {
+      this.searchInputRef()?.nativeElement.focus();
+      return;
+    }
+    const id = this.tabStopNodeId();
+    if (id) this.focusNodeById(id);
+  }
+
+  protected showRowCheckbox(row: EmrFlatTreeRow): boolean {
+    return row.selectable || this.checkStrategy() === 'cascade';
+  }
+
+  protected highlightSegments(text: string): readonly EmrMatchHighlightSegment[] {
+    if (!this.highlightMatch() || !this.activeSearchQuery()) {
+      return [{ text, matched: false }];
+    }
+    return splitMatchHighlightSegments(text, this.activeSearchQuery());
+  }
+
+  protected nodeBadge(node: EmrTreeNode): EmrSegmentedBadgePresentation | null {
+    return formatEmrSegmentedBadge(node.badge, node.tone);
   }
 
   protected isRowSelected(row: EmrFlatTreeRow): boolean {
@@ -264,10 +435,44 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     return this.value() === row.node.id;
   }
 
+  protected onFocusIn(): void {
+    if (!this.isFocusedInside) {
+      this.isFocusedInside = true;
+      this.focused.emit();
+    }
+  }
+
+  protected onFocusOut(event: FocusEvent): void {
+    const currentTarget = event.currentTarget as HTMLElement | null;
+    const relatedTarget = event.relatedTarget as Node | null;
+    if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
+      return;
+    }
+    if (this.isFocusedInside) {
+      this.isFocusedInside = false;
+      this.blurred.emit();
+    }
+  }
+
   protected onSearchInput(event: Event): void {
     const next = (event.target as HTMLInputElement).value;
     this.localSearchQuery.set(next);
     this.searchQueryChange.emit(next);
+  }
+
+  protected clearSearch(): void {
+    this.localSearchQuery.set('');
+    this.searchQueryChange.emit('');
+    this.searchInputRef()?.nativeElement.focus();
+  }
+
+  protected onSearchArrowDown(event: Event): void {
+    const rows = this.visibleRows();
+    const firstIdx = findNextTreeRowIndex(rows, -1, 'ArrowDown');
+    if (firstIdx >= 0) {
+      event.preventDefault();
+      this.focusNodeById(rows[firstIdx]!.node.id);
+    }
   }
 
   protected expandAll(): void {
@@ -285,6 +490,19 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     this.expandedIdsChange.emit([]);
   }
 
+  protected clearAll(): void {
+    if (this.disabled() || this.readOnly()) return;
+    if (this.multiple()) {
+      const next = clearTreeSelection(this.nodes(), this.values());
+      this.valuesChange.emit(next);
+    } else {
+      const current = this.value();
+      const kept = current ? clearTreeSelection(this.nodes(), [current]) : [];
+      this.valueChange.emit(kept[0] ?? null);
+    }
+    this.cleared.emit();
+  }
+
   protected onToggleNode(nodeId: string, event?: Event): void {
     event?.stopPropagation();
     if (this.disabled()) return;
@@ -297,27 +515,17 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     this.expandedIdsChange.emit(next);
   }
 
-  protected onCheckboxClick(row: EmrFlatTreeRow, event: MouseEvent): void {
-    event.stopPropagation();
-    if (this.disabled() || this.readOnly() || row.node.disabled || !row.selectable) {
-      event.preventDefault();
-      this.syncRowCheckboxes();
-      return;
-    }
-    this.activateRow(row);
-  }
-
   protected onRowClick(row: EmrFlatTreeRow, event: MouseEvent): void {
     if (this.disabled() || row.node.disabled) {
       event.preventDefault();
       return;
     }
     this.focusedNodeId.set(row.node.id);
-    if (!row.selectable && row.hasChildren) {
+    if (!row.selectable && row.hasChildren && this.checkStrategy() !== 'cascade') {
       this.onToggleNode(row.node.id);
       return;
     }
-    if (this.readOnly()) return;
+    if (this.readOnly() || row.node.readOnly) return;
     this.activateRow(row);
   }
 
@@ -325,24 +533,13 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     if (this.disabled()) return;
     const rows = this.visibleRows();
     switch (event.key) {
-      case 'ArrowDown': {
-        event.preventDefault();
-        this.focusRowByIndex(Math.min(rows.length - 1, index + 1));
-        break;
-      }
-      case 'ArrowUp': {
-        event.preventDefault();
-        this.focusRowByIndex(Math.max(0, index - 1));
-        break;
-      }
-      case 'Home': {
-        event.preventDefault();
-        this.focusRowByIndex(0);
-        break;
-      }
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'Home':
       case 'End': {
         event.preventDefault();
-        this.focusRowByIndex(rows.length - 1);
+        const nextIdx = findNextTreeRowIndex(rows, index, event.key);
+        if (nextIdx >= 0) this.focusNodeById(rows[nextIdx]!.node.id);
         break;
       }
       case 'ArrowRight': {
@@ -350,7 +547,10 @@ export class EmrTreeViewComponent implements AfterViewChecked {
         if (row.hasChildren && !row.expanded) {
           this.onToggleNode(row.node.id);
         } else if (row.hasChildren && row.expanded) {
-          this.focusRowByIndex(Math.min(rows.length - 1, index + 1));
+          const nextIdx = findNextTreeRowIndex(rows, index, 'ArrowDown');
+          if (nextIdx > index && rows[nextIdx]!.depth > row.depth) {
+            this.focusNodeById(rows[nextIdx]!.node.id);
+          }
         }
         break;
       }
@@ -359,27 +559,43 @@ export class EmrTreeViewComponent implements AfterViewChecked {
         if (row.hasChildren && row.expanded) {
           this.onToggleNode(row.node.id);
         } else if (row.parentId) {
-          const parentIdx = rows.findIndex((r) => r.node.id === row.parentId);
-          if (parentIdx >= 0) this.focusRowByIndex(parentIdx);
+          const parentRow = rows.find((r) => r.node.id === row.parentId);
+          if (parentRow && !parentRow.node.disabled) {
+            this.focusNodeById(parentRow.node.id);
+          }
         }
         break;
       }
       case 'Enter':
       case ' ': {
         event.preventDefault();
-        if (!row.selectable && row.hasChildren) {
+        if (!row.selectable && row.hasChildren && this.checkStrategy() !== 'cascade') {
           this.onToggleNode(row.node.id);
           return;
         }
-        if (this.readOnly() || row.node.disabled) return;
+        if (this.readOnly() || row.node.disabled || row.node.readOnly) return;
         this.activateRow(row);
         break;
+      }
+      default: {
+        if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+          this.typeaheadBuffer += event.key;
+          if (this.typeaheadTimer) clearTimeout(this.typeaheadTimer);
+          this.typeaheadTimer = setTimeout(() => {
+            this.typeaheadBuffer = '';
+          }, 500);
+          const matchIdx = findTypeaheadTreeRowIndex(rows, this.typeaheadBuffer, index);
+          if (matchIdx >= 0) {
+            this.focusNodeById(rows[matchIdx]!.node.id);
+          }
+        }
       }
     }
   }
 
   private activateRow(row: EmrFlatTreeRow): void {
-    if (this.disabled() || this.readOnly() || row.node.disabled || !row.selectable) return;
+    if (this.disabled() || this.readOnly() || row.node.disabled || row.node.readOnly) return;
+    if (!row.selectable && !(this.multiple() && this.checkStrategy() === 'cascade')) return;
     this.nodeSelected.emit(row.node);
     if (this.multiple()) {
       const next = toggleTreeNodeCheck(
@@ -387,35 +603,24 @@ export class EmrTreeViewComponent implements AfterViewChecked {
         this.values(),
         row.node.id,
         this.checkStrategy(),
+        this.maxSelections(),
       );
-      this.valuesChange.emit(next);
-      queueMicrotask(() => this.syncRowCheckboxes());
+      if (next !== this.values()) {
+        this.valuesChange.emit(next);
+      }
     } else {
-      this.valueChange.emit(row.node.id);
+      const nextVal = this.clearable() && this.value() === row.node.id ? null : row.node.id;
+      this.valueChange.emit(nextVal);
     }
   }
 
-  private focusRowByIndex(index: number): void {
-    const rows = this.visibleRows();
-    const target = rows[index];
-    if (!target) return;
-    this.focusedNodeId.set(target.node.id);
-    const el = this.rowRefs()[index]?.nativeElement;
-    el?.focus();
-  }
-
-  private syncRowCheckboxes(): void {
-    const rowMap = new Map(this.visibleRows().map((r) => [r.node.id, r]));
-    for (const ref of this.checkRefs()) {
-      const el = ref.nativeElement;
-      const nodeId = el.getAttribute('data-node-id') ?? '';
-      const row = rowMap.get(nodeId);
-      if (!row) continue;
-      const expectedChecked = row.checkState === 'checked';
-      const expectedMixed = row.checkState === 'mixed';
-      if (el.checked !== expectedChecked) el.checked = expectedChecked;
-      if (el.indeterminate !== expectedMixed) el.indeterminate = expectedMixed;
-    }
+  private focusNodeById(nodeId: string): void {
+    this.focusedNodeId.set(nodeId);
+    const root = this.treeRootRef()?.nativeElement;
+    if (!root) return;
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('[role="treeitem"]'));
+    const target = rows.find((el) => el.getAttribute('data-node-id') === nodeId);
+    target?.focus();
   }
 }
 
@@ -428,155 +633,285 @@ export class EmrTreeViewComponent implements AfterViewChecked {
     '(document:click)': 'onDocumentClick($event)',
   },
   template: `
-    <div class="emr-field emr-search-select">
+    <div
+      [class]="fieldClasses()"
+      (focusin)="onFocusIn()"
+      (focusout)="onFocusOut($event)"
+    >
       <label class="emr-field__label" [class.emr-sr-only]="labelHidden()" [for]="resolvedId()">
         {{ label() }}
         @if (required()) {
           <span class="emr-field__required" aria-hidden="true">*</span>
         }
       </label>
-      @if (multiple() && selectedChips().length > 0) {
-        <div class="emr-chip-row" aria-label="Selected tree items">
-          @for (chip of selectedChips(); track chip.id) {
-            <span class="emr-chip emr-tone-neutral">
-              {{ chip.label }}
-              @if (!readOnly() && !disabled()) {
-                <button
-                  type="button"
-                  class="emr-button emr-button--small emr-button--ghost"
-                  [attr.aria-label]="'Remove ' + chip.label"
-                  (click)="removeSelectedId(chip.id, $event)"
+      <div class="emr-select-root">
+        <div
+          class="emr-select-shell"
+          [attr.data-open]="isPanelOpen() ? 'true' : null"
+          [attr.data-invalid]="isInvalid() ? 'true' : null"
+          [attr.data-warning]="!isInvalid() && !!warning() ? 'true' : null"
+          [attr.data-readonly]="readOnly() ? 'true' : null"
+          [attr.data-disabled]="disabled() ? 'true' : null"
+        >
+          @if (multiple() && (summary().visibleChips.length > 0 || summary().overflowCount > 0)) {
+            <div class="emr-select-chips" [attr.aria-label]="ariaLabel() || label() || 'Selected tree items'">
+              @for (chip of summary().visibleChips; track chip.id) {
+                <span
+                  class="emr-select-chip"
+                  [attr.data-readonly]="chip.readOnly ? 'true' : null"
                 >
-                  ✕
-                </button>
+                  <span class="emr-select-chip__label">{{ chip.label }}</span>
+                  @if (chip.readOnly) {
+                    <span class="emr-tree-view__lock" aria-hidden="true">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="11" width="16" height="10" rx="2" />
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                      </svg>
+                    </span>
+                  } @else if (!readOnly() && !disabled() && !chip.disabled) {
+                    <button
+                      type="button"
+                      class="emr-select-chip__remove"
+                      [attr.aria-label]="'Remove ' + chip.label"
+                      (click)="removeSelectedId(chip.id, $event)"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  }
+                </span>
+              }
+              @if (summary().overflowCount > 0) {
+                <span class="emr-select-chip emr-select-chip--overflow">+{{ summary().overflowCount }}</span>
+              }
+            </div>
+          }
+          <button
+            #triggerBtn
+            type="button"
+            class="emr-select-trigger"
+            role="combobox"
+            [id]="resolvedId()"
+            [disabled]="disabled()"
+            [attr.aria-expanded]="isPanelOpen()"
+            aria-haspopup="tree"
+            [attr.aria-controls]="isPanelOpen() ? resolvedId() + '-panel' : null"
+            [attr.aria-label]="resolvedAriaLabel()"
+            [attr.aria-required]="required() ? 'true' : null"
+            [attr.aria-readonly]="readOnly() ? 'true' : null"
+            [attr.aria-invalid]="isInvalid() ? 'true' : null"
+            [attr.aria-busy]="loading() ? 'true' : null"
+            [attr.aria-describedby]="describedBy()"
+            (click)="togglePanel()"
+            (keydown)="onTriggerKeydown($event)"
+          >
+            @if (!multiple() || (!summary().visibleChips.length && summary().overflowCount === 0)) {
+              <span
+                class="emr-select-trigger__text"
+                [class.emr-select-trigger__text--placeholder]="!summary().hasSelection"
+              >
+                {{ summary().text }}
+              </span>
+            } @else {
+              <span class="emr-select-trigger__spacer" aria-hidden="true"></span>
+            }
+            <span class="emr-select-trigger__chevron" aria-hidden="true">
+              @if (loading()) {
+                <svg class="emr-select-spinner" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-opacity="0.25" stroke-width="2" />
+                  <path d="M14 8a6 6 0 0 0-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path
+                    [attr.d]="isPanelOpen() ? 'M4 10l4-4 4 4' : 'M4 6l4 4 4-4'"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               }
             </span>
+          </button>
+          @if (showClear()) {
+            <button
+              type="button"
+              class="emr-select-clear"
+              data-emr-print="hide"
+              [attr.aria-label]="clearLabel() + ' ' + (label() || ariaLabel() || 'selection')"
+              (click)="clearSelection($event)"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+              </svg>
+            </button>
           }
         </div>
-      }
-      <div class="emr-search-select__bar">
-        <button
-          #triggerBtn
-          type="button"
-          class="emr-select"
-          [id]="resolvedId()"
-          [disabled]="disabled()"
-          [attr.aria-expanded]="isPanelOpen()"
-          [attr.aria-haspopup]="'tree'"
-          [attr.aria-readonly]="readOnly() || null"
-          [attr.aria-invalid]="!!error() || null"
-          [attr.aria-describedby]="describedBy()"
-          (click)="togglePanel()"
-          (keydown.arrowdown)="openFromKeyboard($event)"
-          (keydown.escape)="closePanel($event)"
-        >
-          {{ triggerDisplayText() }}
-        </button>
-        @if (showClear()) {
-          <button
-            type="button"
-            class="emr-choice-clear"
-            [attr.aria-label]="'Clear ' + (label() || 'selection')"
-            (click)="clearSelection($event)"
+        @if (isPanelOpen()) {
+          <div
+            [id]="resolvedId() + '-panel'"
+            class="emr-tree-select__panel"
+            (keydown.escape)="closePanel($event)"
           >
-            ✕
-          </button>
+            @if (showExpandControls()) {
+              <div class="emr-choice-header__actions" data-emr-print="hide">
+                <button type="button" class="emr-choice-clear" (click)="expandAll()">Expand all</button>
+                <button type="button" class="emr-choice-clear" (click)="collapseAll()">Collapse all</button>
+              </div>
+            }
+            @if (searchable()) {
+              <div class="emr-search-select__input-wrap">
+                <span class="emr-search-select__leading-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="20" y1="20" x2="16.2" y2="16.2" />
+                  </svg>
+                </span>
+                <input
+                  #searchInput
+                  class="emr-search-input"
+                  [class.emr-tree-view__search-input--has-clear]="!!searchQuery()"
+                  style="padding-left: 36px; width: 100%;"
+                  type="search"
+                  autocomplete="off"
+                  [value]="searchQuery()"
+                  [placeholder]="searchPlaceholder()"
+                  [attr.aria-label]="(label() || ariaLabel() || 'Tree select') + ' filter'"
+                  (input)="onSearchInput($event)"
+                  (keydown.arrowdown)="onSearchArrowDown($event)"
+                />
+                @if (searchQuery()) {
+                  <button
+                    type="button"
+                    class="emr-tree-view__search-clear"
+                    aria-label="Clear filter"
+                    (click)="clearSearch()"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                }
+              </div>
+            }
+            <div
+              #panelTree
+              class="emr-tree-view"
+              [class.emr-tree-view--sm]="size() === 'sm'"
+              role="tree"
+              [attr.aria-label]="(label() || ariaLabel() || 'Tree') + ' options'"
+              [attr.aria-multiselectable]="multiple() ? 'true' : null"
+            >
+              @if (visibleRows().length === 0) {
+                <div class="emr-empty" role="status">{{ emptyMessage() }}</div>
+              }
+              @for (row of visibleRows(); track row.node.id; let idx = $index) {
+                <div
+                  class="emr-tree-view__row"
+                  role="treeitem"
+                  [style.padding-inline-start.px]="8 + row.depth * 20"
+                  [attr.data-node-id]="row.node.id"
+                  [attr.data-checked]="multiple() && row.checkState === 'checked' ? 'true' : null"
+                  [attr.data-mixed]="multiple() && row.checkState === 'mixed' ? 'true' : null"
+                  [attr.data-readonly]="row.node.readOnly ? 'true' : null"
+                  [attr.data-tone]="row.node.tone || null"
+                  [attr.tabindex]="tabStopNodeId() === row.node.id ? 0 : -1"
+                  [attr.aria-level]="row.depth + 1"
+                  [attr.aria-expanded]="row.hasChildren ? row.expanded : null"
+                  [attr.aria-selected]="isRowSelected(row)"
+                  [attr.aria-checked]="multiple() && showRowCheckbox(row) ? (row.checkState === 'checked' ? 'true' : row.checkState === 'mixed' ? 'mixed' : 'false') : null"
+                  [attr.aria-readonly]="row.node.readOnly ? 'true' : null"
+                  [attr.aria-disabled]="!!row.node.disabled || null"
+                  (click)="onRowClick(row, $event)"
+                  (keydown)="onPanelRowKeydown(row, idx, $event)"
+                >
+                  @if (row.hasChildren) {
+                    <button
+                      type="button"
+                      class="emr-tree-view__toggle"
+                      tabindex="-1"
+                      [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.node.label"
+                      (click)="onToggleNode(row.node.id, $event)"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        @if (row.expanded) {
+                          <polyline points="6 9 12 15 18 9" />
+                        } @else {
+                          <polyline points="9 18 15 12 9 6" />
+                        }
+                      </svg>
+                    </button>
+                  } @else {
+                    <span class="emr-tree-view__spacer" aria-hidden="true"></span>
+                  }
+                  @if (multiple() && showRowCheckbox(row)) {
+                    <span class="emr-checkbox__box" aria-hidden="true">
+                      @if (row.checkState === 'mixed') {
+                        <svg [attr.width]="size() === 'sm' ? 11 : 12" [attr.height]="size() === 'sm' ? 11 : 12" viewBox="0 0 16 16" fill="none">
+                          <path d="M3.5 8h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                      } @else if (row.checkState === 'checked') {
+                        <svg [attr.width]="size() === 'sm' ? 11 : 12" [attr.height]="size() === 'sm' ? 11 : 12" viewBox="0 0 16 16" fill="none">
+                          <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      }
+                    </span>
+                  }
+                  <span class="emr-choice-option-copy">
+                    <span class="emr-choice-option-title">
+                      <span>
+                        @for (seg of highlightSegments(row.node.label); track $index) {
+                          @if (seg.matched) {
+                            <mark class="emr-tree-view__match">{{ seg.text }}</mark>
+                          } @else {
+                            {{ seg.text }}
+                          }
+                        }
+                      </span>
+                      @if (row.node.code) {
+                        <span class="emr-choice-option-desc">({{ row.node.code }})</span>
+                      }
+                      @if (row.node.readOnly) {
+                        <span class="emr-tree-view__lock" aria-label="Read-only node">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="4" y="11" width="16" height="10" rx="2" />
+                            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                          </svg>
+                        </span>
+                      }
+                      @if (nodeBadge(row.node); as badge) {
+                        <span [class]="'emr-badge emr-badge--sm emr-badge--' + badge.variant + ' emr-tone-' + badge.tone">{{ badge.text }}</span>
+                      }
+                    </span>
+                    @if (row.node.description) {
+                      <span class="emr-choice-option-desc">{{ row.node.description }}</span>
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
         }
       </div>
       @if (!labelHidden() && hint()) {
         <span class="emr-field__hint" [id]="resolvedId() + '-hint'">{{ hint() }}</span>
       }
-      @if (!labelHidden() && error()) {
-        <span class="emr-field__error" [id]="resolvedId() + '-error'">{{ error() }}</span>
+      @if (!labelHidden() && warning()) {
+        <span class="emr-field__warning" [id]="resolvedId() + '-warning'" role="status">{{ warning() }}</span>
       }
-      @if (isPanelOpen()) {
-        <div class="emr-search-select__panel" (keydown.escape)="closePanel($event)">
-          @if (searchable()) {
-            <input
-              #searchInput
-              class="emr-search-input"
-              type="search"
-              autocomplete="off"
-              [value]="searchQuery()"
-              [placeholder]="searchPlaceholder()"
-              [attr.aria-label]="(label() || 'Tree select') + ' filter'"
-              (input)="onSearchInput($event)"
-            />
-          }
-          <div
-            class="emr-tree-view"
-            role="tree"
-            [attr.aria-label]="(label() || 'Tree') + ' options'"
-            [attr.aria-multiselectable]="multiple() || null"
-          >
-            @if (visibleRows().length === 0) {
-              <div class="emr-empty">{{ emptyMessage() }}</div>
-            }
-            @for (row of visibleRows(); track row.node.id) {
-              <div
-                class="emr-tree-view__row"
-                role="treeitem"
-                tabindex="0"
-                [style.padding-inline-start.px]="8 + row.depth * 20"
-                [attr.data-node-id]="row.node.id"
-                [attr.aria-level]="row.depth + 1"
-                [attr.aria-expanded]="row.hasChildren ? row.expanded : null"
-                [attr.aria-selected]="isRowSelected(row)"
-                [attr.aria-checked]="multiple() ? row.checkState : null"
-                [attr.aria-disabled]="!!row.node.disabled || null"
-                (click)="onRowClick(row, $event)"
-                (keydown.enter)="onRowKeyActivate(row, $event)"
-                (keydown.space)="onRowKeyActivate(row, $event)"
-              >
-                @if (row.hasChildren) {
-                  <button
-                    type="button"
-                    class="emr-tree-view__toggle"
-                    tabindex="-1"
-                    [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.node.label"
-                    (click)="onToggleNode(row.node.id, $event)"
-                  >
-                    {{ row.expanded ? '▾' : '▸' }}
-                  </button>
-                } @else {
-                  <span class="emr-tree-view__spacer" aria-hidden="true"></span>
-                }
-                @if (multiple() && row.selectable) {
-                  <input
-                    #panelCheck
-                    type="checkbox"
-                    tabindex="-1"
-                    [attr.data-node-id]="row.node.id"
-                    [checked]="row.checkState === 'checked'"
-                    [indeterminate]="row.checkState === 'mixed'"
-                    [disabled]="!!row.node.disabled"
-                    [attr.aria-label]="'Select ' + row.node.label"
-                    (click)="onCheckboxClick(row, $event)"
-                  />
-                }
-                <span class="emr-choice-option-copy">
-                  <span>
-                    {{ row.node.label }}
-                    @if (row.node.code) {
-                      <span class="emr-choice-option-desc">({{ row.node.code }})</span>
-                    }
-                  </span>
-                  @if (row.node.description) {
-                    <span class="emr-choice-option-desc">{{ row.node.description }}</span>
-                  }
-                </span>
-              </div>
-            }
-          </div>
-        </div>
+      @if (!labelHidden() && error()) {
+        <span class="emr-field__error" [id]="resolvedId() + '-error'" role="alert">{{ error() }}</span>
       }
     </div>
   `,
 })
-export class EmrTreeSelectComponent implements AfterViewChecked {
+export class EmrTreeSelectComponent {
   readonly controlId = input<string>();
   readonly label = input('');
   readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly ariaLabel = input<string>();
   readonly placeholder = input('Select item…');
   readonly nodes = input<readonly EmrTreeNode[]>([]);
   readonly value = input<string | null>(null);
@@ -584,21 +919,37 @@ export class EmrTreeSelectComponent implements AfterViewChecked {
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly checkStrategy = input<EmrTreeCheckStrategy>('cascade');
   readonly displayMode = input<'path' | 'leaf'>('path');
+  readonly separator = input(' / ');
+  readonly closeOnSelect = input<boolean | undefined>(undefined);
+  readonly maxTagCount = input<number>();
+  readonly maxSelections = input<number>();
+  readonly expandedIds = input<readonly string[] | undefined>(undefined);
+  readonly defaultExpandedIds = input<readonly string[] | undefined>(undefined);
   readonly searchable = input(true, { transform: booleanAttribute });
   readonly searchPlaceholder = input('Filter options…');
+  readonly showExpandControls = input(false, { transform: booleanAttribute });
   readonly clearable = input(false, { transform: booleanAttribute });
+  readonly clearLabel = input('Clear');
+  readonly variant = input<'outline' | 'filled' | 'subtle'>('outline');
+  readonly size = input<'md' | 'sm'>('md');
+  readonly loading = input(false, { transform: booleanAttribute });
   readonly open = input<boolean | undefined>(undefined);
   readonly emptyMessage = input('No matching items');
   readonly required = input(false, { transform: booleanAttribute });
   readonly readOnly = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
+  readonly invalid = input(false, { transform: booleanAttribute });
   readonly hint = input('');
+  readonly warning = input('');
   readonly error = input('');
 
   readonly valueChange = output<string | null>();
   readonly valuesChange = output<readonly string[]>();
+  readonly expandedIdsChange = output<readonly string[]>();
   readonly cleared = output<void>();
   readonly openChange = output<boolean>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly fallbackId = `emr-tree-select-${++nextTreeId}`;
@@ -606,8 +957,24 @@ export class EmrTreeSelectComponent implements AfterViewChecked {
 
   protected readonly localOpen = signal(false);
   protected readonly searchQuery = signal('');
-  protected readonly expandedIds = signal<readonly string[]>([]);
+  protected readonly localExpandedIds = signal<readonly string[]>([]);
+  protected readonly focusedNodeId = signal<string | null>(null);
   private expandedInit = false;
+  private isFocusedInside = false;
+
+  protected readonly isInvalid = computed(() => this.invalid() || Boolean(this.error()));
+
+  protected readonly fieldClasses = computed(() => {
+    const classes = ['emr-select-field', `emr-select-field--${this.variant()}`];
+    if (this.size() === 'sm') classes.push('emr-select-field--sm');
+    return classes.join(' ');
+  });
+
+  protected readonly resolvedAriaLabel = computed(() => {
+    if (this.ariaLabel()) return this.ariaLabel()!;
+    if (this.labelHidden()) return this.label() || 'Select item';
+    return null;
+  });
 
   protected readonly isPanelOpen = computed(() => {
     if (this.readOnly() || this.disabled()) return false;
@@ -616,10 +983,17 @@ export class EmrTreeSelectComponent implements AfterViewChecked {
   });
 
   protected readonly activeExpandedIds = computed(() => {
+    const controlled = this.expandedIds();
+    if (controlled !== undefined) return controlled;
     if (!this.expandedInit) {
-      return collectAllExpandableTreeIds(this.nodes());
+      return resolveEmrTreeSelectDefaultExpanded(
+        this.nodes(),
+        this.value(),
+        this.values(),
+        this.defaultExpandedIds(),
+      );
     }
-    return this.expandedIds();
+    return this.localExpandedIds();
   });
 
   protected readonly effectiveSelectedIds = computed<readonly string[]>(() => {
@@ -636,53 +1010,85 @@ export class EmrTreeSelectComponent implements AfterViewChecked {
     }),
   );
 
-  protected readonly selectedChips = computed(() =>
-    this.values().map((id) => ({
-      id,
-      label: formatTreeSelectionLabel(this.nodes(), id, this.displayMode()) || id,
-    })),
+  protected readonly tabStopNodeId = computed(() => {
+    const rows = this.visibleRows();
+    const focused = this.focusedNodeId();
+    if (focused && rows.some((r) => r.node.id === focused && !r.node.disabled)) return focused;
+    const selected = this.effectiveSelectedIds()[0];
+    if (selected && rows.some((r) => r.node.id === selected && !r.node.disabled)) return selected;
+    return rows.find((r) => !r.node.disabled)?.node.id ?? rows[0]?.node.id ?? null;
+  });
+
+  protected readonly summary = computed(() =>
+    buildEmrTreeSelectSummary({
+      nodes: this.nodes(),
+      multiple: this.multiple(),
+      value: this.value(),
+      values: this.values(),
+      displayMode: this.displayMode(),
+      separator: this.separator(),
+      placeholder: this.placeholder(),
+      maxTagCount: this.maxTagCount(),
+    }),
   );
 
-  protected readonly triggerDisplayText = computed(() => {
-    if (this.multiple()) {
-      const count = this.values().length;
-      return count > 0 ? `${count} selected` : this.placeholder();
-    }
-    const val = this.value();
-    if (!val) return this.placeholder();
-    return formatTreeSelectionLabel(this.nodes(), val, this.displayMode()) || val;
-  });
-
-  protected readonly showClear = computed(() => {
-    if (!this.clearable() || this.readOnly() || this.disabled()) return false;
-    return this.multiple() ? this.values().length > 0 : Boolean(this.value());
-  });
+  protected readonly showClear = computed(() =>
+    isEmrTreeClearable({
+      clearable: this.clearable(),
+      disabled: this.disabled(),
+      readOnly: this.readOnly(),
+      multiple: this.multiple(),
+      value: this.value(),
+      values: this.values(),
+      nodes: this.nodes(),
+    }),
+  );
 
   protected readonly describedBy = computed(() => {
     if (this.labelHidden()) return null;
     const id = this.resolvedId();
     const ids: string[] = [];
     if (this.hint()) ids.push(`${id}-hint`);
+    if (this.warning()) ids.push(`${id}-warning`);
     if (this.error()) ids.push(`${id}-error`);
     return ids.length ? ids.join(' ') : null;
   });
 
   private readonly triggerRef = viewChild<ElementRef<HTMLButtonElement>>('triggerBtn');
-  private readonly panelChecks = viewChildren<ElementRef<HTMLInputElement>>('panelCheck');
+  private readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  private readonly panelTreeRef = viewChild<ElementRef<HTMLElement>>('panelTree');
 
-  ngAfterViewChecked(): void {
-    const rowMap = new Map(this.visibleRows().map((r) => [r.node.id, r]));
-    for (const ref of this.panelChecks()) {
-      const el = ref.nativeElement;
-      const nodeId = el.getAttribute('data-node-id') ?? '';
-      const row = rowMap.get(nodeId);
-      if (!row) continue;
-      if (el.checked !== (row.checkState === 'checked')) {
-        el.checked = row.checkState === 'checked';
-      }
-      if (el.indeterminate !== (row.checkState === 'mixed')) {
-        el.indeterminate = row.checkState === 'mixed';
-      }
+  protected showRowCheckbox(row: EmrFlatTreeRow): boolean {
+    return row.selectable || this.checkStrategy() === 'cascade';
+  }
+
+  protected highlightSegments(text: string): readonly EmrMatchHighlightSegment[] {
+    if (!this.searchQuery()) {
+      return [{ text, matched: false }];
+    }
+    return splitMatchHighlightSegments(text, this.searchQuery());
+  }
+
+  protected nodeBadge(node: EmrTreeNode): EmrSegmentedBadgePresentation | null {
+    return formatEmrSegmentedBadge(node.badge, node.tone);
+  }
+
+  protected onFocusIn(): void {
+    if (!this.isFocusedInside) {
+      this.isFocusedInside = true;
+      this.focused.emit();
+    }
+  }
+
+  protected onFocusOut(event: FocusEvent): void {
+    const currentTarget = event.currentTarget as HTMLElement | null;
+    const relatedTarget = event.relatedTarget as Node | null;
+    if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
+      return;
+    }
+    if (this.isFocusedInside) {
+      this.isFocusedInside = false;
+      this.blurred.emit();
     }
   }
 
@@ -696,13 +1102,24 @@ export class EmrTreeSelectComponent implements AfterViewChecked {
 
   protected togglePanel(): void {
     if (this.readOnly() || this.disabled()) return;
-    this.setOpen(!this.isPanelOpen());
+    const next = !this.isPanelOpen();
+    this.setOpen(next);
+    if (next) {
+      queueMicrotask(() => this.focusPanelEntry());
+    }
   }
 
-  protected openFromKeyboard(event: Event): void {
+  protected onTriggerKeydown(event: KeyboardEvent): void {
     if (this.readOnly() || this.disabled()) return;
-    event.preventDefault();
-    this.setOpen(true);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+      if (!this.isPanelOpen()) {
+        event.preventDefault();
+        this.setOpen(true);
+        queueMicrotask(() => this.focusPanelEntry());
+      }
+    } else if (event.key === 'Escape' && this.isPanelOpen()) {
+      this.closePanel(event);
+    }
   }
 
   protected closePanel(event: Event): void {
@@ -715,80 +1132,176 @@ export class EmrTreeSelectComponent implements AfterViewChecked {
     this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
+  protected clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchInputRef()?.nativeElement.focus();
+  }
+
+  protected onSearchArrowDown(event: Event): void {
+    const rows = this.visibleRows();
+    const firstIdx = findNextTreeRowIndex(rows, -1, 'ArrowDown');
+    if (firstIdx >= 0) {
+      event.preventDefault();
+      this.focusPanelNodeById(rows[firstIdx]!.node.id);
+    }
+  }
+
+  protected expandAll(): void {
+    const allIds = collectAllExpandableTreeIds(this.nodes());
+    this.expandedInit = true;
+    this.localExpandedIds.set(allIds);
+    this.expandedIdsChange.emit(allIds);
+  }
+
+  protected collapseAll(): void {
+    this.expandedInit = true;
+    this.localExpandedIds.set([]);
+    this.expandedIdsChange.emit([]);
+  }
+
   protected onToggleNode(nodeId: string, event: Event): void {
     event.stopPropagation();
     const set = new Set(this.activeExpandedIds());
     if (set.has(nodeId)) set.delete(nodeId);
     else set.add(nodeId);
+    const next = [...set];
     this.expandedInit = true;
-    this.expandedIds.set([...set]);
+    this.localExpandedIds.set(next);
+    this.expandedIdsChange.emit(next);
   }
 
   protected isRowSelected(row: EmrFlatTreeRow): boolean {
     return this.multiple() ? row.checkState === 'checked' : this.value() === row.node.id;
   }
 
-  protected onCheckboxClick(row: EmrFlatTreeRow, event: MouseEvent): void {
-    event.stopPropagation();
-    if (this.readOnly() || this.disabled() || row.node.disabled || !row.selectable) {
-      event.preventDefault();
-      return;
-    }
-    this.selectRow(row);
-  }
-
   protected onRowClick(row: EmrFlatTreeRow, event: MouseEvent): void {
     event.stopPropagation();
     if (row.node.disabled) return;
-    if (!row.selectable && row.hasChildren) {
+    this.focusedNodeId.set(row.node.id);
+    if (!row.selectable && row.hasChildren && this.checkStrategy() !== 'cascade') {
       this.onToggleNode(row.node.id, event);
       return;
     }
+    if (row.node.readOnly) return;
     this.selectRow(row);
   }
 
-  protected onRowKeyActivate(row: EmrFlatTreeRow, event: Event): void {
-    event.preventDefault();
-    if (row.node.disabled) return;
-    if (!row.selectable && row.hasChildren) {
-      this.onToggleNode(row.node.id, event);
-      return;
+  protected onPanelRowKeydown(row: EmrFlatTreeRow, index: number, event: KeyboardEvent): void {
+    const rows = this.visibleRows();
+    switch (event.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'Home':
+      case 'End': {
+        event.preventDefault();
+        const nextIdx = findNextTreeRowIndex(rows, index, event.key);
+        if (nextIdx >= 0) this.focusPanelNodeById(rows[nextIdx]!.node.id);
+        break;
+      }
+      case 'ArrowRight': {
+        event.preventDefault();
+        if (row.hasChildren && !row.expanded) {
+          this.onToggleNode(row.node.id, event);
+        } else if (row.hasChildren && row.expanded) {
+          const nextIdx = findNextTreeRowIndex(rows, index, 'ArrowDown');
+          if (nextIdx > index && rows[nextIdx]!.depth > row.depth) {
+            this.focusPanelNodeById(rows[nextIdx]!.node.id);
+          }
+        }
+        break;
+      }
+      case 'ArrowLeft': {
+        event.preventDefault();
+        if (row.hasChildren && row.expanded) {
+          this.onToggleNode(row.node.id, event);
+        } else if (row.parentId) {
+          const parentRow = rows.find((r) => r.node.id === row.parentId);
+          if (parentRow && !parentRow.node.disabled) {
+            this.focusPanelNodeById(parentRow.node.id);
+          }
+        }
+        break;
+      }
+      case 'Enter':
+      case ' ': {
+        event.preventDefault();
+        if (!row.selectable && row.hasChildren && this.checkStrategy() !== 'cascade') {
+          this.onToggleNode(row.node.id, event);
+          return;
+        }
+        if (row.node.disabled || row.node.readOnly) return;
+        this.selectRow(row);
+        break;
+      }
     }
-    this.selectRow(row);
   }
 
   protected removeSelectedId(id: string, event: Event): void {
     event.stopPropagation();
     if (this.readOnly() || this.disabled()) return;
-    const next = this.values().filter((v) => v !== id);
-    this.valuesChange.emit(next);
+    const next = removeTreeSelectionChip(this.nodes(), this.values(), id, this.checkStrategy());
+    if (next !== this.values()) {
+      this.valuesChange.emit(next);
+    }
   }
 
   protected clearSelection(event: Event): void {
     event.stopPropagation();
     if (this.readOnly() || this.disabled()) return;
     if (this.multiple()) {
-      this.valuesChange.emit([]);
+      const next = clearTreeSelection(this.nodes(), this.values());
+      this.valuesChange.emit(next);
     } else {
-      this.valueChange.emit(null);
+      const current = this.value();
+      const kept = current ? clearTreeSelection(this.nodes(), [current]) : [];
+      this.valueChange.emit(kept[0] ?? null);
     }
     this.cleared.emit();
   }
 
   private selectRow(row: EmrFlatTreeRow): void {
-    if (this.readOnly() || this.disabled() || !row.selectable) return;
+    if (this.readOnly() || this.disabled() || row.node.disabled || row.node.readOnly) return;
+    if (!row.selectable && !(this.multiple() && this.checkStrategy() === 'cascade')) return;
     if (this.multiple()) {
       const next = toggleTreeNodeCheck(
         this.nodes(),
         this.values(),
         row.node.id,
         this.checkStrategy(),
+        this.maxSelections(),
       );
-      this.valuesChange.emit(next);
+      if (next !== this.values()) {
+        this.valuesChange.emit(next);
+      }
+      if (resolveEmrSelectCloseOnSelect(true, this.closeOnSelect())) {
+        this.setOpen(false);
+        this.triggerRef()?.nativeElement.focus();
+      }
     } else {
       this.valueChange.emit(row.node.id);
-      this.setOpen(false);
+      if (resolveEmrSelectCloseOnSelect(false, this.closeOnSelect())) {
+        this.setOpen(false);
+        this.triggerRef()?.nativeElement.focus();
+      }
     }
+  }
+
+  private focusPanelEntry(): void {
+    if (this.searchable()) {
+      this.searchInputRef()?.nativeElement.focus();
+      return;
+    }
+    const id = this.tabStopNodeId();
+    if (id) this.focusPanelNodeById(id);
+  }
+
+  private focusPanelNodeById(nodeId: string): void {
+    this.focusedNodeId.set(nodeId);
+    const root = this.panelTreeRef()?.nativeElement;
+    if (!root) return;
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('[role="treeitem"]'));
+    const target = rows.find((el) => el.getAttribute('data-node-id') === nodeId);
+    target?.focus();
   }
 
   private setOpen(next: boolean): void {

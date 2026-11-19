@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, output } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import type { EmrStatTileIntent, EmrStatTileModel, EmrStatTileSize, EmrTone } from '@drguptavivek/emr-controller';
 
 /**
@@ -8,7 +8,6 @@ import type { EmrStatTileIntent, EmrStatTileModel, EmrStatTileSize, EmrTone } fr
 @Component({
   selector: 'emr-stat-tile',
   standalone: true,
-  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
@@ -106,7 +105,7 @@ import type { EmrStatTileIntent, EmrStatTileModel, EmrStatTileSize, EmrTone } fr
   `,
   styles: [
     `
-      emr-stat-tile {
+      :host {
         display: flex;
         min-width: 0;
       }

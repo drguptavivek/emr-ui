@@ -17,13 +17,21 @@ import type {
   ClinicalAssessmentStatusOption,
   DurationFieldIntent,
   DurationFieldViewModel,
+  EmrDateTimeDisplayFormat,
+  EmrDateTimeWireFormat,
   EmrDurationUnit,
   EmrFieldDefinition,
   EmrFileSelectionItem,
   EmrImageCropResult,
+  EmrOption,
   EmrPartialDate,
+  EmrQuantityNumericMode,
+  EmrQuantitySize,
   EmrSegmentedOption,
   EmrSignaturePoint,
+  EmrSignatureStroke,
+  EmrTimeHourCycle,
+  EmrTimePrecision,
   EmrTone,
   EmrUploadedImageItem,
   EmrValidationMessage,
@@ -32,6 +40,7 @@ import type {
   ImageFieldIntent,
   ImageFieldViewModel,
   PairedFieldIntent,
+  PairedFieldMode,
   PairedFieldViewModel,
   PartialDateFieldIntent,
   PartialDateFieldViewModel,
@@ -45,13 +54,37 @@ import type {
 import { EmrSegmentedControlComponent } from '../primitives/emr-action-controls.component';
 import { EmrBadgeComponent } from '../primitives/emr-feedback.component';
 import { EmrImageUploadComponent } from '../primitives/emr-image.component';
-import { EmrDateInputComponent } from '../primitives/emr-inputs.component';
+import {
+  EmrDateInputComponent,
+  EmrDateTimeInputComponent,
+  EmrQuantityInputComponent,
+  EmrTimeInputComponent,
+} from '../primitives/emr-inputs.component';
 import { emptyToNull } from '../primitives/emr-inputs.logic';
 import { EmrLikertAnchor, EmrLikertComponent } from '../primitives/emr-likert.component';
 import { EmrFileTriggerComponent } from '../primitives/emr-specialized-inputs.component';
 import { EmrVasAnchor, EmrVasComponent } from '../primitives/emr-vas.component';
 import { DEFAULT_ASPECT_PRESETS } from '../primitives/emr-wave2.logic';
 import { EmrFieldFrameComponent } from './emr-field-frame.component';
+import {
+  extractDurationPartValidation,
+  formatSignatureAttestation,
+  hasSignatureValidationState,
+  isSignaturePadLocked,
+  mapPointerToSignaturePoint,
+  normalizeFieldLayout,
+  parsePairedNumberDraft,
+  resolveDurationFieldConfig,
+  resolvePairedNumberStep,
+  resolvePairedSideMode,
+  resolvePairedSideValidation,
+  resolveRangeFieldMessages,
+  resolveRangeNumericMode,
+  resolveRangeSideValidation,
+  resolveSignatureCanvasGeometry,
+  sanitizePairedNumberText,
+  stepPairedNumber,
+} from './emr-fields.logic';
 
 let nextContractFieldId = 0;
 
@@ -742,89 +775,225 @@ export class EmrAttachmentFieldComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let sv = sideValidation();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
+      [labelHidden]="labelHidden()"
+      [labelNamesControl]="false"
+      [layout]="resolvedLayout()"
+      [showMetadata]="resolvedShowMetadata()"
+      [required]="effectiveRequired()"
+      [readOnly]="effectiveReadOnly()"
       [hint]="m.hint"
       [messages]="m.messages ?? []"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      (intent)="onFrameIntent($event)"
     >
       <div class="cf-stack">
-        <div class="pf-row" role="group" [attr.aria-label]="m.label">
+        <div
+          class="pf-row"
+          [class.pf-row--lg]="resolvedSize() === 'lg'"
+          role="group"
+          [attr.aria-labelledby]="groupLabelledBy()"
+          [attr.aria-label]="resolvedLabel()"
+        >
           <div class="pf-cell">
-            <label class="pf-sub" [for]="resolvedId()">{{ m.firstLabel }}</label>
-            <input
-              #firstEl
-              class="emr-control"
-              [id]="resolvedId()"
-              [attr.type]="inputType()"
-              [attr.inputmode]="inputMode()"
-              [value]="firstDomValue()"
-              [placeholder]="m.firstPlaceholder ?? ''"
-              [attr.min]="m.min ?? null"
-              [attr.max]="m.max ?? null"
-              [attr.step]="stepAttr()"
-              [required]="!!m.required"
-              [readOnly]="!!m.readOnly"
-              [attr.aria-invalid]="hasError() ? 'true' : null"
-              [attr.aria-describedby]="describedBy()"
-              (wheel)="onWheel($event)"
-              (input)="onPartInput('first', $event)"
-              (blur)="syncDom()"
-            />
+            <label class="pf-sub" [for]="resolvedId() + '-first'">
+              {{ m.firstLabel }}
+              @if (firstReq()) {
+                <span class="emr-field__required" aria-hidden="true">*</span>
+              }
+            </label>
+            @if (showSteppers() && firstMode() !== 'text') {
+              <div
+                class="emr-input-affix pf-affix"
+                [attr.data-invalid]="sv.firstHasError ? 'true' : null"
+                [attr.data-warning]="!sv.firstHasError && sv.firstHasWarning ? 'true' : null"
+                [attr.data-readonly]="firstLocked() ? 'true' : null"
+              >
+                <button
+                  type="button"
+                  class="emr-input-affix__btn emr-input-affix__btn--leading"
+                  [disabled]="firstLocked() || !canDecrement('first')"
+                  [attr.aria-label]="'Decrease ' + m.firstLabel"
+                  (click)="stepPart('first', -1)"
+                >
+                  −
+                </button>
+                <input
+                  #firstEl
+                  class="emr-input-affix__field emr-input-affix__field--centered"
+                  [id]="resolvedId() + '-first'"
+                  type="text"
+                  role="spinbutton"
+                  [attr.inputmode]="firstMode() === 'integer' ? 'numeric' : 'decimal'"
+                  [value]="firstDomValue()"
+                  [placeholder]="m.firstPlaceholder ?? ''"
+                  [attr.maxlength]="firstMaxLength() ?? null"
+                  [attr.aria-valuemin]="firstMin() ?? null"
+                  [attr.aria-valuemax]="firstMax() ?? null"
+                  [attr.aria-valuenow]="firstNumericValue()"
+                  [required]="firstReq()"
+                  [readOnly]="firstLocked()"
+                  [attr.aria-required]="firstReq() ? 'true' : null"
+                  [attr.aria-readonly]="firstLocked() ? 'true' : null"
+                  [attr.aria-invalid]="sv.firstHasError ? 'true' : null"
+                  [attr.data-warning]="!sv.firstHasError && sv.firstHasWarning ? 'true' : null"
+                  [attr.aria-describedby]="describedBy()"
+                  (wheel)="onWheel('first', $event)"
+                  (keydown)="onPartKeydown('first', $event)"
+                  (input)="onPartInput('first', $event)"
+                  (focus)="onPartFocus()"
+                  (blur)="onPartBlur('first')"
+                />
+                <button
+                  type="button"
+                  class="emr-input-affix__btn"
+                  [disabled]="firstLocked() || !canIncrement('first')"
+                  [attr.aria-label]="'Increase ' + m.firstLabel"
+                  (click)="stepPart('first', 1)"
+                >
+                  +
+                </button>
+              </div>
+            } @else {
+              <input
+                #firstEl
+                class="emr-control"
+                [id]="resolvedId() + '-first'"
+                type="text"
+                [attr.role]="firstMode() !== 'text' ? 'spinbutton' : null"
+                [attr.inputmode]="firstMode() === 'integer' ? 'numeric' : firstMode() === 'decimal' ? 'decimal' : null"
+                [value]="firstDomValue()"
+                [placeholder]="m.firstPlaceholder ?? ''"
+                [attr.maxlength]="firstMaxLength() ?? null"
+                [attr.aria-valuemin]="firstMode() !== 'text' ? (firstMin() ?? null) : null"
+                [attr.aria-valuemax]="firstMode() !== 'text' ? (firstMax() ?? null) : null"
+                [attr.aria-valuenow]="firstMode() !== 'text' ? firstNumericValue() : null"
+                [required]="firstReq()"
+                [readOnly]="firstLocked()"
+                [attr.aria-required]="firstReq() ? 'true' : null"
+                [attr.aria-readonly]="firstLocked() ? 'true' : null"
+                [attr.aria-invalid]="sv.firstHasError ? 'true' : null"
+                [attr.data-warning]="!sv.firstHasError && sv.firstHasWarning ? 'true' : null"
+                [attr.aria-describedby]="describedBy()"
+                (wheel)="onWheel('first', $event)"
+                (keydown)="onPartKeydown('first', $event)"
+                (input)="onPartInput('first', $event)"
+                (focus)="onPartFocus()"
+                (blur)="onPartBlur('first')"
+              />
+            }
           </div>
           <span class="pf-sep" aria-hidden="true">{{ m.separator ?? '/' }}</span>
           <div class="pf-cell">
-            <label class="pf-sub" [for]="resolvedId() + '-second'">{{ m.secondLabel }}</label>
-            <input
-              #secondEl
-              class="emr-control"
-              [id]="resolvedId() + '-second'"
-              [attr.type]="inputType()"
-              [attr.inputmode]="inputMode()"
-              [value]="secondDomValue()"
-              [placeholder]="m.secondPlaceholder ?? ''"
-              [attr.min]="m.min ?? null"
-              [attr.max]="m.max ?? null"
-              [attr.step]="stepAttr()"
-              [required]="!!m.required"
-              [readOnly]="!!m.readOnly"
-              [attr.aria-invalid]="hasError() ? 'true' : null"
-              [attr.aria-describedby]="describedBy()"
-              (wheel)="onWheel($event)"
-              (input)="onPartInput('second', $event)"
-              (blur)="syncDom()"
-            />
+            <label class="pf-sub" [for]="resolvedId() + '-second'">
+              {{ m.secondLabel }}
+              @if (secondReq()) {
+                <span class="emr-field__required" aria-hidden="true">*</span>
+              }
+            </label>
+            @if (showSteppers() && secondMode() !== 'text') {
+              <div
+                class="emr-input-affix pf-affix"
+                [attr.data-invalid]="sv.secondHasError ? 'true' : null"
+                [attr.data-warning]="!sv.secondHasError && sv.secondHasWarning ? 'true' : null"
+                [attr.data-readonly]="secondLocked() ? 'true' : null"
+              >
+                <button
+                  type="button"
+                  class="emr-input-affix__btn emr-input-affix__btn--leading"
+                  [disabled]="secondLocked() || !canDecrement('second')"
+                  [attr.aria-label]="'Decrease ' + m.secondLabel"
+                  (click)="stepPart('second', -1)"
+                >
+                  −
+                </button>
+                <input
+                  #secondEl
+                  class="emr-input-affix__field emr-input-affix__field--centered"
+                  [id]="resolvedId() + '-second'"
+                  type="text"
+                  role="spinbutton"
+                  [attr.inputmode]="secondMode() === 'integer' ? 'numeric' : 'decimal'"
+                  [value]="secondDomValue()"
+                  [placeholder]="m.secondPlaceholder ?? ''"
+                  [attr.maxlength]="secondMaxLength() ?? null"
+                  [attr.aria-valuemin]="secondMin() ?? null"
+                  [attr.aria-valuemax]="secondMax() ?? null"
+                  [attr.aria-valuenow]="secondNumericValue()"
+                  [required]="secondReq()"
+                  [readOnly]="secondLocked()"
+                  [attr.aria-required]="secondReq() ? 'true' : null"
+                  [attr.aria-readonly]="secondLocked() ? 'true' : null"
+                  [attr.aria-invalid]="sv.secondHasError ? 'true' : null"
+                  [attr.data-warning]="!sv.secondHasError && sv.secondHasWarning ? 'true' : null"
+                  [attr.aria-describedby]="describedBy()"
+                  (wheel)="onWheel('second', $event)"
+                  (keydown)="onPartKeydown('second', $event)"
+                  (input)="onPartInput('second', $event)"
+                  (focus)="onPartFocus()"
+                  (blur)="onPartBlur('second')"
+                />
+                <button
+                  type="button"
+                  class="emr-input-affix__btn"
+                  [disabled]="secondLocked() || !canIncrement('second')"
+                  [attr.aria-label]="'Increase ' + m.secondLabel"
+                  (click)="stepPart('second', 1)"
+                >
+                  +
+                </button>
+              </div>
+            } @else {
+              <input
+                #secondEl
+                class="emr-control"
+                [id]="resolvedId() + '-second'"
+                type="text"
+                [attr.role]="secondMode() !== 'text' ? 'spinbutton' : null"
+                [attr.inputmode]="secondMode() === 'integer' ? 'numeric' : secondMode() === 'decimal' ? 'decimal' : null"
+                [value]="secondDomValue()"
+                [placeholder]="m.secondPlaceholder ?? ''"
+                [attr.maxlength]="secondMaxLength() ?? null"
+                [attr.aria-valuemin]="secondMode() !== 'text' ? (secondMin() ?? null) : null"
+                [attr.aria-valuemax]="secondMode() !== 'text' ? (secondMax() ?? null) : null"
+                [attr.aria-valuenow]="secondMode() !== 'text' ? secondNumericValue() : null"
+                [required]="secondReq()"
+                [readOnly]="secondLocked()"
+                [attr.aria-required]="secondReq() ? 'true' : null"
+                [attr.aria-readonly]="secondLocked() ? 'true' : null"
+                [attr.aria-invalid]="sv.secondHasError ? 'true' : null"
+                [attr.data-warning]="!sv.secondHasError && sv.secondHasWarning ? 'true' : null"
+                [attr.aria-describedby]="describedBy()"
+                (wheel)="onWheel('second', $event)"
+                (keydown)="onPartKeydown('second', $event)"
+                (input)="onPartInput('second', $event)"
+                (focus)="onPartFocus()"
+                (blur)="onPartBlur('second')"
+              />
+            }
           </div>
-          @if (m.unit) {
-            <span class="pf-unit" aria-hidden="true">{{ m.unit }}</span>
+          @if (resolvedUnit(); as unitText) {
+            <span class="pf-unit" aria-hidden="true">{{ unitText }}</span>
+          }
+          @if (showClearButton()) {
+            <button
+              type="button"
+              class="pf-clear"
+              data-emr-print="hide"
+              [attr.aria-label]="'Clear ' + resolvedLabel()"
+              (click)="onClear()"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
           }
         </div>
-
-        @if (m.status || (m.statusOptions?.length && !m.readOnly)) {
-          <div class="cf-status">
-            @if (m.status) {
-              <span [class]="'emr-badge ' + statusTone()" role="status">{{ statusText() }}</span>
-            }
-            @if (m.statusOptions?.length && !m.readOnly) {
-              <select
-                #statusSelect
-                class="emr-select cf-status__select"
-                [attr.aria-label]="m.label + ' assessment status'"
-                [value]="m.status ?? ''"
-                (change)="onStatusChange($event)"
-                (blur)="syncDom()"
-              >
-                <option value="" [selected]="!m.status">Status not set</option>
-                @for (opt of m.statusOptions; track opt.value) {
-                  <option [value]="opt.value" [selected]="opt.value === m.status">
-                    {{ opt.label }}
-                  </option>
-                }
-              </select>
-            }
-          </div>
-        }
       </div>
     </emr-field-frame>
   `,
@@ -838,8 +1007,8 @@ export class EmrAttachmentFieldComponent {
         gap: 8px;
       }
       .pf-cell {
-        flex: 1 1 110px;
-        min-width: 0;
+        flex: 1 1 88px;
+        min-width: 88px;
         display: grid;
         gap: 4px;
       }
@@ -856,29 +1025,115 @@ export class EmrAttachmentFieldComponent {
         color: var(--emr-text-muted);
         font-weight: var(--emr-weight-bold);
       }
+      .pf-unit {
+        font-size: var(--emr-text-sm);
+        font-weight: var(--emr-weight-medium);
+      }
+      .pf-affix {
+        width: 100%;
+      }
+      .pf-clear {
+        min-width: 44px;
+        min-height: 44px;
+        width: var(--emr-control-height, 44px);
+        height: var(--emr-control-height, 44px);
+        border: 1px solid var(--emr-border);
+        border-radius: 8px;
+        background: var(--emr-surface);
+        color: var(--emr-text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+      .pf-clear:hover {
+        border-color: var(--emr-focus);
+        color: var(--emr-text);
+        background: var(--emr-surface-soft);
+      }
+      .pf-clear:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--emr-focus) 70%, transparent);
+        outline-offset: 2px;
+      }
+      .pf-row--lg .emr-control,
+      .pf-row--lg .emr-input-affix,
+      .pf-row--lg .emr-input-affix__btn,
+      .pf-row--lg .pf-clear,
+      .pf-row--lg .pf-sep,
+      .pf-row--lg .pf-unit {
+        min-height: 48px;
+        height: 48px;
+      }
     `,
   ],
 })
 export class EmrPairedFieldComponent implements AfterViewChecked {
   readonly model = input.required<PairedFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
+  readonly size = input<'sm' | 'md' | 'lg'>();
+  readonly clearable = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined || v === null ? undefined : booleanAttribute(v)),
+  });
   readonly intent = output<PairedFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly fallbackId = `emr-paired-field-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(
+    () => this.model().label || this.resolvedDefinition()?.presentation?.label || '',
+  );
+  protected readonly resolvedUnit = computed(
+    () => this.model().unit ?? this.resolvedDefinition()?.presentation?.unitDisplay,
+  );
+  protected readonly resolvedLayout = computed<FieldFrameLayout>(() =>
+    normalizeFieldLayout(this.layout() ?? this.model().layout),
+  );
+  protected readonly resolvedShowMetadata = computed(
+    () => this.showMetadata() && this.model().showMetadata !== false,
+  );
+  protected readonly resolvedSize = computed<'sm' | 'md' | 'lg'>(() => this.size() ?? this.model().size ?? 'md');
+  protected readonly resolvedClearable = computed(() => this.clearable() ?? this.model().clearable ?? false);
 
-  protected readonly mode = computed(() => this.model().mode ?? 'decimal');
-  protected readonly inputType = computed(() => (this.mode() === 'text' ? 'text' : 'number'));
-  protected readonly inputMode = computed(() => {
-    const mode = this.mode();
-    return mode === 'integer' ? 'numeric' : mode === 'decimal' ? 'decimal' : null;
+  protected readonly effectiveReadOnly = computed(() =>
+    Boolean(this.readOnly() || this.model().readOnly || this.resolvedDefinition()?.contract?.readOnly),
+  );
+  protected readonly firstLocked = computed(() => this.effectiveReadOnly() || Boolean(this.model().firstReadOnly));
+  protected readonly secondLocked = computed(() => this.effectiveReadOnly() || Boolean(this.model().secondReadOnly));
+
+  protected readonly effectiveRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
   });
-  protected readonly stepAttr = computed(() => {
-    const m = this.model();
-    if (this.mode() === 'text') return null;
-    if (m.step !== undefined) return m.step;
-    return this.mode() === 'integer' ? 1 : 'any';
-  });
+  protected readonly firstReq = computed(() => Boolean(this.model().firstRequired ?? this.effectiveRequired()));
+  protected readonly secondReq = computed(() => Boolean(this.model().secondRequired ?? this.effectiveRequired()));
+
+  protected readonly firstMode = computed<PairedFieldMode>(() =>
+    resolvePairedSideMode(this.model().firstMode, this.model().mode, this.resolvedDefinition()),
+  );
+  protected readonly secondMode = computed<PairedFieldMode>(() =>
+    resolvePairedSideMode(this.model().secondMode, this.model().mode, this.resolvedDefinition()),
+  );
+
+  protected readonly firstMin = computed(() => this.model().firstMin ?? this.model().min);
+  protected readonly firstMax = computed(() => this.model().firstMax ?? this.model().max);
+  protected readonly secondMin = computed(() => this.model().secondMin ?? this.model().min);
+  protected readonly secondMax = computed(() => this.model().secondMax ?? this.model().max);
+  protected readonly firstPrecision = computed(() => this.model().firstPrecision ?? this.model().precision);
+  protected readonly secondPrecision = computed(() => this.model().secondPrecision ?? this.model().precision);
+  protected readonly firstStep = computed(() => this.model().firstStep ?? this.model().step);
+  protected readonly secondStep = computed(() => this.model().secondStep ?? this.model().step);
+  protected readonly firstMaxLength = computed(() => this.model().firstMaxLength ?? this.model().maxLength);
+  protected readonly secondMaxLength = computed(() => this.model().secondMaxLength ?? this.model().maxLength);
+  protected readonly showSteppers = computed(() => this.model().showSteppers === true);
 
   protected readonly firstDomValue = computed(() => {
     const v = this.model().value?.first;
@@ -888,24 +1143,37 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
     const v = this.model().value?.second;
     return v === null || v === undefined ? '' : String(v);
   });
+  protected readonly firstNumericValue = computed(() => {
+    const v = this.model().value?.first;
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+  });
+  protected readonly secondNumericValue = computed(() => {
+    const v = this.model().value?.second;
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+  });
 
-  protected readonly hasError = computed(() => Boolean(firstErrorMessage(this.model().messages)));
+  protected readonly sideValidation = computed(() => resolvePairedSideValidation(this.model().messages));
   protected readonly describedBy = computed(() =>
     hasFieldMessages(this.model().hint, this.model().messages)
       ? `${this.resolvedId()}-message`
       : null,
   );
-  protected readonly statusText = computed(() =>
-    resolveStatusLabel(this.model().status, this.model().statusOptions),
+  protected readonly groupLabelledBy = computed(() =>
+    this.headingId() || (!this.labelHidden() && this.resolvedLabel() ? `${this.resolvedId()}-label` : null),
   );
-  protected readonly statusTone = computed(() =>
-    resolveStatusToneClass(this.model().status, this.model().statusOptions),
-  );
+  protected readonly showClearButton = computed(() => {
+    if (!this.resolvedClearable() || this.effectiveReadOnly()) return false;
+    const v = this.model().value;
+    const hasFirst = !this.firstLocked() && v?.first !== null && v?.first !== undefined && v?.first !== '';
+    const hasSecond = !this.secondLocked() && v?.second !== null && v?.second !== undefined && v?.second !== '';
+    return hasFirst || hasSecond;
+  });
 
   private readonly firstRef = viewChild<ElementRef<HTMLInputElement>>('firstEl');
   private readonly secondRef = viewChild<ElementRef<HTMLInputElement>>('secondEl');
-  private readonly statusRef = viewChild<ElementRef<HTMLSelectElement>>('statusSelect');
   private needsDomSync = false;
+  private firstDrafting = false;
+  private secondDrafting = false;
 
   ngAfterViewChecked(): void {
     if (this.needsDomSync) {
@@ -914,68 +1182,150 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
     }
   }
 
-  protected onWheel(event: WheelEvent): void {
-    if (this.mode() !== 'text') {
+  protected onWheel(part: 'first' | 'second', event: WheelEvent): void {
+    const mode = part === 'first' ? this.firstMode() : this.secondMode();
+    if (mode !== 'text') {
       (event.currentTarget as HTMLInputElement).blur();
+    }
+  }
+
+  protected canDecrement(part: 'first' | 'second'): boolean {
+    const mode = part === 'first' ? this.firstMode() : this.secondMode();
+    if (mode === 'text') return false;
+    const min = part === 'first' ? this.firstMin() : this.secondMin();
+    const cur = part === 'first' ? this.firstNumericValue() : this.secondNumericValue();
+    if (min === undefined || cur === null) return true;
+    const step = resolvePairedNumberStep({
+      mode,
+      precision: part === 'first' ? this.firstPrecision() : this.secondPrecision(),
+      step: part === 'first' ? this.firstStep() : this.secondStep(),
+    });
+    return cur - step >= min - 1e-9;
+  }
+
+  protected canIncrement(part: 'first' | 'second'): boolean {
+    const mode = part === 'first' ? this.firstMode() : this.secondMode();
+    if (mode === 'text') return false;
+    const max = part === 'first' ? this.firstMax() : this.secondMax();
+    const cur = part === 'first' ? this.firstNumericValue() : this.secondNumericValue();
+    if (max === undefined || cur === null) return true;
+    const step = resolvePairedNumberStep({
+      mode,
+      precision: part === 'first' ? this.firstPrecision() : this.secondPrecision(),
+      step: part === 'first' ? this.firstStep() : this.secondStep(),
+    });
+    return cur + step <= max + 1e-9;
+  }
+
+  protected stepPart(part: 'first' | 'second', delta: -1 | 1): void {
+    const locked = part === 'first' ? this.firstLocked() : this.secondLocked();
+    const mode = part === 'first' ? this.firstMode() : this.secondMode();
+    if (locked || mode === 'text') return;
+    const next = stepPairedNumber({
+      current: part === 'first' ? this.firstNumericValue() : this.secondNumericValue(),
+      delta,
+      mode,
+      step: part === 'first' ? this.firstStep() : this.secondStep(),
+      precision: part === 'first' ? this.firstPrecision() : this.secondPrecision(),
+      min: part === 'first' ? this.firstMin() : this.secondMin(),
+      max: part === 'first' ? this.firstMax() : this.secondMax(),
+    });
+    if (part === 'first') {
+      this.firstDrafting = false;
+      this.scheduleSync();
+      this.intent.emit({ type: 'firstChangeRequested', value: next });
+    } else {
+      this.secondDrafting = false;
+      this.scheduleSync();
+      this.intent.emit({ type: 'secondChangeRequested', value: next });
+    }
+  }
+
+  protected onPartKeydown(part: 'first' | 'second', event: KeyboardEvent): void {
+    const mode = part === 'first' ? this.firstMode() : this.secondMode();
+    const locked = part === 'first' ? this.firstLocked() : this.secondLocked();
+    if (locked || mode === 'text') return;
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.stepPart(part, 1);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.stepPart(part, -1);
     }
   }
 
   protected onPartInput(part: 'first' | 'second', event: Event): void {
     const target = event.target as HTMLInputElement;
-    if (this.model().readOnly) {
+    const locked = part === 'first' ? this.firstLocked() : this.secondLocked();
+    if (locked) {
       this.syncDom();
       return;
     }
-    if (this.mode() !== 'text' && target.validity?.badInput) return;
 
-    let parsed: string | number | null;
-    if (this.mode() === 'text') {
-      parsed = emptyToNull(target.value);
+    const mode = part === 'first' ? this.firstMode() : this.secondMode();
+    let parsedValue: string | number | null;
+    if (mode === 'text') {
+      if (part === 'first') this.firstDrafting = false;
+      else this.secondDrafting = false;
+      parsedValue = emptyToNull(target.value);
     } else {
-      const trimmed = target.value.trim();
-      if (trimmed === '') {
-        parsed = null;
-      } else {
-        const num = Number(trimmed);
-        if (!Number.isFinite(num)) {
-          this.syncDom();
-          return;
-        }
-        parsed = this.mode() === 'integer' ? Math.trunc(num) : num;
+      const clean = sanitizePairedNumberText(target.value, mode);
+      if (target.value !== clean) {
+        target.value = clean;
       }
+      const parsed = parsePairedNumberDraft(clean, mode);
+      if (!parsed.complete) {
+        if (part === 'first') this.firstDrafting = true;
+        else this.secondDrafting = true;
+        return;
+      }
+      if (part === 'first') this.firstDrafting = false;
+      else this.secondDrafting = false;
+      parsedValue = parsed.value;
     }
 
     this.scheduleSync();
     if (part === 'first') {
-      this.intent.emit({ type: 'firstChangeRequested', value: parsed });
+      this.intent.emit({ type: 'firstChangeRequested', value: parsedValue });
     } else {
-      this.intent.emit({ type: 'secondChangeRequested', value: parsed });
+      this.intent.emit({ type: 'secondChangeRequested', value: parsedValue });
     }
   }
 
-  protected onStatusChange(event: Event): void {
-    if (this.model().readOnly) {
-      this.syncDom();
-      return;
-    }
-    const raw = (event.target as HTMLSelectElement).value as ClinicalAssessmentStatus | '';
+  protected onPartFocus(): void {
+    this.focused.emit();
+  }
+
+  protected onPartBlur(part: 'first' | 'second'): void {
+    if (part === 'first') this.firstDrafting = false;
+    else this.secondDrafting = false;
+    this.syncDom();
+    this.blurred.emit();
+  }
+
+  protected onClear(): void {
+    if (this.effectiveReadOnly()) return;
+    this.firstDrafting = false;
+    this.secondDrafting = false;
     this.scheduleSync();
-    this.intent.emit({ type: 'statusChangeRequested', status: raw ? raw : undefined });
+    this.intent.emit({ type: 'clearRequested' });
+  }
+
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.effectiveReadOnly()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
+    }
   }
 
   protected syncDom(): void {
     const firstEl = this.firstRef()?.nativeElement;
-    if (firstEl && firstEl.value !== this.firstDomValue()) {
+    if (firstEl && !this.firstDrafting && firstEl.value !== this.firstDomValue()) {
       firstEl.value = this.firstDomValue();
     }
     const secondEl = this.secondRef()?.nativeElement;
-    if (secondEl && secondEl.value !== this.secondDomValue()) {
+    if (secondEl && !this.secondDrafting && secondEl.value !== this.secondDomValue()) {
       secondEl.value = this.secondDomValue();
-    }
-    const statusEl = this.statusRef()?.nativeElement;
-    const expectedStatus = this.model().status ?? '';
-    if (statusEl && statusEl.value !== expectedStatus) {
-      statusEl.value = expectedStatus;
     }
   }
 
@@ -996,195 +1346,179 @@ export class EmrPairedFieldComponent implements AfterViewChecked {
 @Component({
   selector: 'emr-duration-input',
   standalone: true,
-  imports: [EmrFieldFrameComponent],
+  imports: [EmrFieldFrameComponent, EmrQuantityInputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let cfg = resolvedConfig();
+    @let pv = partValidation();
     <emr-field-frame
-      [label]="m.label"
+      [label]="cfg.label"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
-      [hint]="m.hint"
+      [labelHidden]="cfg.labelHidden"
+      [labelNamesControl]="false"
+      [layout]="cfg.layout"
+      [showMetadata]="cfg.showMetadata"
+      [required]="cfg.required"
+      [readOnly]="cfg.readOnly"
+      [hint]="cfg.hint"
+      [warning]="warning()"
+      [error]="error()"
       [messages]="m.messages ?? []"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      (intent)="onFrameIntent($event)"
     >
-      <div class="cf-stack">
-        <div class="emr-quantity">
-          <input
-            #amountEl
-            class="emr-control"
-            type="number"
-            inputmode="decimal"
-            [id]="resolvedId()"
-            [value]="amountDomValue()"
-            [attr.min]="m.min ?? 0"
-            [attr.max]="m.max ?? null"
-            [attr.step]="m.step ?? 1"
-            [required]="!!m.required"
-            [readOnly]="!!m.readOnly"
-            [attr.aria-invalid]="hasError() ? 'true' : null"
-            [attr.aria-describedby]="describedBy()"
-            (wheel)="onWheel($event)"
-            (input)="onAmountInput($event)"
-            (blur)="syncDom()"
-          />
-          <select
-            #unitSelect
-            class="emr-select"
-            [attr.aria-label]="m.label + ' unit'"
-            [attr.aria-readonly]="m.readOnly || null"
-            [value]="activeUnit()"
-            (change)="onUnitChange($event)"
-            (blur)="syncDom()"
-          >
-            @for (opt of m.unitOptions; track opt.value) {
-              <option [value]="opt.value" [selected]="opt.value === activeUnit()">
-                {{ opt.label }}
-              </option>
-            }
-          </select>
-        </div>
-
-        @if (m.status || (m.statusOptions?.length && !m.readOnly)) {
-          <div class="cf-status">
-            @if (m.status) {
-              <span [class]="'emr-badge ' + statusTone()" role="status">{{ statusText() }}</span>
-            }
-            @if (m.statusOptions?.length && !m.readOnly) {
-              <select
-                #statusSelect
-                class="emr-select cf-status__select"
-                [attr.aria-label]="m.label + ' assessment status'"
-                [value]="m.status ?? ''"
-                (change)="onStatusChange($event)"
-                (blur)="syncDom()"
-              >
-                <option value="" [selected]="!m.status">Status not set</option>
-                @for (opt of m.statusOptions; track opt.value) {
-                  <option [value]="opt.value" [selected]="opt.value === m.status">
-                    {{ opt.label }}
-                  </option>
-                }
-              </select>
-            }
-          </div>
-        }
+      <div
+        class="cf-stack"
+        role="group"
+        [attr.aria-labelledby]="groupLabelledBy()"
+        [attr.aria-label]="cfg.label || null"
+      >
+        <emr-quantity-input
+          [controlId]="resolvedId()"
+          [label]="cfg.label"
+          [labelHidden]="true"
+          [ariaDescribedBy]="describedBy()"
+          [value]="m.value?.amount ?? null"
+          [unit]="m.value?.unit ?? null"
+          [units]="unitSelectOptions()"
+          [mode]="cfg.mode"
+          [precision]="cfg.precision"
+          [min]="cfg.min"
+          [max]="cfg.max"
+          [step]="cfg.step"
+          [allowNegative]="cfg.allowNegative"
+          [showSteppers]="cfg.showSteppers"
+          [size]="cfg.size"
+          [clearable]="cfg.clearable"
+          [clearEmitsChanges]="false"
+          [placeholder]="cfg.placeholder"
+          [unitPlaceholder]="cfg.unitPlaceholder"
+          [unitLabel]="cfg.unitLabel"
+          [required]="cfg.required"
+          [readOnly]="cfg.readOnly"
+          [valueError]="pv.amountError"
+          [unitError]="pv.unitError"
+          [valueWarning]="pv.amountWarning"
+          [unitWarning]="pv.unitWarning"
+          (valueChange)="onAmountChange($event)"
+          (unitChange)="onUnitChange($event)"
+          (cleared)="onClear()"
+          (focused)="focused.emit()"
+          (blurred)="blurred.emit()"
+          (submitted)="submitted.emit()"
+        />
       </div>
     </emr-field-frame>
   `,
   styles: [SHARED_FIELD_STYLES],
 })
-export class EmrDurationInputComponent implements AfterViewChecked {
+export class EmrDurationInputComponent {
   readonly model = input.required<DurationFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
+  readonly size = input<EmrQuantitySize>();
+  readonly clearable = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined || v === null ? undefined : booleanAttribute(v)),
+  });
+  readonly showSteppers = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined || v === null ? undefined : booleanAttribute(v)),
+  });
+  readonly mode = input<EmrQuantityNumericMode>();
+  readonly precision = input<number>();
+  readonly placeholder = input<string>();
+  readonly unitPlaceholder = input<string>();
+  readonly hint = input<string>();
+  readonly warning = input<string>();
+  readonly error = input<string>();
+
   readonly intent = output<DurationFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+  readonly cleared = output<void>();
+  readonly submitted = output<void>();
 
   private readonly fallbackId = `emr-duration-input-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
 
-  protected readonly amountDomValue = computed(() => {
-    const amount = this.model().value?.amount;
-    return amount === null || amount === undefined || Number.isNaN(amount) ? '' : String(amount);
+  protected readonly resolvedConfig = computed(() =>
+    resolveDurationFieldConfig(this.model(), {
+      definition: this.definition(),
+      layout: this.layout(),
+      showMetadata: this.showMetadata(),
+      readOnly: this.readOnly(),
+      size: this.size(),
+      clearable: this.clearable(),
+      showSteppers: this.showSteppers(),
+      mode: this.mode(),
+      precision: this.precision(),
+      placeholder: this.placeholder(),
+      unitPlaceholder: this.unitPlaceholder(),
+      hint: this.hint(),
+      labelHidden: this.labelHidden(),
+    }),
+  );
+
+  protected readonly partValidation = computed(() =>
+    extractDurationPartValidation(this.model().messages, {
+      error: this.error(),
+      warning: this.warning(),
+    }),
+  );
+
+  protected readonly unitSelectOptions = computed<readonly EmrOption[]>(() =>
+    this.model().unitOptions.map((u) => ({ value: u.value, label: u.label })),
+  );
+
+  protected readonly describedBy = computed(() => {
+    const m = this.model();
+    const cfg = this.resolvedConfig();
+    const hasAny = Boolean(
+      cfg.hint ||
+        this.warning() ||
+        this.error() ||
+        (m.messages && m.messages.length > 0),
+    );
+    return hasAny ? `${this.resolvedId()}-message` : null;
   });
 
-  protected readonly activeUnit = computed<EmrDurationUnit>(
-    () => this.model().value?.unit ?? this.model().unitOptions[0]?.value ?? 'd',
-  );
+  protected readonly groupLabelledBy = computed(() => {
+    const cfg = this.resolvedConfig();
+    return this.headingId() || (!cfg.labelHidden && cfg.label ? `${this.resolvedId()}-label` : null);
+  });
 
-  protected readonly hasError = computed(() => Boolean(firstErrorMessage(this.model().messages)));
-  protected readonly describedBy = computed(() =>
-    hasFieldMessages(this.model().hint, this.model().messages)
-      ? `${this.resolvedId()}-message`
-      : null,
-  );
-  protected readonly statusText = computed(() =>
-    resolveStatusLabel(this.model().status, this.model().statusOptions),
-  );
-  protected readonly statusTone = computed(() =>
-    resolveStatusToneClass(this.model().status, this.model().statusOptions),
-  );
-
-  private readonly amountRef = viewChild<ElementRef<HTMLInputElement>>('amountEl');
-  private readonly unitRef = viewChild<ElementRef<HTMLSelectElement>>('unitSelect');
-  private readonly statusRef = viewChild<ElementRef<HTMLSelectElement>>('statusSelect');
-  private needsDomSync = false;
-
-  ngAfterViewChecked(): void {
-    if (this.needsDomSync) {
-      this.needsDomSync = false;
-      this.syncDom();
-    }
+  protected onAmountChange(amount: number | null): void {
+    if (this.resolvedConfig().readOnly) return;
+    this.intent.emit({ type: 'amountChangeRequested', amount });
   }
 
-  protected onWheel(event: WheelEvent): void {
-    (event.currentTarget as HTMLInputElement).blur();
-  }
-
-  protected onAmountInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    if (this.model().readOnly) {
-      this.syncDom();
+  protected onUnitChange(unit: string | null): void {
+    if (this.resolvedConfig().readOnly) return;
+    if (unit === null) {
+      this.intent.emit({ type: 'clearRequested' });
+      this.cleared.emit();
       return;
     }
-    if (target.validity?.badInput) return;
-    const raw = target.value.trim();
-    if (raw === '') {
-      this.scheduleSync();
-      this.intent.emit({ type: 'amountChangeRequested', amount: null });
-      return;
-    }
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed)) {
-      this.syncDom();
-      return;
-    }
-    this.scheduleSync();
-    this.intent.emit({ type: 'amountChangeRequested', amount: parsed });
+    this.intent.emit({ type: 'unitChangeRequested', unit: unit as EmrDurationUnit });
   }
 
-  protected onUnitChange(event: Event): void {
-    if (this.model().readOnly) {
-      this.syncDom();
-      return;
-    }
-    const unit = (event.target as HTMLSelectElement).value as EmrDurationUnit;
-    this.scheduleSync();
-    this.intent.emit({ type: 'unitChangeRequested', unit });
+  protected onClear(): void {
+    if (this.resolvedConfig().readOnly) return;
+    this.intent.emit({ type: 'clearRequested' });
+    this.cleared.emit();
   }
 
-  protected onStatusChange(event: Event): void {
-    if (this.model().readOnly) {
-      this.syncDom();
-      return;
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.resolvedConfig().readOnly) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
     }
-    const raw = (event.target as HTMLSelectElement).value as ClinicalAssessmentStatus | '';
-    this.scheduleSync();
-    this.intent.emit({ type: 'statusChangeRequested', status: raw ? raw : undefined });
-  }
-
-  protected syncDom(): void {
-    const amountEl = this.amountRef()?.nativeElement;
-    if (amountEl && amountEl.value !== this.amountDomValue()) {
-      amountEl.value = this.amountDomValue();
-    }
-    const unitEl = this.unitRef()?.nativeElement;
-    if (unitEl && unitEl.value !== this.activeUnit()) {
-      unitEl.value = this.activeUnit();
-    }
-    const statusEl = this.statusRef()?.nativeElement;
-    const expectedStatus = this.model().status ?? '';
-    if (statusEl && statusEl.value !== expectedStatus) {
-      statusEl.value = expectedStatus;
-    }
-  }
-
-  private scheduleSync(): void {
-    this.needsDomSync = true;
-    queueMicrotask(() => {
-      if (this.needsDomSync) {
-        this.needsDomSync = false;
-        this.syncDom();
-      }
-    });
   }
 }
 
@@ -1194,62 +1528,379 @@ export class EmrDurationInputComponent implements AfterViewChecked {
 @Component({
   selector: 'emr-range-field',
   standalone: true,
-  imports: [EmrFieldFrameComponent],
+  imports: [EmrFieldFrameComponent, EmrDateInputComponent, EmrTimeInputComponent, EmrDateTimeInputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let sv = sideValidation();
+    @let isLocked = locked();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
-      [hint]="m.hint"
-      [messages]="m.messages ?? []"
+      [labelHidden]="labelHidden()"
+      [labelNamesControl]="false"
+      [layout]="resolvedLayout()"
+      [showMetadata]="resolvedShowMetadata()"
+      [unit]="resolvedUnit()"
+      [readOnly]="isLocked"
+      [required]="resolvedRequired()"
+      [hint]="resolvedHint()"
+      [messages]="resolvedMessages()"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      (intent)="onFrameIntent($event)"
     >
-      <div class="rf-row" role="group" [attr.aria-label]="m.label">
-        <input
-          #lowEl
-          class="emr-control rf-input"
-          [id]="resolvedId()"
-          [attr.type]="m.kind === 'date' ? 'date' : 'number'"
-          [attr.inputmode]="m.kind === 'number' ? 'decimal' : null"
-          [value]="lowDomValue()"
-          [placeholder]="m.lowPlaceholder ?? (m.kind === 'date' ? '' : 'Min')"
-          [attr.min]="m.min ?? null"
-          [attr.max]="m.max ?? null"
-          [attr.step]="m.kind === 'number' ? (m.step ?? 'any') : null"
-          [required]="!!m.required"
-          [readOnly]="!!m.readOnly"
-          [attr.aria-label]="m.label + ' minimum'"
-          [attr.aria-invalid]="hasError() ? 'true' : null"
-          [attr.aria-describedby]="describedBy()"
-          (wheel)="onWheel($event)"
-          (input)="onBoundInput('low', $event)"
-          (blur)="syncDom()"
-        />
-        <span class="emr-field-row__separator" aria-hidden="true">–</span>
-        <input
-          #highEl
-          class="emr-control rf-input"
-          [id]="resolvedId() + '-high'"
-          [attr.type]="m.kind === 'date' ? 'date' : 'number'"
-          [attr.inputmode]="m.kind === 'number' ? 'decimal' : null"
-          [value]="highDomValue()"
-          [placeholder]="m.highPlaceholder ?? (m.kind === 'date' ? '' : 'Max')"
-          [attr.min]="m.min ?? null"
-          [attr.max]="m.max ?? null"
-          [attr.step]="m.kind === 'number' ? (m.step ?? 'any') : null"
-          [required]="!!m.required"
-          [readOnly]="!!m.readOnly"
-          [attr.aria-label]="m.label + ' maximum'"
-          [attr.aria-invalid]="hasError() ? 'true' : null"
-          [attr.aria-describedby]="describedBy()"
-          (wheel)="onWheel($event)"
-          (input)="onBoundInput('high', $event)"
-          (blur)="syncDom()"
-        />
-        @if (m.unit) {
-          <span class="rf-unit" aria-hidden="true">{{ m.unit }}</span>
-        }
+      <div class="cf-stack">
+        <div
+          class="rf-row"
+          [class.rf-row--lg]="resolvedSize() === 'lg'"
+          role="group"
+          [attr.aria-labelledby]="groupLabelledBy()"
+          [attr.aria-label]="resolvedLabel()"
+          (focusin)="onGroupFocusIn()"
+          (focusout)="onGroupFocusOut($event)"
+        >
+          <div class="rf-cell" [class.rf-cell--datetime]="m.kind === 'datetime'">
+            <label class="rf-sub" [for]="lowLabelFor()">
+              {{ lowLabel() }}
+              @if (lowReq()) {
+                <span class="emr-field__required" aria-hidden="true">*</span>
+              }
+            </label>
+            @switch (m.kind) {
+              @case ('date') {
+                <emr-date-input
+                  [controlId]="resolvedId() + '-low'"
+                  [label]="lowLabel()"
+                  [labelHidden]="true"
+                  [ariaLabel]="resolvedLabel() + ', ' + lowLabel()"
+                  [ariaDescribedBy]="describedBy() ?? undefined"
+                  [value]="lowStringValue()"
+                  [min]="lowMinStr()"
+                  [max]="lowMaxStr()"
+                  [placeholder]="m.lowPlaceholder ?? ''"
+                  [size]="resolvedSize()"
+                  [required]="lowReq()"
+                  [readOnly]="isLocked"
+                  [invalid]="sv.lowInvalid"
+                  [warning]="sv.lowWarning ? 'warning' : ''"
+                  (valueChange)="onTemporalChange('low', $event)"
+                  (submitted)="onChildSubmitted()"
+                />
+              }
+              @case ('time') {
+                <emr-time-input
+                  [controlId]="resolvedId() + '-low'"
+                  [label]="lowLabel()"
+                  [labelHidden]="true"
+                  [ariaLabel]="resolvedLabel() + ', ' + lowLabel()"
+                  [ariaDescribedBy]="describedBy() ?? undefined"
+                  [fullWidth]="true"
+                  [value]="lowStringValue()"
+                  [precision]="resolvedTimePrecision()"
+                  [hourCycle]="resolvedHourCycle()"
+                  [min]="lowMinStr()"
+                  [max]="lowMaxStr()"
+                  [step]="resolvedStep()"
+                  [placeholder]="m.lowPlaceholder ?? ''"
+                  [size]="resolvedSize()"
+                  [clearable]="false"
+                  [required]="lowReq()"
+                  [readOnly]="isLocked"
+                  [invalid]="sv.lowInvalid"
+                  [warning]="sv.lowWarning ? 'warning' : ''"
+                  (valueChange)="onTemporalChange('low', $event)"
+                  (submitted)="onChildSubmitted()"
+                />
+              }
+              @case ('datetime') {
+                <emr-datetime-input
+                  [controlId]="resolvedId() + '-low'"
+                  [label]="lowLabel()"
+                  [labelHidden]="true"
+                  [ariaLabel]="resolvedLabel() + ', ' + lowLabel()"
+                  [ariaDescribedBy]="describedBy() ?? undefined"
+                  [value]="lowStringValue()"
+                  [displayFormat]="resolvedDisplayFormat()"
+                  [timePrecision]="resolvedTimePrecision()"
+                  [hourCycle]="resolvedHourCycle()"
+                  [wireFormat]="resolvedWireFormat()"
+                  [min]="lowMinStr()"
+                  [max]="lowMaxStr()"
+                  [size]="resolvedSize()"
+                  [clearable]="false"
+                  [required]="lowReq()"
+                  [readOnly]="isLocked"
+                  [invalid]="sv.lowInvalid"
+                  [warning]="sv.lowWarning ? 'warning' : ''"
+                  (valueChange)="onTemporalChange('low', $event)"
+                  (submitted)="onChildSubmitted()"
+                />
+              }
+              @default {
+                @if (resolvedShowSteppers()) {
+                  <div
+                    class="emr-input-affix rf-affix"
+                    [attr.data-invalid]="sv.lowInvalid ? 'true' : null"
+                    [attr.data-warning]="sv.lowWarning ? 'true' : null"
+                    [attr.data-readonly]="isLocked ? 'true' : null"
+                  >
+                    <button
+                      type="button"
+                      class="emr-input-affix__btn emr-input-affix__btn--leading"
+                      [disabled]="isLocked || !canDecrement('low')"
+                      [attr.aria-label]="'Decrease ' + lowLabel()"
+                      (click)="stepBound('low', -1)"
+                    >
+                      −
+                    </button>
+                    <input
+                      #lowEl
+                      class="emr-input-affix__field emr-input-affix__field--centered"
+                      [id]="resolvedId() + '-low'"
+                      type="text"
+                      role="spinbutton"
+                      [attr.inputmode]="resolvedNumericMode() === 'integer' ? 'numeric' : 'decimal'"
+                      [value]="lowDomValue()"
+                      [placeholder]="m.lowPlaceholder ?? 'Min'"
+                      [attr.aria-label]="resolvedLabel() + ', ' + lowLabel()"
+                      [attr.aria-valuemin]="lowMinNum() ?? null"
+                      [attr.aria-valuemax]="lowMaxNum() ?? null"
+                      [attr.aria-valuenow]="lowNumericValue()"
+                      [required]="lowReq()"
+                      [readOnly]="isLocked"
+                      [attr.aria-required]="lowReq() ? 'true' : null"
+                      [attr.aria-readonly]="isLocked ? 'true' : null"
+                      [attr.aria-invalid]="sv.lowInvalid ? 'true' : null"
+                      [attr.data-warning]="sv.lowWarning ? 'true' : null"
+                      [attr.aria-describedby]="describedBy()"
+                      (wheel)="onWheel($event)"
+                      (keydown)="onNumberKeydown('low', $event)"
+                      (input)="onNumberInput('low', $event)"
+                      (blur)="onNumberBlur('low')"
+                    />
+                    <button
+                      type="button"
+                      class="emr-input-affix__btn"
+                      [disabled]="isLocked || !canIncrement('low')"
+                      [attr.aria-label]="'Increase ' + lowLabel()"
+                      (click)="stepBound('low', 1)"
+                    >
+                      +
+                    </button>
+                  </div>
+                } @else {
+                  <input
+                    #lowEl
+                    class="emr-control rf-input"
+                    [class.emr-control--sm]="resolvedSize() === 'sm'"
+                    [class.emr-control--lg]="resolvedSize() === 'lg'"
+                    [id]="resolvedId() + '-low'"
+                    type="text"
+                    role="spinbutton"
+                    [attr.inputmode]="resolvedNumericMode() === 'integer' ? 'numeric' : 'decimal'"
+                    [value]="lowDomValue()"
+                    [placeholder]="m.lowPlaceholder ?? 'Min'"
+                    [attr.aria-label]="resolvedLabel() + ', ' + lowLabel()"
+                    [attr.aria-valuemin]="lowMinNum() ?? null"
+                    [attr.aria-valuemax]="lowMaxNum() ?? null"
+                    [attr.aria-valuenow]="lowNumericValue()"
+                    [required]="lowReq()"
+                    [readOnly]="isLocked"
+                    [attr.aria-required]="lowReq() ? 'true' : null"
+                    [attr.aria-readonly]="isLocked ? 'true' : null"
+                    [attr.aria-invalid]="sv.lowInvalid ? 'true' : null"
+                    [attr.data-warning]="sv.lowWarning ? 'true' : null"
+                    [attr.aria-describedby]="describedBy()"
+                    (wheel)="onWheel($event)"
+                    (keydown)="onNumberKeydown('low', $event)"
+                    (input)="onNumberInput('low', $event)"
+                    (blur)="onNumberBlur('low')"
+                  />
+                }
+              }
+            }
+          </div>
+
+          <span class="rf-sep" aria-hidden="true">–</span>
+
+          <div class="rf-cell" [class.rf-cell--datetime]="m.kind === 'datetime'">
+            <label class="rf-sub" [for]="highLabelFor()">
+              {{ highLabel() }}
+              @if (highReq()) {
+                <span class="emr-field__required" aria-hidden="true">*</span>
+              }
+            </label>
+            @switch (m.kind) {
+              @case ('date') {
+                <emr-date-input
+                  [controlId]="resolvedId() + '-high'"
+                  [label]="highLabel()"
+                  [labelHidden]="true"
+                  [ariaLabel]="resolvedLabel() + ', ' + highLabel()"
+                  [ariaDescribedBy]="describedBy() ?? undefined"
+                  [value]="highStringValue()"
+                  [min]="highMinStr()"
+                  [max]="highMaxStr()"
+                  [placeholder]="m.highPlaceholder ?? ''"
+                  [size]="resolvedSize()"
+                  [required]="highReq()"
+                  [readOnly]="isLocked"
+                  [invalid]="sv.highInvalid"
+                  [warning]="sv.highWarning ? 'warning' : ''"
+                  (valueChange)="onTemporalChange('high', $event)"
+                  (submitted)="onChildSubmitted()"
+                />
+              }
+              @case ('time') {
+                <emr-time-input
+                  [controlId]="resolvedId() + '-high'"
+                  [label]="highLabel()"
+                  [labelHidden]="true"
+                  [ariaLabel]="resolvedLabel() + ', ' + highLabel()"
+                  [ariaDescribedBy]="describedBy() ?? undefined"
+                  [fullWidth]="true"
+                  [value]="highStringValue()"
+                  [precision]="resolvedTimePrecision()"
+                  [hourCycle]="resolvedHourCycle()"
+                  [min]="highMinStr()"
+                  [max]="highMaxStr()"
+                  [step]="resolvedStep()"
+                  [placeholder]="m.highPlaceholder ?? ''"
+                  [size]="resolvedSize()"
+                  [clearable]="false"
+                  [required]="highReq()"
+                  [readOnly]="isLocked"
+                  [invalid]="sv.highInvalid"
+                  [warning]="sv.highWarning ? 'warning' : ''"
+                  (valueChange)="onTemporalChange('high', $event)"
+                  (submitted)="onChildSubmitted()"
+                />
+              }
+              @case ('datetime') {
+                <emr-datetime-input
+                  [controlId]="resolvedId() + '-high'"
+                  [label]="highLabel()"
+                  [labelHidden]="true"
+                  [ariaLabel]="resolvedLabel() + ', ' + highLabel()"
+                  [ariaDescribedBy]="describedBy() ?? undefined"
+                  [value]="highStringValue()"
+                  [displayFormat]="resolvedDisplayFormat()"
+                  [timePrecision]="resolvedTimePrecision()"
+                  [hourCycle]="resolvedHourCycle()"
+                  [wireFormat]="resolvedWireFormat()"
+                  [min]="highMinStr()"
+                  [max]="highMaxStr()"
+                  [size]="resolvedSize()"
+                  [clearable]="false"
+                  [required]="highReq()"
+                  [readOnly]="isLocked"
+                  [invalid]="sv.highInvalid"
+                  [warning]="sv.highWarning ? 'warning' : ''"
+                  (valueChange)="onTemporalChange('high', $event)"
+                  (submitted)="onChildSubmitted()"
+                />
+              }
+              @default {
+                @if (resolvedShowSteppers()) {
+                  <div
+                    class="emr-input-affix rf-affix"
+                    [attr.data-invalid]="sv.highInvalid ? 'true' : null"
+                    [attr.data-warning]="sv.highWarning ? 'true' : null"
+                    [attr.data-readonly]="isLocked ? 'true' : null"
+                  >
+                    <button
+                      type="button"
+                      class="emr-input-affix__btn emr-input-affix__btn--leading"
+                      [disabled]="isLocked || !canDecrement('high')"
+                      [attr.aria-label]="'Decrease ' + highLabel()"
+                      (click)="stepBound('high', -1)"
+                    >
+                      −
+                    </button>
+                    <input
+                      #highEl
+                      class="emr-input-affix__field emr-input-affix__field--centered"
+                      [id]="resolvedId() + '-high'"
+                      type="text"
+                      role="spinbutton"
+                      [attr.inputmode]="resolvedNumericMode() === 'integer' ? 'numeric' : 'decimal'"
+                      [value]="highDomValue()"
+                      [placeholder]="m.highPlaceholder ?? 'Max'"
+                      [attr.aria-label]="resolvedLabel() + ', ' + highLabel()"
+                      [attr.aria-valuemin]="highMinNum() ?? null"
+                      [attr.aria-valuemax]="highMaxNum() ?? null"
+                      [attr.aria-valuenow]="highNumericValue()"
+                      [required]="highReq()"
+                      [readOnly]="isLocked"
+                      [attr.aria-required]="highReq() ? 'true' : null"
+                      [attr.aria-readonly]="isLocked ? 'true' : null"
+                      [attr.aria-invalid]="sv.highInvalid ? 'true' : null"
+                      [attr.data-warning]="sv.highWarning ? 'true' : null"
+                      [attr.aria-describedby]="describedBy()"
+                      (wheel)="onWheel($event)"
+                      (keydown)="onNumberKeydown('high', $event)"
+                      (input)="onNumberInput('high', $event)"
+                      (blur)="onNumberBlur('high')"
+                    />
+                    <button
+                      type="button"
+                      class="emr-input-affix__btn"
+                      [disabled]="isLocked || !canIncrement('high')"
+                      [attr.aria-label]="'Increase ' + highLabel()"
+                      (click)="stepBound('high', 1)"
+                    >
+                      +
+                    </button>
+                  </div>
+                } @else {
+                  <input
+                    #highEl
+                    class="emr-control rf-input"
+                    [class.emr-control--sm]="resolvedSize() === 'sm'"
+                    [class.emr-control--lg]="resolvedSize() === 'lg'"
+                    [id]="resolvedId() + '-high'"
+                    type="text"
+                    role="spinbutton"
+                    [attr.inputmode]="resolvedNumericMode() === 'integer' ? 'numeric' : 'decimal'"
+                    [value]="highDomValue()"
+                    [placeholder]="m.highPlaceholder ?? 'Max'"
+                    [attr.aria-label]="resolvedLabel() + ', ' + highLabel()"
+                    [attr.aria-valuemin]="highMinNum() ?? null"
+                    [attr.aria-valuemax]="highMaxNum() ?? null"
+                    [attr.aria-valuenow]="highNumericValue()"
+                    [required]="highReq()"
+                    [readOnly]="isLocked"
+                    [attr.aria-required]="highReq() ? 'true' : null"
+                    [attr.aria-readonly]="isLocked ? 'true' : null"
+                    [attr.aria-invalid]="sv.highInvalid ? 'true' : null"
+                    [attr.data-warning]="sv.highWarning ? 'true' : null"
+                    [attr.aria-describedby]="describedBy()"
+                    (wheel)="onWheel($event)"
+                    (keydown)="onNumberKeydown('high', $event)"
+                    (input)="onNumberInput('high', $event)"
+                    (blur)="onNumberBlur('high')"
+                  />
+                }
+              }
+            }
+          </div>
+
+          @if (showClearButton()) {
+            <button
+              type="button"
+              class="rf-clear"
+              data-emr-print="hide"
+              [attr.aria-label]="'Clear ' + resolvedLabel()"
+              (click)="onClear()"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          }
+        </div>
       </div>
     </emr-field-frame>
   `,
@@ -1259,28 +1910,199 @@ export class EmrDurationInputComponent implements AfterViewChecked {
       .rf-row {
         display: flex;
         flex-wrap: wrap;
-        align-items: center;
+        align-items: flex-end;
         gap: 8px;
-      }
-      .rf-input {
-        flex: 1 1 120px;
         min-width: 0;
       }
-      .rf-unit {
-        color: var(--emr-text-muted);
-        font-size: var(--emr-text-sm);
+      .rf-cell {
+        flex: 1 1 132px;
+        min-width: 0;
+        display: grid;
+        gap: 4px;
+      }
+      .rf-cell--datetime {
+        flex: 1 1 240px;
+      }
+      .rf-sub {
+        font-size: var(--emr-text-xs);
         font-weight: var(--emr-weight-medium);
+        color: var(--emr-text-muted);
+      }
+      .rf-input {
+        width: 100%;
+        min-width: 0;
+      }
+      .rf-affix {
+        width: 100%;
+      }
+      .rf-sep {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        color: var(--emr-text-muted);
+        font-weight: var(--emr-weight-bold);
+      }
+      .rf-clear {
+        min-width: 44px;
+        min-height: 44px;
+        width: var(--emr-control-height, 44px);
+        height: var(--emr-control-height, 44px);
+        border: 1px solid var(--emr-border);
+        border-radius: 8px;
+        background: var(--emr-surface);
+        color: var(--emr-text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+      .rf-clear:hover {
+        border-color: var(--emr-focus);
+        color: var(--emr-text);
+        background: var(--emr-surface-soft);
+      }
+      .rf-clear:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--emr-focus) 70%, transparent);
+        outline-offset: 2px;
+      }
+      .rf-row--lg .emr-control,
+      .rf-row--lg .emr-input-affix,
+      .rf-row--lg .emr-input-affix__btn,
+      .rf-row--lg .rf-clear,
+      .rf-row--lg .rf-sep {
+        min-height: 48px;
+        height: 48px;
       }
     `,
   ],
 })
 export class EmrRangeFieldComponent implements AfterViewChecked {
   readonly model = input.required<RangeFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
+  readonly size = input<'sm' | 'md' | 'lg'>();
+  readonly clearable = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined || v === null ? undefined : booleanAttribute(v)),
+  });
+  readonly showSteppers = input<boolean | undefined, unknown>(undefined, {
+    transform: (v) => (v === undefined || v === null ? undefined : booleanAttribute(v)),
+  });
+  readonly displayFormat = input<EmrDateTimeDisplayFormat>();
+  readonly timePrecision = input<EmrTimePrecision>();
+  readonly hourCycle = input<EmrTimeHourCycle>();
+  readonly wireFormat = input<EmrDateTimeWireFormat>();
+
   readonly intent = output<RangeFieldIntent>();
+  readonly cleared = output<void>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+  readonly submitted = output<void>();
 
   private readonly fallbackId = `emr-range-field-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(
+    () => this.model().label || this.resolvedDefinition()?.presentation?.label || '',
+  );
+  protected readonly resolvedUnit = computed(
+    () => this.model().unit ?? this.resolvedDefinition()?.presentation?.unitDisplay,
+  );
+  protected readonly resolvedHint = computed(
+    () => this.model().hint ?? this.resolvedDefinition()?.presentation?.hint,
+  );
+  protected readonly resolvedLayout = computed<FieldFrameLayout>(() =>
+    normalizeFieldLayout(this.layout() ?? this.model().layout),
+  );
+  protected readonly resolvedShowMetadata = computed(
+    () => this.showMetadata() && this.model().showMetadata !== false,
+  );
+  protected readonly resolvedSize = computed<'sm' | 'md' | 'lg'>(() => this.size() ?? this.model().size ?? 'md');
+  protected readonly resolvedClearable = computed(() => this.clearable() ?? this.model().clearable ?? true);
+  protected readonly resolvedShowSteppers = computed(() => this.showSteppers() ?? this.model().showSteppers ?? false);
+  protected readonly resolvedDisplayFormat = computed<EmrDateTimeDisplayFormat>(
+    () => this.displayFormat() ?? this.model().displayFormat ?? 'dd-mm-yyyy',
+  );
+  protected readonly resolvedTimePrecision = computed<EmrTimePrecision>(
+    () => this.timePrecision() ?? this.model().timePrecision ?? 'minute',
+  );
+  protected readonly resolvedHourCycle = computed<EmrTimeHourCycle>(
+    () => this.hourCycle() ?? this.model().hourCycle ?? '24',
+  );
+  protected readonly resolvedWireFormat = computed<EmrDateTimeWireFormat>(
+    () => this.wireFormat() ?? this.model().wireFormat ?? 'utc',
+  );
+  protected readonly locked = computed(() =>
+    Boolean(this.readOnly() || this.model().readOnly || this.resolvedDefinition()?.contract?.readOnly),
+  );
+  protected readonly resolvedRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
+  });
+  protected readonly lowReq = computed(() => Boolean(this.model().lowRequired ?? this.resolvedRequired()));
+  protected readonly highReq = computed(() => Boolean(this.model().highRequired ?? this.resolvedRequired()));
+
+  protected readonly lowLabel = computed(
+    () => this.model().lowLabel ?? (this.model().kind === 'number' ? 'Low' : 'From'),
+  );
+  protected readonly highLabel = computed(
+    () => this.model().highLabel ?? (this.model().kind === 'number' ? 'High' : 'To'),
+  );
+  protected readonly lowLabelFor = computed(() =>
+    this.model().kind === 'datetime' ? `${this.resolvedId()}-low-date` : `${this.resolvedId()}-low`,
+  );
+  protected readonly highLabelFor = computed(() =>
+    this.model().kind === 'datetime' ? `${this.resolvedId()}-high-date` : `${this.resolvedId()}-high`,
+  );
+
+  protected readonly resolvedNumericMode = computed(() =>
+    resolveRangeNumericMode(this.model().numericMode, this.resolvedPrecision(), this.resolvedDefinition()),
+  );
+  protected readonly resolvedPrecision = computed(
+    () => this.model().precision ?? this.resolvedDefinition()?.presentation?.precision,
+  );
+  protected readonly resolvedStep = computed(
+    () => this.model().step ?? this.resolvedDefinition()?.presentation?.step,
+  );
+
+  protected readonly lowMinNum = computed(() => {
+    const raw = this.model().lowMin ?? this.model().min ?? this.resolvedDefinition()?.presentation?.min;
+    return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined;
+  });
+  protected readonly lowMaxNum = computed(() => {
+    const raw = this.model().lowMax ?? this.model().max ?? this.resolvedDefinition()?.presentation?.max;
+    return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined;
+  });
+  protected readonly highMinNum = computed(() => {
+    const raw = this.model().highMin ?? this.model().min ?? this.resolvedDefinition()?.presentation?.min;
+    return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined;
+  });
+  protected readonly highMaxNum = computed(() => {
+    const raw = this.model().highMax ?? this.model().max ?? this.resolvedDefinition()?.presentation?.max;
+    return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined;
+  });
+
+  protected readonly lowMinStr = computed(() => {
+    const raw = this.model().lowMin ?? this.model().min;
+    return typeof raw === 'string' && raw ? raw : undefined;
+  });
+  protected readonly lowMaxStr = computed(() => {
+    const raw = this.model().lowMax ?? this.model().max;
+    return typeof raw === 'string' && raw ? raw : undefined;
+  });
+  protected readonly highMinStr = computed(() => {
+    const raw = this.model().highMin ?? this.model().min;
+    return typeof raw === 'string' && raw ? raw : undefined;
+  });
+  protected readonly highMaxStr = computed(() => {
+    const raw = this.model().highMax ?? this.model().max;
+    return typeof raw === 'string' && raw ? raw : undefined;
+  });
 
   protected readonly lowDomValue = computed(() => {
     const v = this.model().value?.low;
@@ -1290,22 +2112,67 @@ export class EmrRangeFieldComponent implements AfterViewChecked {
     const v = this.model().value?.high;
     return v === null || v === undefined ? '' : String(v);
   });
+  protected readonly lowStringValue = computed(() => {
+    const v = this.model().value?.low;
+    return typeof v === 'string' ? v : null;
+  });
+  protected readonly highStringValue = computed(() => {
+    const v = this.model().value?.high;
+    return typeof v === 'string' ? v : null;
+  });
+  protected readonly lowNumericValue = computed(() => {
+    const v = this.model().value?.low;
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+  });
+  protected readonly highNumericValue = computed(() => {
+    const v = this.model().value?.high;
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+  });
 
-  protected readonly hasError = computed(() => Boolean(firstErrorMessage(this.model().messages)));
+  protected readonly resolvedMessages = computed(() => resolveRangeFieldMessages(this.model()));
+  protected readonly sideValidation = computed(() => resolveRangeSideValidation(this.resolvedMessages()));
   protected readonly describedBy = computed(() =>
-    hasFieldMessages(this.model().hint, this.model().messages)
-      ? `${this.resolvedId()}-message`
-      : null,
+    hasFieldMessages(this.resolvedHint(), this.resolvedMessages()) ? `${this.resolvedId()}-message` : null,
   );
+  protected readonly groupLabelledBy = computed(() =>
+    this.headingId() || (!this.labelHidden() && this.resolvedLabel() ? `${this.resolvedId()}-label` : null),
+  );
+  protected readonly showClearButton = computed(() => {
+    if (!this.resolvedClearable() || this.locked()) return false;
+    const v = this.model().value;
+    const hasLow = v?.low !== null && v?.low !== undefined && v?.low !== '';
+    const hasHigh = v?.high !== null && v?.high !== undefined && v?.high !== '';
+    return hasLow || hasHigh;
+  });
 
   private readonly lowRef = viewChild<ElementRef<HTMLInputElement>>('lowEl');
   private readonly highRef = viewChild<ElementRef<HTMLInputElement>>('highEl');
   private needsDomSync = false;
+  private lowDrafting = false;
+  private highDrafting = false;
+  private focusInside = false;
 
   ngAfterViewChecked(): void {
     if (this.needsDomSync) {
       this.needsDomSync = false;
       this.syncDom();
+    }
+  }
+
+  protected onGroupFocusIn(): void {
+    if (!this.focusInside) {
+      this.focusInside = true;
+      this.focused.emit();
+    }
+  }
+
+  protected onGroupFocusOut(event: FocusEvent): void {
+    const next = event.relatedTarget as Node | null;
+    const cur = event.currentTarget as HTMLElement | null;
+    if (next && cur?.contains(next)) return;
+    if (this.focusInside) {
+      this.focusInside = false;
+      this.blurred.emit();
     }
   }
 
@@ -1315,30 +2182,83 @@ export class EmrRangeFieldComponent implements AfterViewChecked {
     }
   }
 
-  protected onBoundInput(bound: 'low' | 'high', event: Event): void {
+  protected canDecrement(bound: 'low' | 'high'): boolean {
+    const min = bound === 'low' ? this.lowMinNum() : this.highMinNum();
+    const cur = bound === 'low' ? this.lowNumericValue() : this.highNumericValue();
+    if (min === undefined || cur === null) return true;
+    const step = resolvePairedNumberStep({
+      mode: this.resolvedNumericMode(),
+      precision: this.resolvedPrecision(),
+      step: this.resolvedStep(),
+    });
+    return cur - step >= min - 1e-9;
+  }
+
+  protected canIncrement(bound: 'low' | 'high'): boolean {
+    const max = bound === 'low' ? this.lowMaxNum() : this.highMaxNum();
+    const cur = bound === 'low' ? this.lowNumericValue() : this.highNumericValue();
+    if (max === undefined || cur === null) return true;
+    const step = resolvePairedNumberStep({
+      mode: this.resolvedNumericMode(),
+      precision: this.resolvedPrecision(),
+      step: this.resolvedStep(),
+    });
+    return cur + step <= max + 1e-9;
+  }
+
+  protected stepBound(bound: 'low' | 'high', delta: -1 | 1): void {
+    if (this.locked() || this.model().kind !== 'number') return;
+    const cur = bound === 'low' ? this.lowNumericValue() : this.highNumericValue();
+    const next = stepPairedNumber({
+      current: cur,
+      delta,
+      mode: this.resolvedNumericMode(),
+      step: this.resolvedStep(),
+      precision: this.resolvedPrecision(),
+      min: bound === 'low' ? this.lowMinNum() : this.highMinNum(),
+      max: bound === 'low' ? this.lowMaxNum() : this.highMaxNum(),
+    });
+    if (bound === 'low') {
+      this.lowDrafting = false;
+      this.intent.emit({ type: 'lowChangeRequested', low: next });
+    } else {
+      this.highDrafting = false;
+      this.intent.emit({ type: 'highChangeRequested', high: next });
+    }
+  }
+
+  protected onNumberKeydown(bound: 'low' | 'high', event: KeyboardEvent): void {
+    if (this.locked()) return;
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.stepBound(bound, 1);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.stepBound(bound, -1);
+    } else if (event.key === 'Enter') {
+      this.submitted.emit();
+    }
+  }
+
+  protected onNumberInput(bound: 'low' | 'high', event: Event): void {
     const target = event.target as HTMLInputElement;
-    if (this.model().readOnly) {
+    if (this.locked()) {
       this.syncDom();
       return;
     }
-    if (this.model().kind === 'number' && target.validity?.badInput) return;
-
-    let parsed: number | string | null;
-    if (this.model().kind === 'date') {
-      parsed = emptyToNull(target.value);
-    } else {
-      const trimmed = target.value.trim();
-      if (trimmed === '') {
-        parsed = null;
-      } else {
-        const num = Number(trimmed);
-        if (!Number.isFinite(num)) {
-          this.syncDom();
-          return;
-        }
-        parsed = num;
-      }
+    const mode = this.resolvedNumericMode();
+    const cleaned = sanitizePairedNumberText(target.value, mode);
+    if (target.value !== cleaned) {
+      target.value = cleaned;
     }
+    const parsed = parsePairedNumberDraft(cleaned, mode);
+    if (!parsed.complete) {
+      if (bound === 'low') this.lowDrafting = true;
+      else this.highDrafting = true;
+      return;
+    }
+    if (bound === 'low') this.lowDrafting = false;
+    else this.highDrafting = false;
 
     this.needsDomSync = true;
     queueMicrotask(() => {
@@ -1349,19 +2269,55 @@ export class EmrRangeFieldComponent implements AfterViewChecked {
     });
 
     if (bound === 'low') {
-      this.intent.emit({ type: 'lowChangeRequested', low: parsed });
+      this.intent.emit({ type: 'lowChangeRequested', low: parsed.value });
     } else {
-      this.intent.emit({ type: 'highChangeRequested', high: parsed });
+      this.intent.emit({ type: 'highChangeRequested', high: parsed.value });
+    }
+  }
+
+  protected onNumberBlur(bound: 'low' | 'high'): void {
+    if (bound === 'low') this.lowDrafting = false;
+    else this.highDrafting = false;
+    this.syncDom();
+  }
+
+  protected onTemporalChange(bound: 'low' | 'high', val: string | null): void {
+    if (this.locked()) return;
+    if (bound === 'low') {
+      this.intent.emit({ type: 'lowChangeRequested', low: val });
+    } else {
+      this.intent.emit({ type: 'highChangeRequested', high: val });
+    }
+  }
+
+  protected onChildSubmitted(): void {
+    if (!this.locked()) {
+      this.submitted.emit();
+    }
+  }
+
+  protected onClear(): void {
+    if (this.locked()) return;
+    this.lowDrafting = false;
+    this.highDrafting = false;
+    this.intent.emit({ type: 'clearRequested' });
+    this.cleared.emit();
+  }
+
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.locked()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
     }
   }
 
   protected syncDom(): void {
     const lowEl = this.lowRef()?.nativeElement;
-    if (lowEl && lowEl.value !== this.lowDomValue()) {
+    if (lowEl && !this.lowDrafting && lowEl.value !== this.lowDomValue()) {
       lowEl.value = this.lowDomValue();
     }
     const highEl = this.highRef()?.nativeElement;
-    if (highEl && highEl.value !== this.highDomValue()) {
+    if (highEl && !this.highDrafting && highEl.value !== this.highDomValue()) {
       highEl.value = this.highDomValue();
     }
   }
@@ -1377,72 +2333,142 @@ export class EmrRangeFieldComponent implements AfterViewChecked {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let geom = geometry();
+    @let isLocked = locked();
+    @let vState = validation();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
-      [hint]="m.hint"
+      [labelHidden]="resolvedLabelHidden()"
+      [labelNamesControl]="false"
+      [layout]="resolvedLayout()"
+      [showMetadata]="resolvedShowMetadata()"
+      [readOnly]="isLocked"
+      [required]="resolvedRequired()"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="m.statusOptions ?? []"
+      [hint]="resolvedHint()"
       [messages]="m.messages ?? []"
+      (intent)="onFrameIntent($event)"
     >
       <div class="cf-stack">
-        <svg
-          class="emr-signature-pad sig-pad"
-          [id]="resolvedId()"
-          [attr.viewBox]="'0 0 ' + padWidth() + ' ' + padHeight()"
-          [style.height.px]="padHeight()"
-          [attr.data-readonly]="m.readOnly || null"
-          role="img"
-          [attr.aria-label]="m.label"
-          [attr.aria-invalid]="hasError() ? 'true' : null"
-          [attr.aria-describedby]="describedBy()"
-          (pointerdown)="onPointerDown($event)"
-          (pointermove)="onPointerMove($event)"
-          (pointerup)="onPointerUp($event)"
-          (pointercancel)="onPointerCancel($event)"
-        >
-          @for (stroke of m.strokes; track $index) {
-            <polyline
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              [attr.points]="toSvgPoints(stroke.points)"
+        <div class="sig-pad-wrap">
+          <svg
+            class="emr-signature-pad sig-pad"
+            [id]="resolvedId()"
+            [attr.viewBox]="'0 0 ' + geom.width + ' ' + geom.height"
+            preserveAspectRatio="xMidYMid meet"
+            [style.width]="'100%'"
+            [style.height.px]="geom.height"
+            [attr.tabindex]="0"
+            [attr.role]="isLocked ? 'img' : 'region'"
+            [attr.aria-roledescription]="isLocked ? null : 'signature pad'"
+            [attr.aria-labelledby]="labelledBy()"
+            [attr.aria-label]="labelledBy() ? null : resolvedLabel() + ' signature pad'"
+            [attr.aria-invalid]="vState.hasError ? 'true' : null"
+            [attr.data-warning]="vState.hasWarning ? 'true' : null"
+            [attr.aria-required]="!isLocked && resolvedRequired() ? 'true' : null"
+            [attr.aria-readonly]="isLocked ? 'true' : null"
+            [attr.data-readonly]="isLocked ? 'true' : null"
+            [attr.aria-describedby]="describedBy()"
+            (pointerdown)="onPointerDown($event)"
+            (pointermove)="onPointerMove($event)"
+            (pointerup)="onPointerUp($event)"
+            (pointercancel)="onPointerCancel($event)"
+            (keydown)="onKeyDown($event)"
+            (focusin)="focused.emit()"
+            (focusout)="blurred.emit()"
+          >
+            <line
+              [attr.x1]="geom.baselineInset"
+              [attr.y1]="geom.baselineY"
+              [attr.x2]="geom.width - geom.baselineInset"
+              [attr.y2]="geom.baselineY"
+              stroke="var(--emr-border)"
+              stroke-width="1"
+              stroke-dasharray="4 4"
             />
+            @for (stroke of m.strokes; track $index) {
+              @if (stroke.points.length === 1) {
+                <circle
+                  [attr.cx]="stroke.points[0].x"
+                  [attr.cy]="stroke.points[0].y"
+                  [attr.r]="dotRadius()"
+                  fill="var(--emr-text)"
+                />
+              } @else if (stroke.points.length > 1) {
+                <polyline
+                  fill="none"
+                  stroke="var(--emr-text)"
+                  [attr.stroke-width]="penWidth()"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  [attr.points]="toSvgPoints(stroke.points)"
+                />
+              }
+            }
+            @if (draftPoints().length === 1) {
+              <circle
+                [attr.cx]="draftPoints()[0].x"
+                [attr.cy]="draftPoints()[0].y"
+                [attr.r]="dotRadius()"
+                fill="var(--emr-primary)"
+              />
+            } @else if (draftPoints().length > 1) {
+              <polyline
+                fill="none"
+                stroke="var(--emr-primary)"
+                [attr.stroke-width]="penWidth()"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                [attr.points]="toSvgPoints(draftPoints())"
+              />
+            }
+          </svg>
+          @if (isEmptyPad()) {
+            <div class="emr-signature-empty sig-empty" aria-hidden="true">
+              {{ emptyPromptText() }}
+            </div>
           }
-          @if (draftPoints().length > 0) {
-            <polyline
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              [attr.points]="toSvgPoints(draftPoints())"
-            />
-          }
-        </svg>
+        </div>
 
         <div class="sig-footer">
           <div class="sig-meta">
-            @if (m.signatoryName) {
-              <strong>{{ m.signatoryName }}</strong>
-            }
-            @if (m.signatoryRole) {
-              <span>{{ m.signatoryRole }}</span>
-            }
-            @if (m.signedAt) {
-              <span>· {{ m.signedAt }}</span>
-            }
+            <span>{{ attestationText() }}</span>
           </div>
-          @if (!m.readOnly) {
-            <button
-              type="button"
-              class="emr-button emr-button--ghost emr-button--small"
-              [disabled]="m.strokes.length === 0"
-              (click)="intent.emit({ type: 'clearRequested' })"
-            >
-              Clear signature
-            </button>
+          @if (!isLocked && (canUndo() || canClear())) {
+            <div class="sig-actions" data-emr-print="hide">
+              @if (canUndo()) {
+                <button
+                  type="button"
+                  class="emr-button emr-button--outline emr-button--small sig-btn"
+                  [disabled]="m.strokes.length === 0"
+                  [attr.aria-label]="'Undo last stroke on ' + resolvedLabel()"
+                  (click)="emitUndo()"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 7v6h6" />
+                    <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
+                  </svg>
+                  <span>Undo</span>
+                </button>
+              }
+              @if (canClear()) {
+                <button
+                  type="button"
+                  class="emr-button emr-button--outline emr-button--small sig-btn"
+                  [disabled]="m.strokes.length === 0"
+                  [attr.aria-label]="'Clear ' + resolvedLabel()"
+                  (click)="emitClear()"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  <span>Clear</span>
+                </button>
+              }
+            </div>
           }
         </div>
       </div>
@@ -1451,12 +2477,28 @@ export class EmrRangeFieldComponent implements AfterViewChecked {
   styles: [
     SHARED_FIELD_STYLES,
     `
+      .sig-pad-wrap {
+        position: relative;
+        min-width: 0;
+      }
       .sig-pad {
         color: var(--emr-text);
         cursor: crosshair;
       }
       .sig-pad[data-readonly='true'] {
         cursor: default;
+      }
+      .sig-empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        text-align: center;
+        pointer-events: none;
+        color: var(--emr-text-muted);
+        font-size: var(--emr-text-sm);
       }
       .sig-footer {
         display: flex;
@@ -1472,24 +2514,105 @@ export class EmrRangeFieldComponent implements AfterViewChecked {
         font-size: var(--emr-text-xs);
         color: var(--emr-text-muted);
       }
+      .sig-actions {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .sig-btn {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
     `,
   ],
 })
 export class EmrSignatureCaptureFieldComponent {
   readonly model = input.required<SignatureCaptureViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
+
   readonly intent = output<SignatureCaptureIntent>();
+  readonly valueChange = output<readonly EmrSignatureStroke[]>();
+  readonly cleared = output<void>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly fallbackId = `emr-signature-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
 
-  protected readonly padWidth = computed(() => this.model().width ?? 420);
-  protected readonly padHeight = computed(() => this.model().height ?? 140);
-  protected readonly hasError = computed(() => Boolean(firstErrorMessage(this.model().messages)));
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(
+    () => this.model().label || this.resolvedDefinition()?.presentation?.label || '',
+  );
+  protected readonly resolvedLabelHidden = computed(
+    () => this.labelHidden() || Boolean(this.model().labelHidden),
+  );
+  protected readonly resolvedHint = computed(
+    () => this.model().hint ?? this.resolvedDefinition()?.presentation?.hint,
+  );
+  protected readonly resolvedLayout = computed<FieldFrameLayout>(() =>
+    normalizeFieldLayout(this.layout() ?? this.model().layout),
+  );
+  protected readonly resolvedShowMetadata = computed(
+    () => this.showMetadata() && this.model().showMetadata !== false,
+  );
+  protected readonly locked = computed(() =>
+    isSignaturePadLocked(
+      { readOnly: this.model().readOnly, definition: this.resolvedDefinition() },
+      this.readOnly(),
+    ),
+  );
+  protected readonly resolvedRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
+  });
+  protected readonly geometry = computed(() =>
+    resolveSignatureCanvasGeometry(this.model().width, this.model().height),
+  );
+  protected readonly padWidth = computed(() => this.geometry().width);
+  protected readonly padHeight = computed(() => this.geometry().height);
+  protected readonly penWidth = computed(() => {
+    const pw = this.model().penWidth;
+    return typeof pw === 'number' && Number.isFinite(pw) && pw > 0 ? pw : 2.25;
+  });
+  protected readonly dotRadius = computed(() =>
+    Number(Math.max(1.25, this.penWidth() * 0.78).toFixed(2)),
+  );
+  protected readonly validation = computed(() => hasSignatureValidationState(this.model().messages));
+  protected readonly hasError = computed(() => this.validation().hasError);
   protected readonly describedBy = computed(() =>
-    hasFieldMessages(this.model().hint, this.model().messages)
+    hasFieldMessages(this.resolvedHint(), this.model().messages)
       ? `${this.resolvedId()}-message`
       : null,
+  );
+  protected readonly labelledBy = computed(
+    () =>
+      this.headingId() ||
+      (!this.resolvedLabelHidden() && this.resolvedLabel() ? `${this.resolvedId()}-label` : null),
+  );
+  protected readonly attestationText = computed(() => formatSignatureAttestation(this.model()));
+  protected readonly emptyPromptText = computed(() => {
+    const custom = this.model().emptyPrompt?.trim();
+    if (custom) return custom;
+    return this.locked() ? 'No signature captured' : 'Sign here with stylus, mouse, or finger';
+  });
+  protected readonly isEmptyPad = computed(
+    () => this.model().strokes.length === 0 && this.draftPoints().length === 0,
+  );
+  protected readonly canUndo = computed(
+    () => !this.locked() && this.model().undoable !== false,
+  );
+  protected readonly canClear = computed(
+    () => !this.locked() && this.model().clearable !== false,
   );
 
   /** Transient pointer gesture buffer only while actively drawing one stroke. */
@@ -1501,56 +2624,132 @@ export class EmrSignatureCaptureFieldComponent {
   }
 
   protected onPointerDown(event: PointerEvent): void {
-    if (this.model().readOnly) return;
+    if (this.locked()) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
     const svg = event.currentTarget as SVGSVGElement;
-    if (typeof svg.setPointerCapture === 'function') {
+    const pid = typeof event.pointerId === 'number' ? event.pointerId : 0;
+    if (typeof event.pointerId === 'number' && typeof svg.setPointerCapture === 'function') {
       svg.setPointerCapture(event.pointerId);
     }
     event.preventDefault();
-    this.activePointerId = event.pointerId;
+    if (typeof svg.focus === 'function') {
+      svg.focus({ preventScroll: true });
+    }
+    this.activePointerId = pid;
     this.draftPoints.set([this.pointFromEvent(event, svg)]);
   }
 
   protected onPointerMove(event: PointerEvent): void {
-    if (this.model().readOnly || this.activePointerId !== event.pointerId) return;
+    const pid = typeof event.pointerId === 'number' ? event.pointerId : 0;
+    if (this.locked() || this.activePointerId !== pid) return;
     const svg = event.currentTarget as SVGSVGElement;
     event.preventDefault();
     const nextPt = this.pointFromEvent(event, svg);
-    this.draftPoints.update((prev) => [...prev, nextPt]);
+    this.draftPoints.update((prev) => {
+      const last = prev[prev.length - 1];
+      if (last && last.x === nextPt.x && last.y === nextPt.y) return prev;
+      return [...prev, nextPt];
+    });
   }
 
   protected onPointerUp(event: PointerEvent): void {
-    if (this.activePointerId !== event.pointerId) return;
+    const pid = typeof event.pointerId === 'number' ? event.pointerId : 0;
+    if (this.activePointerId !== pid) return;
     const svg = event.currentTarget as SVGSVGElement;
-    if (typeof svg.releasePointerCapture === 'function') {
+    if (
+      typeof event.pointerId === 'number' &&
+      typeof svg.hasPointerCapture === 'function' &&
+      svg.hasPointerCapture(event.pointerId) &&
+      typeof svg.releasePointerCapture === 'function'
+    ) {
       svg.releasePointerCapture(event.pointerId);
     }
     const completed = this.draftPoints();
     this.activePointerId = null;
     this.draftPoints.set([]);
-    if (!this.model().readOnly && completed.length > 0) {
-      this.intent.emit({ type: 'strokeAdded', stroke: { points: completed } });
+    if (!this.locked() && completed.length > 0) {
+      const stroke: EmrSignatureStroke = { points: completed };
+      this.intent.emit({ type: 'strokeAdded', stroke });
+      this.valueChange.emit([...this.model().strokes, stroke]);
     }
   }
 
   protected onPointerCancel(event: PointerEvent): void {
-    if (this.activePointerId !== event.pointerId) return;
-    const svg = event.currentTarget as SVGSVGElement;
-    if (typeof svg.releasePointerCapture === 'function') {
-      svg.releasePointerCapture(event.pointerId);
+    const pid = typeof event.pointerId === 'number' ? event.pointerId : 0;
+    if (this.activePointerId !== pid) return;
+    this.cancelActiveStroke(event.currentTarget as SVGSVGElement, event.pointerId);
+  }
+
+  protected onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && (this.activePointerId !== null || this.draftPoints().length > 0)) {
+      event.preventDefault();
+      this.cancelActiveStroke(event.currentTarget as SVGSVGElement, this.activePointerId);
+      return;
+    }
+    if (this.locked()) return;
+    if (
+      (event.key === 'Delete' || event.key === 'Backspace') &&
+      this.canClear() &&
+      this.model().strokes.length > 0
+    ) {
+      event.preventDefault();
+      this.emitClear();
+      return;
+    }
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      !event.shiftKey &&
+      event.key.toLowerCase() === 'z' &&
+      this.canUndo() &&
+      this.model().strokes.length > 0
+    ) {
+      event.preventDefault();
+      this.emitUndo();
+    }
+  }
+
+  protected emitUndo(): void {
+    if (this.locked() || this.model().strokes.length === 0) return;
+    this.intent.emit({ type: 'undoRequested' });
+    this.valueChange.emit(this.model().strokes.slice(0, -1));
+  }
+
+  protected emitClear(): void {
+    if (this.locked() || this.model().strokes.length === 0) return;
+    this.intent.emit({ type: 'clearRequested' });
+    this.valueChange.emit([]);
+    this.cleared.emit();
+  }
+
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.locked()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
+    }
+  }
+
+  private cancelActiveStroke(svg: SVGSVGElement, pointerId: number | null): void {
+    if (
+      typeof pointerId === 'number' &&
+      typeof svg.hasPointerCapture === 'function' &&
+      svg.hasPointerCapture(pointerId) &&
+      typeof svg.releasePointerCapture === 'function'
+    ) {
+      svg.releasePointerCapture(pointerId);
     }
     this.activePointerId = null;
     this.draftPoints.set([]);
   }
 
   private pointFromEvent(event: PointerEvent, svg: SVGSVGElement): EmrSignaturePoint {
-    const rect = svg.getBoundingClientRect();
-    const scaleX = rect.width > 0 ? this.padWidth() / rect.width : 1;
-    const scaleY = rect.height > 0 ? this.padHeight() / rect.height : 1;
-    return {
-      x: Number(((event.clientX - rect.left) * scaleX).toFixed(1)),
-      y: Number(((event.clientY - rect.top) * scaleY).toFixed(1)),
-    };
+    const geom = this.geometry();
+    return mapPointerToSignaturePoint(
+      event.clientX,
+      event.clientY,
+      svg.getBoundingClientRect(),
+      geom.width,
+      geom.height,
+    );
   }
 }
 
@@ -1564,60 +2763,50 @@ export class EmrSignatureCaptureFieldComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let m = model();
+    @let isLocked = locked();
     <emr-field-frame
-      [label]="m.label"
+      [label]="resolvedLabel()"
       [controlId]="resolvedId()"
-      [required]="!!m.required"
-      [hint]="m.hint"
+      [labelHidden]="resolvedLabelHidden()"
+      [labelNamesControl]="false"
+      [layout]="resolvedLayout()"
+      [showMetadata]="resolvedShowMetadata()"
+      [readOnly]="isLocked"
+      [required]="resolvedRequired()"
+      [assessmentStatus]="m.status"
+      [assessmentStatusOptions]="resolvedStatusOptions()"
+      [hint]="resolvedHint()"
       [messages]="m.messages ?? []"
+      (intent)="onFrameIntent($event)"
     >
-      <div class="cf-stack">
+      <div
+        class="cf-stack"
+        [attr.aria-labelledby]="headingId() || null"
+        (focusin)="focused.emit()"
+        (focusout)="blurred.emit()"
+      >
         <emr-image-upload
-          [controlId]="resolvedId()"
-          [label]="m.label"
+          [controlId]="resolvedId() + '-upload'"
+          [label]="resolvedLabel()"
           [labelHidden]="true"
           [items]="m.items"
-          [multiple]="m.multiple ?? true"
+          [accept]="resolvedAccept()"
+          [multiple]="resolvedMultiple()"
           [maxFiles]="m.maxFiles"
           [maxSizeBytes]="m.maxSizeBytes"
           [allowCamera]="!!m.allowCamera"
-          [aspectPresets]="m.aspectPresets ?? defaultPresets"
-          [required]="!!m.required"
-          [readOnly]="!!m.readOnly"
-          [error]="firstError()"
+          [aspectPresets]="resolvedPresets()"
+          [required]="resolvedRequired()"
+          [readOnly]="isLocked"
+          [invalid]="hasError()"
           (filesSelected)="onFilesSelected($event)"
-          (nativeFilesSelected)="nativeFilesSelected.emit($event)"
+          (nativeFilesSelected)="onNativeFilesSelected($event)"
           (itemsChange)="onItemsChange($event)"
           (imageCropped)="onImageCropped($event)"
+          (captionChange)="onCaptionChange($event)"
           (removeRequested)="onItemRemove($event)"
           (captureRequested)="onCaptureRequested($event)"
         />
-
-        @if ((m.statusOptions && m.statusOptions.length > 0) || m.status) {
-          <div class="cf-status">
-            @if (m.status) {
-              <span [class]="'emr-badge ' + statusToneClass()" role="status">
-                {{ statusLabel() }}
-              </span>
-            }
-            @if (m.statusOptions && m.statusOptions.length > 0) {
-              <select
-                class="emr-select cf-status__select"
-                [attr.aria-label]="m.label + ' assessment status'"
-                [attr.aria-readonly]="m.readOnly || null"
-                [value]="m.status ?? ''"
-                (change)="onStatusChange($event)"
-              >
-                <option value="" [selected]="!m.status">Status not set</option>
-                @for (opt of m.statusOptions; track opt.value) {
-                  <option [value]="opt.value" [selected]="opt.value === m.status">
-                    {{ opt.label }}
-                  </option>
-                }
-              </select>
-            }
-          </div>
-        }
       </div>
     </emr-field-frame>
   `,
@@ -1625,55 +2814,104 @@ export class EmrSignatureCaptureFieldComponent {
 })
 export class EmrImageFieldComponent {
   readonly model = input.required<ImageFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
   readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false, { transform: booleanAttribute });
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true, { transform: booleanAttribute });
+  readonly readOnly = input(false, { transform: booleanAttribute });
+
   readonly intent = output<ImageFieldIntent>();
   readonly nativeFilesSelected = output<readonly File[]>();
-
-  protected readonly defaultPresets = DEFAULT_ASPECT_PRESETS;
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
 
   private readonly fallbackId = `emr-image-field-${++nextContractFieldId}`;
   readonly resolvedId = computed(() => this.controlId() || this.fallbackId);
 
-  protected readonly firstError = computed(() => firstErrorMessage(this.model().messages));
-  protected readonly statusLabel = computed(() =>
-    resolveStatusLabel(this.model().status, this.model().statusOptions),
+  protected readonly resolvedDefinition = computed(() => this.definition() ?? this.model().definition);
+  protected readonly resolvedLabel = computed(
+    () => this.model().label || this.resolvedDefinition()?.presentation?.label || '',
   );
-  protected readonly statusToneClass = computed(() =>
-    resolveStatusToneClass(this.model().status, this.model().statusOptions),
+  protected readonly resolvedLabelHidden = computed(
+    () => this.labelHidden() || Boolean(this.model().labelHidden),
   );
+  protected readonly resolvedHint = computed(
+    () => this.model().hint ?? this.resolvedDefinition()?.presentation?.hint,
+  );
+  protected readonly resolvedLayout = computed<FieldFrameLayout>(() =>
+    normalizeFieldLayout(this.layout() ?? this.model().layout),
+  );
+  protected readonly resolvedShowMetadata = computed(
+    () => this.showMetadata() && this.model().showMetadata !== false,
+  );
+  protected readonly locked = computed(() =>
+    Boolean(
+      this.readOnly() ||
+        this.model().readOnly ||
+        this.resolvedDefinition()?.contract?.readOnly,
+    ),
+  );
+  protected readonly resolvedRequired = computed(() => {
+    const min = this.resolvedDefinition()?.contract?.cardinality?.min;
+    return Boolean(this.model().required || (min !== undefined && min >= 1));
+  });
+  protected readonly resolvedMultiple = computed(() => {
+    const explicit = this.model().multiple;
+    if (explicit !== undefined) return explicit;
+    const maxCard = this.resolvedDefinition()?.contract?.cardinality?.max;
+    return maxCard === undefined || maxCard !== 1;
+  });
+  protected readonly resolvedAccept = computed(() => this.model().accept ?? 'image/*');
+  protected readonly resolvedPresets = computed(() => {
+    const presets = this.model().aspectPresets;
+    return presets && presets.length > 0 ? presets : DEFAULT_ASPECT_PRESETS;
+  });
+  protected readonly resolvedStatusOptions = computed<readonly ClinicalAssessmentStatusOption[]>(
+    () => this.model().statusOptions ?? [],
+  );
+  protected readonly hasError = computed(() => Boolean(firstErrorMessage(this.model().messages)));
+
+  protected onFrameIntent(ev: FieldFrameIntent): void {
+    if (this.locked()) return;
+    if (ev.type === 'statusChangeRequested') {
+      this.intent.emit({ type: 'statusChangeRequested', status: ev.status });
+    }
+  }
 
   protected onFilesSelected(files: readonly EmrFileSelectionItem[]): void {
-    if (this.model().readOnly) return;
+    if (this.locked()) return;
     this.intent.emit({ type: 'filesSelected', files });
   }
 
+  protected onNativeFilesSelected(files: readonly File[]): void {
+    if (this.locked()) return;
+    this.nativeFilesSelected.emit(files);
+  }
+
   protected onItemsChange(items: readonly EmrUploadedImageItem[]): void {
-    if (this.model().readOnly) return;
+    if (this.locked()) return;
     this.intent.emit({ type: 'itemsChangeRequested', items });
   }
 
   protected onImageCropped(evt: { readonly id: string; readonly result: EmrImageCropResult }): void {
-    if (this.model().readOnly) return;
+    if (this.locked()) return;
     this.intent.emit({ type: 'imageCropped', id: evt.id, result: evt.result });
   }
 
+  protected onCaptionChange(evt: { readonly id: string; readonly caption: string }): void {
+    if (this.locked()) return;
+    this.intent.emit({ type: 'captionChangeRequested', id: evt.id, caption: evt.caption });
+  }
+
   protected onItemRemove(id: string): void {
-    if (this.model().readOnly) return;
+    if (this.locked()) return;
     this.intent.emit({ type: 'itemRemoveRequested', id });
   }
 
   protected onCaptureRequested(mode: 'camera'): void {
-    if (this.model().readOnly) return;
+    if (this.locked()) return;
     this.intent.emit({ type: 'captureRequested', mode });
-  }
-
-  protected onStatusChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    if (this.model().readOnly) {
-      select.value = this.model().status ?? '';
-      return;
-    }
-    const status = (select.value || undefined) as ClinicalAssessmentStatus | undefined;
-    this.intent.emit({ type: 'statusChangeRequested', status });
   }
 }

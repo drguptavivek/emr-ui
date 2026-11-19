@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["angular:styles/component:css;d925a67aa7643aa371baac94fbbd9b631543499296b61c86d6bbff9f092ecad6;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/fields/emr-contract-fields.component.ts"],
-  "sourcesContent": ["\n      .rf-row {\n        display: flex;\n        flex-wrap: wrap;\n        align-items: center;\n        gap: 8px;\n      }\n      .rf-input {\n        flex: 1 1 120px;\n        min-width: 0;\n      }\n      .rf-unit {\n        color: var(--emr-text-muted);\n        font-size: var(--emr-text-sm);\n        font-weight: var(--emr-weight-medium);\n      }\n    "],
-  "mappings": ";AACM,CAAC;AACC,WAAS;AACT,aAAW;AACX,eAAa;AACb,OAAK;AACP;AACA,CAAC;AACC,QAAM,EAAE,EAAE;AACV,aAAW;AACb;AACA,CAAC;AACC,SAAO,IAAI;AACX,aAAW,IAAI;AACf,eAAa,IAAI;AACnB;",
+  "sources": ["angular:styles/component:css;7192b47cc8537a0c4df542057cfd2ad1ec04d8e15087b745803fa96d39876f3f;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/fields/emr-contract-fields.component.ts"],
+  "sourcesContent": ["\n  :host {\n    display: block;\n    min-width: 0;\n  }\n  .cf-stack {\n    display: grid;\n    gap: 8px;\n    min-width: 0;\n  }\n  .cf-status {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    gap: 8px;\n    margin-top: 6px;\n  }\n  .cf-status__select {\n    width: auto;\n    max-width: 100%;\n    min-width: 0;\n  }\n  .cf-inline {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    gap: 8px;\n  }\n"],
+  "mappings": ";AACE;AACE,WAAS;AACT,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACL,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,aAAW;AACX,eAAa;AACb,OAAK;AACL,cAAY;AACd;AACA,CAAC;AACC,SAAO;AACP,aAAW;AACX,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,aAAW;AACX,eAAa;AACb,OAAK;AACP;",
   "names": []
 }

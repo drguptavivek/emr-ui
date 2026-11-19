@@ -81,6 +81,11 @@ export interface EmrToastLabels {
           <svg [attr.width]="resolvedSize() === 'sm' ? 11 : 13" [attr.height]="resolvedSize() === 'sm' ? 11 : 13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
           </svg>
+        } @else if (resolvedIcon() === 'eye') {
+          <svg [attr.width]="resolvedSize() === 'sm' ? 11 : 13" [attr.height]="resolvedSize() === 'sm' ? 11 : 13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.75" />
+          </svg>
         }
         @if (countInfo().text !== null) {
           <span class="emr-badge__count">{{ countInfo().text }}</span>

@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["angular:styles/component:css;e216efcf38049394c845e37a5c057399c0b8b944fe72acf80c7804ee5e25048b;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/primitives/emr-status-indicators.component.ts"],
-  "sourcesContent": ["\n      :host {\n        display: block;\n      }\n      .emr-skeleton-group {\n        display: grid;\n        gap: 6px;\n      }\n    "],
-  "mappings": ";AACM;AACE,WAAS;AACX;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACP;",
+  "sources": ["angular:styles/component:css;bc31caaf8f5f67d951ff9ced9ccb5bb093bb50da724604627308ed3ecb176084;/Users/vivekgupta/workspace/EMR/packages/emr-ui/src/lib/primitives/emr-status-indicators.component.ts"],
+  "sourcesContent": ["\n      :host {\n        display: inline-flex;\n      }\n    "],
+  "mappings": ";AACM;AACE,WAAS;AACX;",
   "names": []
 }

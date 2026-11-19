@@ -735,5 +735,122 @@ describe('SSR HTML & ARIA smoke suite across all L1 primitives and L2 fields', (
       expect(html.length).toBeGreaterThan(0);
     }
     expect(l2Htmls[12]).toContain('Clear status');
+
+    // Detailed EmrLateralityField parity assertions: optional clearable, scoped validation, zero duplicate alerts, lg size
+    const latOptionalHtml = renderToStaticMarkup(
+      createElement(EmrLateralityField, {
+        controlId: 'lat-opt',
+        size: 'lg',
+        model: {
+          label: 'Operative site',
+          domain: 'anatomical',
+          value: 'right',
+          requiresConfirmation: true,
+          confirmed: false,
+          messages: [
+            { path: ['confirmed'], severity: 'error', message: 'Confirm surgical mark' },
+            { path: ['value'], severity: 'warning', message: 'Double check side' },
+          ],
+        },
+        onIntent: noop,
+      }),
+    );
+    expect(latOptionalHtml).toContain('Surgical site and laterality verified');
+    expect(latOptionalHtml).toContain('data-emr-print="hide"');
+    expect(latOptionalHtml).toContain('Unilateral (unspecified)');
+    expect((latOptionalHtml.match(/role="alert"/g) ?? []).length).toBe(1);
+    expect(latOptionalHtml).toContain('aria-labelledby="lat-opt-label"');
+
+    // Detailed EmrVisualAcuityField parity assertions
+    const vaHtml = renderToStaticMarkup(
+      createElement(EmrVisualAcuityField, {
+        controlId: 'va-od',
+        size: 'lg',
+        clearable: true,
+        model: {
+          label: 'Distance visual acuity',
+          eye: 'OD',
+          notation: 'snellen-m',
+          notationOptions: [
+            { value: 'snellen-m', label: 'Snellen (6m)' },
+            { value: 'logmar', label: 'LogMAR' },
+          ],
+          correction: 'unaided',
+          correctionOptions: [
+            { value: 'unaided', label: 'Unaided' },
+            { value: 'best-corrected', label: 'BCVA' },
+          ],
+          value: '6/18',
+          valueOptions: [
+            { value: '6/6', label: '6/6' },
+            { value: '6/18', label: '6/18' },
+          ],
+          showPinhole: true,
+          pinholeValue: '6/9',
+          derivedDisplay: 'LogMAR 0.48',
+          derivedTone: 'info',
+          status: 'recorded',
+          statusOptions: [
+            { value: 'recorded', label: 'Recorded', tone: 'success' },
+            { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+          ],
+          messages: [
+            { path: ['pinhole'], severity: 'error', message: 'Re-test pinhole acuity' },
+            { path: ['value'], severity: 'warning', message: 'Check chart distance' },
+          ],
+        },
+        onIntent: noop,
+      }),
+    );
+    expect(vaHtml).toContain('Right eye (OD)');
+    expect(vaHtml).toContain('Equivalent: LogMAR 0.48');
+    expect(vaHtml).toContain('id="va-od-notation"');
+    expect(vaHtml).toContain('id="va-od-correction"');
+    expect(vaHtml).toContain('id="va-od-value"');
+    expect(vaHtml).toContain('id="va-od-pinhole"');
+    expect(vaHtml).toContain('data-emr-print="hide"');
+    expect(vaHtml).toContain('Unable to assess');
+    expect((vaHtml.match(/role="alert"/g) ?? []).length).toBe(1);
+    expect((vaHtml.match(/aria-invalid="true"/g) ?? []).length).toBe(1);
+
+    // Detailed EmrRefractionField parity assertions
+    const rxHtml = renderToStaticMarkup(
+      createElement(EmrRefractionField, {
+        controlId: 'rx-od',
+        size: 'lg',
+        clearable: true,
+        model: {
+          label: 'Subjective refraction',
+          eye: 'OD',
+          value: { sphere: -2, cylinder: -0.75, axis: 95, nearAdd: 2 },
+          showNearAdd: true,
+          formattedSummary: '-2.00 / -0.75 × 095 (Add +2.00)',
+          status: 'recorded',
+          statusOptions: [
+            { value: 'recorded', label: 'Recorded', tone: 'success' },
+            { value: 'unable-to-assess', label: 'Unable to assess', tone: 'warning' },
+          ],
+          messages: [
+            { path: ['axis'], severity: 'error', message: 'Axis required with cylinder' },
+            { path: ['sphere'], severity: 'warning', message: 'High myopia threshold' },
+          ],
+        },
+        onIntent: noop,
+      }),
+    );
+    expect(rxHtml).toContain('Right eye (OD)');
+    expect(rxHtml).toContain('Summary: -2.00 / -0.75 × 095 (Add +2.00)');
+    expect(rxHtml).toContain('id="rx-od-sphere"');
+    expect(rxHtml).toContain('id="rx-od-cylinder"');
+    expect(rxHtml).toContain('id="rx-od-axis"');
+    expect(rxHtml).toContain('id="rx-od-nearAdd"');
+    expect(rxHtml).toContain('value="-2.00"');
+    expect(rxHtml).toContain('value="2.00"');
+    expect(rxHtml).toContain('Clear Subjective refraction');
+    expect(rxHtml).toContain('data-emr-print="hide"');
+    expect(rxHtml).toContain('data-warning="true"');
+    expect(rxHtml).toContain('Unable to assess');
+    expect((rxHtml.match(/role="alert"/g) ?? []).length).toBe(1);
+    expect((rxHtml.match(/aria-invalid="true"/g) ?? []).length).toBe(1);
   });
 });

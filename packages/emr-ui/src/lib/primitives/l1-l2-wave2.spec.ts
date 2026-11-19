@@ -10,29 +10,83 @@ import {
   applyInputMask,
   applyOtpSlotEdit,
   buildCalendarMonthCells,
+  buildDateRangeCalendarGrid,
+  buildEmrTreeSelectSummary,
+  canClearEmrColorPicker,
+  canCopyEmrValue,
+  canOpenEmrMenu,
+  canOpenEmrSplitMenu,
+  canSelectEmrBreadcrumb,
+  canSelectEmrMenuItem,
+  canToggleAccordionItem,
+  canTriggerEmrSplitPrimary,
   clampCropRect,
   clampRangeSliderPair,
   clampSliderValue,
   clampStraightenAngle,
+  clearEmrToggleGroupValues,
+  clearTreeSelection,
   collapseBreadcrumbs,
   collectAllExpandableTreeIds,
+  commitDateRangeEndpoint,
+  computeAspectLockedCropRect,
+  computeCroppedCanvasPlan,
   computeSelectAllState,
   computeTreeNodeCheckState,
+  editMaskedInputWithCaret,
+  extractOtpTypedInput,
   filterOptionsLocally,
+  findEmrMenuTypeaheadIndex,
+  findNextTreeRowIndex,
+  findTypeaheadTreeRowIndex,
   flattenVisibleTreeNodes,
+  formatCopyButtonLabel,
+  formatDateRangeMonthTitle,
+  formatImageByteSize,
   formatImageTransformCss,
+  formatSliderValue,
   formatTreeSelectionLabel,
+  getContrastCheckTone,
+  getDateRangeWeekdays,
+  getEnabledMenuIndices,
   groupOptions,
+  inferMaskInputMode,
+  isEmrTreeClearable,
+  isHexColorValid,
   isIsoDateInRange,
   isIsoRangeEdge,
+  moveAccordionFocusIndex,
+  moveColorSwatchFocusIndex,
+  moveEmrMenuFocusIndex,
   normalizeDateRangeSelection,
+  normalizeEmrToggleGroupLabelPlacement,
+  normalizeEmrToggleGroupVariant,
+  normalizeHexColor,
   normalizeOtpSlots,
+  removeTreeSelectionChip,
+  resolveAccordionExpandedIds,
+  resolveClosestRangeThumb,
+  resolveColorSwatchTabStopIndex,
+  resolveCopyFeedbackDurationMs,
+  resolveDefaultExpandedTreeIds,
+  resolveEmrToggleGroupValues,
+  resolveInitialCalendarMonth,
+  resolveOtpClearSlot,
+  resolveRangeThumbKeyValue,
+  resolveSliderKeyStepValue,
   resolveTreeNodePath,
+  resolveWave2NavIconPaths,
   rotateImage90,
+  selectDateRangeCalendarDay,
+  sliderValuePercent,
+  splitRotationDegrees,
   splitTagTokens,
+  stepCalendarMonth,
   stepImageZoom,
   toggleAccordionId,
+  validateUploadedImageFile,
   toggleCheckboxGroupValue,
+  toggleEmrToggleGroupValue,
   toggleSelectAllValues,
   toggleTreeNodeCheck,
 } from './emr-wave2.logic';
@@ -243,9 +297,9 @@ describe('Wave 2 L1 & L2 component contracts & upgrades', () => {
     expect(choiceSrc).toMatch(/readonly\s+valueChange\s*=\s*output<string\s*\|\s*null>\(\)/);
     expect(choiceSrc).toMatch(/readonly\s+clearable\s*=\s*input\(false/);
     expect(choiceSrc).toMatch(/readonly\s+allowDeselect\s*=\s*input\(false/);
-    expect(choiceSrc).toMatch(/readonly\s+orientation\s*=\s*input<'vertical'\s*\|\s*'horizontal'\s*\|\s*'grid'>\('vertical'\)/);
+    expect(choiceSrc).toMatch(/readonly\s+orientation\s*=\s*input<(?:EmrRadioGroupOrientation|'vertical'\s*\|\s*'horizontal'\s*\|\s*'grid')>\('vertical'\)/);
     expect(choiceSrc).toMatch(/readonly\s+variant\s*=\s*input<EmrRadioGroupVariant\s*\|\s*'standard'>\('tile'\)/);
-    expect(choiceSrc).toMatch(/readonly\s+labelPlacement\s*=\s*input<'end'\s*\|\s*'start'\s*\|\s*'space-between'>\('end'\)/);
+    expect(choiceSrc).toMatch(/readonly\s+labelPlacement\s*=\s*input<(?:EmrRadioGroupLabelPlacement|'end'\s*\|\s*'start'\s*\|\s*'space-between')>\('end'\)/);
     expect(choiceSrc).toMatch(/readonly\s+onLabel\s*=\s*input\(''\)/);
     expect(choiceSrc).toMatch(/readonly\s+offLabel\s*=\s*input\(''\)/);
 
@@ -254,7 +308,7 @@ describe('Wave 2 L1 & L2 component contracts & upgrades', () => {
     expect(likertSrc).toMatch(/readonly\s+valueChange\s*=\s*output<number\s*\|\s*null>\(\)/);
 
     const vasSrc = readLib('primitives/emr-vas.component.ts');
-    expect(vasSrc).toMatch(/readonly\s+clearable\s*=\s*input\(false/);
+    expect(vasSrc).toMatch(/readonly\s+clearable\s*=\s*input(?:<boolean,\s*unknown>)?\(false/);
     expect(vasSrc).toMatch(/readonly\s+cleared\s*=\s*output<void>\(\)/);
 
     // 4. EmrSegmentedControlComponent & EmrCheckboxGroupComponent
@@ -262,7 +316,7 @@ describe('Wave 2 L1 & L2 component contracts & upgrades', () => {
     expect(actionControlsSrc).toMatch(/readonly\s+clearable\s*=\s*input\(false/);
     expect(actionControlsSrc).toMatch(/readonly\s+showSelectAll\s*=\s*input\(false/);
     expect(actionControlsSrc).toMatch(/readonly\s+exclusiveValues\s*=\s*input<readonly\s+string\[\]>\(\[\]\)/);
-    expect(actionControlsSrc).toMatch(/readonly\s+variant\s*=\s*input<'standard'\s*\|\s*'card'\s*\|\s*'chip'>\('standard'\)/);
+    expect(actionControlsSrc).toMatch(/readonly\s+variant\s*=\s*input<(?:EmrCheckboxGroupVariant\s*\|\s*'standard'|'standard'\s*\|\s*'card'\s*\|\s*'chip')>/);
   });
 
   it('implements all 20 new Wave 2 components (19 L1 + 1 L2 EmrImageFieldComponent) with zero sibling L1 imports in L1 and exports from public-api.ts', () => {
@@ -325,7 +379,243 @@ describe('Wave 2 L1 & L2 component contracts & upgrades', () => {
       'masked',
       'otp',
     ]) {
-      expect(typedFieldSrc).toContain(`@case ('${hint}')`);
+      expect(
+        typedFieldSrc.includes(`@case ('${hint}')`) ||
+          typedFieldSrc.includes(`renderer() === '${hint}'`),
+        `EmrTypedFieldComponent must handle '${hint}'`,
+      ).toBe(true);
     }
+    expect(typedFieldSrc).toContain('<emr-image-field');
+  });
+
+  it('provides Wave 2 Batch A parity contracts and logic helpers for EmrToggleGroup, EmrTreeView, and EmrTreeSelect', () => {
+    expect(normalizeEmrToggleGroupVariant('standard')).toBe('tile');
+    expect(normalizeEmrToggleGroupLabelPlacement(undefined)).toBe('space-between');
+    expect(resolveEmrToggleGroupValues({ value: ['sms'], values: ['portal'], multiple: true })).toEqual(['portal']);
+
+    const tgOpts: readonly EmrOption[] = [
+      { value: 'sms', label: 'SMS', readOnly: true },
+      { value: 'portal', label: 'Portal' },
+      { value: 'none', label: 'None' },
+    ];
+    expect(clearEmrToggleGroupValues(['sms', 'portal'], tgOpts)).toEqual(['sms']);
+    expect(
+      toggleEmrToggleGroupValue({
+        current: ['sms', 'portal'],
+        toggledValue: 'none',
+        options: tgOpts,
+        multiple: true,
+        exclusiveValues: ['none'],
+      }),
+    ).toEqual(['sms', 'none']);
+
+    const tree: readonly EmrTreeNode[] = [
+      {
+        id: 'ant',
+        label: 'Anterior',
+        children: [
+          { id: 'epi', label: 'Epithelium', readOnly: true, keywords: ['surface'] },
+          { id: 'stroma', label: 'Stroma' },
+          { id: 'endo', label: 'Endothelium', disabled: true },
+        ],
+      },
+    ];
+    expect(resolveDefaultExpandedTreeIds(tree)).toEqual(['ant']);
+    expect(flattenVisibleTreeNodes(tree, [], { searchQuery: 'surface' }).map((r) => r.node.id)).toEqual([
+      'ant',
+      'epi',
+    ]);
+    expect(toggleTreeNodeCheck(tree, ['epi', 'stroma', 'ant'], 'ant', 'cascade')).toEqual(['epi']);
+    expect(clearTreeSelection(tree, ['ant', 'epi', 'stroma'])).toEqual(['epi']);
+    expect(removeTreeSelectionChip(tree, ['ant', 'epi', 'stroma'], 'stroma', 'cascade')).toEqual(['epi']);
+    const flat = flattenVisibleTreeNodes(tree, ['ant']);
+    expect(findNextTreeRowIndex(flat, 2, 'ArrowDown')).toBe(2);
+    expect(findTypeaheadTreeRowIndex(flat, 's', 0)).toBe(2);
+    expect(
+      buildEmrTreeSelectSummary({
+        nodes: tree,
+        multiple: true,
+        values: ['epi', 'stroma'],
+        placeholder: 'Select…',
+        maxTagCount: 1,
+      }).overflowCount,
+    ).toBe(1);
+    expect(
+      isEmrTreeClearable({
+        clearable: true,
+        disabled: false,
+        readOnly: false,
+        multiple: true,
+        values: ['epi'],
+        nodes: tree,
+      }),
+    ).toBe(false);
+
+    const actionSrc = readLib('primitives/emr-action-controls.component.ts');
+    const toggleGroupSection = actionSrc.slice(actionSrc.indexOf("selector: 'emr-toggle-group'"));
+    expect(toggleGroupSection).toContain('role="group"');
+    expect(toggleGroupSection).toContain('emr-checkbox__box');
+    expect(toggleGroupSection).toContain('role="alert"');
+    expect(toggleGroupSection).toContain('role="status"');
+
+    const treeSrc = readLib('primitives/emr-tree.component.ts');
+    expect(treeSrc).toContain('data-emr-print="expand"');
+    expect(treeSrc).toContain('data-emr-print="hide"');
+    expect(treeSrc).toContain('role="combobox"');
+    expect(treeSrc).toContain('emr-select-chips');
+    expect(treeSrc).not.toContain('▾');
+    expect(treeSrc).not.toContain('▸');
+  });
+
+  it('provides Wave 2 Batch B Image Suite parity helpers and Angular L1/L2 contracts', () => {
+    expect(splitRotationDegrees(95)).toEqual({ base90: 90, straighten: 5 });
+    expect(
+      computeAspectLockedCropRect(
+        { x: 0.1, y: 0.1, width: 0.5, height: 0.5 },
+        { x: 0.1, y: 0.1, width: 0.5, height: 0.7 },
+        1,
+      ),
+    ).toEqual({ x: 0.1, y: 0.1, width: 0.7, height: 0.7 });
+    const plan = computeCroppedCanvasPlan(800, 600, DEFAULT_IMAGE_CROP_TRANSFORM);
+    expect(plan.outputWidth).toBe(640);
+    expect(plan.outputHeight).toBe(480);
+    expect(formatImageByteSize(2048)).toBe('2.0 KB');
+    expect(
+      validateUploadedImageFile(
+        { name: 'huge.png', sizeBytes: 5 * 1024 * 1024, mimeType: 'image/png' },
+        { accept: 'image/*', maxSizeBytes: 2 * 1024 * 1024 },
+      ),
+    ).toContain('exceeds the maximum file size');
+
+    const imgSrc = readLib('primitives/emr-image.component.ts');
+    expect(imgSrc).toContain('role="radiogroup"');
+    expect(imgSrc).toContain('aria-modal');
+    expect(imgSrc).toContain('closeRequested');
+    expect(imgSrc).toContain('captionChange');
+    expect(imgSrc).toContain('outputMimeType');
+    expect(imgSrc).toContain('cropOutputMimeType');
+    expect(imgSrc).toContain('data-emr-print="hide"');
+    expect(imgSrc).not.toMatch(/[−↺↻⇄⇅]/);
+
+    const fieldsSrc = readLib('fields/emr-contract-fields.component.ts');
+    const imageFieldSection = fieldsSrc.slice(fieldsSrc.indexOf("selector: 'emr-image-field'"));
+    expect(imageFieldSection).toContain('[labelNamesControl]="false"');
+    expect(imageFieldSection).toContain('[assessmentStatus]="m.status"');
+    expect(imageFieldSection).toContain('(captionChange)="onCaptionChange($event)"');
+    expect(imageFieldSection).not.toContain('cf-status__select');
+    expect(imageFieldSection).not.toMatch(/readonly\s+disabled\s*=/);
+  });
+
+  it('provides Wave 2 Batch C parity helpers and Angular contracts for date-range, sliders, masked, and OTP', () => {
+    expect(getDateRangeWeekdays(0)[0]).toBe('Su');
+    expect(getDateRangeWeekdays(1)[0]).toBe('Mo');
+    expect(buildDateRangeCalendarGrid(2026, 2, 1)[0]?.iso).toBe('2026-02-23');
+    expect(stepCalendarMonth(2026, 0, -1)).toEqual({ year: 2025, month0: 11 });
+    expect(formatDateRangeMonthTitle(2026, 2)).toBe('March 2026');
+    expect(resolveInitialCalendarMonth({ start: '2026-08-01', end: null })).toEqual({ year: 2026, month0: 7 });
+    const dtSel = selectDateRangeCalendarDay(
+      { start: '2026-03-08T09:15', end: '2026-03-10T17:45' },
+      '2026-03-12',
+      'datetime',
+    );
+    expect(dtSel).toEqual({ start: '2026-03-12T09:15', end: null });
+    const drCommit = commitDateRangeEndpoint(null, 'start', '2026-03-10', 'date', '2026-03-12', '2026-03-20');
+    expect(drCommit.startOutOfBounds).toBe(true);
+
+    expect(clampSliderValue(Number.NaN, 0, 100, 1)).toBe(0);
+    expect(clampSliderValue(0.12346, 0, 1, 1e-4)).toBe(0.1235);
+    expect(sliderValuePercent(25, 0, 100)).toBe(25);
+    expect(formatSliderValue(null, '%')).toBe('—');
+    expect(resolveSliderKeyStepValue('PageUp', 10, 0, 100, 1)).toBe(20);
+    expect(clampRangeSliderPair(95, 90, 0, 100, 1, 10, 'high')).toEqual([90, 100]);
+    expect(clampRangeSliderPair(5, 8, 0, 100, 1, 10, 'low')).toEqual([0, 10]);
+    expect(resolveClosestRangeThumb(0.85, 20, 80)).toBe('high');
+    expect(resolveRangeThumbKeyValue('low', 'End', [10, 40], 0, 100, 5, 10)).toEqual([30, 40]);
+
+    expect(applyInputMask('12ab', '\\999-AA', { uppercase: true })).toEqual({
+      masked: '912-AB',
+      unmasked: '12AB',
+      complete: true,
+    });
+    expect(inferMaskInputMode('99-9999')).toBe('numeric');
+    expect(editMaskedInputWithCaret('91-', '91', 2, '99-9999').result.masked).toBe('9');
+
+    const sparse = applyOtpSlotEdit('482910', 1, '', 6, true);
+    expect(sparse.value).toBe('4 2910');
+    expect(normalizeOtpSlots(sparse.value, 6)).toEqual(['4', '', '2', '9', '1', '0']);
+    expect(extractOtpTypedInput('4', '49')).toBe('9');
+    expect(resolveOtpClearSlot(['4', '', '2'], 1, 'Delete')).toEqual({ targetIndex: 2, nextFocusIndex: 1 });
+
+    const drSrc = readLib('primitives/emr-wave2-inputs.component.ts');
+    const drSection = drSrc.slice(drSrc.indexOf("selector: 'emr-date-range-input'"), drSrc.indexOf("selector: 'emr-combobox'"));
+    expect(drSection).toContain('emr-date-range__bar');
+    expect(drSection).not.toContain('emr-quantity');
+    expect(drSection).toContain('role="alert"');
+    expect(drSection).toContain('role="status"');
+    expect(drSection).toContain('data-emr-print="hide"');
+
+    const formattedSrc = readLib('primitives/emr-wave2-formatted.component.ts');
+    expect(formattedSrc).toContain('role="slider"');
+    expect(formattedSrc).toContain('emr-slider__thumb');
+    expect(formattedSrc).toContain('emr-slider__marks');
+    expect(formattedSrc).toContain('emr-input-affix');
+    expect(formattedSrc).toContain('role="alert"');
+    expect(formattedSrc).toContain('role="status"');
+    expect(formattedSrc).toContain('autocomplete="one-time-code"');
+    expect(formattedSrc).not.toContain('maxlength="1"');
+  });
+
+  it('provides Wave 2 Batch D parity helpers and Angular contracts for menu, split-button, accordion, breadcrumbs, color-picker, and copy-button', () => {
+    const items = [
+      { id: 'view', label: 'View Chart' },
+      { id: 'locked', label: 'Locked', disabled: true },
+      { id: 'print', label: 'Print Summary' },
+    ];
+    expect(canOpenEmrMenu({ itemsCount: items.length })).toBe(true);
+    expect(canSelectEmrMenuItem(items[1]!)).toBe(false);
+    expect(getEnabledMenuIndices(items)).toEqual([0, 2]);
+    expect(moveEmrMenuFocusIndex(items, 0, 'ArrowDown')).toBe(2);
+    expect(findEmrMenuTypeaheadIndex(items, 'p', 0)).toBe(2);
+    expect(canTriggerEmrSplitPrimary({ loading: true })).toBe(false);
+    expect(canOpenEmrSplitMenu({ itemsCount: 2, readOnly: true })).toBe(false);
+
+    const acc = [
+      { id: 'a', title: 'A' },
+      { id: 'b', title: 'B', disabled: true },
+      { id: 'c', title: 'C' },
+    ];
+    expect(resolveAccordionExpandedIds(acc, ['a', 'c', 'missing'], false)).toEqual(['a']);
+    expect(canToggleAccordionItem(acc[1]!)).toBe(false);
+    expect(moveAccordionFocusIndex(acc, 0, 'ArrowDown')).toBe(2);
+    expect(canSelectEmrBreadcrumb({ disabled: false }, true)).toBe(false);
+
+    expect(normalizeHexColor('#f0a')).toBe('#ff00aa');
+    expect(isHexColorValid('#2563eb')).toBe(true);
+    expect(getContrastCheckTone('#fde68a')).toBe('dark');
+    expect(getContrastCheckTone('#dc2626')).toBe('light');
+    expect(resolveColorSwatchTabStopIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, '#2563eb')).toBe(1);
+    expect(moveColorSwatchFocusIndex(DEFAULT_CLINICAL_COLOR_SWATCHES, 0, 'ArrowLeft')).toBe(7);
+    expect(canClearEmrColorPicker({ clearable: true, value: '#dc2626', readOnly: true })).toBe(false);
+
+    expect(canCopyEmrValue('MRN-1')).toBe(true);
+    expect(canCopyEmrValue('')).toBe(false);
+    expect(resolveCopyFeedbackDurationMs(undefined)).toBe(2000);
+    expect(formatCopyButtonLabel(true, 'Copy', 'Copied!')).toBe('Copied!');
+    expect(resolveWave2NavIconPaths('copy').length).toBeGreaterThan(0);
+    expect(resolveWave2NavIconPaths('more-horizontal').length).toBe(3);
+
+    const navSrc = readLib('primitives/emr-wave2-navigation.component.ts');
+    expect(navSrc).not.toMatch(/[▾▸…✕]/);
+    expect(navSrc).not.toContain('{{ item.icon }}');
+    expect(navSrc).toContain("input<string>('Actions')");
+    expect(navSrc).toContain("input<string>('Breadcrumb')");
+    expect(navSrc).toContain("input<string>('/')");
+    expect(navSrc).toContain("input<string>('Color')");
+    expect(navSrc).toContain("input<string>('Copy')");
+    expect(navSrc).toContain("input<string>('Copied')");
+    expect(navSrc).toContain('role="heading"');
+    expect(navSrc).toContain('role="alert"');
+    expect(navSrc).toContain('role="status"');
+    expect(navSrc).toContain('DestroyRef');
   });
 });

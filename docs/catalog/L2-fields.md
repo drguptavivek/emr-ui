@@ -536,9 +536,50 @@ export class EmrAttachmentFieldComponent {
 ### EmrPairedField
 **Layer** L2 · **Selector** `emr-paired-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--paired-and-measurements`
 
-**Need** — Paired clinical measurements (systolic/diastolic BP `120/80 mmHg`, OD/OS IOP `16/18 mmHg`, cup-to-disc ratio) need a field-framed two-slot control with unit and `ClinicalAssessmentStatus` support.
+**Need** — Paired clinical measurements (systolic/diastolic BP `128/78 mmHg`, OD/OS IOP `16/18 mmHg`, cup-to-disc ratio `0.4/0.5`, and visual acuity pairs) require a field-framed two-slot control with independent per-side modes, numeric constraints, per-side validation targeting, inline unit display, clear action, and six-state `ClinicalAssessmentStatus` capture.
 
-**Purpose** — Renders `PairedFieldViewModel` (`firstLabel`, `secondLabel`, `separator`, `inputMode`, `unitLabel`, `value`, `status`, `messages`) inside `EmrFieldFrame`, emitting `PairedFieldIntent` (`valueChanged`, `statusChangeRequested`).
+**Purpose** — Renders `PairedFieldViewModel` (`firstLabel`, `secondLabel`, `mode`, `firstMode`, `secondMode`, `separator`, `unit`, `value`, `min`/`max`/`step`/`precision`/`maxLength` per side, `clearable`, `showSteppers`, `size`, `status`, `statusOptions`, `messages`) inside `EmrFieldFrame`, delegating label, hint, validation messages, and six-state assessment status strip to `EmrFieldFrame` while rendering `unit` inline after the second input and routing `EmrValidationMessage.path` (`'first'` / `'second'` / root) to per-side `aria-invalid` and warning border states. Emits `PairedFieldIntent` (`firstChangeRequested`, `secondChangeRequested`, `clearRequested`, `statusChangeRequested`) plus `focused` and `blurred` lifecycle events without silently dropping or clamping out-of-range typed numbers.
+
+**API**
+```ts
+export class EmrPairedFieldComponent {
+  readonly model = input.required<PairedFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
+  readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false);
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true);
+  readonly readOnly = input(false);
+  readonly size = input<'sm' | 'md' | 'lg'>();
+  readonly clearable = input<boolean | undefined>();
+  readonly intent = output<PairedFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `PairedFieldViewModel` (required) | — | label, firstLabel, secondLabel, mode (`text` \| `decimal` \| `integer`), firstMode, secondMode, value, separator, unit, min/max/step/precision/maxLength (shared & per-side), required/firstRequired/secondRequired, readOnly/firstReadOnly/secondReadOnly, clearable, showSteppers, size, layout, showMetadata, status, statusOptions, hint, messages |
+| `definition` | `EmrFieldDefinition` | — | optional contract definition fallback (label, unitDisplay, readOnly, cardinality, valueType) |
+| `controlId` | `string` | generated | id prefix (`{controlId}-first`, `{controlId}-second`, `{controlId}-label`, `{controlId}-message`) |
+| `headingId` | `string` | — | optional external heading/label id for group `aria-labelledby` |
+| `labelHidden` | `boolean` | `false` | hides visual outer label while preserving assistive text |
+| `layout` | `'vertical' \| 'horizontal' \| 'inline'` | `'vertical'` | forwarded to `EmrFieldFrame` |
+| `showMetadata` | `boolean` | `true` | controls assessment status strip visibility |
+| `readOnly` | `boolean` | `false` | effective lock (`readOnly \|\| model.readOnly \|\| definition.contract.readOnly`) |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | `44px` minimum target (`48px` for `lg`) |
+| `clearable` | `boolean` | `false` | shows 44x44 Clear button emitting `clearRequested` when populated and unlocked |
+| `intent` (output) | `PairedFieldIntent` | — | `firstChangeRequested`, `secondChangeRequested`, `clearRequested`, `statusChangeRequested` |
+| `focused` / `blurred` (outputs) | `void` | — | input focus/blur lifecycle |
+
+**Example**
+```html
+<emr-paired-field [model]="sittingBp" (intent)="onPairedIntent($event)" />
+```
 
 **Depends on** — `EmrFieldFrameComponent`.
 **Used by** — vitals and bilateral clinical capture forms.
@@ -548,11 +589,68 @@ export class EmrAttachmentFieldComponent {
 ### EmrDurationInput
 **Layer** L2 · **Selector** `emr-duration-input` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--paired-and-measurements`
 
-**Need** — Symptom duration (`3 weeks`), prescription course length (`7 days`), follow-up interval (`6 months`), and fasting duration (`8 hours`) require structured `{ amount, unit }` capture.
+**Need** — Symptom duration (`3 weeks`), prescription course length (`7 days`), follow-up interval (`6 months`), and fasting duration (`8 hours`) require structured `{ amount, unit }` capture without silently converting between calendar/time units.
 
-**Purpose** — Renders a numeric amount input paired with a controller-supplied duration unit selector (`DurationUnitOption[]`) inside `EmrFieldFrame`, emitting `DurationInputIntent` without converting between time units.
+**Purpose** — Renders a numeric amount input (with `-`/`+` steppers, decimal-comma normalization, and non-negative enforcement when `min >= 0`) paired with a UCUM unit selector (`unitOptions`) and optional Clear button inside `EmrFieldFrame`, delegating outer label, required mark, `hint`/`warning`/`error`/`messages`, `layout`, `showMetadata`, and six-state `ClinicalAssessmentStatus` strip to the frame while emitting `DurationFieldIntent` (`amountChangeRequested`, `unitChangeRequested`, `clearRequested`, `statusChangeRequested`).
 
-**Depends on** — `EmrFieldFrameComponent`.
+**Signature**
+```ts
+export class EmrDurationInputComponent {
+  readonly model = input.required<DurationFieldViewModel>();
+  readonly definition = input<EmrFieldDefinition>();
+  readonly controlId = input<string>();
+  readonly headingId = input<string>();
+  readonly labelHidden = input(false);
+  readonly layout = input<FieldFrameLayout>();
+  readonly showMetadata = input(true);
+  readonly readOnly = input(false);
+  readonly size = input<'sm' | 'md' | 'lg'>();
+  readonly clearable = input<boolean | undefined>();
+  readonly showSteppers = input<boolean | undefined>();
+  readonly mode = input<EmrQuantityNumericMode>();
+  readonly precision = input<number>();
+  readonly placeholder = input<string>();
+  readonly unitPlaceholder = input<string>();
+  readonly hint = input<string>();
+  readonly warning = input<string>();
+  readonly error = input<string>();
+  readonly intent = output<DurationFieldIntent>();
+  readonly focused = output<void>();
+  readonly blurred = output<void>();
+  readonly cleared = output<void>();
+  readonly submitted = output<void>();
+}
+```
+
+**Attributes**
+
+| name | type | default | notes |
+|---|---|---|---|
+| `model` | `DurationFieldViewModel` (required) | — | `label`, `value` (`{ amount, unit } \| null`), `unitOptions`, `min` (defaults to `0`), `max`, `step`, `mode`, `precision`, `placeholder`, `unitPlaceholder`, `unitLabel`, `showSteppers`, `clearable`, `size`, `layout`, `showMetadata`, `labelHidden`, `status`, `statusOptions`, `hint`, `messages`, `required`, `readOnly`, `definition` |
+| `definition` | `EmrFieldDefinition` | — | optional contract definition fallback (`label`, `hint`, `placeholder`, `min`, `max`, `step`, `precision`, `cardinality`, `valueType`, `readOnly`) |
+| `controlId` | `string` | generated | id prefix (`{controlId}-value`, `{controlId}-unit`, `{controlId}-label`, `{controlId}-message`) |
+| `headingId` | `string` | — | optional external heading/label id for group `aria-labelledby` |
+| `labelHidden` | `boolean` | `false` | hides visual outer label while preserving assistive text |
+| `layout` | `'vertical' \| 'horizontal' \| 'inline'` | `'vertical'` | forwarded to `EmrFieldFrame` |
+| `showMetadata` | `boolean` | `true` | controls six-state `ClinicalAssessmentStatus` strip visibility |
+| `readOnly` | `boolean` | `false` | effective lock (`readOnly \|\| model.readOnly \|\| definition.contract.readOnly`) |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | `44px` minimum touch target (`48px` for `lg`) |
+| `clearable` | `boolean` | `false` | shows `44x44` (`48x48` `lg`) monochrome Clear button emitting `clearRequested` + `cleared` when populated and unlocked |
+| `showSteppers` | `boolean` | `true` | renders `-`/`+` stepper buttons (`>=44px`) around the amount input |
+| `mode` / `precision` | `'decimal' \| 'integer'` / `number` | derived | `mode` defaults from `precision === 0` or `definition.contract.valueType === 'integer'` else `'decimal'` |
+| `placeholder` / `unitPlaceholder` | `string` | `''` / `'Unit'` | placeholders for amount input and unselected unit dropdown (`value === null`) |
+| `hint` / `warning` / `error` | `string` | — | field-level message overrides forwarded to `EmrFieldFrame` and part validation |
+| `intent` (output) | `DurationFieldIntent` | — | `amountChangeRequested`, `unitChangeRequested`, `clearRequested`, `statusChangeRequested` |
+| `focused` / `blurred` / `cleared` / `submitted` (outputs) | `void` | — | group-boundary focus/blur, clear confirmation, and Enter submit lifecycle |
+
+**Per-part Validation** — `EmrValidationMessage.path` ending in `'amount'` or `'value'` marks only the amount input `aria-invalid` / `data-warning`; paths ending in `'unit'` mark only the unit selector; root/un-scoped messages mark both parts. Per-side warnings are suppressed whenever that side has an error.
+
+**Example**
+```html
+<emr-duration-input [model]="steroidCourse" (intent)="onDurationIntent($event)" />
+```
+
+**Depends on** — `EmrFieldFrameComponent`, `EmrQuantityInputComponent`.
 **Used by** — history, prescribing, and follow-up scheduling forms.
 
 ---
@@ -560,23 +658,23 @@ export class EmrAttachmentFieldComponent {
 ### EmrRangeField
 **Layer** L2 · **Selector** `emr-range-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--paired-and-measurements`
 
-**Need** — Target therapeutic ranges (`SpO2 94–98 %`, PRN dose range `5–10 mg`, target IOP `10–14 mmHg`) require structured `{ low, high, unit }` entry.
+**Need** — Target therapeutic ranges (`SpO2 94–98 %`, PRN dose range `5–10 mg`, target IOP `10–14 mmHg`), date intervals (`2026-10-01` – `2026-10-14`), clinic time windows (`08:00` – `17:30`), and UTC/local datetime intervals require structured `{ low, high }` entry with non-clamping input so inverted or out-of-range bounds trigger controller validation.
 
-**Purpose** — Renders low/high numeric inputs and optional unit selector inside `EmrFieldFrame`, displaying controller-supplied validation messages (e.g. if `low > high`) and emitting `RangeFieldIntent`.
+**Purpose** — Renders `low`/`high` (or `from`/`to`) controls for `kind: 'number' | 'date' | 'time' | 'datetime'` inside `EmrFieldFrame` with header `unit` badge, optional `showSteppers` in numeric mode, `44px` (`48px` `lg`) monochrome SVG clear button (`clearRequested`), per-side error/warning states (`lowError`, `highError`, `lowWarning`, `highWarning`, or `EmrValidationMessage.path` ending in `'low'`/`'high'`), and 6-state `ClinicalAssessmentStatus` support (`statusChangeRequested`), emitting `RangeFieldIntent`.
 
-**Depends on** — `EmrFieldFrameComponent`.
-**Used by** — order parameters, nursing targets, and reference-range authoring.
+**Depends on** — `EmrFieldFrameComponent`, `EmrDateInputComponent`, `EmrTimeInputComponent`, `EmrDateTimeInputComponent`.
+**Used by** — order parameters, nursing targets, clinic scheduling windows, and reference-range authoring.
 
 ---
 
 ### EmrSignatureCaptureField
 **Layer** L2 · **Selector** `emr-signature-capture-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--attachments-and-signatures`
 
-**Need** — Informed consent, surgical marking sign-off, witness attestation, and optical dispensing receipt require freehand stroke or typed-name signature capture.
+**Need** — Informed consent, surgical marking sign-off, witness attestation, and optical dispensing receipt require pointer-captured vector signature capture with signatory attribution and undo/clear controls.
 
-**Purpose** — Renders a pointer-captured SVG stroke pad (or typed-name input in `'typed'` mode) with mode switch and Clear button inside `EmrFieldFrame`, emitting `SignatureCaptureIntent` (`strokesChanged`, `typedNameChanged`, `modeChanged`, `clearRequested`) with pure vector stroke coordinates.
+**Purpose** — Renders a pointer-captured SVG stroke pad (and scaled vector ink segments on native) inside `EmrFieldFrame` (`420×140` default `viewBox` with uniform `xMidYMid meet` CTM inverse coordinate mapping), supporting single-point dots, dashed signature baseline, empty-state prompt overlay, keyboard undo (`Ctrl/Meta+Z`) and clear (`Delete`/`Backspace`), six-state `ClinicalAssessmentStatus`, and attribution footer (`signatoryName · signatoryRole · signedAt`), emitting `SignatureCaptureIntent` (`strokeAdded`, `undoRequested`, `clearRequested`, `statusChangeRequested`).
 
-**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
+**Depends on** — `EmrFieldFrameComponent`.
 **Used by** — `EmrTypedFieldComponent` (`signature` widget) and consent workflows.
 
 ---
@@ -584,33 +682,33 @@ export class EmrAttachmentFieldComponent {
 ### EmrPhoneInput
 **Layer** L2 · **Selector** `emr-phone-input` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--demographics-and-macros`
 
-**Need** — Patient registration, emergency contacts, and referring-clinician directories need structured `{ dialCode, nationalNumber, extension? }` capture without hardcoding national numbering plans in UI code.
+**Need** — Patient registration, emergency contacts, and referring-clinician directories need structured FHIR `ContactPoint` phone capture (country dial code, national number, optional extension, verification badge, and messaging channels) without hardcoding national numbering plans or validation rules in UI code.
 
-**Purpose** — Renders a dial-code selector (`PhoneCountryOption[]`), `type="tel"` national number input, and optional extension input inside `EmrFieldFrame`, showing controller-supplied `formattedPreview` and emitting `PhoneInputIntent`.
+**Purpose** — Renders a country code `<emr-select>` (`EmrPhoneCountryOption[]`), `type="tel"` national number input with leading monochrome `phone` icon, optional extension input (`isPhoneExtensionVisible`), Clear button (`hasPhoneClearableValue`), inline verified `EmrBadge`, controller-supplied `formattedPreview`, and 44px messaging channel checkbox pills (`EmrPhoneChannelOption[]`, `'voice' | 'sms' | 'whatsapp'`) inside `EmrFieldFrame` with per-part validation (`resolvePhonePartValidation`), size (`sm` | `md` | `lg`), layout, and six-state clinical assessment status. Emits `PhoneFieldIntent` (`countryCodeChangeRequested`, `numberChangeRequested`, `extensionChangeRequested`, `channelToggleRequested`, `clearRequested`, `statusChangeRequested`) plus `focused`, `blurred`, and `submitted`.
 
-**Depends on** — `EmrFieldFrameComponent`.
-**Used by** — registration and contact forms.
+**Depends on** — `EmrFieldFrameComponent`, `EmrSelectComponent`, `EmrBadgeComponent`.
+**Used by** — registration, emergency contact, and telehealth directory forms.
 
 ---
 
 ### EmrAddressField
 **Layer** L2 · **Selector** `emr-address-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--demographics-and-macros`
 
-**Need** — Patient demographics, pharmacy destinations, and referral addresses require structured multi-part `AddressValue` capture (`line1`, `line2`, `city`, `district`, `state`, `postalCode`, `country`).
+**Need** — Patient demographics, ABHA KYC, pharmacy destinations, and referral addresses require structured multi-part FHIR `Address` capture (`use`, `line1`, `line2`, `city`, `district`, `state`, `postalCode`, `country`) with regional option lists, per-part `EmrNodePath` validation, and six-state clinical assessment status without embedding jurisdictional address rules in UI code.
 
-**Purpose** — Renders configurable address subfields (`AddressFieldLabels`, `visibleParts`, `stateOptions`, `countryOptions`) in a responsive grid with field-frame error/warning/hint messaging, emitting `AddressFieldIntent`.
+**Purpose** — Renders an optional address-use `EmrSegmentedControl` (`DEFAULT_ADDRESS_USE_OPTIONS` fallback when `use` is set without `useOptions`), an optional `44px` monochrome `close` Clear button (`hasAnyAddressValue`), and all seven `EmrAddressValue` subfields (`line1`, `line2`, `city`, `district`, `state`, `postalCode`, `country`) in a responsive 2-column grid (collapsing to 1 column at `<= 640px` on web / `< 520px` in React Native) inside `EmrFieldFrame`. Supports `<emr-select>` for option-backed `stateOptions` and `countryOptions`, WCAG 1.3.5 `autocomplete` tokens, `autocapitalize="characters"` and `tabular-nums` on `postalCode`, configurable `labels`, `placeholders`, `maxLengths`, and `requiredParts` (`DEFAULT_ADDRESS_REQUIRED_PARTS`), per-part `EmrNodePath` validation (`resolveAddressPartValidation`, `resolveAddressRootMessages`, `isAddressPartInvalid` — ensuring optional `line2` and `district` are never marked invalid by blanket root errors unless explicitly targeted), `layout`, `showMetadata`, `readOnly`, and six-state `ClinicalAssessmentStatus`. Emits `AddressFieldIntent` (`fieldChangeRequested`, `useChangeRequested`, `statusChangeRequested`, `cleared`) plus group-scoped `focused` and `blurred`.
 
-**Depends on** — `EmrFieldFrameComponent`.
-**Used by** — registration, billing, and referral forms.
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`, `EmrSelectComponent`.
+**Used by** — registration, billing, ABHA KYC, and referral forms.
 
 ---
 
 ### EmrMacroTextField
 **Layer** L2 · **Selector** `emr-macro-text-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--demographics-and-macros`
 
-**Need** — High-throughput clinical documentation relies on dot-phrases and quick-insert macros (e.g. `.normsle`, `.postopday1`) without embedding macro dictionaries inside the UI component.
+**Need** — High-throughput clinical documentation relies on `.` and `/` SmartPhrase triggers (e.g. `.clearcornea`, `/postopd1`) plus optional voice dictation without embedding macro dictionaries or audio capture inside the UI component.
 
-**Purpose** — Renders a multi-line narrative `<textarea>` inside `EmrFieldFrame` with controller-supplied `EmrTextMacro[]` quick-insert chips/suggestions, emitting `MacroTextFieldIntent` (`valueChanged`, `macroInsertRequested`, `macroQueryChanged`, `statusChangeRequested`).
+**Purpose** — Renders a controlled `role="combobox"` narrative `<textarea>` inside `EmrFieldFrame` with an above-field print-hidden toolbar (`Type . or / for SmartPhrases`, optional `44x44px` clear button, dictation toggle), cursor-aware `extractActiveMacroTrigger` / `expandMacroTriggerAtCursor` controller helpers, keyboard-navigable (`ArrowUp`/`ArrowDown`/`Enter`/`Escape`) SmartPhrase popover with `role="status"` empty state, optional `maxLength` character counter and `autoResize`, and six-state `ClinicalAssessmentStatus`. Emits `MacroTextFieldIntent` (`valueChangeRequested`, `macroQueryRequested`, `macroSelected`, `macroDismissRequested`, `dictationToggleRequested`, `clearRequested`, `statusChangeRequested`) plus `focused` / `blurred`.
 
 **Depends on** — `EmrFieldFrameComponent`.
 **Used by** — clinical notes, examination narratives, and discharge instructions.
@@ -620,36 +718,89 @@ export class EmrAttachmentFieldComponent {
 ### EmrLateralityField
 **Layer** L2 · **Selector** `emr-laterality-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--ophthalmology-fields`
 
-**Need** — Wrong-site surgery prevention and ophthalmic/orthopaedic charting require explicit laterality selection (`OD` / `OS` / `OU` or `Right` / `Left` / `Bilateral` / `Unilateral` / `N/A`) rather than ad-hoc dropdowns.
+**Need** — Wrong-site surgery prevention and ophthalmic/orthopaedic charting require explicit laterality selection (`OD` / `OS` / `OU` or `Right` / `Left` / `Bilateral` / `Unilateral (unspecified)`) alongside Joint Commission Universal Protocol / WHO Surgical Safety Checklist site-confirmation attestation and six-state clinical assessment status rather than ad-hoc dropdowns.
 
-**Purpose** — Renders `EmrSegmentedControl` inside `EmrFieldFrame` driven by controller-supplied `LateralityFieldViewModel`, emitting `LateralityFieldIntent` (`valueChanged`).
+**Purpose** — Renders `EmrSegmentedControl` (`role="radiogroup"` with roving `tabindex`, Arrow/Home/End/Space/Enter keyboard navigation, `44px` / `48px` `lg` touch targets, `14px` `Inter Variable` option labels, `allowDeselect={false}`, and print-hidden monochrome SVG `close` Clear button) plus an optional surgical-site confirmation `EmrCheckbox` inside `EmrFieldFrame` (`labelNamesControl={false}`, six-state `ClinicalAssessmentStatus`, `definition` fallback, `layout`, and `showMetadata`), driven by `LateralityFieldViewModel` and pure controller helpers (`normalizeLateralityDomain`, `resolveLateralityOptions`, `resolveLateralityValidation`, `OPHTHALMIC_LATERALITY_OPTIONS`, `ANATOMIC_LATERALITY_OPTIONS`, `DEFAULT_LATERALITY_CONFIRMATION_LABEL`). Emits `LateralityFieldIntent` (`lateralitySelected`, `confirmationChangeRequested`, `statusChangeRequested`) plus `cleared`, `focused`, and `blurred`.
 
-**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
-**Used by** — ophthalmic orders, surgical booking, and exam headers.
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`, `EmrCheckboxComponent`.
+**Used by** — ophthalmic orders, surgical booking, procedure timeout checklists, and exam headers.
+
+**API**
+- **Inputs / Props**: `model` (`LateralityFieldViewModel`), `definition?` (`EmrFieldDefinition`), `controlId?`, `headingId?`, `labelHidden?` (`false`), `layout?` (`'vertical' | 'horizontal' | 'inline'`), `showMetadata?` (`true`), `readOnly?` (`false`), `size?` (`'sm' | 'md' | 'lg'`), `clearable?` (`!required` by default). (`disabled` is forbidden above L2.)
+- **Outputs / Events**:
+  - Angular: `(intent)` (`LateralityFieldIntent`), `(cleared)`, `(focused)`, `(blurred)`.
+  - React / Expo: `onIntent`, `onCleared`, `onFocus`, `onBlur`.
+  - Lit (`emr-laterality-field`, bubbling composed): `intent` (`CustomEvent<LateralityFieldIntent>`), `cleared`, `focused`, `blurred`.
+- **Per-part validation**: `resolveLateralityValidation(messages)` routes `EmrValidationMessage.path` ending in `'confirmed' | 'confirmation' | 'confirm'` to the confirmation checkbox and all other/root paths to the radiogroup, while `EmrFieldFrame` renders a single `role="alert"` / `role="status"` footer (`aria-describedby="${id}-message"`).
+
+```html
+<emr-laterality-field
+  [model]="lateralityModel"
+  [readOnly]="false"
+  (intent)="onLateralityIntent($event)"
+/>
+```
 
 ---
 
 ### EmrVisualAcuityField
 **Layer** L2 · **Selector** `emr-visual-acuity-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--ophthalmology-fields`
 
-**Need** — Ophthalmic clinics capture visual acuity thousands of times daily across notations (`Snellen 6m`, `Snellen 20ft`, `LogMAR`, `ETDRS`) plus low-vision categories (`CF`, `HM`, `LP`, `NLP`), correction (`Unaided`, `Habitual`, `BCVA`), and `Pinhole` modifier.
+**Need** — Ophthalmic clinics capture monocular/binocular visual acuity thousands of times daily across notations (`Snellen 6m`, `Snellen 20ft`, `LogMAR`, `ETDRS`) plus low-vision categories (`CF`, `HM`, `LP`, `NLP`), optical correction (`Unaided`, `Habitual`, `BCVA`, `Contact Lens`), and optional pinhole acuity.
 
-**Purpose** — Renders notation selector, acuity value picker/input, letter adjustment (`+/-`), correction selector, pinhole toggle, and controller-supplied `equivalentDisplay` inside `EmrFieldFrame`, emitting `VisualAcuityFieldIntent` with zero Snellen↔LogMAR math in the UI.
+**Purpose** — Renders an `eye` (`OD`/`OS`/`OU`) semantic `info` badge (with monochrome `eye` SVG and SR expansion) alongside controller-supplied `derivedDisplay` badge, `notation` and `correction` `EmrSegmentedControl` switchers, primary `value` and conditional `pinholeValue` (`showPinhole`) `EmrSelect` pickers (`tabular-nums`, `clearable`), and six-state `ClinicalAssessmentStatus` delegated to `EmrFieldFrame` (`labelNamesControl=false`), emitting `VisualAcuityFieldIntent` (`notationChangeRequested`, `correctionChangeRequested`, `valueChangeRequested`, `pinholeChangeRequested`, `statusChangeRequested`) with zero Snellen↔LogMAR math in the UI.
 
-**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`.
+**Depends on** — `EmrFieldFrameComponent`, `EmrSegmentedControlComponent`, `EmrSelectComponent`, `EmrBadgeComponent`.
 **Used by** — visual acuity intake, refraction, and post-operative follow-up.
+
+- **Props / Inputs** (aligned across Angular `EmrVisualAcuityFieldComponent`, React/Expo `EmrVisualAcuityField`, and Lit `emr-visual-acuity-field`; no `disabled` above L2):
+  - `model`: `VisualAcuityFieldViewModel` (`label`, `eye?`, `notation`, `notationOptions`, `correction`, `correctionOptions`, `value`, `valueOptions`, `valuePlaceholder?`, `pinholeValue?`, `pinholeOptions?`, `pinholePlaceholder?`, `pinholeRequired?`, `showPinhole?`, `derivedDisplay?`, `derivedTone?`, `labels?`, `definition?`, `layout?`, `showMetadata?`, `size?`, `clearable?`, `status?`, `statusOptions?`, `hint?`, `messages?`, `required?`, `readOnly?`).
+  - Optional top-level overrides: `definition`, `controlId`, `headingId`, `labelHidden`, `layout` (`vertical | horizontal | inline`), `showMetadata`, `readOnly`, `size` (`sm | md | lg`), `clearable`.
+- **Outputs / Events**:
+  - Angular: `(intent)` (`VisualAcuityFieldIntent`), `(focused)`, `(blurred)`.
+  - React / Expo: `onIntent`, `onFocus`, `onBlur`.
+  - Lit (`emr-visual-acuity-field`, bubbling composed): `intent` (`CustomEvent<VisualAcuityFieldIntent>`), `focused`, `blurred`.
+- **Per-part validation & read-only rules**: `resolveVisualAcuityPartValidation(messages)` routes `EmrValidationMessage.path` ending in `'value' | 'acuity'`, `'pinhole' | 'pinholeValue' | 'pinhole_value'`, `'notation'`, or `'correction'` to the corresponding sub-control (and propagates un-scoped root errors onto primary `value`), while `EmrFieldFrame` renders a single `role="alert"` / `role="status"` footer (`aria-describedby="${id}-message"`). When `readOnly` is true, all segmented controls, select triggers, clear actions, and status chips are locked and emit no intents.
+
+```html
+<emr-visual-acuity-field
+  [model]="visualAcuityModel"
+  [readOnly]="false"
+  (intent)="onVisualAcuityIntent($event)"
+/>
+```
 
 ---
 
 ### EmrRefractionField
 **Layer** L2 · **Selector** `emr-refraction-field` · **Status** stable · **Story** `emr-fields-clinical-building-blocks--ophthalmology-fields`
 
-**Need** — Manifest, cycloplegic, and autorefraction rows require coordinated `Sphere (DS)` / `Cylinder (DC)` / `Axis (1–180°)` / `Add (D)` / `Prism (Δ)` / `Base` entry per eye with controller-computed spherical equivalent display.
+**Need** — Manifest, cycloplegic, and autorefraction workflows require coordinated `Sphere (SPH)` (`0.25 D`), `Cylinder (CYL)` (`0.25 D`), `Axis` (`1–180°` integer), and optional `Near Add` (`0.25 D`) entry per eye (`OD` / `OS`) with non-clamping typed draft preservation, fixed-decimal formatting on blur, and controller-computed refraction summaries.
 
-**Purpose** — Renders numeric diopter/axis controls and prism-base selector inside `EmrFieldFrame`, displaying controller-supplied `sphericalEquivalentDisplay` and `messages`, and emitting `RefractionFieldIntent` (`partChanged`, `prismBaseChanged`, `statusChangeRequested`).
+**Purpose** — Renders an `eye` (`OD`/`OS`) `info` badge (with monochrome `eye` SVG and SR expansion), controller-supplied `formattedSummary` `neutral` badge, optional right-aligned `clearable` button, a responsive `minmax(196px, 1fr)` grid of unified `[ − ] [ value ] [ unit ] [ + ]` `role="spinbutton"` stepper boxes, and six-state `ClinicalAssessmentStatus` delegated to `EmrFieldFrame` (`labelNamesControl=false`), emitting `RefractionFieldIntent` (`sphereChangeRequested`, `cylinderChangeRequested`, `axisChangeRequested`, `nearAddChangeRequested`, `clearRequested`, `statusChangeRequested`).
 
-**Depends on** — `EmrFieldFrameComponent`.
-**Used by** — refraction worksheets, autorefractor imports, and spectacle prescribing.
+**Depends on** — `EmrFieldFrameComponent`, `EmrBadgeComponent`.
+**Used by** — refraction worksheets, autorefractor imports, cataract/biometry workups, and spectacle prescribing.
+
+- **Props / Inputs** (aligned across Angular `EmrRefractionFieldComponent`, React/Expo `EmrRefractionField`, and Lit `emr-refraction-field`; no `disabled` above L2):
+  - `model`: `RefractionFieldViewModel` (`label`, `definition?`, `eye?`, `value` (`sphere`, `cylinder`, `axis`, `nearAdd?`), `sphereMin/Max/Step?`, `cylinderMin/Max/Step?`, `axisMin/Max/Step?` (default `axisMin = 1`), `nearAddMin/Max/Step?`, `showNearAdd?`, `formattedSummary?`, `status?`, `statusOptions?`, `hint?`, `messages?`, `required?`, `readOnly?`, `layout?`, `showMetadata?`, `size?`, `clearable?`).
+  - Optional top-level overrides: `definition`, `controlId`, `headingId`, `labelHidden`, `layout` (`vertical | horizontal | inline`), `showMetadata`, `readOnly`, `size` (`sm | md | lg`), `clearable`.
+- **Outputs / Events**:
+  - Angular: `(intent)` (`RefractionFieldIntent`), `(focused)`, `(blurred)`.
+  - React / Expo: `onIntent`, `onFocus`, `onBlur`.
+  - Lit (`emr-refraction-field`, bubbling composed): `intent` (`CustomEvent<RefractionFieldIntent>`), `focused`, `blurred`.
+- **Per-part validation, non-clamping & read-only rules**:
+  - `resolveRefractionPartValidation(messages, part)` routes `EmrValidationMessage.path` mentioning `'sphere'`, `'cylinder'`, `'axis'`, or `'nearAdd'` to that part's `aria-invalid="true"` (errors) or `data-warning="true"` (warnings), while whole-field messages apply across all visible parts. `EmrFieldFrame` renders a single `role="alert"` / `role="status"` footer (`aria-describedby="${id}-message"`).
+  - Typed out-of-range finite numbers are emitted unchanged so the controller can evaluate clinical bounds, while stepper `−`/`+` buttons step cleanly within `[min, max]`.
+  - When `readOnly` is true, sub-inputs become native `readonly` (with DOM rollback on rogue input), stepper buttons are disabled, clear actions are hidden, and status chips are locked.
+
+```html
+<emr-refraction-field
+  [model]="refractionModel"
+  [clearable]="true"
+  (intent)="onRefractionIntent($event)"
+/>
+```
 
 ---
 
@@ -658,7 +809,7 @@ export class EmrAttachmentFieldComponent {
 
 **Need** — Clinical photo fields (anterior-segment slit-lamp photos, external ocular/wound photos, consent scan pages, patient ID photos) need thumbnail previews, fullscreen pan/zoom/rotate inspection, interactive cropping, and six-state `ClinicalAssessmentStatus` (e.g. `declined` or `unable-to-assess`) inside standard `EmrFieldFrame` validation chrome.
 
-**Purpose** — Binds `ImageFieldViewModel` to `EmrImageUpload` inside `EmrFieldFrame` with an explicit clinical assessment status selector and camera trigger, emitting `ImageFieldIntent` (`filesSelected`, `itemsChangeRequested`, `imageCropped`, `captionChangeRequested`, `itemRemoveRequested`, `captureRequested`, `statusChangeRequested`).
+**Purpose** — Binds `ImageFieldViewModel` (and optional `EmrFieldDefinition`) to `EmrImageUpload` inside `EmrFieldFrame` (`labelNamesControl=false`, `layout`, `showMetadata`, `labelHidden`, `headingId`, `readOnly` with no `disabled` prop above L2) with delegated six-state `ClinicalAssessmentStatus` selection, validation chrome, and camera trigger, emitting `ImageFieldIntent` (`filesSelected`, `itemsChangeRequested`, `imageCropped`, `captionChangeRequested`, `itemRemoveRequested`, `captureRequested`, `statusChangeRequested`).
 
 **Depends on** — `EmrFieldFrameComponent`, `EmrImageUploadComponent`.
 **Used by** — `EmrTypedFieldComponent` (`widget: 'image-upload'`) and clinical photo capture forms.

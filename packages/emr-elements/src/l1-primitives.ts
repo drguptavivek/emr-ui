@@ -581,6 +581,13 @@ const l1Styles = css`
     overflow: hidden;
     box-sizing: border-box;
   }
+  .select-bar--lg {
+    --emr-control-height: 48px;
+  }
+  .select-bar--tabular .select-trigger-text,
+  .select-menu--tabular .select-option-row {
+    font-variant-numeric: tabular-nums;
+  }
   .select-bar--filled {
     background: var(--emr-surface-soft);
     border-color: transparent;
@@ -1043,7 +1050,7 @@ const l1Styles = css`
   .option-tile[aria-pressed="true"] .indicator {
     border-color: var(--emr-primary);
     background: var(--emr-primary);
-    color: var(--emr-surface, #fffefa);
+    color: var(--emr-surface);
   }
   .option-tile.option-tile--inline,
   .option-tile.option-tile--inline[aria-checked="true"],
@@ -1368,7 +1375,7 @@ const l1Styles = css`
   .emr-tabs--pill .emr-tab[aria-selected="true"] {
     background: var(--emr-surface);
     color: var(--emr-primary);
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--emr-text) 8%, transparent);
   }
   .emr-tabs--soft .emr-tab {
     border-bottom: 0;
@@ -2272,7 +2279,7 @@ const l1Styles = css`
     padding: 0 5px;
   }
   .search-best-match {
-    font-size: var(--emr-text-2xs, 11px);
+    font-size: var(--emr-text-2xs);
     font-weight: 650;
     color: var(--emr-primary);
     background: var(--emr-primary-soft, var(--emr-surface-raised));
@@ -2654,15 +2661,21 @@ export class EmrDateInputElement extends EmrLitElement {
 
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
+  @property({ type: String }) override ariaLabel = '';
+  @property({ type: String }) ariaDescribedBy = '';
   @property({ type: Boolean }) labelHidden = false;
   @property({ type: String }) value: string | null = null;
   @property({ type: String }) min = '';
   @property({ type: String }) max = '';
   @property({ type: String }) precision: LitDatePrecision = 'day';
   @property({ type: String }) displayFormat: LitDateDisplayFormat = 'yyyy-mm-dd';
+  @property({ type: String }) size: 'sm' | 'md' | 'lg' = 'md';
+  @property({ type: Boolean }) fullWidth = false;
   @property({ type: String }) placeholder = '';
   @property({ type: String }) hint = '';
+  @property({ type: String }) warning = '';
   @property({ type: String }) error = '';
+  @property({ type: Boolean }) invalid = false;
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) readOnly = false;
@@ -2976,15 +2989,16 @@ export class EmrDateInputElement extends EmrLitElement {
         ? this.draft.text
         : formatted;
     const widthPx = this.precision === 'year' ? 140 : this.precision === 'month' ? 180 : 224;
+    const isInvalid = Boolean(this.invalid || this.error);
     const wrapCls = [
       'date-wrap',
       this.calOpen ? 'date-wrap--open' : '',
-      this.error ? 'date-wrap--invalid' : '',
+      isInvalid ? 'date-wrap--invalid' : this.warning ? 'date-wrap--warning' : '',
       this.readOnly ? 'date-wrap--readonly' : '',
     ].filter(Boolean).join(' ');
 
     const anchor = html`<div class="date-anchor">
-      <div class=${wrapCls} style=${`width: ${widthPx}px;`} part="control">
+      <div class=${wrapCls} style=${`width: 100%; ${this.fullWidth ? '' : `max-width: ${widthPx}px; `}min-height: ${this.size === 'lg' ? 48 : 44}px;`} part="control">
         <input
           id=${id}
           class="date-text-input"
@@ -2995,12 +3009,25 @@ export class EmrDateInputElement extends EmrLitElement {
           ?readonly=${this.readOnly}
           ?disabled=${this.disabled}
           ?required=${this.required}
-          aria-label=${this.labelHidden && this.label ? this.label : nothing}
-          aria-invalid=${this.error ? 'true' : nothing}
-          aria-describedby=${!this.labelHidden && (this.error || this.hint) ? msgId : nothing}
+          aria-label=${this.ariaLabel || (this.labelHidden && this.label ? this.label : nothing)}
+          aria-required=${this.required ? 'true' : nothing}
+          aria-readonly=${this.readOnly ? 'true' : nothing}
+          aria-invalid=${isInvalid ? 'true' : nothing}
+          aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.hint) ? msgId : nothing)}
+          @focus=${() => {
+            if (!this.disabled) {
+              this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+            }
+          }}
+          @keydown=${(e: KeyboardEvent) => {
+            if (this.canEdit && e.key === 'Enter') {
+              this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
+            }
+          }}
           @blur=${(e: Event) => {
             this.draft = undefined;
             (e.target as HTMLInputElement).value = formatLitDate(this.value, this.displayFormat, this.precision);
+            this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
           }}
           @input=${(e: Event) => {
             if (!this.canEdit) {
@@ -3059,6 +3086,8 @@ export class EmrTimeInputElement extends EmrLitElement {
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
   @property({ type: String }) override ariaLabel = '';
+  @property({ type: String }) ariaDescribedBy = '';
+  @property({ type: Boolean }) fullWidth = false;
   @property({ type: Boolean }) labelHidden = false;
   @property({ type: String }) value: string | null = null;
   @property({ type: String }) precision: EmrTimePrecision = 'minute';
@@ -3100,7 +3129,7 @@ export class EmrTimeInputElement extends EmrLitElement {
 
     const control = html`<div
       class=${wrapCls}
-      style=${`width: 100%; max-width: ${maxWidth}px; min-height: ${this.size === 'lg' ? 48 : 44}px;`}
+      style=${`width: 100%; ${this.fullWidth ? '' : `max-width: ${maxWidth}px; `}min-height: ${this.size === 'lg' ? 48 : 44}px;`}
       part="control"
     >
       <input
@@ -3118,7 +3147,7 @@ export class EmrTimeInputElement extends EmrLitElement {
         aria-required=${this.required ? 'true' : nothing}
         aria-readonly=${this.readOnly ? 'true' : nothing}
         aria-invalid=${isInvalid ? 'true' : nothing}
-        aria-describedby=${!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing}
+        aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
         @focus=${() => {
           if (this.disabled) return;
           this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
@@ -3246,6 +3275,8 @@ export class EmrDateTimeInputElement extends EmrLitElement {
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
   @property({ type: String }) override ariaLabel = '';
+  @property({ type: String }) ariaDescribedBy = '';
+  @property({ type: Boolean }) fullWidth = false;
   @property({ type: Boolean }) labelHidden = false;
   @property({ type: String }) value: string | null = null;
   @property({ type: String }) displayFormat: EmrDateTimeDisplayFormat = 'dd-mm-yyyy';
@@ -3372,7 +3403,7 @@ export class EmrDateTimeInputElement extends EmrLitElement {
           aria-required=${this.required ? 'true' : nothing}
           aria-readonly=${this.readOnly ? 'true' : nothing}
           aria-invalid=${isInvalid ? 'true' : nothing}
-          aria-describedby=${!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing}
+          aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
           @keydown=${(e: KeyboardEvent) => {
             if (!this.locked && e.key === 'Enter') {
               this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
@@ -3456,7 +3487,7 @@ export class EmrDateTimeInputElement extends EmrLitElement {
           aria-required=${this.required ? 'true' : nothing}
           aria-readonly=${this.readOnly ? 'true' : nothing}
           aria-invalid=${isInvalid ? 'true' : nothing}
-          aria-describedby=${!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing}
+          aria-describedby=${this.ariaDescribedBy || (!this.labelHidden && (this.error || this.warning || this.hint) ? msgId : nothing)}
           @keydown=${(e: KeyboardEvent) => {
             if (!this.locked && e.key === 'Enter') {
               this.dispatchEvent(new CustomEvent('submitted', { bubbles: true, composed: true }));
@@ -3576,7 +3607,8 @@ export class EmrSelectElement extends EmrLitElement {
   value: EmrSelectValue = null;
   @property({ attribute: false }) options: readonly EmrOption[] = [];
   @property({ type: Boolean }) multiple = false;
-  @property({ type: String }) size: EmrSelectSize = 'md';
+  @property({ type: String }) size: EmrSelectSize | 'lg' = 'md';
+  @property({ type: Boolean }) tabularNums = false;
   @property({ type: String }) variant: EmrSelectVariant = 'outline';
   @property({ type: Boolean }) allowClear = false;
   @property({ type: Boolean }) clearable = false;
@@ -3587,9 +3619,11 @@ export class EmrSelectElement extends EmrLitElement {
   @property({ type: String }) emptyMessage = 'No options available';
   @property({ type: Boolean }) loading = false;
   @property({ type: Boolean }) invalid = false;
+  @property({ type: Boolean }) hasWarning = false;
   @property({ type: String }) hint = '';
   @property({ type: String }) warning = '';
   @property({ type: String }) error = '';
+  @property({ type: String }) ariaDescribedBy = '';
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) readOnly = false;
@@ -3882,9 +3916,17 @@ export class EmrSelectElement extends EmrLitElement {
       options: this.options,
     });
     const isInvalid = Boolean(this.invalid || this.error);
-    const isWarning = Boolean(!isInvalid && this.warning);
+    const isWarning = Boolean(!isInvalid && (this.hasWarning || this.warning));
+    const described = [
+      this.error.trim() || this.warning.trim() || this.hint.trim() ? msgId : '',
+      this.ariaDescribedBy.trim(),
+    ]
+      .filter(Boolean)
+      .join(' ');
     const barCls = [
       'select-bar',
+      this.size === 'lg' ? 'select-bar--lg' : '',
+      this.tabularNums ? 'select-bar--tabular' : '',
       this.variant === 'filled' ? 'select-bar--filled' : '',
       this.variant === 'subtle' ? 'select-bar--subtle' : '',
       this.open ? 'select-bar--open' : '',
@@ -3944,11 +3986,18 @@ export class EmrSelectElement extends EmrLitElement {
           aria-required=${this.required ? 'true' : nothing}
           aria-readonly=${this.readOnly ? 'true' : nothing}
           aria-invalid=${isInvalid ? 'true' : nothing}
-          aria-describedby=${this.error || this.warning || this.hint ? msgId : nothing}
+          aria-describedby=${described || nothing}
           ?disabled=${this.disabled}
           @click=${() => this.toggleMenu()}
           @focus=${() => this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }))}
-          @blur=${() => this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }))}
+          @blur=${(e: FocusEvent) =>
+            this.dispatchEvent(
+              new CustomEvent('blurred', {
+                detail: { relatedTarget: e.relatedTarget },
+                bubbles: true,
+                composed: true,
+              }),
+            )}
           @keydown=${(e: KeyboardEvent) => {
             if (!this.canEdit) return;
             if ((e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Home' || e.key === 'End') && !this.open) {
@@ -3979,6 +4028,7 @@ export class EmrSelectElement extends EmrLitElement {
               type="button"
               class="clear-inline-btn"
               data-clear-btn="true"
+              data-emr-print="hide"
               aria-label=${`${this.clearLabel} ${baseLabel || 'selection'}`}
               @click=${() => this.clearSelection()}
             >${renderEmrSvgIcon('close', 14)}</button>`
@@ -3987,7 +4037,7 @@ export class EmrSelectElement extends EmrLitElement {
 
       ${this.open && this.canEdit
         ? html`<div
-            class="select-menu"
+            class=${`select-menu${this.tabularNums ? ' select-menu--tabular' : ''}`}
             popover="manual"
             part="listbox"
             role="listbox"
@@ -4023,11 +4073,11 @@ export class EmrSelectElement extends EmrLitElement {
     if (this.labelHidden) {
       return html`<div class="emr-field">
         ${selectControl}
-        ${this.error
+        ${this.error.trim()
           ? html`<span id=${msgId} class="emr-sr-only" role="alert">${this.error}</span>`
-          : this.warning
+          : this.warning.trim()
             ? html`<span id=${msgId} class="emr-sr-only" role="status">${this.warning}</span>`
-            : this.hint
+            : this.hint.trim()
               ? html`<span id=${msgId} class="emr-sr-only">${this.hint}</span>`
               : nothing}
       </div>`;
@@ -4075,20 +4125,55 @@ export class EmrQuantityInputElement extends EmrLitElement {
   @property({ type: Boolean }) valueRequired?: boolean;
   @property({ type: Boolean }) unitRequired?: boolean;
   @property({ type: Boolean }) unitReadOnly = false;
+  @property({ type: Boolean }) allowNegative?: boolean;
   @property({ type: String }) hint = '';
   @property({ type: String }) warning = '';
+  @property({ type: String }) valueWarning = '';
+  @property({ type: String }) unitWarning = '';
   @property({ type: String }) error = '';
   @property({ type: String }) valueError = '';
   @property({ type: String }) unitError = '';
+  @property({ type: String }) ariaDescribedBy = '';
+  @property({ type: Boolean }) clearEmitsChanges = true;
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) readOnly = false;
 
   @state() private numFocused = false;
   @state() private numDraft = '';
+  private groupFocused = false;
 
   private get locked(): boolean {
     return this.readOnly || this.disabled;
+  }
+
+  private get effectiveAllowNegative(): boolean {
+    if (this.allowNegative !== undefined) return this.allowNegative;
+    return this.min === undefined || this.min < 0;
+  }
+
+  private isInsideGroup(target: EventTarget | null | undefined): boolean {
+    let cur = target as Node | null;
+    while (cur) {
+      if (cur === this || cur === this.shadowRoot) return true;
+      cur = cur.parentNode ?? (cur instanceof ShadowRoot ? cur.host : null);
+    }
+    return false;
+  }
+
+  private handleControlFocus(): void {
+    if (!this.groupFocused) {
+      this.groupFocused = true;
+      this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+    }
+  }
+
+  private handleControlBlur(related: EventTarget | null | undefined): void {
+    if (this.isInsideGroup(related)) return;
+    if (this.groupFocused) {
+      this.groupFocused = false;
+      this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+    }
   }
 
   private get effectiveStep(): number {
@@ -4124,12 +4209,15 @@ export class EmrQuantityInputElement extends EmrLitElement {
     const errId = `${id}-error`;
     const numericInvalid = Boolean(this.error || this.valueError);
     const unitInvalid = Boolean(this.error || this.unitError);
+    const numericWarning = !numericInvalid && Boolean(this.warning || this.valueWarning);
+    const unitWarningActive = !unitInvalid && Boolean(this.warning || this.unitWarning);
     const combinedError = [this.error, this.valueError, this.unitError].filter(Boolean).join(' · ');
+    const combinedWarning = [this.warning, this.valueWarning, this.unitWarning].filter(Boolean).join(' · ');
     const describedBy = this.labelHidden
-      ? nothing
+      ? this.ariaDescribedBy || nothing
       : [
           this.hint ? hintId : '',
-          this.warning && !combinedError ? warnId : '',
+          combinedWarning && !combinedError ? warnId : '',
           combinedError ? errId : '',
         ]
           .filter(Boolean)
@@ -4148,20 +4236,22 @@ export class EmrQuantityInputElement extends EmrLitElement {
       this.clearable && !this.locked && (this.value !== null || (this.unit !== null && !this.unitReadOnly));
 
     const numBorder = numericInvalid
-      ? 'var(--emr-danger, #a44949)'
-      : this.warning
-        ? 'var(--emr-warning, #8a651f)'
-        : 'var(--emr-border, #c7d3da)';
+      ? 'var(--emr-danger)'
+      : numericWarning
+        ? 'var(--emr-warning)'
+        : 'var(--emr-border)';
     const numBg = this.disabled
-      ? 'var(--emr-surface-raised, #eff3f5)'
+      ? 'var(--emr-surface-raised)'
       : this.readOnly
-        ? 'var(--emr-surface-soft, #f1f4f5)'
-        : 'var(--emr-surface, #fffefa)';
+        ? 'var(--emr-surface-soft)'
+        : 'var(--emr-surface)';
     const numBorderStyle = this.readOnly ? 'dashed' : 'solid';
 
     const numericControl = this.showSteppers
       ? html`<div
           class="stepper-wrap ${this.readOnly ? 'stepper-wrap--readonly' : ''}"
+          data-invalid=${numericInvalid ? 'true' : nothing}
+          data-warning=${numericWarning ? 'true' : nothing}
           style="width:auto;flex:1 1 168px;min-width:148px;min-height:${targetH};border-color:${numBorder};border-style:${numBorderStyle};background:${numBg};"
         >
           <button
@@ -4171,6 +4261,8 @@ export class EmrQuantityInputElement extends EmrLitElement {
             aria-label=${`Decrease ${this.label || 'value'}`}
             ?disabled=${this.disabled || this.readOnly || !canDec}
             aria-disabled=${this.readOnly ? 'true' : nothing}
+            @focus=${() => this.handleControlFocus()}
+            @blur=${(e: FocusEvent) => this.handleControlBlur(e.relatedTarget)}
             @click=${() => this.stepBy(-1)}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -4194,11 +4286,15 @@ export class EmrQuantityInputElement extends EmrLitElement {
             aria-readonly=${this.readOnly ? 'true' : nothing}
             aria-label=${`${this.label || 'Quantity'} value`}
             aria-invalid=${numericInvalid ? 'true' : nothing}
+            data-warning=${numericWarning ? 'true' : nothing}
             aria-describedby=${describedBy}
+            @wheel=${(e: WheelEvent) => {
+              (e.currentTarget as HTMLInputElement).blur();
+            }}
             @focus=${() => {
               this.numFocused = true;
               this.numDraft = this.domValue;
-              this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+              this.handleControlFocus();
             }}
             @keydown=${(e: KeyboardEvent) => {
               if (e.key === 'Enter' && !this.disabled) {
@@ -4217,18 +4313,19 @@ export class EmrQuantityInputElement extends EmrLitElement {
                 input.value = this.domValue;
                 return;
               }
-              const clean = sanitizeQuantityText(input.value, this.mode);
+              const allowNeg = this.effectiveAllowNegative;
+              const clean = sanitizeQuantityText(input.value, this.mode, { allowNegative: allowNeg });
               if (input.value !== clean) input.value = clean;
               this.numDraft = clean;
-              const parsed = parseQuantityDraft(clean, this.mode);
+              const parsed = parseQuantityDraft(clean, this.mode, { allowNegative: allowNeg });
               if (parsed === 'incomplete') return;
               this.emitValueChange(parsed);
             }}
-            @blur=${(e: Event) => {
+            @blur=${(e: FocusEvent) => {
               this.numFocused = false;
               this.numDraft = this.domValue;
               (e.target as HTMLInputElement).value = this.domValue;
-              this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+              this.handleControlBlur(e.relatedTarget);
             }}
           />
           <button
@@ -4238,6 +4335,8 @@ export class EmrQuantityInputElement extends EmrLitElement {
             aria-label=${`Increase ${this.label || 'value'}`}
             ?disabled=${this.disabled || this.readOnly || !canInc}
             aria-disabled=${this.readOnly ? 'true' : nothing}
+            @focus=${() => this.handleControlFocus()}
+            @blur=${(e: FocusEvent) => this.handleControlBlur(e.relatedTarget)}
             @click=${() => this.stepBy(1)}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -4263,11 +4362,15 @@ export class EmrQuantityInputElement extends EmrLitElement {
           aria-readonly=${this.readOnly ? 'true' : nothing}
           aria-label=${`${this.label || 'Quantity'} value`}
           aria-invalid=${numericInvalid ? 'true' : nothing}
+          data-warning=${numericWarning ? 'true' : nothing}
           aria-describedby=${describedBy}
+          @wheel=${(e: WheelEvent) => {
+            (e.currentTarget as HTMLInputElement).blur();
+          }}
           @focus=${() => {
             this.numFocused = true;
             this.numDraft = this.domValue;
-            this.dispatchEvent(new CustomEvent('focused', { bubbles: true, composed: true }));
+            this.handleControlFocus();
           }}
           @keydown=${(e: KeyboardEvent) => {
             if (e.key === 'Enter' && !this.disabled) {
@@ -4280,18 +4383,19 @@ export class EmrQuantityInputElement extends EmrLitElement {
               input.value = this.domValue;
               return;
             }
-            const clean = sanitizeQuantityText(input.value, this.mode);
+            const allowNeg = this.effectiveAllowNegative;
+            const clean = sanitizeQuantityText(input.value, this.mode, { allowNegative: allowNeg });
             if (input.value !== clean) input.value = clean;
             this.numDraft = clean;
-            const parsed = parseQuantityDraft(clean, this.mode);
+            const parsed = parseQuantityDraft(clean, this.mode, { allowNegative: allowNeg });
             if (parsed === 'incomplete') return;
             this.emitValueChange(parsed);
           }}
-          @blur=${(e: Event) => {
+          @blur=${(e: FocusEvent) => {
             this.numFocused = false;
             this.numDraft = this.domValue;
             (e.target as HTMLInputElement).value = this.domValue;
-            this.dispatchEvent(new CustomEvent('blurred', { bubbles: true, composed: true }));
+            this.handleControlBlur(e.relatedTarget);
           }}
         />`;
 
@@ -4305,10 +4409,20 @@ export class EmrQuantityInputElement extends EmrLitElement {
           .placeholder=${this.unitPlaceholder || 'Unit'}
           .options=${this.units}
           .value=${this.unit}
+          .size=${this.size === 'sm' ? 'sm' : 'md'}
           .required=${this.unitRequired ?? this.required}
           .error=${unitInvalid ? ' ' : ''}
+          .warning=${unitWarningActive ? ' ' : ''}
           .disabled=${this.disabled}
           .readOnly=${this.readOnly || this.unitReadOnly}
+          @focused=${(e: Event) => {
+            e.stopPropagation();
+            this.handleControlFocus();
+          }}
+          @blurred=${(e: CustomEvent<{ relatedTarget?: EventTarget | null }>) => {
+            e.stopPropagation();
+            this.handleControlBlur(e.detail?.relatedTarget);
+          }}
           @valueChange=${(e: CustomEvent<string | null>) => {
             e.stopPropagation();
             if (!this.locked && !this.unitReadOnly) {
@@ -4327,17 +4441,22 @@ export class EmrQuantityInputElement extends EmrLitElement {
         ? html`<button
             type="button"
             class="emr-btn clear-inline-btn"
-            style="min-width:${targetH};min-height:${targetH};height:${targetH};padding:0;background:var(--emr-surface,#fffefa);border-color:var(--emr-border,#c7d3da);color:var(--emr-text-muted,#5c6c78);flex:0 0 auto;"
+            data-emr-print="hide"
+            style="min-width:${targetH};min-height:${targetH};height:${targetH};padding:0;background:var(--emr-surface);border-color:var(--emr-border);color:var(--emr-text-muted);flex:0 0 auto;"
             aria-label=${`${this.clearLabel || 'Clear'} ${this.label || 'quantity'}`}
+            @focus=${() => this.handleControlFocus()}
+            @blur=${(e: FocusEvent) => this.handleControlBlur(e.relatedTarget)}
             @click=${() => {
               if (this.locked) return;
               this.numFocused = false;
               this.numDraft = '';
-              this.emitValueChange(null);
-              if (!this.unitReadOnly && this.unit !== null) {
-                this.dispatchEvent(
-                  new CustomEvent<string | null>('unitChange', { detail: null, bubbles: true, composed: true }),
-                );
+              if (this.clearEmitsChanges) {
+                this.emitValueChange(null);
+                if (!this.unitReadOnly && this.unit !== null) {
+                  this.dispatchEvent(
+                    new CustomEvent<string | null>('unitChange', { detail: null, bubbles: true, composed: true }),
+                  );
+                }
               }
               this.dispatchEvent(new CustomEvent('cleared', { bubbles: true, composed: true }));
             }}
@@ -4357,8 +4476,8 @@ export class EmrQuantityInputElement extends EmrLitElement {
         : nothing}
       ${row}
       ${this.hint ? html`<span id=${hintId} class="emr-hint">${this.hint}</span>` : nothing}
-      ${this.warning && !combinedError
-        ? html`<span id=${warnId} style="color:var(--emr-warning,#8a651f);font-size:var(--emr-text-xs);font-weight:600;" role="status">${this.warning}</span>`
+      ${combinedWarning && !combinedError
+        ? html`<span id=${warnId} style="color:var(--emr-warning);font-size:var(--emr-text-xs);font-weight:600;" role="status">${combinedWarning}</span>`
         : nothing}
       ${combinedError ? html`<span id=${errId} class="emr-error" role="alert">${combinedError}</span>` : nothing}
     </div>`;
@@ -4511,6 +4630,9 @@ export class EmrCheckboxElement extends EmrLitElement {
   @property({ type: String }) hint = '';
   @property({ type: String }) warning = '';
   @property({ type: String }) error = '';
+  @property({ type: Boolean }) invalid = false;
+  @property({ type: Boolean }) hasWarning = false;
+  @property({ type: String }) ariaDescribedBy = '';
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) readOnly = false;
@@ -4533,6 +4655,7 @@ export class EmrCheckboxElement extends EmrLitElement {
 
   protected resolveDescribedBy(id: string): string | typeof nothing {
     const ids: string[] = [];
+    if (this.ariaDescribedBy) ids.push(this.ariaDescribedBy);
     if (this.hint) ids.push(`${id}-hint`);
     if (this.warning) ids.push(`${id}-warning`);
     if (this.error) ids.push(`${id}-error`);
@@ -4564,20 +4687,22 @@ export class EmrCheckboxElement extends EmrLitElement {
     const cls = `option-tile option-tile--checkbox${this.variant === 'inline' ? ' option-tile--inline' : ''}${this.size === 'sm' ? ' option-tile--sm' : ''}${this.readOnly ? ' option-tile--readonly' : ''}${this.resolvePlacementClass()}`;
     const ariaChecked = this.mixed ? 'mixed' : String(isChecked);
     const iconSize = this.size === 'sm' ? 11 : 12;
+    const isInvalid = Boolean(this.invalid || this.error);
+    const isWarning = !isInvalid && Boolean(this.hasWarning || this.warning);
     const button = html`<button
       id=${id}
       type="button"
       part="control"
       role="checkbox"
       data-label-placement=${this.labelPlacement}
-      data-warning=${!this.error && this.warning ? 'true' : nothing}
+      data-warning=${isWarning ? 'true' : nothing}
       class=${cls}
       style=${this.labelHidden ? 'align-items:center;justify-content:center;' : 'align-items:flex-start;'}
       aria-label=${this.ariaLabel || (this.labelHidden && this.label ? this.label : nothing)}
       aria-checked=${ariaChecked}
       aria-required=${this.required ? 'true' : nothing}
       aria-readonly=${this.readOnly ? 'true' : nothing}
-      aria-invalid=${this.error ? 'true' : nothing}
+      aria-invalid=${isInvalid ? 'true' : nothing}
       aria-describedby=${this.resolveDescribedBy(id)}
       ?disabled=${this.disabled}
       @focus=${() => {
@@ -4615,7 +4740,6 @@ export class EmrToggleElement extends EmrCheckboxElement {
   @property({ type: String }) onLabel = '';
   @property({ type: String }) offLabel = '';
   @property({ type: Boolean }) loading = false;
-  @property({ type: Boolean }) invalid = false;
 
   protected override get resolvedChecked(): boolean {
     return resolveEmrToggleChecked(this.value, this.checked);
@@ -4996,6 +5120,7 @@ export class EmrBadgeElement extends EmrLitElement {
   @property({ type: Boolean }) showZero = false;
   @property({ type: String }) assistiveText = '';
   @property({ type: String }) controlId = '';
+  @property({ type: Boolean }) tabularNums = false;
 
   override render() {
     const tone = normalizeEmrBadgeTone(this.badge?.tone ?? this.tone);
@@ -5019,6 +5144,7 @@ export class EmrBadgeElement extends EmrLitElement {
       id=${this.controlId || nothing}
       part="badge"
       class=${cls}
+      style=${this.tabularNums ? 'font-variant-numeric: tabular-nums' : nothing}
       role=${dotOnly ? 'img' : nothing}
       aria-label=${dotOnly ? assistiveText || 'Status indicator' : nothing}
     >
@@ -5234,6 +5360,8 @@ export class EmrSearchSelectElement extends EmrLitElement {
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
   @property({ type: String }) override ariaLabel = '';
+  @property({ type: String }) ariaDescribedBy = '';
+  @property({ type: Boolean }) fullWidth = false;
   @property({ type: Boolean }) labelHidden = false;
   @property({ type: String }) placeholder = 'Type to search';
   @property({ type: String }) variant: EmrControlVariant = 'outline';
@@ -6192,6 +6320,8 @@ export class EmrVasElement extends EmrLitElement {
   @property({ type: String }) controlId = '';
   @property({ type: String }) label = '';
   @property({ type: String }) override ariaLabel = '';
+  @property({ type: String }) ariaDescribedBy = '';
+  @property({ type: Boolean }) fullWidth = false;
   @property({ type: Boolean }) labelHidden = false;
   @property({ type: Number }) min = 0;
   @property({ type: Number }) max = 100;

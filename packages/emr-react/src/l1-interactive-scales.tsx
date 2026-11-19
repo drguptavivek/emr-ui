@@ -2,6 +2,13 @@
 
 import { useId, useMemo, useRef, useState } from 'react';
 import { PanResponder, Platform, Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
+import type {
+  EmrLikertSize,
+  EmrTone,
+  EmrVasAnchorsProp,
+  EmrVasOrientation,
+  EmrVasSize,
+} from '@drguptavivek/emr-controller';
 import {
   EMR_VAS_TRACK_INSET_PX,
   buildLikertPoints,
@@ -17,12 +24,7 @@ import {
   resolveVasTicks,
   vasPercent,
   vasValueFromOffset,
-  type EmrLikertSize,
-  type EmrTone,
-  type EmrVasAnchorsProp,
-  type EmrVasOrientation,
-  type EmrVasSize,
-} from '@drguptavivek/emr-controller';
+} from './l1-controller.logic';
 import { SvgIcon } from './icons';
 import { focusRing, fontFamily, fontWeight, toneColors, useEmrTheme } from './theme';
 import { interactiveLabelDefaults, webProps, type InteractiveLabels, type WebKeyEvent } from './l1-interactive-shared';

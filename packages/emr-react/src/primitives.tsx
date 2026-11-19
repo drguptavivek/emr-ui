@@ -13,6 +13,25 @@ import {
   View,
   type PressableStateCallbackType,
 } from 'react-native';
+import type {
+  ClinicalOption,
+  EmrBadge as EmrBadgeModel,
+  EmrBadgeShape,
+  EmrBadgeSize,
+  EmrBadgeVariant,
+  EmrCheckboxLabelPlacement,
+  EmrCheckboxSize,
+  EmrCheckboxVariant,
+  EmrOption,
+  EmrRadioGroupLabelPlacement,
+  EmrRadioGroupOrientation,
+  EmrRadioGroupSize,
+  EmrRadioGroupVariant,
+  EmrSelectSize,
+  EmrSelectValue,
+  EmrSelectVariant,
+  EmrTone,
+} from '@drguptavivek/emr-controller';
 import {
   formatEmrBadgeCount,
   normalizeEmrBadgeShape,
@@ -22,24 +41,7 @@ import {
   resolveEmrCheckboxChecked,
   resolveEmrCheckboxToggle,
   resolveEmrToggleChecked,
-  type ClinicalOption,
-  type EmrBadge as EmrBadgeModel,
-  type EmrBadgeShape,
-  type EmrBadgeSize,
-  type EmrBadgeVariant,
-  type EmrCheckboxLabelPlacement,
-  type EmrCheckboxSize,
-  type EmrCheckboxVariant,
-  type EmrOption,
-  type EmrRadioGroupLabelPlacement,
-  type EmrRadioGroupOrientation,
-  type EmrRadioGroupSize,
-  type EmrRadioGroupVariant,
-  type EmrSelectSize,
-  type EmrSelectValue,
-  type EmrSelectVariant,
-  type EmrTone,
-} from '@drguptavivek/emr-controller';
+} from './l1-controller.logic';
 import { SvgIcon, type EmrIconName } from './icons';
 import { FieldChrome } from './l1-field-chrome';
 import {
@@ -88,6 +90,7 @@ export interface EmrBadgeProps {
   showZero?: boolean;
   assistiveText?: string;
   controlId?: string;
+  tabularNums?: boolean;
 }
 
 /** L1. Tone is controller-supplied; the label always carries the meaning, never colour alone. */
@@ -177,13 +180,20 @@ export function EmrBadgeView(p: EmrBadgeProps) {
         ) : resolvedLabel ? (
           <Text
             numberOfLines={1}
-            style={{
-              color: fg,
-              fontSize: isSm ? t.text2xs : t.textXs,
-              lineHeight: isSm ? t.text2xs : t.textXs,
-              fontWeight: fontWeight(t.weightBold),
-              fontFamily: fontFamily(t),
-            }}
+            style={[
+              {
+                color: fg,
+                fontSize: isSm ? t.text2xs : t.textXs,
+                lineHeight: isSm ? t.text2xs : t.textXs,
+                fontWeight: fontWeight(t.weightBold),
+                fontFamily: fontFamily(t),
+              },
+              p.tabularNums
+                ? Platform.OS === 'web'
+                  ? ({ fontVariantNumeric: 'tabular-nums' } as unknown as object)
+                  : ({ fontVariant: ['tabular-nums'] } as object)
+                : null,
+            ]}
           >
             {resolvedLabel}
           </Text>
@@ -618,7 +628,8 @@ export interface EmrSelectBaseProps {
   ariaLabel?: string;
   options: readonly EmrOption[];
   placeholder?: string;
-  size?: EmrSelectSize;
+  size?: EmrSelectSize | 'lg';
+  tabularNums?: boolean;
   variant?: EmrSelectVariant;
   clearable?: boolean;
   clearLabel?: string;
@@ -629,7 +640,9 @@ export interface EmrSelectBaseProps {
   loading?: boolean;
   hint?: string;
   warning?: string;
+  hasWarning?: boolean;
   error?: string;
+  ariaDescribedBy?: string;
   required?: boolean;
   invalid?: boolean;
   readOnly?: boolean;
@@ -679,6 +692,7 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
     value,
     placeholder,
     size = 'md',
+    tabularNums = false,
     variant = 'outline',
     clearable,
     clearLabel,
@@ -689,7 +703,9 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
     loading = false,
     hint,
     warning,
+    hasWarning,
     error,
+    ariaDescribedBy,
     required,
     invalid,
     readOnly,
@@ -907,8 +923,8 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
   keyDownRef.current = handleWebKeyDown;
 
   const isInvalid = Boolean(invalid || error);
-  const isWarning = Boolean(!isInvalid && warning);
-  const minHeight = Math.max(44, t.controlHeight);
+  const isWarning = Boolean(!isInvalid && (hasWarning || warning));
+  const minHeight = size === 'lg' ? Math.max(48, t.controlHeight) : Math.max(44, t.controlHeight);
   const useAnchoredMenu = Boolean(anchor && winW >= 520);
   const menuMaxH = 280;
   const menuWidth = anchor ? Math.min(Math.max(anchor.width, 200), Math.max(200, winW - 24)) : 320;
@@ -982,13 +998,20 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
           <View style={styles.optionRow}>
             <Text
               numberOfLines={1}
-              style={{
-                flex: 1,
-                color: selected ? t.primaryContrast : t.text,
-                fontSize: size === 'sm' ? t.textSm : t.textMd,
-                fontFamily: fontFamily(t),
-                fontWeight: fontWeight(selected ? t.weightBold : t.weightMedium),
-              }}
+              style={[
+                {
+                  flex: 1,
+                  color: selected ? t.primaryContrast : t.text,
+                  fontSize: size === 'sm' ? t.textSm : t.textMd,
+                  fontFamily: fontFamily(t),
+                  fontWeight: fontWeight(selected ? t.weightBold : t.weightMedium),
+                },
+                tabularNums
+                  ? Platform.OS === 'web'
+                    ? ({ fontVariantNumeric: 'tabular-nums' } as unknown as object)
+                    : ({ fontVariant: ['tabular-nums'] } as object)
+                  : null,
+              ]}
             >
               {option.label}
             </Text>
@@ -1124,6 +1147,7 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
           aria-busy={loading ? true : undefined}
           aria-activedescendant={activeDescendantId}
           aria-label={`${baseAriaLabel}, ${triggerSummary.text}`}
+          aria-describedby={ariaDescribedBy}
           aria-invalid={isInvalid || undefined}
           aria-required={required || undefined}
           aria-disabled={disabled}
@@ -1142,13 +1166,13 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
                 }
           }
           onFocus={() => onFocused?.()}
-          onBlur={() => onBlurred?.()}
+          onBlur={e => (onBlurred as ((ev?: unknown) => void) | undefined)?.(e)}
           {...(Platform.OS === 'web' ? ({ onKeyDown: handleWebKeyDown } as object) : {})}
           style={({ hovered, focused }: PressState & { hovered?: boolean }) => [
             styles.selectTrigger,
             focusRing(t, focused),
             {
-              minHeight: Math.max(42, minHeight - 2),
+              minHeight: Math.max(44, minHeight),
               backgroundColor: hovered && !disabled && !readOnly ? t.surfaceSoft : undefined,
             },
           ]}
@@ -1163,6 +1187,11 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
                   fontSize: size === 'sm' ? t.textSm : t.textMd,
                   fontFamily: fontFamily(t),
                 },
+                tabularNums
+                  ? Platform.OS === 'web'
+                    ? ({ fontVariantNumeric: 'tabular-nums' } as unknown as object)
+                    : ({ fontVariant: ['tabular-nums'] } as object)
+                  : null,
               ]}
             >
               {triggerSummary.text}
@@ -1180,6 +1209,7 @@ export function EmrSelect(props: EmrSelectProps): ReactElement {
           <Pressable
             role="button"
             aria-label={`${clearLabel ?? labels.clear} ${baseAriaLabel}`}
+            {...(Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : {})}
             onPress={handleClear}
             style={({ pressed, focused }: PressState) => [
               styles.clearBtn,
@@ -1387,7 +1417,9 @@ export interface EmrBooleanInputProps {
   size?: EmrCheckboxSize;
   hint?: string;
   warning?: string;
+  hasWarning?: boolean;
   error?: string;
+  ariaDescribedBy?: string;
   required?: boolean;
   readOnly?: boolean;
   disabled?: boolean;
@@ -1445,6 +1477,12 @@ function BooleanRow({
     warning: p.warning,
     invalid: p.invalid,
   });
+  const isInvalid = validation.isInvalid;
+  const hasWarning = !isInvalid && (validation.hasWarning || Boolean(p.hasWarning));
+  const describedByIds =
+    [p.ariaDescribedBy, hasMessage && !p.labelHidden ? `${id}-message` : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined;
   const canMutate = role === 'switch' ? canMutateEmrToggle(p.readOnly, p.disabled, p.loading) : !p.disabled && !p.readOnly && !p.loading;
 
   const handleToggle = () => {
@@ -1524,8 +1562,8 @@ function BooleanRow({
         aria-checked={ariaChecked}
         aria-required={p.required || undefined}
         aria-label={p.ariaLabel || (p.labelHidden ? labelText || undefined : undefined)}
-        aria-describedby={hasMessage && !p.labelHidden ? `${id}-message` : undefined}
-        aria-invalid={validation.isInvalid || undefined}
+        aria-describedby={describedByIds}
+        aria-invalid={isInvalid || undefined}
         aria-busy={p.loading || undefined}
         aria-disabled={p.disabled || undefined}
         aria-readonly={p.readOnly || undefined}
@@ -1563,9 +1601,9 @@ function BooleanRow({
             borderColor:
               variant === 'inline'
                 ? 'transparent'
-                : validation.isInvalid
+                : isInvalid
                   ? t.danger
-                  : validation.hasWarning
+                  : hasWarning
                     ? t.warning
                     : isVisualActive
                       ? t.primary
@@ -1647,11 +1685,11 @@ export function EmrCheckbox(p: EmrCheckboxProps) {
                 marginTop: p.labelHidden ? 0 : 2,
                 borderRadius: 4,
                 borderWidth: 1.5,
-                borderColor: p.error
+                borderColor: (p.invalid || p.error)
                   ? t.danger
                   : active
                     ? t.primary
-                    : p.warning
+                    : (p.hasWarning || p.warning)
                       ? t.warning
                       : hovered && interactive
                         ? t.primary

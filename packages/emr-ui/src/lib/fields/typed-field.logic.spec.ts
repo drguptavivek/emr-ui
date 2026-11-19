@@ -172,7 +172,14 @@ describe('typed-field.logic', () => {
   it('extracts active dot and slash macro triggers before the cursor', () => {
     expect(extractActiveMacroTrigger('Cornea clear .sle', 17)).toBe('.sle');
     expect(extractActiveMacroTrigger('/fundus', 7)).toBe('/fundus');
+    expect(extractActiveMacroTrigger('.', 1)).toBe('.');
+    expect(extractActiveMacroTrigger('Note /', 6)).toBe('/');
     expect(extractActiveMacroTrigger('Normal exam.', 12)).toBeNull();
     expect(extractActiveMacroTrigger('6/6 unaided', 11)).toBeNull();
+    expect(extractActiveMacroTrigger('.5', 2)).toBeNull();
+    expect(extractActiveMacroTrigger('12.5', 4)).toBeNull();
+    expect(extractActiveMacroTrigger('OD/OS', 5)).toBeNull();
+    expect(extractActiveMacroTrigger('Note . ', 7)).toBeNull();
+    expect(extractActiveMacroTrigger('Note /2', 7)).toBeNull();
   });
 });

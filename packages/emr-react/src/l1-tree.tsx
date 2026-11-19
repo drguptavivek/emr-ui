@@ -2,24 +2,72 @@
 
 import type {
   EmrFlatTreeRow,
+  EmrTone,
   EmrTreeCheckStrategy,
   EmrTreeNode,
 } from '@drguptavivek/emr-controller';
 import { createElement, useEffect, useId, useRef, useState, type ComponentRef } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SvgIcon } from './icons';
-import { FieldChrome, type FieldValidationLine } from './l1-field-chrome';
 import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+  type PressableStateCallbackType,
+} from 'react-native';
+import { isEmrIconName, SvgIcon } from './icons';
+import { FieldChrome, type FieldValidationLine } from './l1-field-chrome';
+import { webProps, type WebKeyEvent } from './l1-interactive-shared';
+import {
+  buildEmrTreeSelectSummary,
+  clearTreeSelection,
   collectAllExpandableTreeIds,
+  findNextTreeRowIndex,
+  findTypeaheadTreeRowIndex,
   flattenVisibleTreeNodes,
-  formatTreeSelectionLabel,
-  resolveTreeNodePath,
+  formatEmrSegmentedBadge,
+  isEmrTreeClearable,
+  removeTreeSelectionChip,
+  resolveDefaultExpandedTreeIds,
+  resolveEmrSelectCloseOnSelect,
+  resolveEmrTreeSelectDefaultExpanded,
+  splitMatchHighlightSegments,
   toggleTreeNodeCheck,
 } from './l1-wave2.logic';
-import { EmrBadgeView, EmrButton } from './primitives';
-import { fontFamily, fontWeight, useEmrTheme } from './theme';
+import { useEmrLabels } from './labels';
+import { EmrButton, resolveButtonPalette } from './primitives';
+import { focusRing, fontFamily, fontWeight, useEmrTheme, type EmrTheme } from './theme';
 
 export type { EmrFlatTreeRow, EmrTreeCheckStrategy, EmrTreeNode };
+
+type PressState = PressableStateCallbackType & { focused?: boolean; hovered?: boolean };
+
+function withAlpha(color: string, alpha: number): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(color.trim());
+  if (!m) return color;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+function resolveTreeToneColor(t: EmrTheme, tone?: EmrTone): string | undefined {
+  switch (tone) {
+    case 'info':
+      return t.info;
+    case 'success':
+      return t.success;
+    case 'warning':
+      return t.warning;
+    case 'danger':
+      return t.danger;
+    default:
+      return undefined;
+  }
+}
 
 export interface EmrTreeViewProps {
   readonly nodes: readonly EmrTreeNode[];
@@ -31,6 +79,7 @@ export interface EmrTreeViewProps {
   readonly values?: readonly string[];
   readonly onValuesChange?: (values: readonly string[]) => void;
   readonly checkStrategy?: EmrTreeCheckStrategy;
+  readonly maxSelections?: number;
   /** Controlled or uncontrolled expanded node IDs */
   readonly expandedIds?: readonly string[];
   readonly defaultExpandedIds?: readonly string[];
@@ -40,15 +89,24 @@ export interface EmrTreeViewProps {
   readonly searchPlaceholder?: string;
   readonly searchQuery?: string;
   readonly onSearchQueryChange?: (query: string) => void;
+  readonly highlightMatch?: boolean;
   /** Expand All / Collapse All toolbar buttons */
   readonly showExpandControls?: boolean;
   readonly clearable?: boolean;
+  readonly clearLabel?: string;
   readonly onCleared?: () => void;
+  readonly onNodeSelected?: (node: EmrTreeNode) => void;
+  readonly onFocused?: () => void;
+  readonly onBlurred?: () => void;
+  readonly size?: 'md' | 'sm';
   readonly label?: string;
+  readonly labelHidden?: boolean;
+  readonly ariaLabel?: string;
   readonly hint?: string;
   readonly error?: string;
   readonly warning?: string;
   readonly info?: string;
+  readonly invalid?: boolean;
   readonly messages?: readonly FieldValidationLine[];
   readonly required?: boolean;
   readonly disabled?: boolean;
@@ -66,6 +124,7 @@ export function EmrTreeView({
   values = [],
   onValuesChange,
   checkStrategy = 'cascade',
+  maxSelections,
   expandedIds,
   defaultExpandedIds,
   onExpandedChange,
@@ -73,14 +132,23 @@ export function EmrTreeView({
   searchPlaceholder = 'Filter hierarchy…',
   searchQuery,
   onSearchQueryChange,
+  highlightMatch = true,
   showExpandControls = false,
   clearable = false,
+  clearLabel = 'Clear',
   onCleared,
+  onNodeSelected,
+  onFocused,
+  onBlurred,
+  size = 'md',
   label,
+  labelHidden,
+  ariaLabel,
   hint,
   error,
   warning,
   info,
+  invalid,
   messages,
   required,
   disabled = false,
@@ -93,15 +161,45 @@ export function EmrTreeView({
   const reactId = useId().replace(/:/g, '');
   const id = controlId ?? `emr-treeview-${reactId}`;
 
-  const [uncontrolledExpanded, setUncontrolledExpanded] = useState<readonly string[]>(
-    () => defaultExpandedIds ?? nodes.slice(0, 2).map((n) => n.id)
+  const [uncontrolledExpanded, setUncontrolledExpanded] = useState<readonly string[]>(() =>
+    resolveDefaultExpandedTreeIds(nodes, defaultExpandedIds),
   );
   const [uncontrolledQuery, setUncontrolledQuery] = useState('');
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  const rowRefs = useRef<Record<string, { focus?: () => void } | null>>({});
+  const typeaheadRef = useRef<{ buffer: string; timer: ReturnType<typeof setTimeout> | null }>({
+    buffer: '',
+    timer: null,
+  });
+  const focusActiveRef = useRef(false);
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChildFocus = () => {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current);
+      blurTimerRef.current = null;
+    }
+    if (!focusActiveRef.current) {
+      focusActiveRef.current = true;
+      onFocused?.();
+    }
+  };
+
+  const handleChildBlur = () => {
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+    blurTimerRef.current = setTimeout(() => {
+      focusActiveRef.current = false;
+      onBlurred?.();
+    }, 0);
+  };
 
   const activeExpanded = expandedIds ?? uncontrolledExpanded;
   const activeQuery = searchQuery !== undefined ? searchQuery : uncontrolledQuery;
   const selectedIds = multiple ? values : value ? [value] : [];
+  const isInvalid = Boolean(invalid || error);
+  const isWarning = Boolean(!isInvalid && warning);
+  const isSm = size === 'sm';
+  const hasMessage = Boolean(!labelHidden && (hint || warning || error));
 
   const updateExpanded = (next: readonly string[]) => {
     if (expandedIds === undefined) {
@@ -128,14 +226,22 @@ export function EmrTreeView({
       setFocusedNodeId(null);
       return;
     }
-    if (!focusedNodeId || !visibleRows.some((r) => r.node.id === focusedNodeId)) {
+    if (!focusedNodeId || !visibleRows.some((r) => r.node.id === focusedNodeId && !r.node.disabled)) {
       const preferred =
-        (value && visibleRows.find((r) => r.node.id === value)?.node.id) ??
+        (value && visibleRows.find((r) => r.node.id === value && !r.node.disabled)?.node.id) ??
+        visibleRows.find((r) => !r.node.disabled)?.node.id ??
         visibleRows[0]?.node.id ??
         null;
       setFocusedNodeId(preferred);
     }
   }, [visibleRows, focusedNodeId, value]);
+
+  const focusNode = (nodeId: string) => {
+    setFocusedNodeId(nodeId);
+    if (Platform.OS === 'web') {
+      rowRefs.current[nodeId]?.focus?.();
+    }
+  };
 
   const toggleExpand = (nodeId: string) => {
     if (disabled) return;
@@ -149,24 +255,21 @@ export function EmrTreeView({
   const handleRowSelect = (row: EmrFlatTreeRow) => {
     if (disabled || row.node.disabled) return;
     setFocusedNodeId(row.node.id);
-    if (readOnly) return;
+    if (!row.selectable && row.hasChildren && checkStrategy !== 'cascade') {
+      toggleExpand(row.node.id);
+      return;
+    }
+    if (readOnly || row.node.readOnly) return;
+    onNodeSelected?.(row.node);
 
     if (multiple) {
-      if (!row.selectable && checkStrategy === 'leaf' && row.hasChildren) {
-        toggleExpand(row.node.id);
-        return;
+      const next = toggleTreeNodeCheck(nodes, values, row.node.id, checkStrategy, maxSelections);
+      if (next !== values) {
+        onValuesChange?.(next);
       }
-      const next = toggleTreeNodeCheck(nodes, values, row.node.id, checkStrategy);
-      onValuesChange?.(next);
       return;
     }
 
-    if (!row.selectable) {
-      if (row.hasChildren) {
-        toggleExpand(row.node.id);
-      }
-      return;
-    }
     const nextVal = value === row.node.id && clearable ? null : row.node.id;
     onValueChange?.(nextVal);
     if (nextVal === null) onCleared?.();
@@ -175,9 +278,11 @@ export function EmrTreeView({
   const handleClear = () => {
     if (disabled || readOnly) return;
     if (multiple) {
-      onValuesChange?.([]);
+      const next = clearTreeSelection(nodes, values);
+      onValuesChange?.(next);
     } else {
-      onValueChange?.(null);
+      const kept = value ? clearTreeSelection(nodes, [value]) : [];
+      onValueChange?.(kept[0] ?? null);
     }
     onCleared?.();
   };
@@ -192,125 +297,184 @@ export function EmrTreeView({
     updateExpanded([]);
   };
 
-  const handleKeyDown = (e: unknown, row: EmrFlatTreeRow, idx: number) => {
+  const handleKeyDown = (
+    e: WebKeyEvent & { ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean },
+    row: EmrFlatTreeRow,
+    idx: number,
+  ) => {
     if (disabled) return;
-    const ev = e as { key?: string; preventDefault?: () => void };
-    const key = ev.key;
+    const key = e.key ?? '';
     if (!key) return;
 
-    if (key === 'ArrowDown') {
-      ev.preventDefault?.();
-      const nextRow = visibleRows[Math.min(visibleRows.length - 1, idx + 1)];
-      if (nextRow) setFocusedNodeId(nextRow.node.id);
-    } else if (key === 'ArrowUp') {
-      ev.preventDefault?.();
-      const prevRow = visibleRows[Math.max(0, idx - 1)];
-      if (prevRow) setFocusedNodeId(prevRow.node.id);
-    } else if (key === 'ArrowRight') {
-      ev.preventDefault?.();
+    if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Home' || key === 'End') {
+      e.preventDefault?.();
+      const nextIdx = findNextTreeRowIndex(visibleRows, idx, key);
+      if (nextIdx >= 0) focusNode(visibleRows[nextIdx]!.node.id);
+      return;
+    }
+    if (key === 'ArrowRight') {
+      e.preventDefault?.();
       if (row.hasChildren && !row.expanded) {
         toggleExpand(row.node.id);
       } else if (row.hasChildren && row.expanded) {
-        const firstChild = visibleRows[idx + 1];
-        if (firstChild && firstChild.parentId === row.node.id) {
-          setFocusedNodeId(firstChild.node.id);
+        const nextIdx = findNextTreeRowIndex(visibleRows, idx, 'ArrowDown');
+        if (nextIdx > idx && visibleRows[nextIdx]!.depth > row.depth) {
+          focusNode(visibleRows[nextIdx]!.node.id);
         }
       }
-    } else if (key === 'ArrowLeft') {
-      ev.preventDefault?.();
+      return;
+    }
+    if (key === 'ArrowLeft') {
+      e.preventDefault?.();
       if (row.hasChildren && row.expanded) {
         toggleExpand(row.node.id);
       } else if (row.parentId) {
-        setFocusedNodeId(row.parentId);
+        const parentRow = visibleRows.find((r) => r.node.id === row.parentId);
+        if (parentRow && !parentRow.node.disabled) {
+          focusNode(parentRow.node.id);
+        }
       }
-    } else if (key === 'Home') {
-      ev.preventDefault?.();
-      if (visibleRows[0]) setFocusedNodeId(visibleRows[0].node.id);
-    } else if (key === 'End') {
-      ev.preventDefault?.();
-      const last = visibleRows[visibleRows.length - 1];
-      if (last) setFocusedNodeId(last.node.id);
-    } else if (key === 'Enter' || key === ' ') {
-      ev.preventDefault?.();
+      return;
+    }
+    if (key === 'Enter' || key === ' ') {
+      e.preventDefault?.();
       handleRowSelect(row);
+      return;
+    }
+    if (key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      typeaheadRef.current.buffer += key;
+      if (typeaheadRef.current.timer) clearTimeout(typeaheadRef.current.timer);
+      typeaheadRef.current.timer = setTimeout(() => {
+        typeaheadRef.current.buffer = '';
+        typeaheadRef.current.timer = null;
+      }, 500);
+      const matchIdx = findTypeaheadTreeRowIndex(visibleRows, typeaheadRef.current.buffer, idx);
+      if (matchIdx >= 0) focusNode(visibleRows[matchIdx]!.node.id);
     }
   };
 
-  const hasSelection = multiple ? values.length > 0 : Boolean(value);
+  const canClear = isEmrTreeClearable({
+    clearable,
+    disabled,
+    readOnly,
+    multiple,
+    value,
+    values,
+    nodes,
+  });
 
-  return (
-    <FieldChrome
-      controlId={id}
-      label={label}
-      hint={hint}
-      error={error}
-      warning={warning}
-      info={info}
-      messages={messages}
-      required={required}
+  const renderHighlighted = (
+    text: string,
+    baseStyle: Record<string, unknown>,
+    numberOfLines?: number,
+  ) => {
+    const segments =
+      highlightMatch && activeQuery
+        ? splitMatchHighlightSegments(text, activeQuery)
+        : [{ text, matched: false }];
+    return (
+      <Text numberOfLines={numberOfLines} style={baseStyle}>
+        {segments.map((seg, i) =>
+          seg.matched ? (
+            <Text
+              key={i}
+              style={{
+                backgroundColor: t.primarySoft,
+                color: t.primaryContrast,
+                fontWeight: fontWeight(t.weightBold),
+              }}
+            >
+              {seg.text}
+            </Text>
+          ) : (
+            seg.text
+          ),
+        )}
+      </Text>
+    );
+  };
+
+  const containerNode = (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: readOnly ? t.surfaceSoft : t.surface,
+          borderColor: isInvalid ? t.danger : isWarning ? t.warning : t.border,
+          borderStyle: readOnly ? 'dashed' : 'solid',
+          borderRadius: 8,
+          opacity: disabled ? 0.6 : 1,
+        },
+      ]}
     >
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: t.surface,
-            borderColor: error ? t.danger : t.border,
-            borderRadius: 8,
-            opacity: disabled ? 0.6 : 1,
-          },
-        ]}
-      >
-        {(searchable || showExpandControls || (clearable && hasSelection)) ? (
-          <View
-            style={[
-              styles.toolbar,
-              {
-                borderBottomColor: t.border,
-                backgroundColor: t.surfaceSoft,
-              },
-            ]}
-          >
-            {searchable ? (
-              <View
-                style={[
-                  styles.searchBox,
-                  {
-                    backgroundColor: t.surface,
-                    borderColor: t.border,
-                    borderRadius: 6,
+      {(searchable || (!labelHidden && (showExpandControls || canClear))) ? (
+        <View
+          {...(Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : {})}
+          style={[
+            styles.toolbar,
+            {
+              borderBottomColor: t.border,
+              backgroundColor: t.surfaceSoft,
+            },
+          ]}
+        >
+          {searchable ? (
+            <View
+              style={[
+                styles.searchBox,
+                {
+                  backgroundColor: t.surface,
+                  borderColor: t.border,
+                  borderRadius: 6,
+                },
+              ]}
+            >
+              <SvgIcon name="search" size={15} color={t.textMuted} />
+              <TextInput
+                value={activeQuery}
+                onChangeText={updateQuery}
+                onFocus={handleChildFocus}
+                onBlur={handleChildBlur}
+                editable={!disabled}
+                placeholder={searchPlaceholder}
+                placeholderTextColor={t.textMuted}
+                accessibilityLabel={searchPlaceholder}
+                {...webProps({
+                  onKeyDown: (e: WebKeyEvent) => {
+                    if (e.key === 'ArrowDown') {
+                      const firstIdx = findNextTreeRowIndex(visibleRows, -1, 'ArrowDown');
+                      if (firstIdx >= 0) {
+                        e.preventDefault();
+                        focusNode(visibleRows[firstIdx]!.node.id);
+                      }
+                    }
                   },
-                ]}
-              >
-                <SvgIcon name="search" size={15} color={t.textMuted} />
-                <TextInput
-                  value={activeQuery}
-                  onChangeText={updateQuery}
-                  editable={!disabled}
-                  placeholder={searchPlaceholder}
-                  placeholderTextColor={t.textMuted}
-                  accessibilityLabel={searchPlaceholder}
-                  style={{
-                    flex: 1,
-                    minHeight: 36,
-                    fontSize: t.textSm,
-                    color: t.text,
-                    fontFamily: fontFamily(t),
-                    paddingVertical: 4,
-                  }}
-                />
-                {activeQuery.length > 0 ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear tree search"
-                    onPress={() => updateQuery('')}
-                    style={styles.iconHit}
-                  >
-                    <SvgIcon name="close" size={14} color={t.textMuted} />
-                  </Pressable>
-                ) : null}
-              </View>
-            ) : null}
+                })}
+                style={{
+                  flex: 1,
+                  minHeight: 36,
+                  fontSize: isSm ? t.textSm : t.textMd,
+                  color: t.text,
+                  fontFamily: fontFamily(t),
+                  paddingVertical: 4,
+                }}
+              />
+              {activeQuery.length > 0 && !disabled ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear tree search"
+                  onFocus={handleChildFocus}
+                  onBlur={handleChildBlur}
+                  onPress={() => updateQuery('')}
+                  style={({ focused }: PressState) => [styles.iconHit, focusRing(t, focused)]}
+                >
+                  <SvgIcon name="close" size={14} color={t.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
 
+          {!labelHidden && (showExpandControls || canClear) ? (
             <View style={styles.toolbarActions}>
               {showExpandControls ? (
                 <>
@@ -328,168 +492,241 @@ export function EmrTreeView({
                   />
                 </>
               ) : null}
-              {clearable && hasSelection && !readOnly && !disabled ? (
-                <EmrButton label="Clear" variant="ghost" onPress={handleClear} />
+              {canClear ? (
+                <EmrButton label={clearLabel} variant="ghost" onPress={handleClear} />
               ) : null}
             </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      <ScrollView
+        style={{ maxHeight }}
+        contentContainerStyle={styles.treeList}
+        {...(Platform.OS === 'web'
+          ? ({
+              id,
+              role: 'tree',
+              'aria-labelledby': !ariaLabel && label && !labelHidden ? `${id}-label` : undefined,
+              'aria-label': ariaLabel ?? (label || 'Hierarchical tree'),
+              'aria-multiselectable': multiple || undefined,
+              'aria-required': required || undefined,
+              'aria-readonly': readOnly || undefined,
+              'aria-invalid': isInvalid || undefined,
+              'aria-describedby': hasMessage ? `${id}-message` : undefined,
+              dataSet: { 'emr-print': 'expand' },
+            } as Record<string, unknown>)
+          : null)}
+      >
+        {visibleRows.length === 0 ? (
+          <View style={styles.emptyBox} role="status">
+            <Text
+              style={{
+                fontSize: isSm ? t.textSm : t.textMd,
+                color: t.textMuted,
+                fontFamily: fontFamily(t),
+              }}
+            >
+              {emptyMessage}
+            </Text>
           </View>
-        ) : null}
+        ) : (
+          visibleRows.map((row, idx) => {
+            const isSelected = multiple ? row.checkState === 'checked' : value === row.node.id;
+            const isMixed = multiple && row.checkState === 'mixed';
+            const isFocused = focusedNodeId === row.node.id;
+            const rowDisabled = Boolean(disabled || row.node.disabled);
+            const rowReadOnly = Boolean(readOnly || row.node.readOnly);
+            const showCheckbox = multiple && (row.selectable || checkStrategy === 'cascade');
+            const badge = formatEmrSegmentedBadge(row.node.badge, row.node.tone);
+            const toneColor = resolveTreeToneColor(t, row.node.tone);
 
-        <ScrollView
-          style={{ maxHeight }}
-          contentContainerStyle={styles.treeList}
-          {...(Platform.OS === 'web'
-            ? ({
-                role: 'tree',
-                'aria-label': label ?? 'Hierarchical tree',
-                'aria-multiselectable': multiple || undefined,
-                'aria-readonly': readOnly || undefined,
-              } as Record<string, unknown>)
-            : null)}
-        >
-          {visibleRows.length === 0 ? (
-            <View style={styles.emptyBox}>
-              <Text
-                style={{
-                  fontSize: t.textSm,
-                  color: t.textMuted,
-                  fontFamily: fontFamily(t),
+            return (
+              <View
+                key={row.node.id}
+                ref={(el: { focus?: () => void } | null) => {
+                  rowRefs.current[row.node.id] = el;
                 }}
+                style={[
+                  styles.treeRow,
+                  {
+                    paddingLeft: 8 + row.depth * 20,
+                    backgroundColor: isSelected
+                      ? t.primarySoft
+                      : isFocused
+                        ? t.surfaceSoft
+                        : 'transparent',
+                    borderRadius: 6,
+                    borderWidth: row.node.readOnly ? 1 : 0,
+                    borderStyle: row.node.readOnly ? 'dashed' : 'solid',
+                    borderColor: row.node.readOnly ? t.border : 'transparent',
+                    opacity: row.node.disabled ? 0.45 : 1,
+                  },
+                ]}
+                {...(Platform.OS === 'web'
+                  ? ({
+                      role: 'treeitem',
+                      'aria-level': row.depth + 1,
+                      'aria-expanded': row.hasChildren ? row.expanded : undefined,
+                      'aria-selected': isSelected,
+                      'aria-checked': showCheckbox ? (isMixed ? 'mixed' : isSelected) : undefined,
+                      'aria-readonly': rowReadOnly || undefined,
+                      'aria-disabled': rowDisabled || undefined,
+                      tabIndex: rowDisabled ? -1 : (isFocused ? 0 : -1),
+                      onFocus: () => {
+                        setFocusedNodeId(row.node.id);
+                        handleChildFocus();
+                      },
+                      onBlur: handleChildBlur,
+                      onKeyDown: (e: WebKeyEvent) => handleKeyDown(e, row, idx),
+                    } as Record<string, unknown>)
+                  : null)}
               >
-                {emptyMessage}
-              </Text>
-            </View>
-          ) : (
-            visibleRows.map((row, idx) => {
-              const isSelected = multiple
-                ? row.checkState === 'checked'
-                : value === row.node.id;
-              const isMixed = multiple && row.checkState === 'mixed';
-              const isFocused = focusedNodeId === row.node.id;
-
-              return (
-                <View
-                  key={row.node.id}
-                  style={[
-                    styles.treeRow,
-                    {
-                      paddingLeft: 8 + row.depth * 20,
-                      backgroundColor: isSelected
-                        ? t.primarySoft
-                        : isFocused
-                          ? t.surfaceSoft
-                          : 'transparent',
-                      borderRadius: 6,
-                      opacity: row.node.disabled ? 0.45 : 1,
-                    },
-                  ]}
-                  {...(Platform.OS === 'web'
-                    ? ({
-                        role: 'treeitem',
-                        'aria-level': row.depth + 1,
-                        'aria-expanded': row.hasChildren ? row.expanded : undefined,
-                        'aria-selected': isSelected,
-                        'aria-checked': multiple
-                          ? isMixed
-                            ? 'mixed'
-                            : isSelected
-                          : undefined,
-                        'aria-disabled': row.node.disabled || undefined,
-                        tabIndex: isFocused ? 0 : -1,
-                        onKeyDown: (e: unknown) => handleKeyDown(e, row, idx),
-                      } as Record<string, unknown>)
-                    : null)}
-                >
-                  {row.hasChildren ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={
-                        row.expanded ? `Collapse ${row.node.label}` : `Expand ${row.node.label}`
-                      }
-                      disabled={disabled}
-                      onPress={() => toggleExpand(row.node.id)}
-                      style={styles.chevronBtn}
-                    >
-                      <SvgIcon
-                        name={row.expanded ? 'chevron-down' : 'chevron-right'}
-                        size={16}
-                        color={t.textMuted}
-                      />
-                    </Pressable>
-                  ) : (
-                    <View style={styles.chevronSpacer} />
-                  )}
-
+                {row.hasChildren ? (
                   <Pressable
-                    accessibilityRole={multiple ? 'checkbox' : 'button'}
-                    accessibilityState={{
-                      disabled: Boolean(disabled || row.node.disabled),
-                      selected: isSelected,
-                      checked: multiple ? (isMixed ? 'mixed' : isSelected) : undefined,
-                    }}
-                    disabled={disabled || row.node.disabled}
-                    onPress={() => handleRowSelect(row)}
-                    style={styles.rowBodyHit}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      row.expanded ? `Collapse ${row.node.label}` : `Expand ${row.node.label}`
+                    }
+                    disabled={disabled}
+                    onPress={() => toggleExpand(row.node.id)}
+                    {...(Platform.OS === 'web' ? ({ tabIndex: -1 } as object) : {})}
+                    style={styles.chevronBtn}
                   >
-                    {multiple && (row.selectable || checkStrategy === 'cascade') ? (
-                      <View
-                        style={[
-                          styles.checkboxIndicator,
-                          {
-                            borderColor:
-                              isSelected || isMixed ? t.primary : t.border,
-                            backgroundColor:
-                              isSelected || isMixed ? t.primary : t.surface,
-                          },
-                        ]}
-                      >
-                        {isMixed ? (
-                          <SvgIcon name="minus" size={12} color="#ffffff" />
-                        ) : isSelected ? (
-                          <SvgIcon name="check" size={12} color="#ffffff" />
-                        ) : null}
-                      </View>
-                    ) : null}
+                    <SvgIcon
+                      name={row.expanded ? 'chevron-down' : 'chevron-right'}
+                      size={16}
+                      color={t.textMuted}
+                    />
+                  </Pressable>
+                ) : (
+                  <View style={styles.chevronSpacer} />
+                )}
 
-                    <View style={styles.rowTextWrap}>
-                      <View style={styles.rowTitleLine}>
-                        <Text
-                          style={{
-                            fontSize: t.textSm,
-                            fontWeight: fontWeight(
-                              isSelected ? t.weightBold : t.weightMedium
-                            ),
-                            color: isSelected ? t.primaryContrast : t.text,
-                            fontFamily: fontFamily(t),
-                          }}
+                <Pressable
+                  accessibilityRole={multiple ? 'checkbox' : 'button'}
+                  accessibilityState={{
+                    disabled: rowDisabled,
+                    selected: isSelected,
+                    checked: showCheckbox ? (isMixed ? 'mixed' : isSelected) : undefined,
+                  }}
+                  disabled={rowDisabled}
+                  onPress={() => handleRowSelect(row)}
+                  {...(Platform.OS === 'web' ? ({ tabIndex: -1 } as object) : {})}
+                  style={styles.rowBodyHit}
+                >
+                  {showCheckbox ? (
+                    <View
+                      style={[
+                        styles.checkboxIndicator,
+                        {
+                          borderColor: isSelected || isMixed ? t.primary : t.border,
+                          backgroundColor: isSelected || isMixed ? t.primary : t.surface,
+                        },
+                      ]}
+                    >
+                      {isMixed ? (
+                        <SvgIcon name="minus" size={12} color={t.surface} />
+                      ) : isSelected ? (
+                        <SvgIcon name="check" size={12} color={t.surface} />
+                      ) : null}
+                    </View>
+                  ) : null}
+
+                  {row.node.icon && isEmrIconName(row.node.icon) ? (
+                    <SvgIcon
+                      name={row.node.icon}
+                      size={15}
+                      color={isSelected ? t.primary : (toneColor ?? t.textMuted)}
+                    />
+                  ) : null}
+
+                  <View style={styles.rowTextWrap}>
+                    <View style={styles.rowTitleLine}>
+                      {renderHighlighted(row.node.label, {
+                        fontSize: isSm ? t.textSm : t.textMd,
+                        fontWeight: fontWeight(isSelected ? t.weightBold : t.weightMedium),
+                        color: isSelected ? t.primaryContrast : t.text,
+                        fontFamily: fontFamily(t),
+                      })}
+                      {row.node.code ? (
+                        <View
+                          style={[
+                            styles.codePill,
+                            { backgroundColor: t.neutralSoft, borderColor: t.border },
+                          ]}
                         >
-                          {row.node.label}
-                        </Text>
-                        {row.node.code ? (
-                          <EmrBadgeView
-                            badge={{ label: row.node.code, tone: 'neutral' }}
-                          />
-                        ) : null}
-                      </View>
-                      {row.node.description ? (
-                        <Text
-                          style={{
+                          {renderHighlighted(row.node.code, {
                             fontSize: t.textXs,
                             color: t.textMuted,
                             fontFamily: fontFamily(t),
-                          }}
+                            fontWeight: fontWeight(t.weightMedium),
+                          })}
+                        </View>
+                      ) : null}
+                      {row.node.readOnly ? (
+                        <SvgIcon name="lock" size={12} color={t.textMuted} />
+                      ) : null}
+                      {badge ? (
+                        <View
+                          style={[
+                            styles.codePill,
+                            {
+                              backgroundColor: withAlpha(
+                                resolveTreeToneColor(t, badge.tone) ?? t.textMuted,
+                                0.14,
+                              ),
+                              borderColor: resolveTreeToneColor(t, badge.tone) ?? t.border,
+                            },
+                          ]}
                         >
-                          {row.node.description}
-                        </Text>
+                          <Text
+                            style={{
+                              fontSize: t.text2xs,
+                              color: resolveTreeToneColor(t, badge.tone) ?? t.textMuted,
+                              fontWeight: fontWeight(t.weightBold),
+                              fontFamily: fontFamily(t),
+                            }}
+                          >
+                            {badge.text}
+                          </Text>
+                        </View>
                       ) : null}
                     </View>
-                  </Pressable>
-                </View>
-              );
-            })
-          )}
-        </ScrollView>
-      </View>
+                    {row.node.description
+                      ? renderHighlighted(row.node.description, {
+                          fontSize: t.textXs,
+                          color: t.textMuted,
+                          fontFamily: fontFamily(t),
+                        })
+                      : null}
+                  </View>
+                </Pressable>
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
+    </View>
+  );
+
+  if (!label && !hint && !warning && !error && !info && !messages?.length) {
+    return containerNode;
+  }
+
+  return (
+    <FieldChrome
+      controlId={id}
+      label={label}
+      labelHidden={!label || labelHidden}
+      hint={labelHidden ? undefined : hint}
+      error={labelHidden ? undefined : error}
+      warning={labelHidden ? undefined : warning}
+      info={labelHidden ? undefined : info}
+      messages={labelHidden ? undefined : messages}
+      required={required}
+    >
+      {containerNode}
     </FieldChrome>
   );
 }
@@ -503,20 +740,41 @@ export interface EmrTreeSelectProps {
   readonly onValuesChange?: (values: readonly string[]) => void;
   readonly checkStrategy?: EmrTreeCheckStrategy;
   readonly displayMode?: 'path' | 'leaf';
+  readonly separator?: string;
+  readonly closeOnSelect?: boolean;
+  readonly maxTagCount?: number;
+  readonly maxSelections?: number;
+  readonly expandedIds?: readonly string[];
+  readonly defaultExpandedIds?: readonly string[];
+  readonly onExpandedChange?: (expandedIds: readonly string[]) => void;
   readonly placeholder?: string;
   readonly searchable?: boolean;
+  readonly searchPlaceholder?: string;
+  readonly showExpandControls?: boolean;
   readonly clearable?: boolean;
+  readonly clearLabel?: string;
   readonly onCleared?: () => void;
+  readonly open?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
+  readonly variant?: 'outline' | 'filled' | 'subtle';
+  readonly size?: 'md' | 'sm';
+  readonly loading?: boolean;
+  readonly emptyMessage?: string;
   readonly label?: string;
+  readonly labelHidden?: boolean;
+  readonly ariaLabel?: string;
   readonly hint?: string;
   readonly error?: string;
   readonly warning?: string;
   readonly info?: string;
+  readonly invalid?: boolean;
   readonly messages?: readonly FieldValidationLine[];
   readonly required?: boolean;
   readonly disabled?: boolean;
   readonly readOnly?: boolean;
   readonly controlId?: string;
+  readonly onFocused?: () => void;
+  readonly onBlurred?: () => void;
 }
 
 export function EmrTreeSelect({
@@ -528,263 +786,498 @@ export function EmrTreeSelect({
   onValuesChange,
   checkStrategy = 'cascade',
   displayMode = 'path',
-  placeholder = 'Select from hierarchy…',
+  separator = ' / ',
+  closeOnSelect,
+  maxTagCount,
+  maxSelections,
+  expandedIds: controlledExpandedIds,
+  defaultExpandedIds,
+  onExpandedChange,
+  placeholder = 'Select item…',
   searchable = true,
-  clearable = true,
+  searchPlaceholder = 'Filter options…',
+  showExpandControls = false,
+  clearable = false,
+  clearLabel,
   onCleared,
+  open: controlledOpen,
+  onOpenChange,
+  variant = 'outline',
+  size = 'md',
+  loading = false,
+  emptyMessage = 'No matching items',
   label,
+  labelHidden,
+  ariaLabel,
   hint,
   error,
   warning,
   info,
+  invalid,
   messages,
   required,
   disabled = false,
   readOnly = false,
   controlId,
+  onFocused,
+  onBlurred,
 }: EmrTreeSelectProps) {
   const t = useEmrTheme();
+  const labels = useEmrLabels();
+  const { width: winW, height: winH } = useWindowDimensions();
   const reactId = useId().replace(/:/g, '');
   const id = controlId ?? `emr-treeselect-${reactId}`;
 
-  const [open, setOpen] = useState(false);
-  const [expandedIds, setExpandedIds] = useState<readonly string[]>(() => {
-    const initialTarget = multiple ? values[0] : value;
-    const trail = resolveTreeNodePath(nodes, initialTarget);
-    if (trail.length > 1) {
-      return trail.slice(0, -1).map((n) => n.id);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
+
+  const [uncontrolledExpanded, setUncontrolledExpanded] = useState<readonly string[]>(() =>
+    resolveEmrTreeSelectDefaultExpanded(nodes, value, values, defaultExpandedIds),
+  );
+  const activeExpanded = controlledExpandedIds ?? uncontrolledExpanded;
+
+  const [anchor, setAnchor] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const triggerWrapRef = useRef<ComponentRef<typeof View> | null>(null);
+  const triggerBtnRef = useRef<ComponentRef<typeof Pressable> | null>(null);
+
+  const setOpen = (next: boolean, restoreFocus = false) => {
+    if (next && (disabled || readOnly)) return;
+    if (controlledOpen === undefined) {
+      setUncontrolledOpen(next);
     }
-    return nodes.slice(0, 2).map((n) => n.id);
-  });
-  const wrapRef = useRef<ComponentRef<typeof View> | null>(null);
+    onOpenChange?.(next);
+    if (!next && restoreFocus && Platform.OS === 'web') {
+      setTimeout(() => {
+        (triggerBtnRef.current as unknown as { focus?: () => void } | null)?.focus?.();
+      }, 0);
+    }
+  };
 
   useEffect(() => {
     if (!open || Platform.OS !== 'web' || typeof document === 'undefined') return;
-    const onMouseDown = (ev: MouseEvent) => {
-      const el = wrapRef.current as unknown as { contains?: (target: unknown) => boolean } | null;
-      if (el && typeof el.contains === 'function' && !el.contains(ev.target)) {
-        setOpen(false);
-      }
-    };
     const onKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === 'Escape') {
-        setOpen(false);
+        ev.preventDefault();
+        setOpen(false, true);
       }
     };
-    document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onMouseDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
   }, [open]);
 
-  const singleDisplay = value
-    ? formatTreeSelectionLabel(nodes, value, displayMode) || value
-    : '';
+  const openDropdown = () => {
+    if (readOnly || disabled) return;
+    if (triggerWrapRef.current && typeof triggerWrapRef.current.measureInWindow === 'function') {
+      triggerWrapRef.current.measureInWindow((x, y, width, height) => {
+        if (width > 0 && height > 0) setAnchor({ x, y, width, height });
+        else setAnchor(null);
+        setOpen(true);
+      });
+    } else {
+      setAnchor(null);
+      setOpen(true);
+    }
+  };
 
-  const hasSelection = multiple ? values.length > 0 : Boolean(value);
+  const summary = buildEmrTreeSelectSummary({
+    nodes,
+    multiple,
+    value,
+    values,
+    displayMode,
+    separator,
+    placeholder,
+    maxTagCount,
+  });
+
+  const canClear = isEmrTreeClearable({
+    clearable,
+    disabled,
+    readOnly,
+    multiple,
+    value,
+    values,
+    nodes,
+  });
 
   const handleRemoveChip = (targetId: string) => {
     if (disabled || readOnly) return;
-    const next = values.filter((v) => v !== targetId);
-    onValuesChange?.(next);
+    const next = removeTreeSelectionChip(nodes, values, targetId, checkStrategy);
+    if (next !== values) {
+      onValuesChange?.(next);
+    }
   };
 
   const handleClearAll = () => {
     if (disabled || readOnly) return;
     if (multiple) {
-      onValuesChange?.([]);
+      const next = clearTreeSelection(nodes, values);
+      onValuesChange?.(next);
     } else {
-      onValueChange?.(null);
+      const kept = value ? clearTreeSelection(nodes, [value]) : [];
+      onValueChange?.(kept[0] ?? null);
     }
     onCleared?.();
   };
 
-  return (
-    <FieldChrome
-      controlId={id}
-      label={label}
-      hint={hint}
-      error={error}
-      warning={warning}
-      info={info}
-      messages={messages}
-      required={required}
-    >
-      <View ref={wrapRef} style={styles.selectWrap}>
-        <View
-          style={[
-            styles.triggerRow,
+  const isInvalid = Boolean(invalid || error);
+  const isWarning = Boolean(!isInvalid && warning);
+  const isSm = size === 'sm';
+  const minHeight = Math.max(44, t.controlHeight);
+  const hasMessage = Boolean(!labelHidden && (hint || warning || error));
+  const baseAriaLabel = (ariaLabel ?? '').trim() || label || placeholder;
+
+  const useAnchoredMenu = Boolean(anchor && winW >= 520);
+  const menuMaxH = 340;
+  const menuWidth = anchor ? Math.min(Math.max(anchor.width, 240), Math.max(240, winW - 24)) : 320;
+  const flipUp = Boolean(anchor && anchor.y + anchor.height + menuMaxH + 12 > winH && anchor.y > menuMaxH);
+  const anchoredLeft = anchor ? Math.max(12, Math.min(anchor.x, winW - menuWidth - 12)) : 0;
+  const anchoredTop = anchor
+    ? flipUp
+      ? Math.max(12, anchor.y - menuMaxH - 4)
+      : anchor.y + anchor.height + 4
+    : 0;
+
+  const shellBg = disabled
+    ? t.surfaceRaised
+    : readOnly
+      ? t.surfaceSoft
+      : variant === 'filled'
+        ? t.surfaceSoft
+        : variant === 'subtle'
+          ? 'transparent'
+          : t.surface;
+
+  const shellBorder = open
+    ? t.primary
+    : isInvalid
+      ? t.danger
+      : isWarning
+        ? t.warning
+        : variant === 'filled' || variant === 'subtle'
+          ? 'transparent'
+          : t.border;
+
+  const treeSelectControl = (
+    <View ref={triggerWrapRef} collapsable={false} style={styles.selectWrap}>
+      <View
+        style={[
+          styles.selectShell,
+          {
+            minHeight,
+            backgroundColor: shellBg,
+            borderColor: shellBorder,
+            borderStyle: readOnly ? 'dashed' : 'solid',
+            opacity: disabled ? 0.6 : 1,
+          },
+        ]}
+      >
+        {multiple && (summary.visibleChips.length > 0 || summary.overflowCount > 0) ? (
+          <View style={styles.selectChips} aria-label={`${baseAriaLabel} selected items`}>
+            {summary.visibleChips.map((chip) => {
+              const chipLocked = Boolean(readOnly || disabled || chip.readOnly || chip.disabled);
+              return (
+                <View
+                  key={chip.id}
+                  style={[
+                    styles.selectChip,
+                    {
+                      backgroundColor: t.surfaceSoft,
+                      borderColor: t.border,
+                      borderStyle: chip.readOnly ? 'dashed' : 'solid',
+                    },
+                  ]}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: t.textXs,
+                      color: t.text,
+                      fontWeight: fontWeight(t.weightMedium),
+                      fontFamily: fontFamily(t),
+                    }}
+                  >
+                    {chip.label}
+                  </Text>
+                  {chip.readOnly ? (
+                    <SvgIcon name="lock" size={11} color={t.textMuted} />
+                  ) : !chipLocked ? (
+                    <Pressable
+                      role="button"
+                      aria-label={`Remove ${chip.label}`}
+                      onPress={() => handleRemoveChip(chip.id)}
+                      style={({ focused }: PressState) => [styles.selectChipRemove, focusRing(t, focused)]}
+                    >
+                      <SvgIcon name="close" size={12} color={t.textMuted} />
+                    </Pressable>
+                  ) : null}
+                </View>
+              );
+            })}
+            {summary.overflowCount > 0 ? (
+              <View style={[styles.selectChip, { backgroundColor: t.surfaceSoft, borderColor: t.border }]}>
+                <Text
+                  style={{
+                    color: t.textMuted,
+                    fontSize: t.textXs,
+                    fontFamily: fontFamily(t),
+                    fontWeight: fontWeight(t.weightMedium),
+                  }}
+                >
+                  +{summary.overflowCount}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        <Pressable
+          ref={triggerBtnRef}
+          id={id}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="tree"
+          aria-controls={open ? `${id}-panel` : undefined}
+          aria-busy={loading ? true : undefined}
+          aria-label={`${baseAriaLabel}, ${summary.text}`}
+          aria-describedby={hasMessage ? `${id}-message` : undefined}
+          aria-invalid={isInvalid || undefined}
+          aria-required={required || undefined}
+          aria-readonly={readOnly || undefined}
+          aria-disabled={disabled || undefined}
+          disabled={disabled}
+          onPress={
+            readOnly
+              ? undefined
+              : () => {
+                  if (open) setOpen(false, true);
+                  else openDropdown();
+                }
+          }
+          onFocus={() => onFocused?.()}
+          onBlur={() => onBlurred?.()}
+          {...webProps({
+            onKeyDown: (e: WebKeyEvent) => {
+              if (disabled || readOnly) return;
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+                if (!open) {
+                  e.preventDefault();
+                  openDropdown();
+                }
+              } else if (e.key === 'Escape' && open) {
+                e.preventDefault();
+                setOpen(false, true);
+              }
+            },
+          })}
+          style={({ hovered, focused }: PressState) => [
+            styles.selectTrigger,
+            focusRing(t, focused),
             {
-              minHeight: Math.max(44, t.controlHeight),
-              backgroundColor: readOnly ? t.surfaceSoft : t.surface,
-              borderColor: error ? t.danger : open ? t.focus : t.border,
-              borderRadius: 8,
-              opacity: disabled ? 0.55 : 1,
+              minHeight: Math.max(44, minHeight),
+              backgroundColor: hovered && !disabled && !readOnly ? t.surfaceSoft : undefined,
             },
           ]}
         >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={label ?? placeholder}
-            accessibilityState={{ expanded: open, disabled }}
-            disabled={disabled}
-            onPress={() => {
-              if (!disabled && !readOnly) {
-                setOpen((prev) => !prev);
-              }
-            }}
-            style={styles.triggerMain}
-          >
-            {multiple ? (
-              values.length > 0 ? (
-                <View style={styles.chipRow}>
-                  {values.map((idItem) => {
-                    const text =
-                      formatTreeSelectionLabel(nodes, idItem, displayMode) || idItem;
-                    return (
-                      <View
-                        key={idItem}
-                        style={[
-                          styles.chip,
-                          {
-                            backgroundColor: t.primarySoft,
-                            borderColor: t.primary,
-                            borderRadius: 6,
-                          },
-                        ]}
-                      >
-                        <Text
-                          style={{
-                            fontSize: t.textXs,
-                            color: t.primaryContrast,
-                            fontWeight: fontWeight(t.weightMedium),
-                            fontFamily: fontFamily(t),
-                          }}
-                        >
-                          {text}
-                        </Text>
-                        {!readOnly && !disabled ? (
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={`Remove ${text}`}
-                            onPress={() => handleRemoveChip(idItem)}
-                            style={styles.chipRemoveHit}
-                          >
-                            <SvgIcon name="close" size={12} color={t.primaryContrast} />
-                          </Pressable>
-                        ) : null}
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : (
-                <Text
-                  style={{
-                    fontSize: t.textSm,
-                    color: t.textMuted,
-                    fontFamily: fontFamily(t),
-                  }}
-                >
-                  {placeholder}
-                </Text>
-              )
-            ) : singleDisplay ? (
-              <Text
-                style={{
-                  fontSize: t.textSm,
-                  color: t.text,
-                  fontWeight: fontWeight(t.weightMedium),
-                  fontFamily: fontFamily(t),
-                }}
-              >
-                {singleDisplay}
-              </Text>
-            ) : (
-              <Text
-                style={{
-                  fontSize: t.textSm,
-                  color: t.textMuted,
-                  fontFamily: fontFamily(t),
-                }}
-              >
-                {placeholder}
-              </Text>
-            )}
-          </Pressable>
-
-          {clearable && hasSelection && !readOnly && !disabled ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Clear ${label ?? 'selection'}`}
-              onPress={handleClearAll}
-              style={styles.iconHit}
+          {!multiple || (summary.visibleChips.length === 0 && summary.overflowCount === 0) ? (
+            <Text
+              numberOfLines={1}
+              style={{
+                flex: 1,
+                fontSize: isSm ? t.textSm : t.textMd,
+                color: summary.hasSelection ? t.text : t.textMuted,
+                fontWeight: fontWeight(summary.hasSelection ? t.weightMedium : t.weightRegular),
+                fontFamily: fontFamily(t),
+              }}
             >
-              <SvgIcon name="close" size={15} color={t.textMuted} />
-            </Pressable>
-          ) : null}
+              {summary.text}
+            </Text>
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
+          {loading ? (
+            <ActivityIndicator size="small" color={t.textMuted} />
+          ) : (
+            <SvgIcon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={t.textMuted} />
+          )}
+        </Pressable>
 
+        {canClear ? (
           <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={open ? 'Close hierarchy picker' : 'Open hierarchy picker'}
-            disabled={disabled || readOnly}
-            onPress={() => {
-              if (!disabled && !readOnly) setOpen((prev) => !prev);
-            }}
-            style={styles.iconHit}
-          >
-            <SvgIcon
-              name={open ? 'chevron-up' : 'chevron-down'}
-              size={16}
-              color={t.textMuted}
-            />
-          </Pressable>
-        </View>
-
-        {open && !readOnly && !disabled ? (
-          <View
-            style={[
-              styles.popover,
+            role="button"
+            aria-label={`${clearLabel ?? labels.clear} ${baseAriaLabel}`}
+            {...(Platform.OS === 'web' ? ({ dataSet: { 'emr-print': 'hide' } } as object) : {})}
+            onPress={handleClearAll}
+            style={({ pressed, focused }: PressState) => [
+              styles.iconHit,
+              focusRing(t, focused),
               {
-                backgroundColor: t.surface,
-                borderColor: t.border,
-                borderRadius: 8,
+                borderLeftWidth: 1,
+                borderLeftColor: t.border,
+                backgroundColor: pressed ? t.surfaceRaised : 'transparent',
               },
             ]}
           >
+            <SvgIcon name="close" size={16} color={t.textMuted} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      <Modal
+        visible={open && !readOnly && !disabled}
+        transparent
+        statusBarTranslucent
+        navigationBarTranslucent
+        animationType="fade"
+        onRequestClose={() => setOpen(false, true)}
+      >
+        <Pressable
+          aria-label={labels.close}
+          focusable={false}
+          {...(Platform.OS === 'web' ? ({ tabIndex: -1 } as object) : {})}
+          style={useAnchoredMenu ? styles.anchoredBackdrop : styles.backdrop}
+          onPress={() => setOpen(false, true)}
+        >
+          <Pressable
+            id={`${id}-panel`}
+            aria-label={baseAriaLabel}
+            style={[
+              useAnchoredMenu
+                ? {
+                    position: 'absolute',
+                    left: anchoredLeft,
+                    top: anchoredTop,
+                    width: menuWidth,
+                    maxHeight: menuMaxH,
+                    borderWidth: 1,
+                    borderRadius: 10,
+                    padding: 6,
+                    overflow: 'hidden',
+                    shadowColor: '#0f172a',
+                    shadowOpacity: 0.16,
+                    shadowRadius: 18,
+                    shadowOffset: { width: 0, height: 8 },
+                    elevation: 8,
+                  }
+                : styles.sheet,
+              { backgroundColor: t.surface, borderColor: t.border },
+            ]}
+          >
+            {!useAnchoredMenu && label ? (
+              <Text
+                role="heading"
+                style={[
+                  styles.sheetTitle,
+                  { color: t.text, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) },
+                ]}
+              >
+                {label}
+              </Text>
+            ) : null}
             <EmrTreeView
               nodes={nodes}
               value={value}
               onValueChange={(next) => {
                 onValueChange?.(next);
-                if (!multiple && next !== null) {
-                  setOpen(false);
+                if (resolveEmrSelectCloseOnSelect(multiple, closeOnSelect)) {
+                  setOpen(false, true);
                 }
               }}
               multiple={multiple}
               values={values}
-              onValuesChange={onValuesChange}
+              onValuesChange={(next) => {
+                onValuesChange?.(next);
+                if (resolveEmrSelectCloseOnSelect(multiple, closeOnSelect)) {
+                  setOpen(false, true);
+                }
+              }}
               checkStrategy={checkStrategy}
-              expandedIds={expandedIds}
-              onExpandedChange={setExpandedIds}
+              maxSelections={maxSelections}
+              expandedIds={activeExpanded}
+              onExpandedChange={(next) => {
+                if (controlledExpandedIds === undefined) setUncontrolledExpanded(next);
+                onExpandedChange?.(next);
+              }}
               searchable={searchable}
-              showExpandControls
+              searchPlaceholder={searchPlaceholder}
+              showExpandControls={showExpandControls}
               clearable={clearable}
+              clearLabel={clearLabel}
               onCleared={onCleared}
-              maxHeight={260}
+              size={size}
+              emptyMessage={emptyMessage}
+              maxHeight={useAnchoredMenu ? 260 : 300}
             />
-          </View>
-        ) : null}
+            {!useAnchoredMenu ? (
+              <View style={[styles.sheetFooter, { borderTopColor: t.border }]}>
+                {canClear ? (
+                  <Pressable
+                    role="button"
+                    onPress={handleClearAll}
+                    style={[styles.sheetFooterBtn, { borderColor: t.border, backgroundColor: t.surfaceSoft }]}
+                  >
+                    <Text style={{ color: t.text, fontSize: t.textMd, fontFamily: fontFamily(t), fontWeight: fontWeight(t.weightMedium) }}>
+                      {clearLabel ?? labels.clear}
+                    </Text>
+                  </Pressable>
+                ) : null}
+                {(() => {
+                  const donePalette = resolveButtonPalette(t, 'primary', false);
+                  return (
+                    <Pressable
+                      role="button"
+                      onPress={() => setOpen(false, true)}
+                      style={[
+                        styles.sheetFooterBtn,
+                        { borderColor: donePalette.borderColor, backgroundColor: donePalette.backgroundColor },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          color: donePalette.textColor,
+                          fontSize: t.textMd,
+                          fontFamily: fontFamily(t),
+                          fontWeight: fontWeight(t.weightBold),
+                        }}
+                      >
+                        Done
+                      </Text>
+                    </Pressable>
+                  );
+                })()}
+              </View>
+            ) : null}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
-        {Platform.OS === 'web'
-          ? createElement('input', {
-              type: 'hidden',
-              name: id,
-              value: multiple ? values.join(',') : (value ?? ''),
-            })
-          : null}
-      </View>
+      {Platform.OS === 'web'
+        ? createElement('input', {
+            type: 'hidden',
+            name: id,
+            value: multiple ? values.join(',') : (value ?? ''),
+          })
+        : null}
+    </View>
+  );
+
+  if (!label && !hint && !warning && !error && !info && !messages?.length) {
+    return treeSelectControl;
+  }
+
+  return (
+    <FieldChrome
+      controlId={id}
+      label={label}
+      labelHidden={!label || labelHidden}
+      hint={labelHidden ? undefined : hint}
+      error={labelHidden ? undefined : error}
+      warning={labelHidden ? undefined : warning}
+      info={labelHidden ? undefined : info}
+      messages={labelHidden ? undefined : messages}
+      required={required}
+    >
+      {treeSelectControl}
     </FieldChrome>
   );
 }
@@ -806,7 +1299,7 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     flex: 1,
-    minWidth: 180,
+    minWidth: 140,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -816,6 +1309,7 @@ const styles = StyleSheet.create({
   },
   toolbarActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
   },
@@ -841,8 +1335,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chevronSpacer: {
-    width: 28,
-    height: 28,
+    width: 44,
+    height: 44,
   },
   rowBodyHit: {
     flex: 1,
@@ -870,38 +1364,60 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
   },
+  codePill: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+  },
   selectWrap: {
     position: 'relative',
     gap: 6,
   },
-  triggerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    paddingLeft: 12,
-    paddingRight: 4,
-  },
-  triggerMain: {
-    flex: 1,
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingVertical: 6,
-  },
-  chipRow: {
+  selectShell: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
-  chip: {
+  selectChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    paddingLeft: 10,
+    paddingVertical: 6,
+    maxWidth: '80%',
+  },
+  selectChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    minHeight: 28,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 2,
     borderWidth: 1,
+    borderRadius: 999,
+    maxWidth: '100%',
   },
-  chipRemoveHit: {
-    padding: 4,
+  selectChipRemove: {
+    minWidth: 24,
+    minHeight: 24,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectTrigger: {
+    flex: 1,
+    minWidth: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   iconHit: {
     minWidth: 44,
@@ -909,8 +1425,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  popover: {
+  anchoredBackdrop: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  backdrop: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+  },
+  sheet: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     borderWidth: 1,
-    overflow: 'hidden',
+    padding: 16,
+    maxHeight: '82%',
+    gap: 12,
+  },
+  sheetTitle: {
+    marginBottom: 4,
+  },
+  sheetFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  sheetFooterBtn: {
+    minHeight: 44,
+    minWidth: 88,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

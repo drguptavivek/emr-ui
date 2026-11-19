@@ -387,6 +387,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "ariaLabel",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "value",
         "type": "string | null",
         "required": false,
@@ -407,6 +419,24 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "'day' | 'month' | 'year'",
         "required": false,
         "defaultValue": "'day'"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
       }
     ],
     "outputs": [
@@ -415,7 +445,15 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string | null"
       },
       {
+        "name": "focused",
+        "type": "void"
+      },
+      {
         "name": "blurred",
+        "type": "void"
+      },
+      {
+        "name": "submitted",
         "type": "void"
       }
     ]
@@ -501,9 +539,15 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "size",
-        "type": "EmrSelectSize",
+        "type": "EmrSelectSize | 'lg'",
         "required": false,
         "defaultValue": "'md'"
+      },
+      {
+        "name": "tabularNums",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "variant",
@@ -560,10 +604,22 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "hasWarning",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "warning",
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string | null",
+        "required": false,
+        "defaultValue": "null"
       }
     ],
     "outputs": [
@@ -743,7 +799,25 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "allowNegative",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "valueWarning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "unitWarning",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -759,6 +833,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string | null",
+        "required": false,
+        "defaultValue": "null"
+      },
+      {
+        "name": "clearEmitsChanges",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
       }
     ],
     "outputs": [
@@ -1068,6 +1154,24 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "hasWarning",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string | null | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
@@ -4145,6 +4249,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "undefined"
       },
       {
+        "name": "ariaDescribedBy",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "fullWidth",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "value",
         "type": "string | null",
         "required": false,
@@ -4285,6 +4401,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "ariaLabel",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "ariaDescribedBy",
         "type": "string | undefined",
         "required": false,
         "defaultValue": "undefined"
@@ -5909,6 +6031,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": false
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string | null | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "options",
         "type": "readonly EmrSegmentedOption[]",
         "required": false,
@@ -5982,6 +6116,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "hasWarning",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
@@ -7051,15 +7191,67 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "PairedFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7071,7 +7263,92 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "EmrQuantitySize",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "showSteppers",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "mode",
+        "type": "EmrQuantityNumericMode",
+        "required": false
+      },
+      {
+        "name": "precision",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "placeholder",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "unitPlaceholder",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "error",
         "type": "string",
         "required": false
       }
@@ -7080,6 +7357,22 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "intent",
         "type": "DurationFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "submitted",
+        "type": "void"
       }
     ]
   },
@@ -7091,8 +7384,78 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
+        "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "showSteppers",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "displayFormat",
+        "type": "EmrDateTimeDisplayFormat",
+        "required": false
+      },
+      {
+        "name": "timePrecision",
+        "type": "EmrTimePrecision",
+        "required": false
+      },
+      {
+        "name": "hourCycle",
+        "type": "EmrTimeHourCycle",
+        "required": false
+      },
+      {
+        "name": "wireFormat",
+        "type": "EmrDateTimeWireFormat",
         "required": false
       }
     ],
@@ -7100,6 +7463,22 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "intent",
         "type": "RangeFieldIntent"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
+      },
+      {
+        "name": "submitted",
+        "type": "void"
       }
     ]
   },
@@ -7111,15 +7490,64 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "SignatureCaptureIntent"
+      },
+      {
+        "name": "valueChange",
+        "type": "readonly EmrSignatureStroke[]"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7131,15 +7559,71 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "PhoneFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
+      },
+      {
+        "name": "submitted",
+        "type": "void"
       }
     ]
   },
@@ -7151,15 +7635,56 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "AddressFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7171,15 +7696,78 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "rows",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "maxLength",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "autoResize",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "MacroTextFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7191,15 +7779,71 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "EmrSegmentedSize",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "LateralityFieldIntent"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7211,15 +7855,67 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "VisualAcuityFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7231,15 +7927,67 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false
+      },
+      {
+        "name": "clearable",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       }
     ],
     "outputs": [
       {
         "name": "intent",
         "type": "RefractionFieldIntent"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7257,6 +8005,11 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "''"
       },
       {
+        "name": "ariaLabel",
+        "type": "string",
+        "required": false
+      },
+      {
         "name": "labelHidden",
         "type": "boolean",
         "required": false,
@@ -7270,13 +8023,31 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "value",
-        "type": "readonly string[]",
+        "type": "readonly string[] | string | null",
         "required": false,
         "defaultValue": "[]"
       },
       {
+        "name": "values",
+        "type": "readonly string[] | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "allowEmpty",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
         "name": "orientation",
-        "type": "'vertical' | 'horizontal' | 'grid'",
+        "type": "EmrToggleGroupOrientation",
         "required": false,
         "defaultValue": "'vertical'"
       },
@@ -7288,15 +8059,39 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "variant",
-        "type": "'standard' | 'card'",
+        "type": "EmrToggleGroupVariant | 'standard'",
         "required": false,
-        "defaultValue": "'standard'"
+        "defaultValue": "'tile'"
+      },
+      {
+        "name": "size",
+        "type": "EmrToggleGroupSize",
+        "required": false,
+        "defaultValue": "'md'"
       },
       {
         "name": "labelPlacement",
-        "type": "'end' | 'start' | 'space-between'",
+        "type": "EmrToggleGroupLabelPlacement",
         "required": false,
         "defaultValue": "'space-between'"
+      },
+      {
+        "name": "showStateLabels",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "onLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'On'"
+      },
+      {
+        "name": "offLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Off'"
       },
       {
         "name": "showSelectAll",
@@ -7317,6 +8112,34 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "[]"
       },
       {
+        "name": "minSelections",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "maxSelections",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "showSelectionCount",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearable",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
+      },
+      {
         "name": "required",
         "type": "boolean",
         "required": false,
@@ -7335,7 +8158,19 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "hint",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -7351,6 +8186,22 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "valueChange",
         "type": "readonly string[]"
+      },
+      {
+        "name": "valuesChange",
+        "type": "readonly string[]"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7409,7 +8260,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "'cascade'"
       },
       {
+        "name": "maxSelections",
+        "type": "number",
+        "required": false
+      },
+      {
         "name": "expandedIds",
+        "type": "readonly string[] | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "defaultExpandedIds",
         "type": "readonly string[] | undefined",
         "required": false,
         "defaultValue": "undefined"
@@ -7433,10 +8295,40 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "'Filter hierarchy…'"
       },
       {
+        "name": "highlightMatch",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
         "name": "showExpandControls",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "clearable",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
+      },
+      {
+        "name": "size",
+        "type": "'md' | 'sm'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "maxHeight",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "320"
       },
       {
         "name": "emptyMessage",
@@ -7463,7 +8355,19 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "hint",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -7495,6 +8399,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "nodeSelected",
         "type": "EmrTreeNode"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7516,6 +8432,11 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string",
+        "required": false
       },
       {
         "name": "placeholder",
@@ -7560,6 +8481,40 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "'path'"
       },
       {
+        "name": "separator",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "' / '"
+      },
+      {
+        "name": "closeOnSelect",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "maxTagCount",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "maxSelections",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "expandedIds",
+        "type": "readonly string[] | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "defaultExpandedIds",
+        "type": "readonly string[] | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "searchable",
         "type": "boolean",
         "required": false,
@@ -7572,7 +8527,37 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "'Filter options…'"
       },
       {
+        "name": "showExpandControls",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "clearable",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
+      },
+      {
+        "name": "variant",
+        "type": "'outline' | 'filled' | 'subtle'",
+        "required": false,
+        "defaultValue": "'outline'"
+      },
+      {
+        "name": "size",
+        "type": "'md' | 'sm'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "loading",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
@@ -7608,7 +8593,19 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "hint",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -7630,12 +8627,24 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "readonly string[]"
       },
       {
+        "name": "expandedIdsChange",
+        "type": "readonly string[]"
+      },
+      {
         "name": "cleared",
         "type": "void"
       },
       {
         "name": "openChange",
         "type": "boolean"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7651,6 +8660,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "src",
@@ -7682,6 +8697,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "undefined"
       },
       {
+        "name": "viewport",
+        "type": "EmrImageViewportState | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "fullscreen",
         "type": "boolean | undefined",
         "required": false,
@@ -7692,6 +8713,48 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "boolean",
         "required": false,
         "defaultValue": "true"
+      },
+      {
+        "name": "showThumbnails",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "height",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "300"
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "disabled",
@@ -7712,6 +8775,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "viewportChange",
         "type": "EmrImageViewportState"
+      },
+      {
+        "name": "closeRequested",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7727,6 +8802,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "src",
@@ -7747,10 +8828,46 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "DEFAULT_ASPECT_PRESETS"
       },
       {
+        "name": "transform",
+        "type": "EmrImageCropTransform | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "initialTransform",
         "type": "EmrImageCropTransform | undefined",
         "required": false,
         "defaultValue": "undefined"
+      },
+      {
+        "name": "outputMimeType",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'image/png'"
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "readOnly",
@@ -7776,6 +8893,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "cancelRequested",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
         "type": "void"
       }
     ]
@@ -7842,6 +8967,30 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "DEFAULT_ASPECT_PRESETS"
       },
       {
+        "name": "buttonLabel",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "dropHint",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Drag and drop clinical images here, or browse to preview and crop.'"
+      },
+      {
+        "name": "emptyLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'No images uploaded.'"
+      },
+      {
+        "name": "cropOutputMimeType",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'image/png'"
+      },
+      {
         "name": "required",
         "type": "boolean",
         "required": false,
@@ -7866,10 +9015,34 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "''"
       },
       {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "info",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "error",
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "messages",
+        "type": "readonly EmrValidationMessage[]",
+        "required": false,
+        "defaultValue": "[]"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       }
     ],
     "outputs": [
@@ -7890,12 +9063,24 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "{ readonly id: string; readonly result: EmrImageCropResult }"
       },
       {
+        "name": "captionChange",
+        "type": "{ readonly id: string; readonly caption: string }"
+      },
+      {
         "name": "removeRequested",
         "type": "string"
       },
       {
         "name": "captureRequested",
         "type": "'camera'"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -7908,6 +9093,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "label",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "ariaLabel",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -7947,16 +9138,58 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "[]"
       },
       {
+        "name": "startPlaceholder",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "endPlaceholder",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "variant",
+        "type": "EmrControlVariant",
+        "required": false,
+        "defaultValue": "'outline'"
+      },
+      {
         "name": "clearable",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
       },
       {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
+      },
+      {
         "name": "showCalendar",
         "type": "boolean",
         "required": false,
         "defaultValue": "true"
+      },
+      {
+        "name": "open",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "weekStartsOn",
+        "type": "0 | 1",
+        "required": false,
+        "defaultValue": "0"
       },
       {
         "name": "required",
@@ -7977,6 +9210,30 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "startError",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "endError",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "hint",
         "type": "string",
         "required": false,
@@ -7987,6 +9244,11 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string",
+        "required": false
       }
     ],
     "outputs": [
@@ -7997,6 +9259,22 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "cleared",
         "type": "void"
+      },
+      {
+        "name": "openChange",
+        "type": "boolean"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
+      },
+      {
+        "name": "submitted",
+        "type": "EmrDateRangeValue | null"
       }
     ]
   },
@@ -8418,6 +9696,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "''"
       },
       {
+        "name": "ariaLabel",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "labelHidden",
         "type": "boolean",
         "required": false,
@@ -8448,6 +9732,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "1"
       },
       {
+        "name": "precision",
+        "type": "number | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "unit",
         "type": "string",
         "required": false,
@@ -8460,10 +9750,40 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "[]"
       },
       {
+        "name": "showValue",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "showSteppers",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "tone",
+        "type": "EmrTone | 'neutral'",
+        "required": false,
+        "defaultValue": "'neutral'"
+      },
+      {
         "name": "clearable",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
       },
       {
         "name": "required",
@@ -8484,6 +9804,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "hint",
         "type": "string",
         "required": false,
@@ -8494,6 +9826,11 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string",
+        "required": false
       }
     ],
     "outputs": [
@@ -8502,7 +9839,19 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "number | null"
       },
       {
+        "name": "committed",
+        "type": "number | null"
+      },
+      {
         "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
         "type": "void"
       }
     ]
@@ -8521,6 +9870,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "''"
       },
       {
+        "name": "ariaLabel",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "labelHidden",
         "type": "boolean",
         "required": false,
@@ -8528,7 +9883,7 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "value",
-        "type": "readonly [number, number]",
+        "type": "readonly [number, number] | null",
         "required": false,
         "defaultValue": "[0, 100]"
       },
@@ -8557,6 +9912,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "0"
       },
       {
+        "name": "precision",
+        "type": "number | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
         "name": "unit",
         "type": "string",
         "required": false,
@@ -8567,6 +9928,36 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "readonly EmrSliderMark[]",
         "required": false,
         "defaultValue": "[]"
+      },
+      {
+        "name": "showValue",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "tone",
+        "type": "EmrTone | 'neutral'",
+        "required": false,
+        "defaultValue": "'neutral'"
+      },
+      {
+        "name": "clearable",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
       },
       {
         "name": "required",
@@ -8587,6 +9978,30 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "lowError",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "highError",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "hint",
         "type": "string",
         "required": false,
@@ -8597,12 +10012,33 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string",
+        "required": false
       }
     ],
     "outputs": [
       {
         "name": "valueChange",
-        "type": "readonly [number, number]"
+        "type": "readonly [number, number] | null"
+      },
+      {
+        "name": "committed",
+        "type": "readonly [number, number] | null"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -8615,6 +10051,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "label",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "ariaLabel",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -8637,6 +10079,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definitions",
+        "type": "Readonly<Record<string, string>> | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "uppercase",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "value",
         "type": "string | null",
         "required": false,
@@ -8649,10 +10103,40 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "showMaskHint",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "inputMode",
+        "type": "'text' | 'numeric' | 'tel' | 'decimal' | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "variant",
+        "type": "EmrControlVariant",
+        "required": false,
+        "defaultValue": "'outline'"
+      },
+      {
         "name": "clearable",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
       },
       {
         "name": "required",
@@ -8673,6 +10157,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "hint",
         "type": "string",
         "required": false,
@@ -8683,6 +10179,11 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string",
+        "required": false
       }
     ],
     "outputs": [
@@ -8699,8 +10200,16 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "void"
       },
       {
+        "name": "focused",
+        "type": "void"
+      },
+      {
         "name": "blurred",
         "type": "void"
+      },
+      {
+        "name": "submitted",
+        "type": "string | null"
       }
     ]
   },
@@ -8713,6 +10222,12 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "label",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "ariaLabel",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -8748,6 +10263,42 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "uppercase",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "separatorAfter",
+        "type": "number | readonly number[] | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "variant",
+        "type": "EmrControlVariant",
+        "required": false,
+        "defaultValue": "'outline'"
+      },
+      {
+        "name": "clearable",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "clearLabel",
+        "type": "unknown",
+        "required": false,
+        "defaultValue": "'Clear'"
+      },
+      {
         "name": "required",
         "type": "boolean",
         "required": false,
@@ -8766,6 +10317,18 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "warning",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
         "name": "hint",
         "type": "string",
         "required": false,
@@ -8776,6 +10339,11 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "string",
         "required": false,
         "defaultValue": "''"
+      },
+      {
+        "name": "ariaDescribedBy",
+        "type": "string",
+        "required": false
       }
     ],
     "outputs": [
@@ -8785,6 +10353,22 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "completed",
+        "type": "string"
+      },
+      {
+        "name": "cleared",
+        "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
+      },
+      {
+        "name": "submitted",
         "type": "string"
       }
     ]
@@ -8798,21 +10382,27 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "label",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'Actions'"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "triggerIcon",
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       },
       {
         "name": "items",
         "type": "readonly EmrMenuItem[]",
         "required": false,
         "defaultValue": "[]"
-      },
-      {
-        "name": "open",
-        "type": "boolean | undefined",
-        "required": false,
-        "defaultValue": "undefined"
       },
       {
         "name": "variant",
@@ -8825,6 +10415,30 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "type": "'sm' | 'md'",
         "required": false,
         "defaultValue": "'md'"
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'end'",
+        "required": false,
+        "defaultValue": "'start'"
+      },
+      {
+        "name": "open",
+        "type": "boolean | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "disabled",
@@ -8841,6 +10455,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "openChange",
         "type": "boolean"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -8858,8 +10480,9 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "menuLabel",
-        "type": "string",
-        "required": false
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       },
       {
         "name": "items",
@@ -8869,15 +10492,45 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "variant",
-        "type": "'primary' | 'secondary' | 'outline'",
+        "type": "'primary' | 'secondary' | 'outline' | 'danger'",
         "required": false,
         "defaultValue": "'primary'"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'end'",
+        "required": false,
+        "defaultValue": "'end'"
       },
       {
         "name": "open",
         "type": "boolean | undefined",
         "required": false,
         "defaultValue": "undefined"
+      },
+      {
+        "name": "defaultOpen",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       },
       {
         "name": "disabled",
@@ -8898,6 +10551,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "openChange",
         "type": "boolean"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -8916,12 +10577,42 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "expandedIds",
+        "type": "readonly string[] | undefined",
+        "required": false,
+        "defaultValue": "undefined"
+      },
+      {
+        "name": "defaultExpandedIds",
         "type": "readonly string[]",
         "required": false,
         "defaultValue": "[]"
       },
       {
         "name": "multiple",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "variant",
+        "type": "'outlined' | 'flush' | 'card'",
+        "required": false,
+        "defaultValue": "'outlined'"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "required": false,
+        "defaultValue": "'md'"
+      },
+      {
+        "name": "headingLevel",
+        "type": "2 | 3 | 4 | 5 | 6",
+        "required": false,
+        "defaultValue": "3"
+      },
+      {
+        "name": "readOnly",
         "type": "boolean",
         "required": false,
         "defaultValue": "false"
@@ -8941,6 +10632,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "itemToggled",
         "type": "{ readonly id: string; readonly expanded: boolean }"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -8953,7 +10652,7 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "ariaLabel",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'Breadcrumb'"
       },
@@ -8971,15 +10670,25 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "separator",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'/'"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "required": false,
+        "defaultValue": "'md'"
       }
     ],
     "outputs": [
       {
         "name": "itemSelected",
         "type": "EmrBreadcrumbItem"
+      },
+      {
+        "name": "overflowExpanded",
+        "type": "readonly EmrBreadcrumbItem[]"
       }
     ]
   },
@@ -8992,7 +10701,7 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "label",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'Color'"
       },
@@ -9018,13 +10727,19 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "name": "allowCustomHex",
         "type": "boolean",
         "required": false,
-        "defaultValue": "false"
+        "defaultValue": "true"
       },
       {
         "name": "clearable",
         "type": "boolean",
         "required": false,
-        "defaultValue": "false"
+        "defaultValue": "true"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "required": false,
+        "defaultValue": "'md'"
       },
       {
         "name": "required",
@@ -9045,7 +10760,19 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "defaultValue": "false"
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "hint",
+        "type": "string",
+        "required": false,
+        "defaultValue": "''"
+      },
+      {
+        "name": "warning",
         "type": "string",
         "required": false,
         "defaultValue": "''"
@@ -9065,6 +10792,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "cleared",
         "type": "void"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -9082,32 +10817,45 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       },
       {
         "name": "label",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'Copy'"
       },
       {
         "name": "copiedLabel",
-        "type": "unknown",
+        "type": "string",
         "required": false,
         "defaultValue": "'Copied'"
       },
       {
+        "name": "iconOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
         "name": "ariaLabel",
-        "type": "string",
-        "required": false
+        "type": "string | undefined",
+        "required": false,
+        "defaultValue": "undefined"
       },
       {
         "name": "variant",
-        "type": "'ghost' | 'outline' | 'secondary'",
+        "type": "'primary' | 'secondary' | 'outline' | 'ghost'",
         "required": false,
         "defaultValue": "'outline'"
       },
       {
         "name": "size",
-        "type": "'sm' | 'md'",
+        "type": "'sm' | 'md' | 'lg'",
         "required": false,
         "defaultValue": "'sm'"
+      },
+      {
+        "name": "feedbackDurationMs",
+        "type": "number",
+        "required": false,
+        "defaultValue": "2000"
       },
       {
         "name": "disabled",
@@ -9120,6 +10868,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "copied",
         "type": "string"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },
@@ -9131,9 +10887,42 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
         "required": true
       },
       {
+        "name": "definition",
+        "type": "EmrFieldDefinition",
+        "required": false
+      },
+      {
         "name": "controlId",
         "type": "string",
         "required": false
+      },
+      {
+        "name": "headingId",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "labelHidden",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
+      },
+      {
+        "name": "layout",
+        "type": "FieldFrameLayout",
+        "required": false
+      },
+      {
+        "name": "showMetadata",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "true"
+      },
+      {
+        "name": "readOnly",
+        "type": "boolean",
+        "required": false,
+        "defaultValue": "false"
       }
     ],
     "outputs": [
@@ -9144,6 +10933,14 @@ export const EMR_COMPONENT_API: Readonly<Record<string, ComponentApiDoc>> = {
       {
         "name": "nativeFilesSelected",
         "type": "readonly File[]"
+      },
+      {
+        "name": "focused",
+        "type": "void"
+      },
+      {
+        "name": "blurred",
+        "type": "void"
       }
     ]
   },

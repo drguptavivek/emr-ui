@@ -28,7 +28,7 @@ import {
 } from './l2-contract-fields';
 import { AssessmentStatusStrip, EmrFieldFrame } from './l2-field-frame';
 import { EmrCodedInput } from './l2-fields';
-import { buildScaleAnchors } from './l2-fields.logic';
+import { buildScaleAnchors, mergeFieldFrameMessages } from './l2-fields.logic';
 import { useEmrLabels } from './labels';
 import { EmrOptionChip, EmrRow, EmrSelect } from './primitives';
 import {
@@ -68,6 +68,7 @@ export interface EmrTypedFieldProps {
   definition: ClinicalFieldDefinition | EmrFieldDefinition;
   model?: ClinicalFieldState | EmrFieldState;
   controlId?: string;
+  headingId?: string;
   readOnly?: boolean;
   labelHidden?: boolean;
   showMetadata?: boolean;
@@ -88,6 +89,7 @@ export function EmrTypedField({
   definition,
   model,
   controlId: controlIdProp,
+  headingId,
   readOnly = false,
   labelHidden,
   showMetadata = true,
@@ -787,24 +789,45 @@ export function EmrTypedField({
 
     case 'signature-capture': {
       selfFramed = true;
+      handlesOwnStatus = true;
       const strokes = coerceSignatureStrokes(f.value);
+      const mergedMessages = mergeFieldFrameMessages(f.error, f.warning, f.info, f.messages);
       control = (
         <EmrSignatureCaptureField
           controlId={controlId}
+          definition={f.contractDefinition}
+          headingId={headingId}
+          labelHidden={labelHidden}
+          layout={layout}
+          showMetadata={showMetadata}
+          readOnly={f.readOnly || f.disabled}
+          onFocus={onFocus}
+          onBlur={onBlur}
           model={{
+            definition: f.contractDefinition,
             label: f.label,
+            labelHidden,
+            layout,
+            showMetadata,
             strokes,
+            status: f.status,
+            statusOptions: f.statusOptions,
             hint: f.hint,
-            messages: f.messages,
+            messages: mergedMessages,
             required: f.required,
             readOnly: f.readOnly || f.disabled,
           }}
           onIntent={intent => {
             onFocus?.();
+            if (f.readOnly || f.disabled) return;
             if (intent.type === 'strokeAdded') {
               onValueChange([...strokes, intent.stroke]);
-            } else {
+            } else if (intent.type === 'undoRequested') {
+              onValueChange(strokes.slice(0, -1));
+            } else if (intent.type === 'clearRequested') {
               onValueChange([]);
+            } else if (intent.type === 'statusChangeRequested') {
+              handleStatus(intent.status);
             }
           }}
         />
@@ -908,28 +931,60 @@ export function EmrTypedField({
       selfFramed = true;
       handlesOwnStatus = true;
       const currentImages = coerceUploadedImages(f.value);
+      const mergedMessages = mergeFieldFrameMessages(f.error, f.warning, f.info, f.messages);
+      const locked = Boolean(f.readOnly || f.disabled);
       control = (
         <EmrImageField
           controlId={controlId}
-          disabled={f.disabled}
+          definition={f.contractDefinition}
+          headingId={headingId}
+          labelHidden={labelHidden}
+          layout={layout}
+          showMetadata={showMetadata}
+          readOnly={locked}
+          onFocus={onFocus}
+          onBlur={onBlur}
           model={{
+            definition: f.contractDefinition,
             label: f.label,
+            labelHidden,
+            layout,
+            showMetadata,
             items: currentImages,
             multiple: f.contractDefinition ? f.contractDefinition.contract.cardinality.max !== 1 : true,
             status: f.status,
             statusOptions: f.statusOptions,
             hint: f.hint,
-            messages: f.messages,
+            messages: mergedMessages,
             required: f.required,
-            readOnly: f.readOnly || f.disabled,
+            readOnly: locked,
           }}
-          onIntent={intent => {
+          onIntent={(intent) => {
             onFocus?.();
+            if (locked) return;
             if (intent.type === 'itemsChangeRequested') {
               onValueChange(intent.items as unknown as ClinicalFieldValue);
+            } else if (intent.type === 'imageCropped') {
+              onValueChange(
+                currentImages.map((it) =>
+                  it.id === intent.id
+                    ? {
+                        ...it,
+                        cropTransform: intent.result.transform,
+                        previewSrc: intent.result.croppedDataUrl ?? it.previewSrc ?? it.src,
+                      }
+                    : it,
+                ) as unknown as ClinicalFieldValue,
+              );
+            } else if (intent.type === 'captionChangeRequested') {
+              onValueChange(
+                currentImages.map((it) =>
+                  it.id === intent.id ? { ...it, caption: intent.caption } : it,
+                ) as unknown as ClinicalFieldValue,
+              );
             } else if (intent.type === 'itemRemoveRequested') {
               onValueChange(
-                currentImages.filter(it => it.id !== intent.id) as unknown as ClinicalFieldValue,
+                currentImages.filter((it) => it.id !== intent.id) as unknown as ClinicalFieldValue,
               );
             } else if (intent.type === 'statusChangeRequested') {
               handleStatus(intent.status);
@@ -947,12 +1002,14 @@ export function EmrTypedField({
       control = (
         <EmrSlider
           controlId={controlId}
-          label={labelHidden ? undefined : f.label}
+          label={f.label}
+          labelHidden={labelHidden}
           value={numericVal}
           min={f.min ?? 0}
           max={f.max ?? 100}
           step={f.step}
           unit={f.unit}
+          showValue
           hint={f.hint}
           error={f.error}
           warning={f.warning}
@@ -976,7 +1033,8 @@ export function EmrTypedField({
       control = (
         <EmrMaskedInput
           controlId={controlId}
-          label={labelHidden ? undefined : f.label}
+          label={f.label}
+          labelHidden={labelHidden}
           mask={f.mask ?? '999-99-9999'}
           value={textOf(f.value) || null}
           placeholder={f.placeholder}
@@ -990,7 +1048,7 @@ export function EmrTypedField({
           disabled={f.disabled}
           onValueChange={next => {
             onFocus?.();
-            onValueChange(next ?? '');
+            onValueChange(next);
           }}
         />
       );
@@ -1002,7 +1060,8 @@ export function EmrTypedField({
       control = (
         <EmrOtpInput
           controlId={controlId}
-          label={labelHidden ? undefined : f.label}
+          label={f.label}
+          labelHidden={labelHidden}
           value={textOf(f.value)}
           length={f.max && f.max >= 1 && f.max <= 12 ? f.max : 6}
           hint={f.hint}
@@ -1015,7 +1074,7 @@ export function EmrTypedField({
           disabled={f.disabled}
           onValueChange={next => {
             onFocus?.();
-            onValueChange(next);
+            onValueChange(next || null);
           }}
         />
       );

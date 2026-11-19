@@ -114,10 +114,20 @@ import type {
   EmrTreeViewElement,
 } from './l1-primitives-wave2.js';
 import type {
+  EmrAddressFieldElement,
   EmrAttachmentFieldElement,
+  EmrDurationInputElement,
   EmrImageFieldElement,
+  EmrLateralityFieldElement,
+  EmrMacroTextFieldElement,
+  EmrPairedFieldElement,
   EmrPartialDateFieldElement,
+  EmrPhoneInputElement,
+  EmrRangeFieldElement,
+  EmrRefractionFieldElement,
   EmrScaleFieldElement,
+  EmrSignatureCaptureFieldElement,
+  EmrVisualAcuityFieldElement,
 } from './l2-fields-extra.js';
 import type {
   EmrCommandPaletteElement,
@@ -211,9 +221,19 @@ declare global {
     'emr-color-picker': EmrColorPickerElement;
     'emr-copy-button': EmrCopyButtonElement;
     'emr-attachment-field': EmrAttachmentFieldElement;
+    'emr-duration-input': EmrDurationInputElement;
     'emr-image-field': EmrImageFieldElement;
+    'emr-paired-field': EmrPairedFieldElement;
     'emr-partial-date-field': EmrPartialDateFieldElement;
+    'emr-phone-input': EmrPhoneInputElement;
+    'emr-address-field': EmrAddressFieldElement;
+    'emr-laterality-field': EmrLateralityFieldElement;
+    'emr-macro-text-field': EmrMacroTextFieldElement;
+    'emr-range-field': EmrRangeFieldElement;
+    'emr-refraction-field': EmrRefractionFieldElement;
     'emr-scale-field': EmrScaleFieldElement;
+    'emr-signature-capture-field': EmrSignatureCaptureFieldElement;
+    'emr-visual-acuity-field': EmrVisualAcuityFieldElement;
     'emr-split-workspace': EmrSplitWorkspaceElement;
     'emr-command-palette': EmrCommandPaletteElement;
     'emr-master-detail': EmrMasterDetailElement;

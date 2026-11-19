@@ -26,9 +26,12 @@ import type {
   EmrOption,
   EmrPartialDate,
   EmrSegmentedOption,
-  EmrSignaturePoint,
   EmrSignatureStroke,
   EmrUploadedImageItem,
+  ImageFieldIntent,
+  ImageFieldViewModel,
+  SignatureCaptureIntent,
+  SignatureCaptureViewModel,
 } from '@drguptavivek/emr-controller';
 import {
   EmrCheckboxGroupComponent,
@@ -36,7 +39,6 @@ import {
 } from '../primitives/emr-action-controls.component';
 import { EmrRadioGroupComponent, EmrToggleComponent } from '../primitives/emr-choice.component';
 import { EmrChipComponent } from '../primitives/emr-feedback.component';
-import { EmrImageUploadComponent } from '../primitives/emr-image.component';
 import { EmrDateInputComponent } from '../primitives/emr-inputs.component';
 import {
   emptyToNull,
@@ -62,8 +64,14 @@ import {
   EmrComboboxComponent,
   EmrTagInputComponent,
 } from '../primitives/emr-wave2-inputs.component';
+import {
+  EmrImageFieldComponent,
+  EmrSignatureCaptureFieldComponent,
+} from './emr-contract-fields.component';
 import { EmrFieldFrameComponent } from './emr-field-frame.component';
 import {
+  isEmrFieldDefinition,
+  mergeTypedFieldMessages,
   normalizeTypedFieldDefinition,
   normalizeTypedFieldState,
   resolveTypedFieldRenderer,
@@ -118,15 +126,35 @@ let nextTypedFieldId = 0;
     EmrTreeSelectComponent,
     EmrComboboxComponent,
     EmrTagInputComponent,
-    EmrImageUploadComponent,
+    EmrImageFieldComponent,
     EmrSliderComponent,
     EmrMaskedInputComponent,
     EmrOtpInputComponent,
+    EmrSignatureCaptureFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let d = def();
     @let s = state();
+    @if (renderer() === 'signature') {
+      <emr-signature-capture-field
+        [controlId]="resolvedId()"
+        [labelHidden]="labelHidden()"
+        [readOnly]="isReadOnly() || isDisabled()"
+        [model]="signatureFieldModel()"
+        (intent)="onSignatureIntent($event)"
+        (focused)="onFocusIn()"
+      />
+    } @else if (renderer() === 'image-upload') {
+      <emr-image-field
+        [controlId]="resolvedId()"
+        [labelHidden]="labelHidden()"
+        [readOnly]="isReadOnly() || isDisabled()"
+        [model]="imageFieldModel()"
+        (intent)="onImageFieldIntent($event)"
+        (focused)="onFocusIn()"
+      />
+    } @else {
     <emr-field-frame
       [label]="d.label"
       [labelHidden]="labelHidden()"
@@ -586,56 +614,6 @@ let nextTypedFieldId = 0;
               }
             </div>
           }
-          @case ('signature') {
-            <div class="emr-typed-field__stack">
-              <svg
-                class="emr-signature-pad emr-typed-field__sig"
-                [id]="resolvedId()"
-                viewBox="0 0 400 120"
-                [attr.data-readonly]="isReadOnly() || isDisabled() || null"
-                role="img"
-                [attr.aria-label]="d.label"
-                [attr.aria-invalid]="hasError() ? 'true' : null"
-                [attr.aria-describedby]="describedBy()"
-                (pointerdown)="onSigDown($event)"
-                (pointermove)="onSigMove($event)"
-                (pointerup)="onSigUp($event)"
-                (pointercancel)="onSigCancel($event)"
-              >
-                @for (stroke of signatureStrokes(); track $index) {
-                  <polyline
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    [attr.points]="svgPoints(stroke.points)"
-                  />
-                }
-                @if (draftSigPoints().length > 0) {
-                  <polyline
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    [attr.points]="svgPoints(draftSigPoints())"
-                  />
-                }
-              </svg>
-              @if (!isReadOnly() && !isDisabled() && signatureStrokes().length > 0) {
-                <div>
-                  <button
-                    type="button"
-                    class="emr-button emr-button--ghost emr-button--small"
-                    (click)="emitValue([])"
-                  >
-                    Clear signature
-                  </button>
-                </div>
-              }
-            </div>
-          }
           @case ('annotation') {
             @if (customTemplate(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl; context: customContext()" />
@@ -668,6 +646,8 @@ let nextTypedFieldId = 0;
               [required]="isRequired()"
               [disabled]="isDisabled()"
               [readOnly]="isReadOnly()"
+              [invalid]="hasError()"
+              [warning]="!hasError() && s.warning ? 'warning' : ''"
               [error]="errorFlag()"
               (valueChange)="onChoiceSingleChange($event)"
               (valuesChange)="onMultiCodeChange($event)"
@@ -703,20 +683,6 @@ let nextTypedFieldId = 0;
               (valueChange)="onMultiCodeChange($event)"
             />
           }
-          @case ('image-upload') {
-            <emr-image-upload
-              [controlId]="resolvedId()"
-              [label]="d.label"
-              [labelHidden]="true"
-              [items]="uploadedImageItems()"
-              [required]="isRequired()"
-              [disabled]="isDisabled()"
-              [readOnly]="isReadOnly()"
-              [error]="errorFlag()"
-              (filesSelected)="onAttachmentFilesSelected($event)"
-              (removeRequested)="removeAttachment($event)"
-            />
-          }
           @case ('slider') {
             <emr-slider
               [controlId]="resolvedId()"
@@ -730,7 +696,7 @@ let nextTypedFieldId = 0;
               [required]="isRequired()"
               [disabled]="isDisabled()"
               [readOnly]="isReadOnly()"
-              [error]="errorFlag()"
+              [invalid]="hasError()"
               (valueChange)="emitValue($event)"
             />
           }
@@ -745,7 +711,7 @@ let nextTypedFieldId = 0;
               [required]="isRequired()"
               [disabled]="isDisabled()"
               [readOnly]="isReadOnly()"
-              [error]="errorFlag()"
+              [invalid]="hasError()"
               (valueChange)="emitValue($event)"
             />
           }
@@ -759,7 +725,7 @@ let nextTypedFieldId = 0;
               [required]="isRequired()"
               [disabled]="isDisabled()"
               [readOnly]="isReadOnly()"
-              [error]="errorFlag()"
+              [invalid]="hasError()"
               (valueChange)="emitValue($event || null)"
             />
           }
@@ -818,6 +784,7 @@ let nextTypedFieldId = 0;
         </div>
       }
     </emr-field-frame>
+    }
   `,
   styles: [
     `
@@ -846,11 +813,6 @@ let nextTypedFieldId = 0;
         min-height: 44px;
         width: auto;
         max-width: 100%;
-      }
-      .emr-typed-field__sig {
-        height: 120px;
-        color: var(--emr-text);
-        cursor: crosshair;
       }
       .emr-typed-field__unsupported {
         padding: 10px;
@@ -921,8 +883,6 @@ export class EmrTypedFieldComponent implements AfterViewChecked {
   protected readonly localSearchQuery = signal('');
   protected readonly localSearchOpen = signal(false);
   protected readonly draftPartialPrecision = signal<EmrPartialDate['precision']>('day');
-  protected readonly draftSigPoints = signal<readonly EmrSignaturePoint[]>([]);
-  private activeSigPointerId: number | null = null;
 
   private readonly nativeControlRef = viewChild<ElementRef<HTMLInputElement>>('nativeControl');
   private readonly nativeSelectRef = viewChild<ElementRef<HTMLSelectElement>>('nativeSelect');
@@ -1130,15 +1090,79 @@ export class EmrTypedFieldComponent implements AfterViewChecked {
   }
 
   protected uploadedImageItems(): readonly EmrUploadedImageItem[] {
-    return this.attachmentItems().map((att) => ({
-      id: att.id,
-      name: att.title,
-      src: att.url ?? '',
-      previewSrc: att.url ?? '',
-      mimeType: att.contentType ?? 'image/jpeg',
-      sizeBytes: att.sizeBytes,
-      alt: att.title,
-    }));
+    const v = this.state().value;
+    if (!Array.isArray(v)) return [];
+    const out: EmrUploadedImageItem[] = [];
+    for (const raw of v) {
+      if (typeof raw === 'object' && raw !== null && 'id' in raw) {
+        const rec = raw as Record<string, unknown>;
+        if (typeof rec['src'] === 'string' && typeof rec['name'] === 'string') {
+          out.push(raw as unknown as EmrUploadedImageItem);
+        } else if (typeof rec['title'] === 'string') {
+          out.push({
+            id: String(rec['id']),
+            name: String(rec['title']),
+            src: typeof rec['url'] === 'string' ? rec['url'] : '',
+            previewSrc: typeof rec['url'] === 'string' ? rec['url'] : '',
+            mimeType: typeof rec['contentType'] === 'string' ? rec['contentType'] : 'image/jpeg',
+            ...(typeof rec['sizeBytes'] === 'number' ? { sizeBytes: rec['sizeBytes'] } : {}),
+            alt: String(rec['title']),
+          });
+        }
+      }
+    }
+    return out;
+  }
+
+  protected readonly imageFieldModel = computed<ImageFieldViewModel>(() => {
+    const rawDef = this.definition();
+    const contractDef = isEmrFieldDefinition(rawDef) ? rawDef : undefined;
+    const d = this.def();
+    const s = this.state();
+    return {
+      definition: contractDef,
+      label: d.label,
+      items: this.uploadedImageItems(),
+      multiple: contractDef ? contractDef.contract.cardinality.max !== 1 : true,
+      status: s.status,
+      statusOptions: d.assessmentStatusOptions,
+      hint: d.hint,
+      messages: mergeTypedFieldMessages(s),
+      required: this.isRequired(),
+      readOnly: this.isReadOnly() || this.isDisabled(),
+    };
+  });
+
+  protected onImageFieldIntent(ev: ImageFieldIntent): void {
+    if (this.isReadOnly() || this.isDisabled()) return;
+    const current = this.uploadedImageItems();
+    if (ev.type === 'itemsChangeRequested') {
+      this.valueChange.emit(ev.items as unknown as ClinicalFieldValue);
+    } else if (ev.type === 'imageCropped') {
+      this.valueChange.emit(
+        current.map((item) =>
+          item.id === ev.id
+            ? {
+                ...item,
+                cropTransform: ev.result.transform,
+                previewSrc: ev.result.croppedDataUrl ?? item.previewSrc ?? item.src,
+              }
+            : item,
+        ) as unknown as ClinicalFieldValue,
+      );
+    } else if (ev.type === 'captionChangeRequested') {
+      this.valueChange.emit(
+        current.map((item) =>
+          item.id === ev.id ? { ...item, caption: ev.caption } : item,
+        ) as unknown as ClinicalFieldValue,
+      );
+    } else if (ev.type === 'itemRemoveRequested') {
+      this.valueChange.emit(
+        current.filter((item) => item.id !== ev.id) as unknown as ClinicalFieldValue,
+      );
+    } else if (ev.type === 'statusChangeRequested') {
+      this.statusChange.emit(ev.status);
+    }
   }
 
   protected signatureStrokes(): readonly EmrSignatureStroke[] {
@@ -1148,6 +1172,34 @@ export class EmrTypedFieldComponent implements AfterViewChecked {
       (item): item is EmrSignatureStroke =>
         typeof item === 'object' && item !== null && 'points' in item,
     );
+  }
+
+  protected readonly signatureFieldModel = computed<SignatureCaptureViewModel>(() => {
+    const d = this.def();
+    const s = this.state();
+    return {
+      label: d.label,
+      strokes: this.signatureStrokes(),
+      status: s.status,
+      statusOptions: d.assessmentStatusOptions,
+      hint: d.hint,
+      messages: mergeTypedFieldMessages(s),
+      required: this.isRequired(),
+      readOnly: this.isReadOnly() || this.isDisabled(),
+    };
+  });
+
+  protected onSignatureIntent(ev: SignatureCaptureIntent): void {
+    if (this.isReadOnly() || this.isDisabled()) return;
+    if (ev.type === 'strokeAdded') {
+      this.valueChange.emit([...this.signatureStrokes(), ev.stroke]);
+    } else if (ev.type === 'undoRequested') {
+      this.valueChange.emit(this.signatureStrokes().slice(0, -1));
+    } else if (ev.type === 'clearRequested') {
+      this.valueChange.emit([]);
+    } else if (ev.type === 'statusChangeRequested') {
+      this.statusChange.emit(ev.status);
+    }
   }
 
   protected statusLabel(): string {
@@ -1392,55 +1444,6 @@ export class EmrTypedFieldComponent implements AfterViewChecked {
     this.valueChange.emit(this.attachmentItems().filter((item) => item.id !== id));
   }
 
-  protected svgPoints(points: readonly EmrSignaturePoint[]): string {
-    return points.map((p) => `${p.x},${p.y}`).join(' ');
-  }
-
-  protected onSigDown(event: PointerEvent): void {
-    if (this.isReadOnly() || this.isDisabled()) return;
-    const svg = event.currentTarget as SVGSVGElement;
-    if (typeof svg.setPointerCapture === 'function') {
-      svg.setPointerCapture(event.pointerId);
-    }
-    event.preventDefault();
-    this.activeSigPointerId = event.pointerId;
-    this.draftSigPoints.set([this.sigPoint(event, svg)]);
-  }
-
-  protected onSigMove(event: PointerEvent): void {
-    if (this.isReadOnly() || this.isDisabled() || this.activeSigPointerId !== event.pointerId) {
-      return;
-    }
-    const svg = event.currentTarget as SVGSVGElement;
-    event.preventDefault();
-    const pt = this.sigPoint(event, svg);
-    this.draftSigPoints.update((prev) => [...prev, pt]);
-  }
-
-  protected onSigUp(event: PointerEvent): void {
-    if (this.activeSigPointerId !== event.pointerId) return;
-    const svg = event.currentTarget as SVGSVGElement;
-    if (typeof svg.releasePointerCapture === 'function') {
-      svg.releasePointerCapture(event.pointerId);
-    }
-    const pts = this.draftSigPoints();
-    this.activeSigPointerId = null;
-    this.draftSigPoints.set([]);
-    if (!this.isReadOnly() && !this.isDisabled() && pts.length > 0) {
-      this.valueChange.emit([...this.signatureStrokes(), { points: pts }]);
-    }
-  }
-
-  protected onSigCancel(event: PointerEvent): void {
-    if (this.activeSigPointerId !== event.pointerId) return;
-    const svg = event.currentTarget as SVGSVGElement;
-    if (typeof svg.releasePointerCapture === 'function') {
-      svg.releasePointerCapture(event.pointerId);
-    }
-    this.activeSigPointerId = null;
-    this.draftSigPoints.set([]);
-  }
-
   protected statusChanged(event: Event): void {
     const target = event.target as HTMLSelectElement;
     if (this.isReadOnly() || this.isDisabled()) {
@@ -1506,15 +1509,5 @@ export class EmrTypedFieldComponent implements AfterViewChecked {
         this.syncNativeControls();
       }
     });
-  }
-
-  private sigPoint(event: PointerEvent, svg: SVGSVGElement): EmrSignaturePoint {
-    const rect = svg.getBoundingClientRect();
-    const scaleX = rect.width > 0 ? 400 / rect.width : 1;
-    const scaleY = rect.height > 0 ? 120 / rect.height : 1;
-    return {
-      x: Number(((event.clientX - rect.left) * scaleX).toFixed(1)),
-      y: Number(((event.clientY - rect.top) * scaleY).toFixed(1)),
-    };
   }
 }

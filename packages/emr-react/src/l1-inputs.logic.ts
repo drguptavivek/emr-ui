@@ -1,9 +1,35 @@
 /** Pure parse/format and controlled-draft mechanics for L1 numeric, date, time, and datetime inputs. */
 
 import type { ClinicalFieldValue, ClinicalQuantityValue } from '@drguptavivek/emr-controller';
-import { localDateTimeToUtcIso, toLocalDateTimeInputValue } from '@drguptavivek/emr-controller';
+import {
+  formatTimeDisplay,
+  isDateTimeOutOfBounds,
+  isTimeOutOfBounds,
+  joinDateTimeParts,
+  localDateTimeToUtcIso,
+  parseTimeText as parseControllerTimeText,
+  resolveQuantityStep,
+  resolveTimePlaceholder,
+  sanitizeTimeText as sanitizeControllerTimeText,
+  splitDateTimeParts,
+  stepQuantityValue,
+  toLocalDateTimeInputValue,
+} from '@drguptavivek/emr-controller';
 
-export { localDateTimeToUtcIso, toLocalDateTimeInputValue };
+export {
+  formatTimeDisplay,
+  isDateTimeOutOfBounds,
+  isTimeOutOfBounds,
+  joinDateTimeParts,
+  localDateTimeToUtcIso,
+  parseControllerTimeText,
+  resolveQuantityStep,
+  resolveTimePlaceholder,
+  sanitizeControllerTimeText,
+  splitDateTimeParts,
+  stepQuantityValue,
+  toLocalDateTimeInputValue,
+};
 
 /** Display order only; the value is always ISO (`YYYY-MM-DD`, `YYYY-MM`, or `YYYY`). Comes from the locale (labels provider): en-IN dd-mm-yyyy. */
 export type DateDisplayFormat = 'dd-mm-yyyy' | 'dd/mm/yyyy' | 'mm-dd-yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd' | 'mm-yyyy' | 'yyyy-mm' | 'yyyy';
@@ -25,14 +51,14 @@ function daysIn(year: number, month: number): number {
 
 // ---- pure L1 numeric draft & step mechanics ------------------------------------------------
 
-export function sanitizeNumberText(text: string, integer: boolean): string {
+export function sanitizeNumberText(text: string, integer: boolean, allowNegative = true): string {
   const noSpaces = text.replace(/[\s\u00A0\u202F]+/g, '');
   const normalized =
     !integer && !noSpaces.includes('.') && noSpaces.includes(',')
       ? noSpaces.replace(',', '.')
       : noSpaces;
   const cleaned = normalized.replace(integer ? /[^\d-]/g : /[^\d.-]/g, '');
-  const sign = cleaned.startsWith('-') ? '-' : '';
+  const sign = allowNegative && cleaned.startsWith('-') ? '-' : '';
   const body = cleaned.replace(/-/g, '');
   if (integer) return sign + body;
   const [whole, ...rest] = body.split('.');

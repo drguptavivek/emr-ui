@@ -121,6 +121,7 @@
 /* @emr-print:scoped:begin */
   /* Interactive-only chrome carries no information on paper. */
   .emr-print .emr-button,
+  .emr-print .emr-copy-button,
   .emr-print .emr-tab,
   .emr-print .emr-left-nav,
   .emr-print .emr-flyout,
@@ -133,6 +134,9 @@
   .emr-print .emr-section-card__content[hidden] {
     display: revert !important;
   }
+  .emr-print .emr-accordion__panel[hidden] {
+    display: block !important;
+  }
   .emr-print details,
   .emr-print details:not([open]) > * {
     display: block !important;
@@ -142,6 +146,8 @@
   /* Un-scroll every overflow region so its full content prints. */
   .emr-print .emr-table-wrap,
   .emr-print .emr-matrix,
+  .emr-print .emr-accordion__item,
+  .emr-print .emr-accordion__panel,
   .emr-print [data-emr-print='expand'] {
     overflow: visible !important;
     max-height: none !important;
@@ -188,8 +194,30 @@
   .emr-print .emr-toggle__spinner,
   .emr-print .emr-checkbox__box,
   .emr-print .emr-radio__circle,
-  .emr-print .emr-choice-clear {
+  .emr-print .emr-choice-clear,
+  .emr-print .emr-signature-empty,
+  .emr-print .emr-image-cropper__box,
+  .emr-print .emr-image-cropper__handle,
+  .emr-print .emr-date-range__presets,
+  .emr-print .emr-date-range__popover,
+  .emr-print .emr-date-range__icon-btn,
+  .emr-print .emr-slider__track,
+  .emr-print .emr-slider__marks,
+  .emr-print .emr-slider__stepper,
+  .emr-print .emr-slider__clear,
+  .emr-print .emr-masked-input__badge,
+  .emr-print .emr-otp-clear {
     display: none !important;
+  }
+  .emr-print .emr-otp-slot {
+    width: 1.8em !important;
+    min-width: 1.8em !important;
+    border: 1px solid #666 !important;
+    padding: 2px 4px !important;
+  }
+  .emr-print .emr-signature-pad {
+    border-color: #999 !important;
+    background: #fff !important;
   }
   .emr-print .emr-dialog-backdrop {
     display: none !important;
@@ -218,6 +246,8 @@
   .emr-print .emr-section-card,
   .emr-print .emr-panel,
   .emr-print .emr-field-value-row,
+  .emr-print .emr-signature-pad,
+  .emr-print .emr-image-upload__card,
   .emr-print tr {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -263,6 +293,7 @@
 /* @emr-print:media:begin */
   /* Interactive-only chrome carries no information on paper. */
   .emr-button,
+  .emr-copy-button,
   .emr-tab,
   .emr-left-nav,
   .emr-flyout,
@@ -275,6 +306,9 @@
   .emr-section-card__content[hidden] {
     display: revert !important;
   }
+  .emr-accordion__panel[hidden] {
+    display: block !important;
+  }
   details,
   details:not([open]) > * {
     display: block !important;
@@ -284,6 +318,8 @@
   /* Un-scroll every overflow region so its full content prints. */
   .emr-table-wrap,
   .emr-matrix,
+  .emr-accordion__item,
+  .emr-accordion__panel,
   [data-emr-print='expand'] {
     overflow: visible !important;
     max-height: none !important;
@@ -330,8 +366,30 @@
   .emr-toggle__spinner,
   .emr-checkbox__box,
   .emr-radio__circle,
-  .emr-choice-clear {
+  .emr-choice-clear,
+  .emr-signature-empty,
+  .emr-image-cropper__box,
+  .emr-image-cropper__handle,
+  .emr-date-range__presets,
+  .emr-date-range__popover,
+  .emr-date-range__icon-btn,
+  .emr-slider__track,
+  .emr-slider__marks,
+  .emr-slider__stepper,
+  .emr-slider__clear,
+  .emr-masked-input__badge,
+  .emr-otp-clear {
     display: none !important;
+  }
+  .emr-otp-slot {
+    width: 1.8em !important;
+    min-width: 1.8em !important;
+    border: 1px solid #666 !important;
+    padding: 2px 4px !important;
+  }
+  .emr-signature-pad {
+    border-color: #999 !important;
+    background: #fff !important;
   }
   .emr-dialog-backdrop {
     display: none !important;
@@ -360,6 +418,8 @@
   .emr-section-card,
   .emr-panel,
   .emr-field-value-row,
+  .emr-signature-pad,
+  .emr-image-upload__card,
   tr {
     break-inside: avoid;
     page-break-inside: avoid;

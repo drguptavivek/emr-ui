@@ -1,6 +1,6 @@
 # EMR — Current Handoff
 
-Updated: 18 November 2026. Code baseline: branch `main` at `f6f1246` plus uncommitted working-tree additions (L1 `#1`–`#25` and L2 `#26`–`#34` audited `PASS` across `emr-controller`, `emr-ui`, `emr-react`, `emr-elements`, `examples/angular-preview/`, and `docs/audits/*.md`).
+Updated: 19 November 2026. Code baseline: branch `main` at `16d309d` plus uncommitted working-tree additions (all L1 primitives `#1`–`#25` + all Wave 2 L1/L2 primitives/fields and all L2 clinical building blocks `#26`–`#44` audited `PASS` across `emr-controller`, `emr-ui`, `emr-react`, `emr-elements`, `examples/angular-preview/`, and `docs/audits/*.md`).
 
 This file describes current state, outstanding work and how to resume. Replace outdated state rather than appending session history. Historical changes belong in `CHANGELOG.md`; exact commits belong in Git. Source and executable checks take precedence if documentation disagrees.
 
@@ -16,19 +16,17 @@ Multi-framework, unreleased EMR component library and `shadcn`-style registry ac
 - `registry/` & `bin/emr.mjs`: `shadcn`-style per-component registry (**210 items**: L0: 1, L1: 63, L2: 20, L3: 15, L4: 102, L6: 9) supporting `angular`, `react`, `expo`, and `lit`.
 - Primary Showcase (`http://localhost:3300/` and `/gallery/`): Ionic-style `ComponentsDocsPage` (`packages/emr-react/harness/gallery/components-docs.tsx`) with fixed left component menu, live **React**, **Lit**, and **Angular** previews side-by-side, clickable **Active Props** bar, and auto-generated **Properties & Events** API tables (`scripts/build-component-api.mjs` → `component-api-manifest.ts`). Theme Studio & Registry Explorer live at `/theme-studio/`.
 
-### Recent session changes (17 November 2026)
+### Recent session changes (19 November 2026)
 
-- **Component Docs UI & Angular Preview**: Built `ComponentsDocsPage` (`app/page.tsx`, `app/gallery/page.tsx`, `app/components/page.tsx`), `app/theme-studio/page.tsx`, `examples/angular-preview/`, and `scripts/build-component-api.mjs` (extracts inputs/outputs including inherited `EmrSignalFieldBase` props for 208 components).
-- **`AGENTS.md` updated**: Codified cross-framework visual/prop/state parity rules, 1:1 preview card rules (no extra prop buttons inside one renderer's card), glassmorphic alert rule, monochrome icon rule, and primary (`:3300` / `:4200`) vs. secondary (`:6006`) commands.
-- **L1 parity & validation fixes**:
-  - **`emr-button`**: Loaded `Inter Variable` in Next.js (`layout.tsx`) and `emr-angular-preview` (`angular.json`), aligned `14px` (`700` weight) / `13px` small / `16px` (`48px`) large, added `size="large"` to Angular, fixed `.emr-button--ghost` transparent border, added React `EmrButton` hover state, aligned all 5 variants (`primary`, `secondary`, `outline`, `ghost`, `danger`) + hover tokens, and synced `variant`/`size`/`disabled`/`loading`/`block` via the Active Props bar.
-  - **`emr-text-input`**: Added web hover border feedback (`t.focus`) to `ThemedInput`.
-  - **`emr-number-input`**: Added React stepper `hovered` feedback; updated Angular `EmrNumberInputComponent` (`showSteppers`) to compact `224px` centered input, hidden native spinbuttons, and external `unit` matching React & Lit.
-  - **`emr-date-input`**: Added React calendar button `hovered` feedback, removed raw `📅` emoji from hints, and constrained Angular `input[type="date"]` to `230px`.
-  - **`emr-select`**: Adjusted React trigger height (`44px` outer) + hover feedback, and removed Lit-only `allowClear` mismatch in parity entry.
-  - **`emr-alert`**: Unified across Angular, React, and Lit with `2px` sharp corners, `1px` right vertical border, `2px` bottom underline, translucent glassmorphism (`rgba` in React, `color-mix` in Lit/Angular), and tone glyphs.
-  - **`emr-paired-input`**: Added per-side `inputType` (`text | integer | decimal`), `min`/`max`, `firstRequired`/`secondRequired`, `firstError`/`secondError` (`aria-invalid` + `role="alert"`), and `firstPlaceholder`/`secondPlaceholder` across Angular, React, and Lit.
-  - **Choice & Selection Primitives (`emr-checkbox`, `emr-checkbox-group`, `emr-radio-group`, `emr-select`, `emr-search-select`, `emr-combobox`, `emr-toggle`, `emr-segmented-control`, `emr-tag-input`)**: All 9 audited `PASS` across Angular, React Web/Expo Native, and Lit (`docs/audits/emr-*.md`), including `variant`, `size` (`>= 44px` hit targets), `shape`, `labelPlacement`, `orientation` (`vertical|horizontal|grid` with `<= 480px` 1-col collapse), `readOnly` vs `disabled` locking, `lockedTags`, `allowDeselect`, `loading`, multi-select (`chips`, `maxTagCount` `+N`/summary, `maxSelections`), `filterMode: 'local' | 'remote' | 'none'`, deterministic best-match ranking & `<mark>`/highlighted spans, `creatable`/`allowCustomValue`, and WAI-ARIA keyboard/focus management.
+- **L2 Clinical Building Blocks (`#35`–`#44`) & `emr-segmented-control` `PASS`**:
+  - Completed Stage 1–3 parity & verification (`docs/audits/*.md` `PASS`) for `emr-paired-field`, `emr-duration-input`, `emr-range-field`, `emr-signature-capture-field` (plus `EmrTypedFieldComponent.dependsOn` in `catalog.manifest.ts`), `emr-phone-input`, `emr-address-field`, `emr-macro-text-field`, `emr-laterality-field`, `emr-visual-acuity-field`, and `emr-refraction-field`.
+  - Fixed React Web `EmrSegmentedControl` pointer click (`onPress` on Web in `l1-new-inputs.tsx`), Angular `.emr-segmented` / `.emr-select-shell` / `.emr-button` Dark theme `background-color` transition lag (`emr.css`), React `EmrSelect` `44px` trigger height (`primitives.tsx`), and converted `EmrMacroTextField` SmartPhrases to in-flow layout across React, Lit, and Angular.
+- **Wave 2 Primitives & Image Field (`18` entries in `entries-l1-l2-wave2.tsx`) `PASS`**:
+  - **Batch A (`emr-toggle-group`, `emr-tree-view`, `emr-tree-select`)**: Unified React `EmrToggleGroup` to `role="switch"` group, fixed tri-state `role="checkbox"` `showSelectAll`, fixed Angular `[role="treeitem"]` `aria-checked` (`true`/`false`/`mixed`), eliminated nested interactive elements in React `EmrTreeSelect` + added mobile `Modal` sheet, fixed Lit disabled-row index drift & floating panel dismissal.
+  - **Batch B (`emr-image-viewer`, `emr-image-cropper`, `emr-image-upload`, `emr-image-field`)**: Added monochrome SVGs, Expo Native `PanResponder` drag pan & `<Image>` transforms, `<canvas>` crop rasterization (template `#cropCanvas` in Angular), `44x44px` crop corner hit targets + outer scrim, `validateUploadedImageFile` + `FileReader.readAsDataURL`, modal Lightbox/Crop dialogs with focus restoration, removed forbidden `disabled` prop from L2 `EmrImageField` & `typed-field` `'image-upload'`, and fixed React `EmrImageViewer` `390px` toolbar wrap.
+  - **Batch C (`emr-date-range-input`, `emr-slider`, `emr-range-slider`, `emr-masked-input`, `emr-otp-input`)**: Unified `emr-range-slider` onto a single dual-thumb `role="slider"` track (`PanResponder` on Expo Native) with cross-bounded `aria-*` and `clampRangeSliderPair` boundary `minDistance`, proportional clickable `marks`, `buildDateRangeCalendarGrid` & `HH:mm` `datetime` preservation, backslash mask escaping & caret preservation, and SMS `one-time-code` OTP autofill without `maxlength="1"`.
+  - **Batch D (`emr-menu`, `emr-split-button`, `emr-accordion`, `emr-breadcrumbs`, `emr-color-picker`, `emr-copy-button`)**: Fixed Lit `EmrAccordionElement` `[object Object]` badge bug and kept `[hidden]` accordion panels mounted for `.emr-print` expansion, fixed Dark-mode `EmrSplitButton` foreground contrast & Lit `EmrMenuElement` disabled-item focus index, replaced non-semantic current breadcrumb `<Pressable>` with `aria-current="page"`, unified `44x44px` `EmrColorPicker` radio swatches with `aria-checked="true" | "false"`, and added timer cleanup & `EmrCopyButton` live feedback across all renderers.
+- **Resolved all 8 pre-existing / regex-drift `pnpm check` test failures across 7 files** (`emr-elements` architecture color/font literals, `emr-react` `*.logic.ts` controller barrel split, `emr-stat-tile` `ViewEncapsulation.None` removal, and `controlled-components`/`l1-l2-primitives-fields`/`l1-l2-wave2` spec regexes).
 
 ## Required boundaries
 
@@ -40,24 +38,15 @@ Multi-framework, unreleased EMR component library and `shadcn`-style registry ac
 
 ## Verification state
 
-- **`pnpm check` (`18 Nov 2026`)**: `build:controller`, `registry:build` (210 items), `build:elements`, `lit:public`, `build-component-api.mjs` (208 components), `check:react` (Web & Native), and `build:ui` all exited `0`.
-- **`vitest run`**: `1613/1621` passed across `114` files in `pnpm check` (`107` files passed, `7` failed with `8` pre-existing/regex-drift failures). All targeted specs for `emr-checkbox`, `emr-checkbox-group`, `emr-radio-group`, `emr-select`, `emr-search-select`, `emr-combobox`, `emr-toggle`, `emr-segmented-control`, `emr-tag-input`, and L2 `#26`–`#34` pass.
-- **8 pre-existing / regex-drift `pnpm check` test failures across 7 files**:
-  - `packages/emr-elements/src/architecture.spec.ts` (pixel font-sizes in `l1-primitives.ts`)
-  - `packages/emr-react/src/architecture.spec.ts` (`inputs-core.tsx` non-type controller imports)
-  - `packages/emr-ui/src/lib/architecture.spec.ts` (`emr-stat-tile.component.ts` `ViewEncapsulation.None`)
-  - `packages/emr-ui/src/lib/controlled-components.spec.ts` (`emr-search-select`)
-  - `packages/emr-ui/src/lib/l1-l2-primitives-fields.spec.ts` (`emr-inputs.component.ts` regex)
-  - `packages/emr-ui/src/lib/primitives/l1-l2-wave2.spec.ts` (`EmrRadioGroupComponent` `orientation` type regex)
-  - `packages/emr-ui/src/lib/foundations/emr-print.spec.ts` (`emr-print.css` selector drift)
-- Live dev servers running cleanly in background: `pnpm site` on `:3300`, `pnpm preview:angular` on `:4200`.
+- **`pnpm check` (`19 Nov 2026`)**: **PASSED (exit code `0`)** — `build:controller`, `registry:build` (`210` items), `vitest run` (**`117/117` test files, `1701/1701` tests, `0` failed**), `check:node-controller`, `build:ui`, `check:ssr`, `check:react` (Web & Expo Native), `build:react`, `build:elements`, and `check:stories` all passed cleanly.
+- **`build-component-api.mjs`**: Generated `component-api-manifest.ts` (`208` components).
+- **Live previews**: `:3300` (`pnpm site` + `public/lit/emr-elements.bundle.js` + `public/angular` via `emr-angular-preview`) and `:4200` (`ng serve emr-angular-preview`) verified across `68` `PASS` audit reports (`docs/audits/emr-*.md`) covering L1 (`#1`–`#25` + Wave 2) and L2 (`#26`–`#44` + `emr-image-field`).
 
 ## Pending tasks
 
-1. **Continue 3-stage component parity & verification (Remaining L1 primitives -> `L2` building blocks -> `L3`–`L6`)**:
-   - **Audited `PASS` so far**: Choice & selection L1 primitives (`emr-checkbox`, `emr-checkbox-group`, `emr-radio-group`, `emr-select`, `emr-search-select`, `emr-combobox`, `emr-toggle`, `emr-segmented-control`, `emr-tag-input`), core L1 (`#1`–`#25`), and L2 fields `#26 emr-field-frame` through `#34 emr-attachment-field` (all have `PASS` reports in `docs/audits/<selector>.md`).
-   - **Next components**: Remaining L1 primitives (`emr-badge`, `emr-tabs`, `emr-likert`, `emr-vas`), then L2 `#35 emr-paired-field` onward in `packages/emr-react/harness/gallery/parity/entries-l1-l2-building-blocks.tsx`.
-   - Resolve the 7 pre-existing L1/foundations test failures listed under Verification state before release.
+1. **Continue 3-stage component parity & verification (`L3` structures -> `L4` domain -> `L6` authoring)**:
+   - **Audited `PASS` so far (`68` components in `docs/audits/`)**: All L1 primitives (core `#1`–`#25` + choice/selection + all Wave 2 L1 entries) and all L2 clinical fields (`#26 emr-field-frame` through `#44 emr-refraction-field` + `emr-image-field`).
+   - **Next components**: Remaining L3 structures (`emr-section-card`, `emr-repeatable-group`, `emr-clinical-form`, `emr-clinical-list`, `emr-clinical-matrix`, workstation shells) -> L4 domain -> L6 authoring.
 2. **Run full `pnpm check` & commit working-tree changes.** Stage and commit the 38 new components, L5 clinical schema packs, anatomy asset relocation, updated domain components, `ComponentsDocsPage`, `examples/angular-preview/`, `registry/`, and docs.
 3. **Browser, visual, Storybook, site & native verification:**
    - Run `pnpm test:visual` (Playwright + axe across light/dark themes) and add representative story IDs for the new L3/L4/L6 components.

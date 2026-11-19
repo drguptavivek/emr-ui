@@ -765,7 +765,9 @@ function ComponentsDocsInner({
                       variant:
                         activeItem?.selector === 'emr-checkbox-group'
                           ? ['tile', 'inline', 'card', 'chip']
-                          : activeItem?.selector === 'emr-radio-group'
+                          : activeItem?.selector === 'emr-toggle-group'
+                            ? ['tile', 'inline', 'card']
+                            : activeItem?.selector === 'emr-radio-group'
                             ? ['tile', 'inline', 'card', 'pill', 'segmented']
                             : v === 'tile' || v === 'inline'
                               ? ['tile', 'inline']
@@ -781,14 +783,25 @@ function ComponentsDocsInner({
                                     ? ['outlined', 'elevated', 'filled', 'subtle']
                                     : activeItem?.selector === 'emr-scale-field'
                                       ? ['likert', 'vas']
-                                      : activeItem?.selector === 'emr-select'
+                                      : activeItem?.selector === 'emr-select' ||
+                                          activeItem?.selector === 'emr-tree-select'
                                         ? ['outline', 'filled', 'subtle']
-                                        : ['primary', 'secondary', 'outline', 'ghost', 'danger'],
+                                        : activeItem?.selector === 'emr-menu' ||
+                                            activeItem?.selector === 'emr-copy-button'
+                                          ? ['outline', 'primary', 'secondary', 'ghost']
+                                          : activeItem?.selector === 'emr-split-button'
+                                            ? ['primary', 'secondary', 'outline', 'danger']
+                                            : activeItem?.selector === 'emr-accordion'
+                                              ? ['outlined', 'flush', 'card']
+                                              : ['primary', 'secondary', 'outline', 'ghost', 'danger'],
                       status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
                       size:
                         activeItem?.selector === 'emr-checkbox' ||
                         activeItem?.selector === 'emr-checkbox-group' ||
                         activeItem?.selector === 'emr-toggle' ||
+                        activeItem?.selector === 'emr-toggle-group' ||
+                        activeItem?.selector === 'emr-tree-view' ||
+                        activeItem?.selector === 'emr-tree-select' ||
                         activeItem?.selector === 'emr-radio-group' ||
                         activeItem?.selector === 'emr-segmented-control' ||
                         activeItem?.selector === 'emr-badge' ||
@@ -796,12 +809,22 @@ function ComponentsDocsInner({
                         activeItem?.selector === 'emr-select' ||
                         activeItem?.selector === 'emr-search-select' ||
                         activeItem?.selector === 'emr-combobox' ||
-                        activeItem?.selector === 'emr-tag-input'
+                        activeItem?.selector === 'emr-tag-input' ||
+                        activeItem?.selector === 'emr-menu' ||
+                        activeItem?.selector === 'emr-accordion' ||
+                        activeItem?.selector === 'emr-breadcrumbs' ||
+                        activeItem?.selector === 'emr-color-picker'
                           ? ['md', 'sm']
                           : ['sm', 'md', 'lg'],
+                      checkStrategy: ['cascade', 'all', 'leaf'],
+                      displayMode: ['path', 'leaf'],
                       shape: activeItem?.selector === 'emr-segmented-control' ? ['default', 'pill'] : ['pill', 'rounded'],
                       padding: ['md', 'lg', 'sm', 'none'],
-                      align: ['stretch', 'start', 'center', 'end'],
+                      align:
+                        activeItem?.selector === 'emr-menu' || activeItem?.selector === 'emr-split-button'
+                          ? ['start', 'end']
+                          : ['stretch', 'start', 'center', 'end'],
+                      separator: ['/', 'chevron', '>'],
                       labelAlign: ['start', 'center', 'end'],
                       filterMode: ['local', 'remote', 'none'],
                       ...(activeItem?.selector === 'emr-search-select' ||
@@ -820,6 +843,24 @@ function ComponentsDocsInner({
                         ? {
                             warning: ['', 'Confirm laterality before surgical timeout'],
                             error: ['', 'Select at least one mandatory safety check'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-toggle-group'
+                        ? {
+                            warning: ['', 'Patient opted out of non-urgent SMS reminders'],
+                            error: ['', 'Select at least one active notification channel'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-tree-view'
+                        ? {
+                            warning: ['', 'Verify laterality before locking anatomical site'],
+                            error: ['', 'Select at least one anatomical structure'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-tree-select'
+                        ? {
+                            warning: ['', 'Verify anatomical site before finalizing diagnosis'],
+                            error: ['', 'Primary anatomical site is required'],
                           }
                         : {}),
                       ...(activeItem?.selector === 'emr-radio-group'
@@ -866,15 +907,152 @@ function ComponentsDocsInner({
                             error: ['', 'Operative laterality is required'],
                           }
                         : {}),
+                      ...(activeItem?.selector === 'emr-duration-input'
+                        ? {
+                            size: ['sm', 'md', 'lg'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-range-field'
+                        ? {
+                            kind: ['number', 'date', 'time', 'datetime'],
+                            size: ['sm', 'md', 'lg'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-phone-input'
+                        ? {
+                            size: ['sm', 'md', 'lg'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-address-field'
+                        ? {
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-macro-text-field'
+                        ? {
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-laterality-field'
+                        ? {
+                            domain: ['ophthalmic', 'anatomic'],
+                            size: ['sm', 'md', 'lg'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            orientation: ['horizontal', 'vertical'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-visual-acuity-field'
+                        ? {
+                            eye: ['OD', 'OS', 'OU'],
+                            notation: ['snellen-m', 'snellen-ft', 'logmar', 'etdrs', 'low-vision'],
+                            correction: ['unaided', 'habitual', 'best-corrected', 'contact-lens'],
+                            derivedTone: ['neutral', 'info', 'success', 'warning', 'danger'],
+                            size: ['sm', 'md', 'lg'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-refraction-field'
+                        ? {
+                            eye: ['OD', 'OS'],
+                            size: ['sm', 'md', 'lg'],
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-image-viewer'
+                        ? {
+                            warning: ['', 'Verify laterality (OD/OS) against clinical note'],
+                            error: ['', 'Image failed quality check — recapture'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-image-cropper'
+                        ? {
+                            outputMimeType: ['image/png', 'image/jpeg', 'image/webp'],
+                            warning: ['', 'Keep optic disc centered inside ROI'],
+                            error: ['', 'Crop region is too small for diagnostic review'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-image-upload'
+                        ? {
+                            cropOutputMimeType: ['image/png', 'image/jpeg', 'image/webp'],
+                            warning: ['', 'Redact patient-identifying metadata before export'],
+                            error: ['', 'At least one diagnostic fundus image is required'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-image-field'
+                        ? {
+                            layout: ['vertical', 'horizontal', 'inline'],
+                            status: ['recorded', 'not-assessed', 'unable-to-assess', 'not-applicable', 'declined', 'unknown'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-date-range-input'
+                        ? {
+                            variant: ['outline', 'filled', 'subtle'],
+                            warning: ['', 'Date span exceeds standard 30-day review window'],
+                            error: ['', 'Select a valid encounter date range'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-slider'
+                        ? {
+                            warning: ['', 'High overlay opacity may obscure vessels'],
+                            error: ['', 'Opacity must be configured before saving'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-range-slider'
+                        ? {
+                            warning: ['', 'Upper target exceeds 21 mmHg norm'],
+                            error: ['', 'Target IOP range is required'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-masked-input'
+                        ? {
+                            variant: ['outline', 'filled', 'subtle'],
+                            warning: ['', 'Verify ABHA checksum before linking'],
+                            error: ['', '14-digit ABHA number is incomplete'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-otp-input'
+                        ? {
+                            variant: ['outline', 'filled', 'subtle'],
+                            warning: ['', 'Code expires in 45 seconds'],
+                            error: ['', 'Invalid verification code — 2 attempts remaining'],
+                          }
+                        : {}),
+                      ...(activeItem?.selector === 'emr-color-picker'
+                        ? {
+                            warning: ['', 'Verify colour contrast on printed retinal diagram'],
+                            error: ['', 'Select an annotation colour before saving'],
+                          }
+                        : {}),
                       hourCycle: ['24', '12'],
+                      mode:
+                        activeItem?.selector === 'emr-paired-field'
+                          ? ['integer', 'decimal', 'text']
+                          : activeItem?.selector === 'emr-date-range-input'
+                            ? ['date', 'datetime']
+                            : ['decimal', 'integer'],
                       labelPlacement: ['end', 'start', 'space-between'],
                       tone: ['info', 'success', 'warning', 'danger', 'neutral'],
-                      kind: ['empty', 'loading', 'error'],
+                      kind:
+                        activeItem?.selector === 'emr-range-field'
+                          ? ['number', 'date', 'time', 'datetime']
+                          : ['empty', 'loading', 'error'],
                       layout: ['vertical', 'horizontal', 'inline'],
                       assessmentStatus: ['recorded', 'not-assessed', 'unable-to-assess'],
                       orientation:
                         activeItem?.selector === 'emr-radio-group' ||
-                        activeItem?.selector === 'emr-checkbox-group'
+                        activeItem?.selector === 'emr-checkbox-group' ||
+                        activeItem?.selector === 'emr-toggle-group'
                           ? ['vertical', 'horizontal', 'grid']
                           : ['horizontal', 'vertical'],
                     };
@@ -885,6 +1063,19 @@ function ComponentsDocsInner({
                       maxTagCount: [2, 1, 3, 0],
                       maxTags: [6, 4, 3, 2],
                       maxTagLength: [24, 12, 8, 40],
+                      activeIndex: [0, 1],
+                      height: [300, 240, 400],
+                      maxFiles: [4, 2, 1, 6],
+                      maxSizeBytes: [5 * 1024 * 1024, 2 * 1024 * 1024, 1024 * 1024],
+                      weekStartsOn: [0, 1],
+                      separatorAfter: [3, 2, 0],
+                      maxItems: [3, 2, 4, 0],
+                      ...(activeItem?.selector === 'emr-macro-text-field'
+                        ? {
+                            rows: [4, 2, 6, 8],
+                            maxLength: [280, 140, 500],
+                          }
+                        : {}),
                     };
                     const isBool = typeof v === 'boolean';
                     const cycle = typeof v === 'string' ? enumCycles[k] : undefined;
@@ -897,9 +1088,110 @@ function ComponentsDocsInner({
                         );
                       } else if (cycle) {
                         const next = cycle[(cycle.indexOf(v as string) + 1) % cycle.length];
-                        setComponentState((prev) =>
-                          prev && typeof prev === 'object' ? { ...(prev as Record<string, unknown>), [k]: next } : prev,
-                        );
+                        setComponentState((prev) => {
+                          if (!prev || typeof prev !== 'object') return prev;
+                          const obj = prev as Record<string, unknown>;
+                          if (activeItem?.selector === 'emr-laterality-field' && k === 'domain') {
+                            return {
+                              ...obj,
+                              domain: next,
+                              value: next === 'ophthalmic' ? 'OD' : 'right',
+                              confirmationLabel:
+                                next === 'ophthalmic'
+                                  ? 'Operative eye confirmed against consent and biometry'
+                                  : 'Surgical site and laterality verified',
+                            };
+                          }
+                          if (activeItem?.selector === 'emr-visual-acuity-field' && k === 'notation') {
+                            const vaChartMap: Record<
+                              string,
+                              {
+                                readonly options: { readonly value: string; readonly label: string }[];
+                                readonly value: string;
+                                readonly pinhole: string | null;
+                                readonly derived: string;
+                              }
+                            > = {
+                              'snellen-m': {
+                                options: [
+                                  { value: '6/6', label: '6/6' },
+                                  { value: '6/9', label: '6/9' },
+                                  { value: '6/12', label: '6/12' },
+                                  { value: '6/18', label: '6/18' },
+                                  { value: '6/24', label: '6/24' },
+                                  { value: '6/36', label: '6/36' },
+                                  { value: '6/60', label: '6/60' },
+                                ],
+                                value: '6/18',
+                                pinhole: '6/9',
+                                derived: 'LogMAR 0.48 (PH 0.18)',
+                              },
+                              'snellen-ft': {
+                                options: [
+                                  { value: '20/20', label: '20/20' },
+                                  { value: '20/30', label: '20/30' },
+                                  { value: '20/40', label: '20/40' },
+                                  { value: '20/60', label: '20/60' },
+                                  { value: '20/80', label: '20/80' },
+                                  { value: '20/200', label: '20/200' },
+                                ],
+                                value: '20/60',
+                                pinhole: '20/30',
+                                derived: 'Snellen 6/18 (LogMAR 0.48)',
+                              },
+                              logmar: {
+                                options: [
+                                  { value: '0.00', label: '0.00' },
+                                  { value: '0.18', label: '0.18' },
+                                  { value: '0.30', label: '0.30' },
+                                  { value: '0.48', label: '0.48' },
+                                  { value: '0.60', label: '0.60' },
+                                  { value: '1.00', label: '1.00' },
+                                ],
+                                value: '0.48',
+                                pinhole: '0.18',
+                                derived: 'Snellen 6/18 (20/60)',
+                              },
+                              etdrs: {
+                                options: [
+                                  { value: '85', label: '85 letters' },
+                                  { value: '75', label: '75 letters' },
+                                  { value: '70', label: '70 letters' },
+                                  { value: '61', label: '61 letters' },
+                                  { value: '55', label: '55 letters' },
+                                  { value: '35', label: '35 letters' },
+                                ],
+                                value: '61',
+                                pinhole: '75',
+                                derived: 'Snellen 6/18 (LogMAR 0.48)',
+                              },
+                              'low-vision': {
+                                options: [
+                                  { value: 'CF-3m', label: 'CF 3m' },
+                                  { value: 'CF-1m', label: 'CF 1m' },
+                                  { value: 'HM', label: 'HM' },
+                                  { value: 'LP', label: 'LP' },
+                                  { value: 'NLP', label: 'NLP' },
+                                ],
+                                value: 'CF-3m',
+                                pinhole: null,
+                                derived: 'WHO Low Vision (LogMAR > 1.3)',
+                              },
+                            };
+                            const preset = next ? vaChartMap[next] : undefined;
+                            if (preset) {
+                              return {
+                                ...obj,
+                                notation: next,
+                                valueOptions: preset.options,
+                                value: preset.value,
+                                pinholeValue: obj['showPinhole'] ? preset.pinhole : null,
+                                derivedDisplay: preset.derived,
+                              };
+                            }
+                          }
+                          return { ...obj, [k]: next };
+                        });
                       } else if (numCycle) {
                         const idx = numCycle.indexOf(v as number);
                         const next = numCycle[(idx + 1) % numCycle.length];

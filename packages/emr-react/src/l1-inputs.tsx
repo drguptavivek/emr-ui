@@ -2,20 +2,19 @@
 
 import { useId } from 'react';
 import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
-import {
-  resolveQuantityStep,
-  resolveTimePlaceholder,
-  type EmrDateTimeDisplayFormat,
-  type EmrDateTimeHourCycle,
-  type EmrDateTimeSize,
-  type EmrDateTimeWireFormat,
-  type EmrOption,
-  type EmrQuantityNumericMode,
-  type EmrQuantitySize,
-  type EmrTimeHourCycle,
-  type EmrTimePrecision,
-  type EmrTimeSize,
+import type {
+  EmrDateTimeDisplayFormat,
+  EmrDateTimeHourCycle,
+  EmrDateTimeSize,
+  EmrDateTimeWireFormat,
+  EmrOption,
+  EmrQuantityNumericMode,
+  EmrQuantitySize,
+  EmrTimeHourCycle,
+  EmrTimePrecision,
+  EmrTimeSize,
 } from '@drguptavivek/emr-controller';
+import { resolveQuantityStep, resolveTimePlaceholder } from './l1-inputs.logic';
 import { SvgIcon } from './icons';
 import { EmrDateTimeText, EmrTypedText, NumberInput, ThemedInput } from './inputs-core';
 import { FieldChrome } from './l1-field-chrome';

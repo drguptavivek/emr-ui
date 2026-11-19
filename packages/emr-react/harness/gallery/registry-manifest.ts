@@ -158,6 +158,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrButton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -176,6 +177,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrButton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -209,7 +211,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -265,6 +267,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -285,6 +288,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -319,7 +323,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -375,6 +379,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -395,6 +400,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -429,7 +435,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -485,6 +491,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -505,6 +512,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -539,7 +547,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -595,6 +603,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSelect",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -613,6 +622,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSelect",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -646,7 +656,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -703,6 +713,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -723,6 +734,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -757,7 +769,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -813,6 +825,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -833,6 +846,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -867,7 +881,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -922,6 +936,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -942,6 +957,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -976,7 +992,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1031,6 +1047,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -1051,6 +1068,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -1085,7 +1103,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1140,6 +1158,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -1160,6 +1179,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -1194,7 +1214,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1248,6 +1268,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrBadge",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -1270,6 +1291,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrBadge",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -1307,7 +1329,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1361,6 +1383,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrChip",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1380,6 +1403,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrChip",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1414,7 +1438,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1468,6 +1492,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAlert",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1487,6 +1512,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAlert",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1521,7 +1547,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1575,6 +1601,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStateMessage",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1594,6 +1621,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStateMessage",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1628,7 +1656,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1684,6 +1712,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1707,6 +1736,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1744,7 +1774,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1799,6 +1829,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1822,6 +1853,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -1859,7 +1891,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -1912,6 +1944,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSeparator",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1931,6 +1964,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSeparator",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -1965,7 +1999,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2026,6 +2060,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -2049,6 +2084,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -2086,7 +2122,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2147,6 +2183,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -2170,6 +2207,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -2207,7 +2245,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2262,6 +2300,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCard",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -2281,6 +2320,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCard",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -2315,7 +2355,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2369,6 +2409,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrColumns",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -2388,6 +2429,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrColumns",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -2422,7 +2464,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2475,6 +2517,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldValueRow",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -2494,6 +2537,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFieldValueRow",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -2528,7 +2572,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2582,6 +2626,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -2617,6 +2662,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -2668,7 +2714,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2713,10 +2759,11 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
-        "emr-image-upload",
+        "emr-image-field",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
@@ -2737,10 +2784,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-typed-field",
@@ -2753,7 +2802,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTypedFieldComponent",
         "selector": "emr-typed-field",
         "files": [
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -2785,6 +2836,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -2820,6 +2872,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -2871,7 +2924,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 54
+      "fileCount": 57
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -2930,6 +2983,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -2968,6 +3022,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -3024,7 +3079,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 42
+      "fileCount": 43
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3074,10 +3129,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-repeatable-group",
@@ -3090,7 +3147,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrRepeatableGroupComponent",
         "selector": "emr-repeatable-group",
         "files": [
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -3123,6 +3182,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -3160,6 +3220,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -3216,7 +3277,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 60
+      "fileCount": 63
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3280,10 +3341,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-clinical-form",
@@ -3296,7 +3359,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrClinicalFormComponent",
         "selector": "emr-clinical-form",
         "files": [
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -3331,6 +3396,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -3369,6 +3435,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -3425,7 +3492,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 62
+      "fileCount": 65
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3479,6 +3546,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3502,6 +3570,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3544,7 +3613,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3607,6 +3676,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3630,6 +3700,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3672,7 +3743,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3724,6 +3795,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3747,6 +3819,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3789,7 +3862,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3846,6 +3919,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3869,6 +3943,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -3923,7 +3998,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -3980,6 +4055,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4003,6 +4079,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4057,7 +4134,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4113,6 +4190,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4136,6 +4214,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4190,7 +4269,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4246,6 +4325,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4269,6 +4349,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4323,7 +4404,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4382,6 +4463,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -4411,6 +4493,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -4471,7 +4554,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 43
+      "fileCount": 44
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4528,6 +4611,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -4557,6 +4641,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -4597,7 +4682,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 24
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4654,6 +4739,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -4683,6 +4769,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -4723,7 +4810,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 24
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4778,6 +4865,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4805,6 +4893,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4843,7 +4932,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -4899,6 +4988,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrLeftNav",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4920,6 +5010,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrLeftNav",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -4953,7 +5044,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5008,6 +5099,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5048,6 +5140,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5099,7 +5192,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5162,6 +5255,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -5202,6 +5296,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -5252,7 +5347,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5308,10 +5403,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-pac-checklist",
@@ -5325,7 +5422,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-pac-checklist",
         "files": [
           "domain/emr-pac-checklist.component.ts",
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -5360,6 +5459,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -5400,6 +5500,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -5450,7 +5551,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 57
+      "fileCount": 60
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5508,6 +5609,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -5548,6 +5650,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -5598,7 +5701,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5652,6 +5755,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5692,6 +5796,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5743,7 +5848,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5801,6 +5906,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5841,6 +5947,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5892,7 +5999,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -5950,6 +6057,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -5990,6 +6098,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6041,7 +6150,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6108,6 +6217,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6148,6 +6258,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6199,7 +6310,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6263,6 +6374,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6303,6 +6415,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6354,7 +6467,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 38
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6422,6 +6535,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6462,6 +6576,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -6513,7 +6628,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6581,6 +6696,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -6620,6 +6736,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -6670,7 +6787,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6728,6 +6845,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -6749,6 +6867,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -6781,7 +6900,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6838,6 +6957,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -6859,6 +6979,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -6891,7 +7012,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -6977,6 +7098,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -7000,6 +7122,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -7054,7 +7177,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 40
+      "fileCount": 41
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7115,10 +7238,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
         "emr-otp-input",
+        "emr-signature-capture-field",
         "emr-terminology-search",
         "emr-validation-rule-editor"
       ],
@@ -7136,7 +7261,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "authoring/emr-field-generator.component.ts",
           "authoring/emr-terminology-search.component.ts",
           "authoring/emr-validation-rule-editor.component.ts",
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -7169,6 +7296,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7210,6 +7338,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7261,7 +7390,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 58
+      "fileCount": 61
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7316,6 +7445,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7357,6 +7487,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7408,7 +7539,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7463,6 +7594,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7504,6 +7636,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7555,7 +7688,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7610,6 +7743,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7651,6 +7785,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7702,7 +7837,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7762,10 +7897,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-template-composer",
@@ -7781,7 +7918,9 @@ export const EMR_REGISTRY_MANIFEST = {
           "authoring/emr-field-library-picker.component.ts",
           "authoring/emr-template-composer.component.ts",
           "authoring/emr-template-preview.component.ts",
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -7816,6 +7955,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7857,6 +7997,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -7908,7 +8049,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 60
+      "fileCount": 63
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -7964,10 +8105,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "emr-tree-select",
         "emr-combobox",
         "emr-tag-input",
+        "emr-image-field",
         "emr-image-upload",
         "emr-slider",
         "emr-masked-input",
-        "emr-otp-input"
+        "emr-otp-input",
+        "emr-signature-capture-field"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-template-preview",
@@ -7981,7 +8124,9 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-template-preview",
         "files": [
           "authoring/emr-template-preview.component.ts",
+          "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-typed-field.component.ts",
           "fields/typed-field.logic.ts",
           "primitives/emr-action-controls.component.ts",
@@ -8016,6 +8161,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -8057,6 +8203,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "clinical-form.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -8108,7 +8255,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6AuthoringSurfaces } from './components/emr/l6-authoring-surfaces.js';\nregisterL6AuthoringSurfaces();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 58
+      "fileCount": 61
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8173,6 +8320,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -8194,6 +8342,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -8226,7 +8375,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8286,6 +8435,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -8323,6 +8473,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -8379,7 +8530,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8439,6 +8590,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -8476,6 +8628,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -8532,7 +8685,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8599,6 +8752,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -8620,6 +8774,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -8652,7 +8807,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8713,6 +8868,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -8734,6 +8890,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -8766,7 +8923,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8836,6 +8993,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -8859,6 +9017,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -8893,7 +9052,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -8967,6 +9126,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -8990,6 +9150,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9024,7 +9185,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 18
+      "fileCount": 19
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9088,6 +9249,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9111,6 +9273,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9145,7 +9308,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9209,6 +9372,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9232,6 +9396,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9266,7 +9431,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9338,6 +9503,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -9364,6 +9530,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -9406,7 +9573,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 28
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9470,6 +9637,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9499,6 +9667,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9539,7 +9708,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ObservationElements } from './components/emr/l4-observations.js';\nregisterL4ObservationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 24
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9602,6 +9771,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9625,6 +9795,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9679,7 +9850,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9752,6 +9923,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9775,6 +9947,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9809,7 +9982,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalElements } from './components/emr/l4-clinical.js';\nregisterL4ClinicalElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -9882,6 +10055,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9911,6 +10085,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -9951,7 +10126,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 28
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10013,6 +10188,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -10050,6 +10226,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -10106,7 +10283,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10167,6 +10344,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -10187,6 +10365,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -10221,7 +10400,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10281,6 +10460,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -10301,6 +10481,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -10335,7 +10516,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10398,6 +10579,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStatusCell",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -10417,6 +10599,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStatusCell",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -10451,7 +10634,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10516,6 +10699,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -10545,6 +10729,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -10590,7 +10775,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 28
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10656,6 +10841,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -10682,6 +10868,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -10724,7 +10911,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 26
+      "fileCount": 27
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10786,6 +10973,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -10815,6 +11003,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -10860,7 +11049,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2Elements } from './components/emr/l2-fields.js';\nregisterL2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 30
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -10920,6 +11109,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -10943,6 +11133,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -10985,7 +11176,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 26
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11048,6 +11239,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "data-table.web.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11072,6 +11264,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "data-table.types.ts",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11112,7 +11305,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3Elements } from './components/emr/l3-structures.js';\nregisterL3Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 27
+      "fileCount": 28
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11172,6 +11365,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -11195,6 +11389,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-scales.tsx",
@@ -11232,7 +11427,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 20
+      "fileCount": 21
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11288,6 +11483,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStatTile",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -11307,6 +11503,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrStatTile",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -11341,7 +11538,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11407,6 +11604,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11438,6 +11636,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11487,7 +11686,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 36
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11552,6 +11751,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "consent-receipt.web.tsx",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -11593,6 +11793,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "consent-receipt.types.ts",
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -11650,7 +11851,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 46
+      "fileCount": 47
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11707,6 +11908,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "consent-receipt.types.ts",
           "consent-receipt.web.tsx",
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -11727,6 +11929,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "consent-receipt.tsx",
           "consent-receipt.types.ts",
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -11764,7 +11967,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 22
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11818,6 +12021,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11849,6 +12053,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11898,7 +12103,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -11959,6 +12164,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSharingGrants",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -11981,6 +12187,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSharingGrants",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12022,7 +12229,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 24
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12079,6 +12286,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAccessLog",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12101,6 +12309,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAccessLog",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12142,7 +12351,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 23
+      "fileCount": 24
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12210,6 +12419,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -12249,6 +12459,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -12306,7 +12517,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 44
+      "fileCount": 45
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12365,6 +12576,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -12408,6 +12620,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -12469,7 +12682,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 46
+      "fileCount": 47
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12527,6 +12740,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12556,6 +12770,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12603,7 +12818,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 30
+      "fileCount": 31
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12668,6 +12883,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12697,6 +12913,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12744,7 +12961,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 33
+      "fileCount": 34
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12808,6 +13025,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12838,6 +13056,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -12886,7 +13105,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 34
+      "fileCount": 35
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -12953,6 +13172,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -12990,6 +13210,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -13045,7 +13266,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 42
+      "fileCount": 43
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13100,6 +13321,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -13137,6 +13359,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -13192,7 +13415,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 38
+      "fileCount": 39
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13249,6 +13472,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13280,6 +13504,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13329,7 +13554,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13390,6 +13615,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrDraftRecordList",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13412,6 +13638,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrDraftRecordList",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13453,7 +13680,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4PrivacyIdentityElements } from './components/emr/l4-privacy-identity.js';\nregisterL4PrivacyIdentityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 24
+      "fileCount": 25
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13521,6 +13748,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13552,6 +13780,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13594,7 +13823,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13661,6 +13890,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13692,6 +13922,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13734,7 +13965,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13801,6 +14032,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13832,6 +14064,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13874,7 +14107,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 32
+      "fileCount": 33
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -13934,6 +14167,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13959,6 +14193,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -13995,7 +14230,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14058,6 +14293,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14091,6 +14327,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14135,7 +14372,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 30
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14189,6 +14426,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrRecordDiff",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14214,6 +14452,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrRecordDiff",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14250,7 +14489,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 19
+      "fileCount": 20
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14303,6 +14542,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrUploadQueue",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14325,6 +14565,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrUploadQueue",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14358,7 +14599,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OperationsElements } from './components/emr/l4-operations.js';\nregisterL4OperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14415,6 +14656,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "charts.types.ts",
           "charts.web.tsx",
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14437,6 +14679,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "charts.tsx",
           "charts.types.ts",
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14473,7 +14716,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 22
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14530,6 +14773,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "charts.types.ts",
           "charts.web.tsx",
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14552,6 +14796,7 @@ export const EMR_REGISTRY_MANIFEST = {
           "charts.tsx",
           "charts.types.ts",
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-display.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -14588,7 +14833,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 22
+      "fileCount": 23
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14645,6 +14890,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -14682,6 +14928,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -14735,7 +14982,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14794,6 +15041,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -14831,6 +15079,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -14884,7 +15133,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -14941,6 +15190,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -14978,6 +15228,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -15031,7 +15282,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15088,6 +15339,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -15125,6 +15377,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -15178,7 +15431,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 39
+      "fileCount": 40
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15235,6 +15488,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -15272,6 +15526,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
@@ -15323,7 +15578,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Elements } from './components/emr/l1-primitives.js';\nregisterL1Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 36
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15379,6 +15634,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSheet",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -15398,6 +15654,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSheet",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -15434,7 +15691,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 21
+      "fileCount": 22
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15491,6 +15748,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -15518,6 +15776,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -15561,7 +15820,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 30
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15620,6 +15879,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -15647,6 +15907,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -15690,7 +15951,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MobileChartsElements } from './components/emr/l4-mobile-charts.js';\nregisterL4MobileChartsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 29
+      "fileCount": 30
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15753,6 +16014,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -15773,6 +16035,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -15824,7 +16087,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -15885,6 +16148,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -15905,6 +16169,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -15956,7 +16221,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16024,6 +16289,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16044,6 +16310,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16095,7 +16362,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16157,6 +16424,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16177,6 +16445,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16228,7 +16497,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16290,6 +16559,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16310,6 +16580,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16361,7 +16632,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4Elements } from './components/emr/l4-domain.js';\nregisterL4Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 37
+      "fileCount": 38
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16418,6 +16689,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16438,6 +16710,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -16469,7 +16742,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4ClinicalNoteElements } from './components/emr/l4-clinical-note.js';\nregisterL4ClinicalNoteElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16524,6 +16797,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16545,6 +16819,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16577,7 +16852,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16632,6 +16907,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16653,6 +16929,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16685,7 +16962,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16740,6 +17017,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16761,6 +17039,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16793,7 +17072,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16848,6 +17127,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16869,6 +17149,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16901,7 +17182,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -16957,6 +17238,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -16978,6 +17260,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17010,7 +17293,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17065,6 +17348,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17086,6 +17370,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17118,7 +17403,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17173,6 +17458,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17194,6 +17480,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17226,7 +17513,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17280,6 +17567,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17301,6 +17589,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -17333,7 +17622,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17685,6 +17974,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrProgressBar",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -17704,6 +17994,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrProgressBar",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -17735,7 +18026,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17789,6 +18080,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSpinner",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -17808,6 +18100,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSpinner",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -17839,7 +18132,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17893,6 +18186,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSkeleton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -17912,6 +18206,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSkeleton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -17943,7 +18238,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -17997,6 +18292,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAvatar",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -18016,6 +18312,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAvatar",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-feedback.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
@@ -18047,7 +18344,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18103,6 +18400,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -18124,6 +18422,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -18156,7 +18455,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1ExtraElements } from './components/emr/l1-primitives-extra.js';\nregisterL1ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18207,6 +18506,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -18230,6 +18530,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18258,6 +18559,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18297,7 +18599,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18349,6 +18651,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -18372,6 +18675,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18400,6 +18704,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18439,7 +18744,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18491,6 +18796,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -18514,6 +18820,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18542,6 +18849,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18581,7 +18889,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18628,6 +18936,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -18651,6 +18960,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18679,6 +18989,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18718,7 +19029,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18747,11 +19058,13 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "registryDependencies": [
         "foundations",
-        "emr-field-frame"
+        "emr-field-frame",
+        "emr-quantity-input"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-field-frame"
+        "emr-field-frame",
+        "emr-quantity-input"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-duration-input",
@@ -18766,6 +19079,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -18789,6 +19103,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18817,6 +19132,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18856,7 +19172,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -18874,7 +19190,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Structured low-to-high numeric or date range field for therapeutic targets and PRN dosing ranges.",
+      "description": "Structured low-to-high range field supporting number, date, time, and datetime bounds with per-side validation, clear action, and assessment status.",
       "stories": [
         "emr-fields-clinical-building-blocks--paired-and-measurements"
       ],
@@ -18884,11 +19200,17 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "registryDependencies": [
         "foundations",
-        "emr-field-frame"
+        "emr-field-frame",
+        "emr-date-input",
+        "emr-time-input",
+        "emr-datetime-input"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
-        "emr-field-frame"
+        "emr-field-frame",
+        "emr-date-input",
+        "emr-time-input",
+        "emr-datetime-input"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-range-field",
@@ -18903,6 +19225,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -18926,6 +19249,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18954,6 +19278,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -18993,7 +19318,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19041,6 +19366,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -19064,6 +19390,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -19092,6 +19419,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -19131,7 +19459,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19160,11 +19488,13 @@ export const EMR_REGISTRY_MANIFEST = {
       "registryDependencies": [
         "foundations",
         "emr-field-frame",
+        "emr-select",
         "emr-badge"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
         "emr-field-frame",
+        "emr-select",
         "emr-badge"
       ],
       "installCommand": {
@@ -19180,10 +19510,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-clinical-fields.component.ts",
           "fields/emr-field-frame.component.ts",
-          "fields/typed-field.logic.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
+          "primitives/emr-inputs.component.ts",
+          "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
         "dependencies": [
@@ -19196,6 +19528,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19221,6 +19554,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19257,7 +19591,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 28
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19287,12 +19621,14 @@ export const EMR_REGISTRY_MANIFEST = {
       "registryDependencies": [
         "foundations",
         "emr-field-frame",
-        "emr-segmented-control"
+        "emr-segmented-control",
+        "emr-select"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
         "emr-field-frame",
-        "emr-segmented-control"
+        "emr-segmented-control",
+        "emr-select"
       ],
       "installCommand": {
         "cli": "pnpm emr add emr-address-field",
@@ -19307,10 +19643,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-clinical-fields.component.ts",
           "fields/emr-field-frame.component.ts",
-          "fields/typed-field.logic.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
+          "primitives/emr-inputs.component.ts",
+          "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
         "dependencies": [
@@ -19323,6 +19661,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19348,6 +19687,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19384,7 +19724,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 28
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19431,10 +19771,12 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-clinical-fields.component.ts",
           "fields/emr-field-frame.component.ts",
-          "fields/typed-field.logic.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
+          "primitives/emr-inputs.component.ts",
+          "primitives/emr-inputs.logic.ts",
           "primitives/emr-wave2.logic.ts"
         ],
         "dependencies": [
@@ -19447,6 +19789,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19472,6 +19815,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19508,7 +19852,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 25
+      "fileCount": 28
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19559,13 +19903,14 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-laterality-field",
         "files": [
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-specialty-fields.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
+          "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
-          "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
         "dependencies": [
@@ -19578,6 +19923,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19603,6 +19949,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19639,7 +19986,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 27
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19669,11 +20016,15 @@ export const EMR_REGISTRY_MANIFEST = {
       "registryDependencies": [
         "foundations",
         "emr-field-frame",
+        "emr-segmented-control",
+        "emr-select",
         "emr-badge"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
         "emr-field-frame",
+        "emr-segmented-control",
+        "emr-select",
         "emr-badge"
       ],
       "installCommand": {
@@ -19688,13 +20039,14 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-visual-acuity-field",
         "files": [
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-specialty-fields.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
+          "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
-          "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
         "dependencies": [
@@ -19707,6 +20059,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19732,6 +20085,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19768,7 +20122,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 27
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19787,7 +20141,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Coordinated Sphere, Cylinder, Axis, and Near Add refraction row with controller-supplied spherical equivalent summary.",
+      "description": "Coordinated Sphere, Cylinder, Axis, and Near Add refraction row with eye laterality badge, controller-supplied summary, per-part validation, and six-state assessment status.",
       "stories": [
         "emr-fields-clinical-building-blocks--ophthalmology-fields"
       ],
@@ -19798,13 +20152,11 @@ export const EMR_REGISTRY_MANIFEST = {
       "registryDependencies": [
         "foundations",
         "emr-field-frame",
-        "emr-numeric-stepper",
         "emr-badge"
       ],
       "transitiveRegistryDependencies": [
         "foundations",
         "emr-field-frame",
-        "emr-numeric-stepper",
         "emr-badge"
       ],
       "installCommand": {
@@ -19819,13 +20171,14 @@ export const EMR_REGISTRY_MANIFEST = {
         "selector": "emr-refraction-field",
         "files": [
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "fields/emr-specialty-fields.component.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-choice.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
+          "primitives/emr-inputs.component.ts",
           "primitives/emr-inputs.logic.ts",
-          "primitives/emr-specialized-inputs.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
         "dependencies": [
@@ -19838,6 +20191,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19863,6 +20217,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-inputs.tsx",
@@ -19899,7 +20254,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 27
+      "fileCount": 29
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -19916,7 +20271,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Fieldset-grouped multi-switch control supporting vertical, horizontal, and multi-column grid layouts with label placement and exclusive option support.",
+      "description": "Switch-group control supporting tile/inline/card variants, sm/md sizes, vertical/horizontal/grid layouts, tri-state Enable all checkbox, selection limits, exclusive options, and validation.",
       "stories": [
         "foundations-wave2-primitives--choice-and-tree"
       ],
@@ -19954,6 +20309,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -19975,6 +20331,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20008,7 +20365,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20025,7 +20382,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Accessible hierarchical parent–child tree view with single or cascading tri-state multi-select checkboxes, live search auto-expand, and keyboard navigation.",
+      "description": "Accessible hierarchical tree view with WAI-ARIA roving tabindex traversal, tri-state SVG checkboxes, readOnly node locks, keyword search highlighting, and print expansion.",
       "stories": [
         "foundations-wave2-primitives--choice-and-tree"
       ],
@@ -20062,8 +20419,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTreeView",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-tree.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -20081,8 +20440,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTreeView",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-tree.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -20113,7 +20474,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20130,7 +20491,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Dropdown parent–child tree selector displaying breadcrumb path or leaf labels with single/cascading multi-select, inline filter, and Clear button.",
+      "description": "Dropdown hierarchical tree selector with sibling removable chips, cascade chip removal, outline/filled/subtle variants, search filter, and Escape/outside-click focus restore.",
       "stories": [
         "foundations-wave2-primitives--choice-and-tree"
       ],
@@ -20167,8 +20528,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTreeSelect",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-tree.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -20186,8 +20549,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTreeSelect",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-tree.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -20218,7 +20583,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20274,6 +20639,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageViewer",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -20293,6 +20659,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageViewer",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -20325,7 +20692,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20381,6 +20748,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageCropper",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -20400,6 +20768,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageCropper",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -20432,7 +20801,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20488,6 +20857,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageUpload",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -20507,6 +20877,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrImageUpload",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -20539,7 +20910,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20556,7 +20927,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Coordinated start–end date or datetime range input with quick presets, interactive range calendar, chronological normalization, and Clear button.",
+      "description": "Coordinated start–end date or datetime range input with quick presets, weekStartsOn-configurable 2D-keyboard-navigable range calendar, size/variant/warning/per-side validation, and Clear button.",
       "stories": [
         "foundations-wave2-primitives--temporal-and-text"
       ],
@@ -20594,6 +20965,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrDateRangeInput",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20614,6 +20986,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrDateRangeInput",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20647,7 +21020,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20702,6 +21075,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCombobox",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20722,6 +21096,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCombobox",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20755,7 +21130,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20810,6 +21185,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTagInput",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20830,6 +21206,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTagInput",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -20863,7 +21240,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 17
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -20880,7 +21257,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "General-purpose continuous or stepped single-thumb numeric slider with live value readout, unit label, optional marks, and Clear action.",
+      "description": "General-purpose continuous or stepped single-thumb numeric slider with live value readout, unit label, size/tone, optional steppers, proportional clickable marks, committed output, and Clear action.",
       "stories": [
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
@@ -20919,10 +21296,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -20938,10 +21315,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -20985,7 +21362,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Dual-thumb numeric range slider enforcing non-crossing [low, high] bounds and configurable minimum separation.",
+      "description": "Unified dual-thumb numeric range slider enforcing non-crossing [low, high] bounds, configurable minimum separation, proportional clickable marks, size/tone, clearable, and committed output.",
       "stories": [
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
@@ -21024,10 +21401,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -21043,10 +21420,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -21090,7 +21467,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Deterministic pattern-masked text input supporting digit (9), alpha (A), and alphanumeric (*) slots with masked/unmasked output and Clear action.",
+      "description": "Deterministic pattern-masked text input supporting digit (9), alpha (A), alphanumeric (*), escaped literals, custom definitions, caret preservation, inferred inputMode, size/variant, and inline Clear action.",
       "stories": [
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
@@ -21129,10 +21506,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -21148,10 +21525,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -21197,7 +21574,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Segmented verification code and PIN input with auto-advance, Backspace navigation, multi-character paste distribution, and optional secret masking.",
+      "description": "Segmented verification code and PIN input with sparse slot integrity, OS SMS autofill, separatorAfter grouping, size/variant, Backspace/Delete/Home/End navigation, clearable, and secret masking.",
       "stories": [
         "foundations-wave2-primitives--formatted-and-sliders"
       ],
@@ -21236,10 +21613,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -21255,10 +21632,10 @@ export const EMR_REGISTRY_MANIFEST = {
           "icons.tsx",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-formatted.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
-          "primitives.tsx",
           "theme.tsx",
           "tokens.ts"
         ],
@@ -21302,7 +21679,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Accessible action menu button opening a keyboard-navigable role=\"menu\" surface with dividers, shortcuts, and danger tone items.",
+      "description": "Accessible action menu button (label, triggerIcon, variant, size, align, defaultOpen, readOnly) opening a floating role=\"menu\" surface with monochrome icons, dividers, shortcuts, danger tone, typeahead, Arrow/Home/End/Escape focus return, and outside dismissal.",
       "stories": [
         "foundations-wave2-primitives--navigation-and-actions"
       ],
@@ -21327,7 +21704,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMenuComponent",
         "selector": "emr-menu",
         "files": [
-          "primitives/emr-inputs.logic.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
@@ -21340,8 +21717,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMenu",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21359,8 +21738,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMenu",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21391,7 +21772,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -21408,7 +21789,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Primary action button paired with an attached dropdown menu toggle for secondary commit variants.",
+      "description": "Primary action button (primary/secondary/outline/danger, sm/md/lg, loading, readOnly) paired with an attached 44px menu toggle opening a keyboard-navigable role=\"menu\" with icons, descriptions, shortcuts, and outside dismissal.",
       "stories": [
         "foundations-wave2-primitives--navigation-and-actions"
       ],
@@ -21433,7 +21814,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSplitButtonComponent",
         "selector": "emr-split-button",
         "files": [
-          "primitives/emr-inputs.logic.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
@@ -21446,8 +21827,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSplitButton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21465,8 +21848,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSplitButton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21497,7 +21882,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -21514,7 +21899,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Single- or multi-expand disclosure accordion with keyboard header navigation and automatic full expansion in print mode.",
+      "description": "Single- or multi-expand disclosure accordion (outlined/flush/card, sm/md, headingLevel, defaultExpandedIds, readOnly) with structured badges, monochrome icons, Arrow/Home/End header nav, and automatic full expansion in print mode.",
       "stories": [
         "foundations-wave2-primitives--navigation-and-actions"
       ],
@@ -21539,7 +21924,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAccordionComponent",
         "selector": "emr-accordion",
         "files": [
-          "primitives/emr-inputs.logic.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
@@ -21552,8 +21937,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAccordion",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21571,8 +21958,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAccordion",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21603,7 +21992,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -21620,7 +22009,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Hierarchical breadcrumb trail with aria-current=\"page\" and collapsible middle overflow.",
+      "description": "Hierarchical breadcrumb trail with aria-current=\"page\", link href support, chevron SVG separator option, overflowExpanded focus restoration, and collapsible middle overflow.",
       "stories": [
         "foundations-wave2-primitives--navigation-and-actions"
       ],
@@ -21645,7 +22034,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrBreadcrumbsComponent",
         "selector": "emr-breadcrumbs",
         "files": [
-          "primitives/emr-inputs.logic.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
@@ -21658,8 +22047,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrBreadcrumbs",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21677,8 +22068,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrBreadcrumbs",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21709,7 +22102,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -21726,7 +22119,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "Named clinical color swatch radiogroup with 44px targets, optional custom hex input, and Clear button.",
+      "description": "Named clinical color swatch radiogroup (44px targets, roving tabIndex, contrast-aware checkmarks, custom hex normalization/rollback, live preview dot, clearable, warning/error validation).",
       "stories": [
         "foundations-wave2-primitives--navigation-and-actions"
       ],
@@ -21751,7 +22144,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrColorPickerComponent",
         "selector": "emr-color-picker",
         "files": [
-          "primitives/emr-inputs.logic.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
@@ -21764,8 +22157,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrColorPicker",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21783,8 +22178,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrColorPicker",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21815,7 +22212,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -21832,7 +22229,7 @@ export const EMR_REGISTRY_MANIFEST = {
       ],
       "kind": "component",
       "status": "stable",
-      "description": "One-click clipboard copy button with polite live-region confirmation for identifiers and codes.",
+      "description": "One-click clipboard copy button (outline default, sm/md/lg, iconOnly, timed copied feedback reset, value-change reset, empty-value guard, polite live-region confirmation).",
       "stories": [
         "foundations-wave2-primitives--navigation-and-actions"
       ],
@@ -21857,7 +22254,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCopyButtonComponent",
         "selector": "emr-copy-button",
         "files": [
-          "primitives/emr-inputs.logic.ts",
+          "primitives/emr-feedback.logic.ts",
           "primitives/emr-wave2-navigation.component.ts",
           "primitives/emr-wave2.logic.ts"
         ],
@@ -21870,8 +22267,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCopyButton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21889,8 +22288,10 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrCopyButton",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
+          "l1-interactive-shared.ts",
           "l1-wave2-navigation.tsx",
           "l1-wave2.logic.ts",
           "labels.tsx",
@@ -21921,7 +22322,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL1Wave2Elements } from './components/emr/l1-primitives-wave2.js';\nregisterL1Wave2Elements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 18
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -21973,6 +22374,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "fields/emr-contract-fields.component.ts",
           "fields/emr-field-frame.component.ts",
+          "fields/emr-fields.logic.ts",
           "primitives/emr-action-controls.component.ts",
           "primitives/emr-feedback.component.ts",
           "primitives/emr-feedback.logic.ts",
@@ -21996,6 +22398,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -22024,6 +22427,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-image.tsx",
           "l1-inputs.logic.ts",
@@ -22063,7 +22467,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL2ExtraElements } from './components/emr/l2-fields-extra.js';\nregisterL2ExtraElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 35
+      "fileCount": 37
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22119,6 +22523,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22141,6 +22546,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22174,7 +22580,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22230,6 +22636,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22252,6 +22659,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22285,7 +22693,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22343,6 +22751,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22365,6 +22774,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22398,7 +22808,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22455,6 +22865,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22477,6 +22888,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-interactive-shared.ts",
@@ -22510,7 +22922,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL3WorkstationElements } from './components/emr/l3-workstation.js';\nregisterL3WorkstationElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 16
+      "fileCount": 17
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22565,6 +22977,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22586,6 +22999,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22618,7 +23032,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6BuilderElements } from './components/emr/l6-builders.js';\nregisterL6BuilderElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22672,6 +23086,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22693,6 +23108,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22725,7 +23141,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6BuilderElements } from './components/emr/l6-builders.js';\nregisterL6BuilderElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22780,6 +23196,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22801,6 +23218,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22833,7 +23251,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL6BuilderElements } from './components/emr/l6-builders.js';\nregisterL6BuilderElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22887,6 +23305,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrGonioscopyChart",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22907,6 +23326,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrGonioscopyChart",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -22939,7 +23359,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyGlaucomaMotilityElements } from './components/emr/l4-ophthalmology-glaucoma-motility.js';\nregisterL4OphthalmologyGlaucomaMotilityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -22994,6 +23414,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrVisualFieldSummary",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23014,6 +23435,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrVisualFieldSummary",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23046,7 +23468,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyGlaucomaMotilityElements } from './components/emr/l4-ophthalmology-glaucoma-motility.js';\nregisterL4OphthalmologyGlaucomaMotilityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23100,6 +23522,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrHessScreenChart",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23120,6 +23543,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrHessScreenChart",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23152,7 +23576,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyGlaucomaMotilityElements } from './components/emr/l4-ophthalmology-glaucoma-motility.js';\nregisterL4OphthalmologyGlaucomaMotilityElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23208,6 +23632,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23229,6 +23654,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23261,7 +23687,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23317,6 +23743,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23338,6 +23765,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23370,7 +23798,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23426,6 +23854,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23447,6 +23876,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23479,7 +23909,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23535,6 +23965,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23556,6 +23987,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23588,7 +24020,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23643,6 +24075,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23664,6 +24097,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23696,7 +24130,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4OphthalmologyCataractRetinaCorneaElements } from './components/emr/l4-ophthalmology-cataract-retina-cornea.js';\nregisterL4OphthalmologyCataractRetinaCorneaElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23750,6 +24184,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23771,6 +24206,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23803,7 +24239,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23857,6 +24293,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23878,6 +24315,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23910,7 +24348,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -23965,6 +24403,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -23986,6 +24425,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24018,7 +24458,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24073,6 +24513,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24094,6 +24535,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24126,7 +24568,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4HospitalOperationsElements } from './components/emr/l4-hospital-operations.js';\nregisterL4HospitalOperationsElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24180,6 +24622,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrEdTrackBoard",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24200,6 +24643,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrEdTrackBoard",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24232,7 +24676,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24286,6 +24730,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTriageAssessmentCard",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24306,6 +24751,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrTriageAssessmentCard",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24338,7 +24784,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24392,6 +24838,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrResuscitationEventLog",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24412,6 +24859,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrResuscitationEventLog",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24444,7 +24892,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24498,6 +24946,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSpecimenCollectionBar",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24518,6 +24967,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSpecimenCollectionBar",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24550,7 +25000,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24604,6 +25054,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrLabCumulativeGrid",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24624,6 +25075,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrLabCumulativeGrid",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24656,7 +25108,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24710,6 +25162,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMicrobiologyAntibiogram",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24730,6 +25183,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrMicrobiologyAntibiogram",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24762,7 +25216,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24816,6 +25270,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAnaesthesiaRecord",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24836,6 +25291,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrAnaesthesiaRecord",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24868,7 +25324,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -24922,6 +25378,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFluidBalanceChart",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24942,6 +25399,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrFluidBalanceChart",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -24974,7 +25432,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25028,6 +25486,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSurgicalImplantLog",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25048,6 +25507,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "component": "EmrSurgicalImplantLog",
         "files": [
           "icons.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25080,7 +25540,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4AcuteLabPerioperativeElements } from './components/emr/l4-acute-lab-perioperative.js';\nregisterL4AcuteLabPerioperativeElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 14
+      "fileCount": 15
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25135,6 +25595,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25156,6 +25617,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25188,7 +25650,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25243,6 +25705,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25264,6 +25727,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25296,7 +25760,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25352,6 +25816,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25373,6 +25838,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25405,7 +25871,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25460,6 +25926,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25481,6 +25948,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25513,7 +25981,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25568,6 +26036,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25589,6 +26058,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25621,7 +26091,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25676,6 +26146,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25697,6 +26168,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25729,7 +26201,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25784,6 +26256,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25805,6 +26278,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25837,7 +26311,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -25892,6 +26366,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25913,6 +26388,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -25945,7 +26421,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -26000,6 +26476,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -26021,6 +26498,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -26053,7 +26531,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
@@ -26109,6 +26587,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -26130,6 +26609,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "files": [
           "icons.tsx",
           "inputs-core.tsx",
+          "l1-controller.logic.ts",
           "l1-field-chrome.tsx",
           "l1-inputs.logic.ts",
           "l1-wave2.logic.ts",
@@ -26162,7 +26642,7 @@ export const EMR_REGISTRY_MANIFEST = {
         "vendorInit": "import { registerL4MaternalPedsSpecialtyAbdmElements } from './components/emr/l4-maternal-peds-specialty-abdm.js';\nregisterL4MaternalPedsSpecialtyAbdmElements();",
         "rendererStatus": "renderer"
       },
-      "fileCount": 15
+      "fileCount": 16
     }
   ]
 } as const;

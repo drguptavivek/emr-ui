@@ -2,17 +2,16 @@
 
 import { useId, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import {
-  mergeFieldFrameMessages,
-  normalizeFieldFrameLayout,
-  type ClinicalAssessmentStatus,
-  type ClinicalAssessmentStatusOption,
-  type ClinicalFieldDefinition,
-  type ClinicalFieldState,
-  type EmrValidationMessage,
-  type FieldFrameIntent,
-  type FieldFrameLayout,
+import type {
+  ClinicalAssessmentStatus,
+  ClinicalAssessmentStatusOption,
+  ClinicalFieldDefinition,
+  ClinicalFieldState,
+  EmrValidationMessage,
+  FieldFrameIntent,
+  FieldFrameLayout,
 } from '@drguptavivek/emr-controller';
+import { mergeFieldFrameMessages, normalizeFieldFrameLayout } from './l2-fields.logic';
 import { FieldChrome } from './l1-field-chrome';
 import { useEmrLabels } from './labels';
 import { EmrBadgeView, EmrButton, EmrOptionChip, EmrRow } from './primitives';

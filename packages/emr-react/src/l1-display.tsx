@@ -2,6 +2,27 @@
 
 import { Children, createElement, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
+import type {
+  EmrBadge,
+  EmrCardPadding,
+  EmrCardVariant,
+  EmrChipSize,
+  EmrFieldValueRowIntent,
+  EmrFieldValueRowSize,
+  EmrChipVariant,
+  EmrColumnsAlign,
+  EmrColumnsTrackWidth,
+  EmrSeparatorLabelAlign,
+  EmrSeparatorOrientation,
+  EmrSeparatorVariant,
+  EmrStateMessageKind,
+  EmrStateMessageSize,
+  EmrStatusCellAction,
+  EmrStatusCellAttribution,
+  EmrStatusCellIntent,
+  EmrStatusCellSize,
+  EmrTone,
+} from '@drguptavivek/emr-controller';
 import {
   canActivateEmrCard,
   canActivateEmrFieldValueRow,
@@ -34,26 +55,7 @@ import {
   resolveEmrStateMessageRole,
   resolveEmrStateMessageTitle,
   resolveEmrStatusCellHiddenText,
-  type EmrBadge,
-  type EmrCardPadding,
-  type EmrCardVariant,
-  type EmrChipSize,
-  type EmrFieldValueRowIntent,
-  type EmrFieldValueRowSize,
-  type EmrChipVariant,
-  type EmrColumnsAlign,
-  type EmrColumnsTrackWidth,
-  type EmrSeparatorLabelAlign,
-  type EmrSeparatorOrientation,
-  type EmrSeparatorVariant,
-  type EmrStateMessageKind,
-  type EmrStateMessageSize,
-  type EmrStatusCellAction,
-  type EmrStatusCellAttribution,
-  type EmrStatusCellIntent,
-  type EmrStatusCellSize,
-  type EmrTone,
-} from '@drguptavivek/emr-controller';
+} from './l1-controller.logic';
 import { SvgIcon, type EmrIconName } from './icons';
 import { EmrBadgeView, EmrButton } from './primitives';
 import { focusRing, fontFamily, fontWeight, toneColors, useEmrTheme } from './theme';

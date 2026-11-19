@@ -1,16 +1,13 @@
 'use client';
 
 import { Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
+import type { EmrStatTileIntent, EmrStatTileModel, EmrStatTileSize, EmrTone } from '@drguptavivek/emr-controller';
 import {
   canActivateEmrStatTile,
   normalizeEmrStatTileSize,
   normalizeEmrStatTileTone,
   resolveEmrStatTileAriaLabel,
-  type EmrStatTileIntent,
-  type EmrStatTileModel,
-  type EmrStatTileSize,
-  type EmrTone,
-} from '@drguptavivek/emr-controller';
+} from './l1-controller.logic';
 import { SvgIcon } from './icons';
 import { EmrBadgeView } from './primitives';
 import { focusRing, fontFamily, fontWeight, useEmrTheme } from './theme';

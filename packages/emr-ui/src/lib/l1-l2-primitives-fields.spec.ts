@@ -52,7 +52,7 @@ describe('L1 primitives and L2 clinical fields contracts', () => {
 
     const inputsSrc = readLib('primitives/emr-inputs.component.ts');
     expect(inputsSrc).toMatch(/emptyToNull/);
-    expect(inputsSrc).toMatch(/wireFormat\s*=\s*input<'utc'\s*\|\s*'local'>\('utc'\)/);
+    expect(inputsSrc).toMatch(/wireFormat\s*=\s*input<(?:EmrDateTimeWireFormat|'utc'\s*\|\s*'local')>\('utc'\)/);
     expect(inputsSrc).toMatch(/precision\s*=\s*input<'day'\s*\|\s*'month'\s*\|\s*'year'>\('day'\)/);
     expect(inputsSrc).toMatch(/showSteppers\s*=\s*input\(false/);
     expect(inputsSrc).toMatch(/labelHidden\s*=\s*input\(false/);
@@ -67,7 +67,7 @@ describe('L1 primitives and L2 clinical fields contracts', () => {
     const searchSelect = readLib('primitives/emr-search-select.component.ts');
     expect(searchSelect).toMatch(/readonly\s+queryChange\s*=\s*output<string>\(\)/);
     expect(searchSelect).toMatch(/readonly\s+queryChanged\s*=\s*output<string>\(\)/);
-    expect(searchSelect).toMatch(/readonly\s+readOnly\s*=\s*input\(false/);
+    expect(searchSelect).toMatch(/readonly\s+readOnly\s*=\s*input(?:<boolean,\s*unknown>)?\(false/);
 
     const tabs = readLib('primitives/emr-tabs.component.ts');
     expect(tabs).toMatch(/readonly\s+tabChange\s*=\s*output<string>\(\)/);

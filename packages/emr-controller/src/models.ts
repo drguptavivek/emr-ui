@@ -41,6 +41,7 @@ export interface EmrOption<Value extends string = string> {
   value: Value;
   label: string;
   code?: string;
+  icon?: string;
   keywords?: readonly string[];
   description?: string;
   disabled?: boolean;

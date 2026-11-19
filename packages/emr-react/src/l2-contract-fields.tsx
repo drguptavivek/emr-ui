@@ -1,6 +1,6 @@
 'use client';
 
-import { createElement, useEffect, useId, useRef, useState } from 'react';
+import { createElement, useEffect, useId, useRef, useState, type ComponentRef } from 'react';
 import { PanResponder, Platform, Pressable, StyleSheet, Text, View, type PressableStateCallbackType } from 'react-native';
 import type {
   AttachmentFieldIntent,
@@ -8,14 +8,22 @@ import type {
   DurationFieldIntent,
   DurationFieldViewModel,
   EmrAttachmentRef,
+  EmrDateTimeDisplayFormat,
+  EmrDateTimeWireFormat,
   EmrDurationUnit,
   EmrDurationValue,
   EmrFieldDefinition,
   EmrPairedFieldValue,
   EmrPartialDate,
+  EmrQuantityNumericMode,
+  EmrQuantitySize,
+  EmrRangeKind,
   EmrRangeValue,
   EmrSignaturePoint,
   EmrSignatureStroke,
+  EmrTimeHourCycle,
+  EmrTimePrecision,
+  FieldFrameLayout,
   ImageFieldIntent,
   ImageFieldViewModel,
   PairedFieldIntent,
@@ -23,13 +31,15 @@ import type {
   PartialDateFieldIntent,
   PartialDateFieldViewModel,
   RangeFieldIntent,
+  RangeFieldValidationOptions,
   RangeFieldViewModel,
+  RangeSideValidationState,
   ScaleFieldIntent,
   ScaleFieldViewModel,
   SignatureCaptureIntent,
   SignatureCaptureViewModel,
 } from '@drguptavivek/emr-controller';
-import { EmrTypedText, NumberInput, ThemedInput } from './inputs-core';
+import { EmrDateTimeText, EmrTypedText, NumberInput, ThemedInput } from './inputs-core';
 import { SvgIcon } from './icons';
 import { EmrImageUpload } from './l1-image';
 import { resolveDateFormat } from './l1-inputs.logic';
@@ -40,7 +50,21 @@ import {
   adaptPartialDatePrecision,
   buildScaleAnchors,
   computeSignatureSegments,
+  extractDurationPartValidation,
   formatByteSize,
+  formatSignatureAttestation,
+  hasSignatureValidationState,
+  isSignaturePadLocked,
+  mapPointerToSignaturePoint,
+  normalizeFieldFrameLayout,
+  projectSignatureStrokeForBox,
+  resolveDurationFieldConfig,
+  resolvePairedSideMode,
+  resolvePairedSideValidation,
+  resolveRangeFieldMessages,
+  resolveRangeNumericMode,
+  resolveRangeSideValidation,
+  resolveSignatureCanvasGeometry,
   signaturePolylinePoints,
 } from './l2-fields.logic';
 import { useEmrLabels } from './labels';
@@ -57,6 +81,7 @@ export type {
   EmrDurationValue,
   EmrFieldDefinition,
   EmrPairedFieldValue,
+  EmrRangeKind,
   EmrRangeValue,
   EmrSignaturePoint,
   EmrSignatureStroke,
@@ -67,7 +92,9 @@ export type {
   PartialDateFieldIntent,
   PartialDateFieldViewModel,
   RangeFieldIntent,
+  RangeFieldValidationOptions,
   RangeFieldViewModel,
+  RangeSideValidationState,
   ScaleFieldIntent,
   ScaleFieldViewModel,
   SignatureCaptureIntent,
@@ -594,113 +621,292 @@ export function EmrAttachmentField({
 
 export function EmrPairedField({
   model,
+  definition,
   controlId,
+  headingId,
+  labelHidden = false,
+  layout,
+  showMetadata = true,
+  readOnly = false,
+  size,
+  clearable,
   onIntent,
+  onFocus,
+  onBlur,
 }: {
   model: PairedFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: 'vertical' | 'horizontal' | 'inline';
+  showMetadata?: boolean;
+  readOnly?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  clearable?: boolean;
   onIntent: (intent: PairedFieldIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
+  const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const mode = model.mode ?? 'text';
-  const isNumeric = mode === 'decimal' || mode === 'integer';
-  const invalid = hasErrorMessage(model.messages);
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const resolvedUnit = model.unit ?? resolvedDef?.presentation?.unitDisplay;
+  const resolvedLayout = layout ?? model.layout ?? 'vertical';
+  const resolvedShowMetadata = showMetadata && model.showMetadata !== false;
+  const resolvedSize = size ?? model.size ?? 'md';
+  const targetSize = resolvedSize === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const locked = Boolean(readOnly || model.readOnly || resolvedDef?.contract?.readOnly);
+  const firstLocked = locked || Boolean(model.firstReadOnly);
+  const secondLocked = locked || Boolean(model.secondReadOnly);
+  const resolvedRequired = Boolean(
+    model.required || (resolvedDef?.contract?.cardinality?.min !== undefined && resolvedDef.contract.cardinality.min >= 1),
+  );
+  const firstRequired = model.firstRequired ?? resolvedRequired;
+  const secondRequired = model.secondRequired ?? resolvedRequired;
+  const firstMode = resolvePairedSideMode(model.firstMode, model.mode, resolvedDef);
+  const secondMode = resolvePairedSideMode(model.secondMode, model.mode, resolvedDef);
+  const sideValidation = resolvePairedSideValidation(model.messages);
+  const hasFooter = Boolean(model.hint || model.messages?.length);
+  const describedBy = hasFooter ? `${id}-message` : undefined;
+  const groupLabelledBy = headingId || (!labelHidden && resolvedLabel ? `${id}-label` : undefined);
   const firstVal = model.value?.first ?? null;
   const secondVal = model.value?.second ?? null;
+  const resolvedClearable = clearable ?? model.clearable ?? false;
+  const showClear =
+    resolvedClearable &&
+    !locked &&
+    ((!firstLocked && firstVal !== null && firstVal !== '') ||
+      (!secondLocked && secondVal !== null && secondVal !== ''));
+  const showSteppers = model.showSteppers === true;
 
-  const renderSide = (
-    sideKey: 'first' | 'second',
-    sideLabel: string,
-    sidePlaceholder: string | undefined,
-    val: string | number | null,
-    emit: (next: string | number | null) => void,
-  ) => (
-    <View style={styles.pairedHalf}>
-      <Text
-        style={{
-          color: t.textMuted,
-          fontSize: t.textXs,
-          fontWeight: fontWeight(t.weightBold),
-          fontFamily: fontFamily(t),
-        }}
-      >
-        {sideLabel}
-      </Text>
-      {isNumeric ? (
-        <NumberInput
-          id={`${id}-${sideKey}`}
-          aria-label={`${model.label}, ${sideLabel}`}
-          integer={mode === 'integer'}
-          min={model.min}
-          max={model.max}
-          step={model.step}
-          placeholder={sidePlaceholder}
-          value={typeof val === 'number' ? val : val != null && val !== '' ? Number(val) : undefined}
-          invalid={invalid}
-          readOnly={Boolean(model.readOnly)}
-          editable={!model.readOnly}
-          onNumber={n => emit(n)}
-        />
-      ) : (
-        <ThemedInput
-          id={`${id}-${sideKey}`}
-          aria-label={`${model.label}, ${sideLabel}`}
-          placeholder={sidePlaceholder}
-          value={val == null ? '' : String(val)}
-          invalid={invalid}
-          readOnly={Boolean(model.readOnly)}
-          editable={!model.readOnly}
-          onChangeText={txt => emit(txt === '' ? null : txt)}
-        />
-      )}
-    </View>
-  );
+  const renderSide = (params: {
+    sideKey: 'first' | 'second';
+    sideLabel: string;
+    sidePlaceholder: string | undefined;
+    sideMode: 'text' | 'decimal' | 'integer';
+    sideMin: number | undefined;
+    sideMax: number | undefined;
+    sideStep: number | undefined;
+    sidePrecision: number | undefined;
+    sideMaxLength: number | undefined;
+    sideRequired: boolean;
+    sideLocked: boolean;
+    sideInvalid: boolean;
+    sideWarning: boolean;
+    val: string | number | null;
+    emit: (next: string | number | null) => void;
+  }) => {
+    const {
+      sideKey,
+      sideLabel,
+      sidePlaceholder,
+      sideMode,
+      sideMin,
+      sideMax,
+      sideStep,
+      sidePrecision,
+      sideMaxLength,
+      sideRequired,
+      sideLocked,
+      sideInvalid,
+      sideWarning,
+      val,
+      emit,
+    } = params;
+    const isNumeric = sideMode === 'decimal' || sideMode === 'integer';
+    const numericVal =
+      typeof val === 'number'
+        ? val
+        : val != null && val !== '' && Number.isFinite(Number(val))
+          ? Number(val)
+          : undefined;
+    return (
+      <View style={styles.pairedHalf}>
+        <Text
+          style={{
+            color: t.textMuted,
+            fontSize: t.textXs,
+            fontWeight: fontWeight(t.weightMedium),
+            fontFamily: fontFamily(t),
+          }}
+        >
+          {sideLabel}
+          {sideRequired ? (
+            <Text style={{ color: t.danger, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}> *</Text>
+          ) : null}
+        </Text>
+        {isNumeric ? (
+          <NumberInput
+            id={`${id}-${sideKey}`}
+            aria-label={`${resolvedLabel}, ${sideLabel}`}
+            aria-describedby={describedBy}
+            aria-required={sideRequired || undefined}
+            aria-readonly={sideLocked || undefined}
+            integer={sideMode === 'integer'}
+            min={sideMin}
+            max={sideMax}
+            step={sideStep}
+            precision={sidePrecision}
+            maxLength={sideMaxLength}
+            showSteppers={showSteppers}
+            size={resolvedSize}
+            maxWidth="none"
+            placeholder={sidePlaceholder}
+            value={numericVal}
+            invalid={sideInvalid}
+            warning={!sideInvalid && sideWarning}
+            readOnly={sideLocked}
+            editable={!sideLocked}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onNumber={n => {
+              if (!sideLocked) emit(n);
+            }}
+          />
+        ) : (
+          <ThemedInput
+            id={`${id}-${sideKey}`}
+            aria-label={`${resolvedLabel}, ${sideLabel}`}
+            aria-describedby={describedBy}
+            aria-required={sideRequired || undefined}
+            aria-readonly={sideLocked || undefined}
+            placeholder={sidePlaceholder}
+            maxLength={sideMaxLength}
+            value={val == null ? '' : String(val)}
+            invalid={sideInvalid}
+            readOnly={sideLocked}
+            editable={!sideLocked}
+            style={[
+              {
+                minHeight: targetSize,
+                borderStyle: sideLocked ? 'dashed' : 'solid',
+              },
+              !sideInvalid && sideWarning ? { borderColor: t.warning } : null,
+            ]}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onChangeText={txt => {
+              if (!sideLocked) emit(txt === '' ? null : txt);
+            }}
+          />
+        )}
+      </View>
+    );
+  };
 
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={resolvedLabel}
+      labelHidden={labelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
+      layout={resolvedLayout}
+      showMetadata={resolvedShowMetadata}
+      required={resolvedRequired}
+      readOnly={locked}
       hint={model.hint}
       messages={model.messages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={i => {
+        if (!locked && i.type === 'statusChangeRequested') {
+          onIntent({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
       <View style={styles.fieldStack}>
-        <View role="group" aria-labelledby={`${id}-label`} aria-label={model.label} style={styles.pairedRow}>
-          {renderSide('first', model.firstLabel, model.firstPlaceholder, firstVal, next =>
-            onIntent({ type: 'firstChangeRequested', value: next }),
-          )}
+        <View role="group" aria-labelledby={groupLabelledBy} aria-label={resolvedLabel} style={styles.pairedRow}>
+          {renderSide({
+            sideKey: 'first',
+            sideLabel: model.firstLabel,
+            sidePlaceholder: model.firstPlaceholder,
+            sideMode: firstMode,
+            sideMin: model.firstMin ?? model.min,
+            sideMax: model.firstMax ?? model.max,
+            sideStep: model.firstStep ?? model.step,
+            sidePrecision: model.firstPrecision ?? model.precision,
+            sideMaxLength: model.firstMaxLength ?? model.maxLength,
+            sideRequired: firstRequired,
+            sideLocked: firstLocked,
+            sideInvalid: sideValidation.firstHasError,
+            sideWarning: sideValidation.firstHasWarning,
+            val: firstVal,
+            emit: next => onIntent({ type: 'firstChangeRequested', value: next }),
+          })}
           <Text
             aria-hidden
             style={[
               styles.pairedSeparator,
-              { color: t.textMuted, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) },
+              {
+                paddingBottom: resolvedSize === 'lg' ? 12 : 10,
+                color: t.textMuted,
+                fontSize: t.textLg,
+                fontWeight: fontWeight(t.weightBold),
+                fontFamily: fontFamily(t),
+              },
             ]}
           >
             {model.separator ?? '/'}
           </Text>
-          {renderSide('second', model.secondLabel, model.secondPlaceholder, secondVal, next =>
-            onIntent({ type: 'secondChangeRequested', value: next }),
-          )}
-          {model.unit ? (
+          {renderSide({
+            sideKey: 'second',
+            sideLabel: model.secondLabel,
+            sidePlaceholder: model.secondPlaceholder,
+            sideMode: secondMode,
+            sideMin: model.secondMin ?? model.min,
+            sideMax: model.secondMax ?? model.max,
+            sideStep: model.secondStep ?? model.step,
+            sidePrecision: model.secondPrecision ?? model.precision,
+            sideMaxLength: model.secondMaxLength ?? model.maxLength,
+            sideRequired: secondRequired,
+            sideLocked: secondLocked,
+            sideInvalid: sideValidation.secondHasError,
+            sideWarning: sideValidation.secondHasWarning,
+            val: secondVal,
+            emit: next => onIntent({ type: 'secondChangeRequested', value: next }),
+          })}
+          {resolvedUnit ? (
             <Text
+              aria-hidden
               style={[
                 styles.pairedUnit,
-                { color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) },
+                {
+                  paddingBottom: resolvedSize === 'lg' ? 14 : 12,
+                  color: t.textMuted,
+                  fontSize: t.textSm,
+                  fontWeight: fontWeight(t.weightMedium),
+                  fontFamily: fontFamily(t),
+                },
               ]}
             >
-              {model.unit}
+              {resolvedUnit}
             </Text>
           ) : null}
+          {showClear ? (
+            <Pressable
+              role="button"
+              aria-label={`${labels.clear} ${resolvedLabel}`}
+              onPress={() => onIntent({ type: 'clearRequested' })}
+              {...(Platform.OS === 'web' ? ({ 'data-emr-print': 'hide' } as object) : null)}
+              style={({ pressed, hovered, focused }: PressState & { hovered?: boolean }) => [
+                styles.pairedClearBtn,
+                focusRing(t, focused),
+                {
+                  minWidth: targetSize,
+                  minHeight: targetSize,
+                  borderColor: hovered ? t.focus : t.border,
+                  backgroundColor: pressed ? t.surfaceRaised : hovered ? t.surfaceSoft : t.surface,
+                },
+              ]}
+            >
+              <SvgIcon name="close" size={14} color={t.textMuted} />
+            </Pressable>
+          ) : null}
         </View>
-        <AssessmentStatusStrip
-          fieldLabel={model.label}
-          status={model.status}
-          statusOptions={model.statusOptions}
-          readOnly={model.readOnly}
-          onStatusChange={status => onIntent({ type: 'statusChangeRequested', status })}
-        />
       </View>
     </EmrFieldFrame>
   );
@@ -712,196 +918,634 @@ export function EmrPairedField({
 
 export function EmrDurationInput({
   model,
+  definition,
   controlId,
+  headingId,
+  labelHidden,
+  layout,
+  showMetadata = true,
+  readOnly = false,
+  size,
+  clearable,
+  showSteppers,
+  mode,
+  precision,
+  placeholder,
+  unitPlaceholder,
+  hint,
+  info,
+  warning,
+  error,
   onIntent,
+  onFocus,
+  onBlur,
+  onCleared,
+  onSubmitted,
 }: {
   model: DurationFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: FieldFrameLayout;
+  showMetadata?: boolean;
+  readOnly?: boolean;
+  size?: EmrQuantitySize;
+  clearable?: boolean;
+  showSteppers?: boolean;
+  mode?: EmrQuantityNumericMode;
+  precision?: number;
+  placeholder?: string;
+  unitPlaceholder?: string;
+  hint?: string;
+  info?: string;
+  warning?: string;
+  error?: string;
   onIntent: (intent: DurationFieldIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onCleared?: () => void;
+  onSubmitted?: () => void;
 }) {
+  const t = useEmrTheme();
+  const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const invalid = hasErrorMessage(model.messages);
-  const step = model.step ?? 1;
-  const currentUnit = model.value?.unit ?? model.unitOptions[0]?.value ?? null;
+  const groupRef = useRef<ComponentRef<typeof View>>(null);
+  const focusedRef = useRef(false);
+
+  const cfg = resolveDurationFieldConfig(model, {
+    definition,
+    layout,
+    showMetadata,
+    readOnly,
+    size,
+    clearable,
+    showSteppers,
+    mode,
+    precision,
+    placeholder,
+    unitPlaceholder,
+    hint,
+    labelHidden,
+  });
+  const pv = extractDurationPartValidation(model.messages, { error, warning });
+  const currentUnit = model.value?.unit ?? null;
+  const hasFooter = Boolean(cfg.hint || info || warning || error || model.messages?.length);
+  const describedBy = hasFooter ? `${id}-message` : undefined;
+  const groupLabelledBy = headingId || (!cfg.labelHidden && cfg.label ? `${id}-label` : undefined);
+  const targetSize = cfg.size === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const rowMaxWidth = cfg.size === 'sm' ? 320 : cfg.size === 'lg' ? 420 : 380;
+  const showClear =
+    cfg.clearable &&
+    !cfg.readOnly &&
+    ((model.value?.amount !== null && model.value?.amount !== undefined) || currentUnit !== null);
+
+  const handleChildFocus = () => {
+    if (!focusedRef.current) {
+      focusedRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleChildBlur = (e?: unknown) => {
+    if (Platform.OS === 'web') {
+      const ev = e as { nativeEvent?: { relatedTarget?: unknown }; relatedTarget?: unknown } | undefined;
+      const related = (ev?.nativeEvent?.relatedTarget ?? ev?.relatedTarget) as Node | null | undefined;
+      const container = groupRef.current as unknown as { contains?: (n: Node) => boolean } | null;
+      if (related && container?.contains?.(related)) return;
+    }
+    if (focusedRef.current) {
+      focusedRef.current = false;
+      onBlur?.();
+    }
+  };
 
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={cfg.label}
+      labelHidden={cfg.labelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
-      hint={model.hint}
+      layout={cfg.layout}
+      showMetadata={cfg.showMetadata}
+      required={cfg.required}
+      readOnly={cfg.readOnly}
+      hint={cfg.hint}
+      info={info}
+      warning={warning}
+      error={error}
       messages={model.messages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={i => {
+        if (!cfg.readOnly && i.type === 'statusChangeRequested') {
+          onIntent({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
       <View style={styles.fieldStack}>
-        <View style={styles.durationRow}>
+        <View
+          ref={groupRef}
+          role="group"
+          aria-labelledby={groupLabelledBy}
+          aria-label={cfg.label || undefined}
+          style={[styles.durationRow, { maxWidth: rowMaxWidth }]}
+        >
           <View style={styles.durationAmount}>
             <NumberInput
               id={id}
-              aria-labelledby={`${id}-label`}
-              aria-label={`${model.label} amount`}
-              integer={Number.isInteger(step)}
-              min={model.min ?? 0}
-              max={model.max}
-              step={step}
+              aria-label={`${cfg.label} amount`}
+              aria-describedby={describedBy}
+              aria-required={cfg.required || undefined}
+              aria-readonly={cfg.readOnly || undefined}
+              integer={cfg.mode === 'integer'}
+              allowNegative={cfg.allowNegative}
+              min={cfg.min}
+              max={cfg.max}
+              step={cfg.step}
+              precision={cfg.precision}
+              showSteppers={cfg.showSteppers}
+              size={cfg.size}
+              maxWidth="none"
+              placeholder={cfg.placeholder}
               value={model.value?.amount ?? undefined}
-              invalid={invalid}
-              readOnly={Boolean(model.readOnly)}
-              editable={!model.readOnly}
-              onNumber={amount => onIntent({ type: 'amountChangeRequested', amount })}
+              invalid={Boolean(pv.amountError)}
+              warning={Boolean(pv.amountWarning)}
+              readOnly={cfg.readOnly}
+              editable={!cfg.readOnly}
+              onFocus={handleChildFocus}
+              onBlur={handleChildBlur}
+              onSubmitted={onSubmitted}
+              onNumber={amount => {
+                if (!cfg.readOnly) onIntent({ type: 'amountChangeRequested', amount });
+              }}
             />
           </View>
           <View style={styles.durationUnit}>
             <EmrSelect
-              label={`${model.label} unit`}
+              controlId={`${id}-unit`}
+              label={`${cfg.label} ${cfg.unitLabel}`}
+              labelHidden
+              placeholder={cfg.unitPlaceholder}
               options={model.unitOptions}
               value={currentUnit}
-              invalid={invalid}
-              readOnly={model.readOnly}
+              size={cfg.size === 'sm' ? 'sm' : 'md'}
+              required={cfg.required}
+              invalid={Boolean(pv.unitError)}
+              warning={pv.unitWarning || undefined}
+              readOnly={cfg.readOnly}
+              onFocused={handleChildFocus}
+              onBlurred={handleChildBlur as unknown as () => void}
               onChange={unit => {
-                if (unit) onIntent({ type: 'unitChangeRequested', unit: unit as EmrDurationUnit });
+                if (!cfg.readOnly && unit) {
+                  onIntent({ type: 'unitChangeRequested', unit: unit as EmrDurationUnit });
+                }
               }}
             />
           </View>
+          {showClear ? (
+            <Pressable
+              role="button"
+              aria-label={`${labels.clear} ${cfg.label}`}
+              onFocus={handleChildFocus}
+              onBlur={handleChildBlur}
+              onPress={() => {
+                if (!cfg.readOnly) {
+                  onIntent({ type: 'clearRequested' });
+                  onCleared?.();
+                }
+              }}
+              {...(Platform.OS === 'web' ? ({ 'data-emr-print': 'hide' } as object) : null)}
+              style={({ pressed, hovered, focused }: PressState & { hovered?: boolean }) => [
+                styles.pairedClearBtn,
+                focusRing(t, focused),
+                {
+                  minWidth: targetSize,
+                  minHeight: targetSize,
+                  borderColor: hovered ? t.focus : t.border,
+                  backgroundColor: pressed ? t.surfaceRaised : hovered ? t.surfaceSoft : t.surface,
+                },
+              ]}
+            >
+              <SvgIcon name="close" size={14} color={t.textMuted} />
+            </Pressable>
+          ) : null}
         </View>
-        <AssessmentStatusStrip
-          fieldLabel={model.label}
-          status={model.status}
-          statusOptions={model.statusOptions}
-          readOnly={model.readOnly}
-          onStatusChange={status => onIntent({ type: 'statusChangeRequested', status })}
-        />
       </View>
     </EmrFieldFrame>
   );
 }
 
 // ---------------------------------------------------------------------------
-// 6. EmrRangeField (Low–High numeric or date range)
+// 6. EmrRangeField (Low–High numeric, date, time, or datetime range)
 // ---------------------------------------------------------------------------
 
 export function EmrRangeField({
   model,
+  definition,
   controlId,
+  headingId,
+  labelHidden = false,
+  layout,
+  showMetadata = true,
+  readOnly = false,
+  size,
+  clearable,
+  showSteppers,
+  displayFormat,
+  timePrecision,
+  hourCycle,
+  wireFormat,
   onIntent,
+  onFocus,
+  onBlur,
+  onCleared,
+  onSubmitted,
 }: {
   model: RangeFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: FieldFrameLayout;
+  showMetadata?: boolean;
+  readOnly?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  clearable?: boolean;
+  showSteppers?: boolean;
+  displayFormat?: EmrDateTimeDisplayFormat;
+  timePrecision?: EmrTimePrecision;
+  hourCycle?: EmrTimeHourCycle;
+  wireFormat?: EmrDateTimeWireFormat;
   onIntent: (intent: RangeFieldIntent) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onCleared?: () => void;
+  onSubmitted?: () => void;
 }) {
   const t = useEmrTheme();
   const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const invalid = hasErrorMessage(model.messages);
+  const groupRef = useRef<ComponentRef<typeof View>>(null);
+  const focusedRef = useRef(false);
+
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const resolvedUnit = model.unit ?? resolvedDef?.presentation?.unitDisplay;
+  const resolvedHint = model.hint ?? resolvedDef?.presentation?.hint;
+  const resolvedLayout = layout ?? model.layout ?? 'vertical';
+  const resolvedShowMetadata = showMetadata && model.showMetadata !== false;
+  const resolvedSize = size ?? model.size ?? 'md';
+  const targetSize = resolvedSize === 'lg' ? 48 : Math.max(44, t.controlHeight);
+  const resolvedClearable = clearable ?? model.clearable ?? true;
+  const resolvedShowSteppers = showSteppers ?? model.showSteppers ?? false;
+  const resolvedDisplayFormat = displayFormat ?? model.displayFormat ?? labels.dateFormat;
+  const resolvedTimePrecision = timePrecision ?? model.timePrecision ?? 'minute';
+  const resolvedHourCycle = hourCycle ?? model.hourCycle ?? '24';
+  const resolvedWireFormat = wireFormat ?? model.wireFormat ?? 'utc';
+  const locked = Boolean(readOnly || model.readOnly || resolvedDef?.contract?.readOnly);
+
+  const minCard = resolvedDef?.contract?.cardinality?.min;
+  const resolvedRequired = Boolean(model.required || (minCard !== undefined && minCard >= 1));
+  const lowRequired = Boolean(model.lowRequired ?? resolvedRequired);
+  const highRequired = Boolean(model.highRequired ?? resolvedRequired);
+
+  const lowLabel = model.lowLabel ?? (model.kind === 'number' ? 'Low' : 'From');
+  const highLabel = model.highLabel ?? (model.kind === 'number' ? 'High' : 'To');
+
+  const resolvedPrecision = model.precision ?? resolvedDef?.presentation?.precision;
+  const resolvedNumericMode = resolveRangeNumericMode(model.numericMode, resolvedPrecision, resolvedDef);
+  const resolvedStep = model.step ?? resolvedDef?.presentation?.step;
+
+  const resolvedMessages = resolveRangeFieldMessages(model);
+  const sideValidation = resolveRangeSideValidation(resolvedMessages);
+  const hasFooter = Boolean(resolvedHint || resolvedMessages.length > 0);
+  const describedBy = hasFooter ? `${id}-message` : undefined;
+  const groupLabelledBy = headingId || (!labelHidden && resolvedLabel ? `${id}-label` : undefined);
+
   const low = model.value?.low ?? null;
   const high = model.value?.high ?? null;
+  const hasAnyValue =
+    (low !== null && low !== undefined && low !== '') ||
+    (high !== null && high !== undefined && high !== '');
+  const showClear = resolvedClearable && !locked && hasAnyValue;
 
-  const numMin = typeof model.min === 'number' ? model.min : undefined;
-  const numMax = typeof model.max === 'number' ? model.max : undefined;
-  const dateMin = typeof model.min === 'string' ? model.min : undefined;
-  const dateMax = typeof model.max === 'string' ? model.max : undefined;
+  const defNumMin = model.kind === 'number' ? resolvedDef?.presentation?.min : undefined;
+  const defNumMax = model.kind === 'number' ? resolvedDef?.presentation?.max : undefined;
+  const lowNumMin =
+    typeof (model.lowMin ?? model.min ?? defNumMin) === 'number'
+      ? ((model.lowMin ?? model.min ?? defNumMin) as number)
+      : undefined;
+  const lowNumMax =
+    typeof (model.lowMax ?? model.max ?? defNumMax) === 'number'
+      ? ((model.lowMax ?? model.max ?? defNumMax) as number)
+      : undefined;
+  const highNumMin =
+    typeof (model.highMin ?? model.min ?? defNumMin) === 'number'
+      ? ((model.highMin ?? model.min ?? defNumMin) as number)
+      : undefined;
+  const highNumMax =
+    typeof (model.highMax ?? model.max ?? defNumMax) === 'number'
+      ? ((model.highMax ?? model.max ?? defNumMax) as number)
+      : undefined;
+
+  const lowStrMin = typeof (model.lowMin ?? model.min) === 'string' ? ((model.lowMin ?? model.min) as string) : undefined;
+  const lowStrMax = typeof (model.lowMax ?? model.max) === 'string' ? ((model.lowMax ?? model.max) as string) : undefined;
+  const highStrMin =
+    typeof (model.highMin ?? model.min) === 'string' ? ((model.highMin ?? model.min) as string) : undefined;
+  const highStrMax =
+    typeof (model.highMax ?? model.max) === 'string' ? ((model.highMax ?? model.max) as string) : undefined;
+
+  const handleChildFocus = () => {
+    if (!focusedRef.current) {
+      focusedRef.current = true;
+      onFocus?.();
+    }
+  };
+
+  const handleChildBlur = (e?: unknown) => {
+    if (Platform.OS === 'web') {
+      const ev = e as { nativeEvent?: { relatedTarget?: unknown }; relatedTarget?: unknown } | undefined;
+      const related = (ev?.nativeEvent?.relatedTarget ?? ev?.relatedTarget) as Node | null | undefined;
+      const container = groupRef.current as unknown as { contains?: (n: Node) => boolean } | null;
+      if (related && container?.contains?.(related)) return;
+    }
+    if (focusedRef.current) {
+      focusedRef.current = false;
+      onBlur?.();
+    }
+  };
+
+  const cellStyle = [
+    styles.rangeCell,
+    { flexBasis: model.kind === 'datetime' ? 240 : 132 },
+  ];
+
+  const renderBound = (params: {
+    bound: 'low' | 'high';
+    subLabel: string;
+    val: number | string | null;
+    placeholder: string | undefined;
+    numMin: number | undefined;
+    numMax: number | undefined;
+    strMin: string | undefined;
+    strMax: string | undefined;
+    sideRequired: boolean;
+    sideInvalid: boolean;
+    sideWarning: boolean;
+  }) => {
+    const {
+      bound,
+      subLabel,
+      val,
+      placeholder,
+      numMin,
+      numMax,
+      strMin,
+      strMax,
+      sideRequired,
+      sideInvalid,
+      sideWarning,
+    } = params;
+    const emit = (next: number | string | null) => {
+      if (locked) return;
+      if (bound === 'low') onIntent({ type: 'lowChangeRequested', low: next });
+      else onIntent({ type: 'highChangeRequested', high: next });
+    };
+    const boundId = `${id}-${bound}`;
+    const timeMode = resolvedTimePrecision === 'second' ? 'time-seconds' : 'time';
+    const strVal = typeof val === 'string' ? val : null;
+    const numVal = typeof val === 'number' && Number.isFinite(val) ? val : undefined;
+
+    return (
+      <View style={cellStyle}>
+        <Text
+          style={{
+            color: t.textMuted,
+            fontSize: t.textXs,
+            fontWeight: fontWeight(t.weightMedium),
+            fontFamily: fontFamily(t),
+          }}
+        >
+          {subLabel}
+          {sideRequired ? (
+            <Text style={{ color: t.danger, fontSize: t.text2xs, fontWeight: fontWeight(t.weightBold) }}> *</Text>
+          ) : null}
+        </Text>
+        {model.kind === 'date' ? (
+          <EmrTypedText
+            key={`${bound}-${resolvedDisplayFormat}`}
+            id={boundId}
+            aria-label={`${resolvedLabel}, ${subLabel}`}
+            aria-describedby={describedBy}
+            aria-required={sideRequired || undefined}
+            aria-readonly={locked || undefined}
+            mode={resolvedDisplayFormat}
+            placeholder={placeholder ?? resolvedDisplayFormat}
+            min={strMin}
+            max={strMax}
+            size={resolvedSize}
+            value={strVal}
+            invalid={sideInvalid}
+            warning={!sideInvalid && sideWarning}
+            readOnly={locked}
+            editable={!locked}
+            onFocus={handleChildFocus}
+            onBlur={handleChildBlur}
+            onSubmitEditing={() => {
+              if (!locked) onSubmitted?.();
+            }}
+            onValueChange={emit}
+          />
+        ) : model.kind === 'time' ? (
+          <EmrTypedText
+            key={`${bound}-${timeMode}-${resolvedHourCycle}`}
+            id={boundId}
+            aria-label={`${resolvedLabel}, ${subLabel}`}
+            aria-describedby={describedBy}
+            aria-required={sideRequired || undefined}
+            aria-readonly={locked || undefined}
+            mode={timeMode}
+            hourCycle={resolvedHourCycle}
+            placeholder={placeholder}
+            min={strMin}
+            max={strMax}
+            step={resolvedStep}
+            size={resolvedSize}
+            clearable={false}
+            value={strVal}
+            invalid={sideInvalid}
+            warning={!sideInvalid && sideWarning}
+            readOnly={locked}
+            editable={!locked}
+            onFocus={handleChildFocus}
+            onBlur={handleChildBlur}
+            onSubmitEditing={() => {
+              if (!locked) onSubmitted?.();
+            }}
+            onValueChange={emit}
+          />
+        ) : model.kind === 'datetime' ? (
+          <EmrDateTimeText
+            id={boundId}
+            label={`${resolvedLabel}, ${subLabel}`}
+            dateLabel={labels.dateLabel}
+            timeLabel={labels.timeLabel}
+            ariaDescribedBy={describedBy}
+            required={sideRequired}
+            format={resolvedDisplayFormat}
+            timePrecision={resolvedTimePrecision}
+            hourCycle={resolvedHourCycle}
+            wireFormat={resolvedWireFormat}
+            min={strMin}
+            max={strMax}
+            size={resolvedSize}
+            clearable={false}
+            value={strVal}
+            invalid={sideInvalid}
+            warning={!sideInvalid && sideWarning}
+            readOnly={locked}
+            editable={!locked}
+            onFocus={handleChildFocus}
+            onBlur={handleChildBlur}
+            onSubmit={() => {
+              if (!locked) onSubmitted?.();
+            }}
+            onValueChange={emit}
+          />
+        ) : (
+          <NumberInput
+            id={boundId}
+            aria-label={`${resolvedLabel}, ${subLabel}`}
+            aria-describedby={describedBy}
+            aria-required={sideRequired || undefined}
+            aria-readonly={locked || undefined}
+            integer={resolvedNumericMode === 'integer'}
+            min={numMin}
+            max={numMax}
+            step={resolvedStep}
+            precision={resolvedPrecision}
+            showSteppers={resolvedShowSteppers}
+            size={resolvedSize}
+            maxWidth="none"
+            placeholder={placeholder ?? (bound === 'low' ? 'Min' : 'Max')}
+            value={numVal}
+            invalid={sideInvalid}
+            warning={!sideInvalid && sideWarning}
+            readOnly={locked}
+            editable={!locked}
+            onFocus={handleChildFocus}
+            onBlur={handleChildBlur}
+            onSubmitted={() => {
+              if (!locked) onSubmitted?.();
+            }}
+            onNumber={emit}
+          />
+        )}
+      </View>
+    );
+  };
 
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={resolvedLabel}
+      labelHidden={labelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
-      hint={model.hint}
-      messages={model.messages}
+      layout={resolvedLayout}
+      showMetadata={resolvedShowMetadata}
+      unit={resolvedUnit}
+      required={resolvedRequired}
+      readOnly={locked}
+      hint={resolvedHint}
+      messages={resolvedMessages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={i => {
+        if (!locked && i.type === 'statusChangeRequested') {
+          onIntent({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
-      <View role="group" aria-labelledby={`${id}-label`} aria-label={model.label} style={styles.pairedRow}>
-        <View style={styles.pairedHalf}>
-          <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
-            Low
-          </Text>
-          {model.kind === 'date' ? (
-            <EmrTypedText
-              key={`low-${labels.dateFormat}`}
-              id={`${id}-low`}
-              aria-label={`${model.label}, low`}
-              mode={labels.dateFormat}
-              placeholder={model.lowPlaceholder ?? labels.dateFormat}
-              min={dateMin}
-              max={typeof high === 'string' && high ? high : dateMax}
-              value={typeof low === 'string' ? low : null}
-              invalid={invalid}
-              readOnly={Boolean(model.readOnly)}
-              editable={!model.readOnly}
-              onValueChange={iso => onIntent({ type: 'lowChangeRequested', low: iso })}
-            />
-          ) : (
-            <NumberInput
-              id={`${id}-low`}
-              aria-label={`${model.label}, low`}
-              integer={Number.isInteger(model.step ?? 0.01) && model.step !== undefined}
-              min={numMin}
-              max={typeof high === 'number' ? high : numMax}
-              step={model.step}
-              placeholder={model.lowPlaceholder}
-              value={typeof low === 'number' ? low : undefined}
-              invalid={invalid}
-              readOnly={Boolean(model.readOnly)}
-              editable={!model.readOnly}
-              onNumber={n => onIntent({ type: 'lowChangeRequested', low: n })}
-            />
-          )}
-        </View>
-        <Text
-          aria-hidden
-          style={[
-            styles.pairedSeparator,
-            { color: t.textMuted, fontSize: t.textLg, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) },
-          ]}
+      <View style={styles.fieldStack}>
+        <View
+          ref={groupRef}
+          role="group"
+          aria-labelledby={groupLabelledBy}
+          aria-label={resolvedLabel || undefined}
+          style={styles.pairedRow}
         >
-          –
-        </Text>
-        <View style={styles.pairedHalf}>
-          <Text style={{ color: t.textMuted, fontSize: t.textXs, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>
-            High
-          </Text>
-          {model.kind === 'date' ? (
-            <EmrTypedText
-              key={`high-${labels.dateFormat}`}
-              id={`${id}-high`}
-              aria-label={`${model.label}, high`}
-              mode={labels.dateFormat}
-              placeholder={model.highPlaceholder ?? labels.dateFormat}
-              min={typeof low === 'string' && low ? low : dateMin}
-              max={dateMax}
-              value={typeof high === 'string' ? high : null}
-              invalid={invalid}
-              readOnly={Boolean(model.readOnly)}
-              editable={!model.readOnly}
-              onValueChange={iso => onIntent({ type: 'highChangeRequested', high: iso })}
-            />
-          ) : (
-            <NumberInput
-              id={`${id}-high`}
-              aria-label={`${model.label}, high`}
-              integer={Number.isInteger(model.step ?? 0.01) && model.step !== undefined}
-              min={typeof low === 'number' ? low : numMin}
-              max={numMax}
-              step={model.step}
-              placeholder={model.highPlaceholder}
-              value={typeof high === 'number' ? high : undefined}
-              invalid={invalid}
-              readOnly={Boolean(model.readOnly)}
-              editable={!model.readOnly}
-              onNumber={n => onIntent({ type: 'highChangeRequested', high: n })}
-            />
-          )}
-        </View>
-        {model.unit ? (
+          {renderBound({
+            bound: 'low',
+            subLabel: lowLabel,
+            val: low,
+            placeholder: model.lowPlaceholder,
+            numMin: lowNumMin,
+            numMax: lowNumMax,
+            strMin: lowStrMin,
+            strMax: lowStrMax,
+            sideRequired: lowRequired,
+            sideInvalid: sideValidation.lowInvalid,
+            sideWarning: sideValidation.lowWarning,
+          })}
           <Text
+            aria-hidden
             style={[
-              styles.pairedUnit,
-              { color: t.textMuted, fontSize: t.textSm, fontWeight: fontWeight(t.weightMedium), fontFamily: fontFamily(t) },
+              styles.pairedSeparator,
+              {
+                paddingBottom: resolvedSize === 'lg' ? 12 : 10,
+                color: t.textMuted,
+                fontSize: t.textLg,
+                fontWeight: fontWeight(t.weightBold),
+                fontFamily: fontFamily(t),
+              },
             ]}
           >
-            {model.unit}
+            –
           </Text>
-        ) : null}
+          {renderBound({
+            bound: 'high',
+            subLabel: highLabel,
+            val: high,
+            placeholder: model.highPlaceholder,
+            numMin: highNumMin,
+            numMax: highNumMax,
+            strMin: highStrMin,
+            strMax: highStrMax,
+            sideRequired: highRequired,
+            sideInvalid: sideValidation.highInvalid,
+            sideWarning: sideValidation.highWarning,
+          })}
+          {showClear ? (
+            <Pressable
+              role="button"
+              aria-label={`${labels.clear} ${resolvedLabel}`}
+              onFocus={handleChildFocus}
+              onBlur={handleChildBlur}
+              onPress={() => {
+                if (!locked) {
+                  onIntent({ type: 'clearRequested' });
+                  onCleared?.();
+                }
+              }}
+              {...(Platform.OS === 'web' ? ({ 'data-emr-print': 'hide' } as object) : null)}
+              style={({ pressed, hovered, focused }: PressState & { hovered?: boolean }) => [
+                styles.pairedClearBtn,
+                focusRing(t, focused),
+                {
+                  minWidth: targetSize,
+                  minHeight: targetSize,
+                  borderColor: hovered ? t.focus : t.border,
+                  backgroundColor: pressed ? t.surfaceRaised : hovered ? t.surfaceSoft : t.surface,
+                },
+              ]}
+            >
+              <SvgIcon name="close" size={14} color={t.textMuted} />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </EmrFieldFrame>
   );
@@ -917,43 +1561,102 @@ interface PadDomNode {
 
 export function EmrSignatureCaptureField({
   model,
+  definition,
   controlId,
+  headingId,
+  labelHidden = false,
+  layout,
+  showMetadata = true,
+  readOnly = false,
   onIntent,
+  onValueChange,
+  onCleared,
+  onFocus,
+  onBlur,
 }: {
   model: SignatureCaptureViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: FieldFrameLayout;
+  showMetadata?: boolean;
+  readOnly?: boolean;
   onIntent: (intent: SignatureCaptureIntent) => void;
+  onValueChange?: (strokes: readonly EmrSignatureStroke[]) => void;
+  onCleared?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useEmrTheme();
   const labels = useEmrLabels();
   const generatedId = useId();
   const id = controlId ?? generatedId;
-  const padHeight = model.height ?? 160;
-  const [measuredWidth, setMeasuredWidth] = useState<number>(model.width ?? 360);
+
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const resolvedLabelHidden = Boolean(labelHidden || model.labelHidden);
+  const resolvedHint = model.hint ?? resolvedDef?.presentation?.hint;
+  const resolvedLayout = normalizeFieldFrameLayout(layout ?? model.layout);
+  const resolvedShowMetadata = showMetadata && model.showMetadata !== false;
+  const locked = isSignaturePadLocked({ readOnly: model.readOnly, definition: resolvedDef }, readOnly);
+  const resolvedRequired = Boolean(
+    model.required ||
+      (resolvedDef?.contract?.cardinality?.min !== undefined &&
+        resolvedDef.contract.cardinality.min >= 1),
+  );
+  const geom = resolveSignatureCanvasGeometry(model.width, model.height);
+  const penWidth =
+    typeof model.penWidth === 'number' && Number.isFinite(model.penWidth) && model.penWidth > 0
+      ? model.penWidth
+      : 2.25;
+  const dotRadius = Number(Math.max(1.25, penWidth * 0.78).toFixed(2));
+  const validation = hasSignatureValidationState(model.messages);
+  const hasFooterMsg = Boolean(resolvedHint || model.messages?.length);
+  const describedBy = hasFooterMsg ? `${id}-message` : undefined;
+  const labelledBy =
+    headingId || (!resolvedLabelHidden && resolvedLabel ? `${id}-label` : undefined);
+  const canUndo = !locked && model.undoable !== false;
+  const canClear = !locked && model.clearable !== false;
+
+  const [measuredWidth, setMeasuredWidth] = useState<number>(geom.width);
   const [activePoints, setActivePoints] = useState<EmrSignaturePoint[]>([]);
+  const [padFocused, setPadFocused] = useState(false);
+  const [padHovered, setPadHovered] = useState(false);
   const activePointsRef = useRef<EmrSignaturePoint[]>([]);
   const padNodeRef = useRef<PadDomNode | null>(null);
-  const invalid = hasErrorMessage(model.messages);
 
   const liveRef = useRef({
-    readOnly: Boolean(model.readOnly),
-    width: measuredWidth,
-    height: padHeight,
+    locked,
+    canUndo,
+    canClear,
+    strokes: model.strokes,
+    width: geom.width,
+    height: geom.height,
+    boxWidth: measuredWidth,
     onIntent,
+    onValueChange,
+    onCleared,
   });
   liveRef.current = {
-    readOnly: Boolean(model.readOnly),
-    width: measuredWidth,
-    height: padHeight,
+    locked,
+    canUndo,
+    canClear,
+    strokes: model.strokes,
+    width: geom.width,
+    height: geom.height,
+    boxWidth: measuredWidth,
     onIntent,
+    onValueChange,
+    onCleared,
   };
 
   useEffect(() => {
-    if (model.readOnly && activePointsRef.current.length > 0) {
+    if (locked && activePointsRef.current.length > 0) {
       activePointsRef.current = [];
       setActivePoints([]);
     }
-  }, [model.readOnly]);
+  }, [locked]);
 
   const resolvePoint = (nativeEvent: {
     clientX?: number;
@@ -963,70 +1666,173 @@ export function EmrSignatureCaptureField({
     locationX?: number;
     locationY?: number;
   }): EmrSignaturePoint => {
-    const { width, height } = liveRef.current;
+    const { width: vbW, height: vbH, boxWidth } = liveRef.current;
     const node = padNodeRef.current;
-    let rawX = nativeEvent.locationX ?? 0;
-    let rawY = nativeEvent.locationY ?? 0;
     if (node && typeof node.getBoundingClientRect === 'function') {
       const rect = node.getBoundingClientRect();
       const cx = typeof nativeEvent.clientX === 'number' ? nativeEvent.clientX : nativeEvent.pageX;
       const cy = typeof nativeEvent.clientY === 'number' ? nativeEvent.clientY : nativeEvent.pageY;
       if (typeof cx === 'number' && typeof cy === 'number' && rect.width > 0 && rect.height > 0) {
-        rawX = cx - rect.left;
-        rawY = cy - rect.top;
+        return mapPointerToSignaturePoint(cx, cy, rect, vbW, vbH);
       }
     }
-    return {
-      x: Math.max(0, Math.min(width, Number(rawX.toFixed(1)))),
-      y: Math.max(0, Math.min(height, Number(rawY.toFixed(1)))),
-    };
+    return mapPointerToSignaturePoint(
+      nativeEvent.locationX ?? 0,
+      nativeEvent.locationY ?? 0,
+      { left: 0, top: 0, width: boxWidth, height: vbH },
+      vbW,
+      vbH,
+    );
   };
 
   const commitActiveStroke = () => {
     const pts = activePointsRef.current;
     activePointsRef.current = [];
     setActivePoints([]);
-    if (!liveRef.current.readOnly && pts.length > 0) {
-      liveRef.current.onIntent({ type: 'strokeAdded', stroke: { points: pts } });
+    if (!liveRef.current.locked && pts.length > 0) {
+      const stroke: EmrSignatureStroke = { points: pts };
+      liveRef.current.onIntent({ type: 'strokeAdded', stroke });
+      liveRef.current.onValueChange?.([...liveRef.current.strokes, stroke]);
     }
+  };
+
+  const cancelActiveStroke = () => {
+    activePointsRef.current = [];
+    setActivePoints([]);
+  };
+
+  const handleUndo = () => {
+    if (liveRef.current.locked || !liveRef.current.canUndo || liveRef.current.strokes.length === 0) {
+      return;
+    }
+    liveRef.current.onIntent({ type: 'undoRequested' });
+    liveRef.current.onValueChange?.(liveRef.current.strokes.slice(0, -1));
+  };
+
+  const handleClear = () => {
+    if (liveRef.current.locked || !liveRef.current.canClear || liveRef.current.strokes.length === 0) {
+      return;
+    }
+    liveRef.current.onIntent({ type: 'clearRequested' });
+    liveRef.current.onValueChange?.([]);
+    liveRef.current.onCleared?.();
   };
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => !liveRef.current.readOnly,
-      onMoveShouldSetPanResponder: () => !liveRef.current.readOnly,
+      onStartShouldSetPanResponder: e => {
+        if (liveRef.current.locked) return false;
+        const btn = (e.nativeEvent as unknown as { button?: number }).button;
+        return typeof btn === 'number' ? btn === 0 : true;
+      },
+      onMoveShouldSetPanResponder: () => !liveRef.current.locked,
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: e => {
-        if (liveRef.current.readOnly) return;
-        const pt = resolvePoint(e.nativeEvent as unknown as { clientX?: number; clientY?: number; locationX?: number; locationY?: number });
+        if (liveRef.current.locked) return;
+        const pt = resolvePoint(
+          e.nativeEvent as unknown as {
+            clientX?: number;
+            clientY?: number;
+            locationX?: number;
+            locationY?: number;
+          },
+        );
         activePointsRef.current = [pt];
         setActivePoints([pt]);
       },
       onPanResponderMove: e => {
-        if (liveRef.current.readOnly) return;
-        const pt = resolvePoint(e.nativeEvent as unknown as { clientX?: number; clientY?: number; locationX?: number; locationY?: number });
+        if (liveRef.current.locked) return;
+        const pt = resolvePoint(
+          e.nativeEvent as unknown as {
+            clientX?: number;
+            clientY?: number;
+            locationX?: number;
+            locationY?: number;
+          },
+        );
         const prev = activePointsRef.current[activePointsRef.current.length - 1];
-        if (prev && Math.hypot(pt.x - prev.x, pt.y - prev.y) < 1.5) return;
+        if (prev && prev.x === pt.x && prev.y === pt.y) return;
         const next = [...activePointsRef.current, pt];
         activePointsRef.current = next;
         setActivePoints(next);
       },
       onPanResponderRelease: () => commitActiveStroke(),
-      onPanResponderTerminate: () => commitActiveStroke(),
+      onPanResponderTerminate: () => cancelActiveStroke(),
     }),
   ).current;
 
-  const allStrokes: readonly EmrSignatureStroke[] =
-    activePoints.length > 0 ? [...model.strokes, { points: activePoints }] : model.strokes;
-  const attribution = [model.signatoryName, model.signatoryRole, model.signedAt].filter(Boolean).join(' · ');
+  const isEmptyPad = model.strokes.length === 0 && activePoints.length === 0;
+  const emptyPrompt =
+    model.emptyPrompt?.trim() ||
+    (locked ? 'No signature captured' : 'Sign here with stylus, mouse, or finger');
+  const attestation = formatSignatureAttestation(model);
+
+  const webPadProps =
+    Platform.OS === 'web'
+      ? ({
+          tabIndex: 0,
+          'aria-roledescription': locked ? undefined : 'signature pad',
+          'aria-labelledby': labelledBy,
+          'aria-label': labelledBy ? undefined : `${resolvedLabel} signature pad`,
+          'aria-invalid': validation.hasError || undefined,
+          'aria-required': (!locked && resolvedRequired) || undefined,
+          'aria-readonly': locked || undefined,
+          'aria-describedby': describedBy,
+          onFocus: () => {
+            setPadFocused(true);
+            onFocus?.();
+          },
+          onBlur: () => {
+            setPadFocused(false);
+            onBlur?.();
+          },
+          onMouseEnter: () => setPadHovered(true),
+          onMouseLeave: () => setPadHovered(false),
+          onKeyDown: (e: {
+            key?: string;
+            ctrlKey?: boolean;
+            metaKey?: boolean;
+            shiftKey?: boolean;
+            preventDefault?: () => void;
+          }) => {
+            if (e.key === 'Escape' && activePointsRef.current.length > 0) {
+              e.preventDefault?.();
+              cancelActiveStroke();
+              return;
+            }
+            if (liveRef.current.locked) return;
+            if ((e.key === 'Delete' || e.key === 'Backspace') && liveRef.current.canClear && liveRef.current.strokes.length > 0) {
+              e.preventDefault?.();
+              handleClear();
+              return;
+            }
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key?.toLowerCase() === 'z' && liveRef.current.canUndo && liveRef.current.strokes.length > 0) {
+              e.preventDefault?.();
+              handleUndo();
+            }
+          },
+        } as object)
+      : null;
 
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={resolvedLabel}
+      labelHidden={resolvedLabelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
-      hint={model.hint}
+      layout={resolvedLayout}
+      showMetadata={resolvedShowMetadata}
+      required={resolvedRequired}
+      readOnly={locked}
+      hint={resolvedHint}
       messages={model.messages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={i => {
+        if (!locked && i.type === 'statusChangeRequested') {
+          onIntent({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
       <View style={styles.fieldStack}>
         <View
@@ -1034,31 +1840,36 @@ export function EmrSignatureCaptureField({
             padNodeRef.current = el as unknown as PadDomNode | null;
           }}
           id={id}
-          role="application"
-          aria-label={`${model.label} signature pad`}
+          role={locked ? 'img' : 'region'}
+          aria-labelledby={labelledBy}
+          aria-label={labelledBy ? undefined : `${resolvedLabel} signature pad`}
           onLayout={e => {
             const w = e.nativeEvent.layout.width;
             if (w > 0) setMeasuredWidth(w);
           }}
           {...panResponder.panHandlers}
+          {...webPadProps}
           style={[
             styles.sigPad,
+            focusRing(t, padFocused),
             {
-              height: padHeight,
-              maxWidth: model.width,
-              borderColor: invalid ? t.danger : t.border,
-              backgroundColor: model.readOnly ? t.surfaceSoft : t.surface,
+              height: geom.height,
+              borderColor: validation.hasError
+                ? t.danger
+                : validation.hasWarning
+                  ? t.warning
+                  : padHovered && !locked
+                    ? t.focus
+                    : t.border,
+              borderStyle: locked ? 'dashed' : 'solid',
+              backgroundColor: locked ? t.surfaceSoft : t.surface,
             },
           ]}
         >
-          <View
-            pointerEvents="none"
-            style={[styles.sigBaseline, { borderBottomColor: t.border }]}
-          />
-          {allStrokes.length === 0 ? (
+          {isEmptyPad ? (
             <View pointerEvents="none" style={styles.sigEmptyOverlay}>
-              <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: fontFamily(t) }}>
-                {model.readOnly ? 'No signature captured' : 'Sign here with stylus, mouse, or finger'}
+              <Text style={{ color: t.textMuted, fontSize: t.textSm, fontFamily: fontFamily(t), textAlign: 'center' }}>
+                {emptyPrompt}
               </Text>
             </View>
           ) : null}
@@ -1068,19 +1879,29 @@ export function EmrSignatureCaptureField({
                 'svg',
                 {
                   width: '100%',
-                  height: '100%',
-                  viewBox: `0 0 ${Math.max(1, measuredWidth)} ${padHeight}`,
-                  preserveAspectRatio: 'none',
+                  height: geom.height,
+                  viewBox: `0 0 ${geom.width} ${geom.height}`,
+                  preserveAspectRatio: 'xMidYMid meet',
                   'aria-hidden': 'true',
-                  style: { display: 'block', width: '100%', height: '100%' },
+                  style: { display: 'block', width: '100%', height: geom.height },
                 },
-                ...allStrokes.map((stroke, idx) =>
+                createElement('line', {
+                  key: 'baseline',
+                  x1: geom.baselineInset,
+                  y1: geom.baselineY,
+                  x2: geom.width - geom.baselineInset,
+                  y2: geom.baselineY,
+                  stroke: t.border,
+                  strokeWidth: 1,
+                  strokeDasharray: '4 4',
+                }),
+                ...model.strokes.map((stroke, idx) =>
                   stroke.points.length === 1
                     ? createElement('circle', {
                         key: `dot-${idx}`,
                         cx: stroke.points[0]!.x,
                         cy: stroke.points[0]!.y,
-                        r: 1.75,
+                        r: dotRadius,
                         fill: t.text,
                       })
                     : createElement('polyline', {
@@ -1088,26 +1909,66 @@ export function EmrSignatureCaptureField({
                         points: signaturePolylinePoints(stroke),
                         fill: 'none',
                         stroke: t.text,
-                        strokeWidth: 2.25,
+                        strokeWidth: penWidth,
                         strokeLinecap: 'round',
                         strokeLinejoin: 'round',
                       }),
                 ),
+                ...(activePoints.length === 1
+                  ? [
+                      createElement('circle', {
+                        key: 'active-dot',
+                        cx: activePoints[0]!.x,
+                        cy: activePoints[0]!.y,
+                        r: dotRadius,
+                        fill: t.primary,
+                      }),
+                    ]
+                  : activePoints.length > 1
+                    ? [
+                        createElement('polyline', {
+                          key: 'active-poly',
+                          points: signaturePolylinePoints({ points: activePoints }),
+                          fill: 'none',
+                          stroke: t.primary,
+                          strokeWidth: penWidth,
+                          strokeLinecap: 'round',
+                          strokeLinejoin: 'round',
+                        }),
+                      ]
+                    : []),
               )}
             </View>
           ) : (
             <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-              {allStrokes.map((stroke, idx) =>
-                stroke.points.length === 1 ? (
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.sigBaseline,
+                  {
+                    bottom: Math.max(8, geom.height - geom.baselineY),
+                    borderBottomColor: t.border,
+                  },
+                ]}
+              />
+              {model.strokes.map((rawStroke, idx) => {
+                const stroke = projectSignatureStrokeForBox(
+                  rawStroke,
+                  measuredWidth,
+                  geom.height,
+                  geom.width,
+                  geom.height,
+                );
+                return stroke.points.length === 1 ? (
                   <View
                     key={`ndot-${idx}`}
                     style={{
                       position: 'absolute',
-                      left: stroke.points[0]!.x - 2,
-                      top: stroke.points[0]!.y - 2,
-                      width: 4,
-                      height: 4,
-                      borderRadius: 2,
+                      left: stroke.points[0]!.x - dotRadius,
+                      top: stroke.points[0]!.y - dotRadius,
+                      width: dotRadius * 2,
+                      height: dotRadius * 2,
+                      borderRadius: dotRadius,
                       backgroundColor: t.text,
                     }}
                   />
@@ -1118,32 +1979,123 @@ export function EmrSignatureCaptureField({
                       style={{
                         position: 'absolute',
                         left: seg.cx - seg.length / 2,
-                        top: seg.cy - 1.25,
+                        top: seg.cy - penWidth / 2,
                         width: seg.length,
-                        height: 2.5,
-                        borderRadius: 1.25,
+                        height: penWidth,
+                        borderRadius: penWidth / 2,
                         backgroundColor: t.text,
                         transform: [{ rotate: `${seg.angleDeg}deg` }],
                       }}
                     />
                   ))
-                ),
-              )}
+                );
+              })}
+              {activePoints.length > 0
+                ? (() => {
+                    const activeStroke = projectSignatureStrokeForBox(
+                      { points: activePoints },
+                      measuredWidth,
+                      geom.height,
+                      geom.width,
+                      geom.height,
+                    );
+                    return activeStroke.points.length === 1 ? (
+                      <View
+                        key="active-ndot"
+                        style={{
+                          position: 'absolute',
+                          left: activeStroke.points[0]!.x - dotRadius,
+                          top: activeStroke.points[0]!.y - dotRadius,
+                          width: dotRadius * 2,
+                          height: dotRadius * 2,
+                          borderRadius: dotRadius,
+                          backgroundColor: t.primary,
+                        }}
+                      />
+                    ) : (
+                      computeSignatureSegments(activeStroke, model.strokes.length).map(seg => (
+                        <View
+                          key={`active-${seg.key}`}
+                          style={{
+                            position: 'absolute',
+                            left: seg.cx - seg.length / 2,
+                            top: seg.cy - penWidth / 2,
+                            width: seg.length,
+                            height: penWidth,
+                            borderRadius: penWidth / 2,
+                            backgroundColor: t.primary,
+                            transform: [{ rotate: `${seg.angleDeg}deg` }],
+                          }}
+                        />
+                      ))
+                    );
+                  })()
+                : null}
             </View>
           )}
         </View>
         <View style={styles.sigFooter}>
           <Text style={{ color: t.textMuted, fontSize: t.textXs, fontFamily: fontFamily(t), flexShrink: 1 }}>
-            {attribution || (model.strokes.length > 0 ? `${model.strokes.length} stroke(s) recorded` : 'Unsigned')}
+            {attestation}
           </Text>
-          {!model.readOnly && model.strokes.length > 0 ? (
-            <EmrButton
-              small
-              variant="outline"
-              label={labels.clear}
-              accessibilityLabel={`${labels.clear} ${model.label}`}
-              onPress={() => onIntent({ type: 'clearRequested' })}
-            />
+          {!locked && (canUndo || canClear) ? (
+            <View
+              style={styles.inlineActions}
+              {...(Platform.OS === 'web' ? ({ 'data-emr-print': 'hide' } as object) : null)}
+            >
+              {canUndo ? (
+                <EmrButton
+                  small
+                  variant="outline"
+                  disabled={model.strokes.length === 0}
+                  accessibilityLabel={`Undo last stroke on ${resolvedLabel}`}
+                  onPress={handleUndo}
+                >
+                  <SvgIcon
+                    name="undo"
+                    size={14}
+                    color={model.strokes.length === 0 ? t.textMuted : t.text}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      color: model.strokes.length === 0 ? t.textMuted : t.text,
+                      fontSize: t.textSm,
+                      fontWeight: fontWeight(650),
+                      fontFamily: fontFamily(t),
+                    }}
+                  >
+                    Undo
+                  </Text>
+                </EmrButton>
+              ) : null}
+              {canClear ? (
+                <EmrButton
+                  small
+                  variant="outline"
+                  disabled={model.strokes.length === 0}
+                  accessibilityLabel={`${labels.clear} ${resolvedLabel}`}
+                  onPress={handleClear}
+                >
+                  <SvgIcon
+                    name="trash"
+                    size={14}
+                    color={model.strokes.length === 0 ? t.textMuted : t.text}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      color: model.strokes.length === 0 ? t.textMuted : t.text,
+                      fontSize: t.textSm,
+                      fontWeight: fontWeight(650),
+                      fontFamily: fontFamily(t),
+                    }}
+                  >
+                    {labels.clear}
+                  </Text>
+                </EmrButton>
+              ) : null}
+            </View>
           ) : null}
         </View>
       </View>
@@ -1157,61 +2109,117 @@ export function EmrSignatureCaptureField({
 
 export function EmrImageField({
   model,
+  definition,
   controlId,
-  disabled,
+  headingId,
+  labelHidden = false,
+  layout,
+  showMetadata = true,
+  readOnly = false,
   onIntent,
   onNativeFilesSelected,
+  onFocus,
+  onBlur,
 }: {
   model: ImageFieldViewModel;
+  definition?: EmrFieldDefinition;
   controlId?: string;
-  disabled?: boolean;
+  headingId?: string;
+  labelHidden?: boolean;
+  layout?: FieldFrameLayout;
+  showMetadata?: boolean;
+  readOnly?: boolean;
   onIntent?: (intent: ImageFieldIntent) => void;
   onNativeFilesSelected?: (files: readonly File[]) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const generatedId = useId();
   const id = controlId ?? generatedId;
 
+  const resolvedDef = definition ?? model.definition;
+  const resolvedLabel = model.label || resolvedDef?.presentation?.label || '';
+  const resolvedLabelHidden = Boolean(labelHidden || model.labelHidden);
+  const resolvedHint = model.hint ?? resolvedDef?.presentation?.hint;
+  const resolvedLayout = normalizeFieldFrameLayout(layout ?? model.layout);
+  const resolvedShowMetadata = showMetadata && model.showMetadata !== false;
+  const locked = Boolean(readOnly || model.readOnly || resolvedDef?.contract?.readOnly);
+  const resolvedRequired = Boolean(
+    model.required ||
+      (resolvedDef?.contract?.cardinality?.min !== undefined &&
+        resolvedDef.contract.cardinality.min >= 1),
+  );
+  const maxCard = resolvedDef?.contract?.cardinality?.max;
+  const resolvedMultiple =
+    model.multiple !== undefined ? model.multiple : maxCard === undefined || maxCard !== 1;
+  const hasError = Boolean(model.messages?.some((m) => m.severity === 'error'));
+
   return (
     <EmrFieldFrame
-      label={model.label}
+      label={resolvedLabel}
+      labelHidden={resolvedLabelHidden}
+      labelNamesControl={false}
       controlId={id}
-      required={model.required}
-      hint={model.hint}
+      layout={resolvedLayout}
+      showMetadata={resolvedShowMetadata}
+      required={resolvedRequired}
+      readOnly={locked}
+      hint={resolvedHint}
       messages={model.messages}
+      assessmentStatus={model.status}
+      assessmentStatusOptions={model.statusOptions}
+      onIntent={(i) => {
+        if (!locked && i.type === 'statusChangeRequested') {
+          onIntent?.({ type: 'statusChangeRequested', status: i.status });
+        }
+      }}
     >
-      <View nativeID={id} style={styles.fieldStack}>
+      <View
+        nativeID={id}
+        style={styles.fieldStack}
+        {...(Platform.OS === 'web'
+          ? ({
+              'aria-labelledby': headingId || undefined,
+            } as Record<string, unknown>)
+          : null)}
+      >
         <EmrImageUpload
           controlId={`${id}-upload`}
+          label={resolvedLabel}
+          labelHidden
           items={model.items}
-          multiple={model.multiple ?? true}
+          accept={model.accept ?? 'image/*'}
+          multiple={resolvedMultiple}
           maxFiles={model.maxFiles}
           maxSizeBytes={model.maxSizeBytes}
-          allowCamera={model.allowCamera ?? true}
+          allowCamera={Boolean(model.allowCamera)}
           aspectPresets={model.aspectPresets}
-          disabled={disabled}
-          readOnly={model.readOnly}
-          onFilesSelected={files => onIntent?.({ type: 'filesSelected', files })}
-          onNativeFilesSelected={onNativeFilesSelected}
-          onItemsChange={items => onIntent?.({ type: 'itemsChangeRequested', items })}
-          onImageCropped={(itemId, result) =>
-            onIntent?.({ type: 'imageCropped', id: itemId, result })
-          }
-          onCaptionChange={(itemId, caption) =>
-            onIntent?.({ type: 'captionChangeRequested', id: itemId, caption })
-          }
-          onRemoveRequested={itemId =>
-            onIntent?.({ type: 'itemRemoveRequested', id: itemId })
-          }
-          onCameraRequested={() =>
-            onIntent?.({ type: 'captureRequested', mode: 'camera' })
-          }
-        />
-        <AssessmentStatusStrip
-          fieldLabel={model.label}
-          status={model.status}
-          statusOptions={model.statusOptions}
-          readOnly={model.readOnly || disabled}
-          onStatusChange={status => onIntent?.({ type: 'statusChangeRequested', status })}
+          required={resolvedRequired}
+          readOnly={locked}
+          invalid={hasError}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onFilesSelected={(files) => {
+            if (!locked) onIntent?.({ type: 'filesSelected', files });
+          }}
+          onNativeFilesSelected={(files) => {
+            if (!locked) onNativeFilesSelected?.(files);
+          }}
+          onItemsChange={(items) => {
+            if (!locked) onIntent?.({ type: 'itemsChangeRequested', items });
+          }}
+          onImageCropped={(itemId, result) => {
+            if (!locked) onIntent?.({ type: 'imageCropped', id: itemId, result });
+          }}
+          onCaptionChange={(itemId, caption) => {
+            if (!locked) onIntent?.({ type: 'captionChangeRequested', id: itemId, caption });
+          }}
+          onRemoveRequested={(itemId) => {
+            if (!locked) onIntent?.({ type: 'itemRemoveRequested', id: itemId });
+          }}
+          onCameraRequested={() => {
+            if (!locked) onIntent?.({ type: 'captureRequested', mode: 'camera' });
+          }}
         />
       </View>
     </EmrFieldFrame>
@@ -1258,7 +2266,13 @@ const styles = StyleSheet.create({
   },
   pairedHalf: {
     flex: 1,
-    minWidth: 132,
+    minWidth: 88,
+    gap: 4,
+  },
+  rangeCell: {
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
     gap: 4,
   },
   pairedSeparator: {
@@ -1266,6 +2280,12 @@ const styles = StyleSheet.create({
   },
   pairedUnit: {
     paddingBottom: 12,
+  },
+  pairedClearBtn: {
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   durationRow: {
     flexDirection: 'row',

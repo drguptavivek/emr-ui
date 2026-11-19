@@ -111,13 +111,14 @@ const l1ExtraStyles = css`
   .segmented-item {
     min-height: 44px;
     min-width: 44px;
+    max-width: 100%;
     padding: 6px 12px;
     border: 1px solid transparent;
     border-radius: var(--emr-radius-sm);
     background: transparent;
     color: var(--emr-text-muted, var(--emr-text));
     font: inherit;
-    font-size: var(--emr-text-sm);
+    font-size: var(--emr-text-md);
     font-weight: var(--emr-weight-medium);
     display: inline-flex;
     align-items: center;
@@ -128,8 +129,14 @@ const l1ExtraStyles = css`
   }
   .segmented-track--sm .segmented-item {
     padding: 4px 10px;
-    font-size: var(--emr-text-xs);
+    font-size: var(--emr-text-sm);
     gap: 4px;
+  }
+  .segmented-track--lg .segmented-item {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 8px 14px;
+    font-size: var(--emr-text-md);
   }
   .segmented-item--has-desc {
     padding-top: 8px;
@@ -941,6 +948,8 @@ export class EmrSegmentedControlElement extends EmrLitElement {
   @property({ type: String }) label = '';
   @property({ type: Boolean }) labelHidden = false;
   @property({ type: String }) override ariaLabel: string | null = '';
+  @property({ type: String }) ariaLabelledBy = '';
+  @property({ type: String }) ariaDescribedBy = '';
   @property({ attribute: false }) options: readonly EmrSegmentedOption[] = [];
   @property({ type: String }) value: string | null = null;
   @property({ type: String }) size: EmrSegmentedSize = 'md';
@@ -954,6 +963,7 @@ export class EmrSegmentedControlElement extends EmrLitElement {
   @property({ type: Boolean }) allowDeselect = false;
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) invalid = false;
+  @property({ type: Boolean }) hasWarning = false;
   @property({ type: Boolean }) readOnly = false;
   @property({ type: Boolean }) disabled = false;
   @property({ type: String }) hint = '';
@@ -1043,6 +1053,7 @@ export class EmrSegmentedControlElement extends EmrLitElement {
       error: this.error,
       warning: this.warning,
       invalid: this.invalid,
+      hasWarning: this.hasWarning,
     });
     const showClear = canClearEmrSegmentedControl({
       clearable: this.clearable,
@@ -1052,8 +1063,9 @@ export class EmrSegmentedControlElement extends EmrLitElement {
     });
     const tabStopValue = resolveEmrSegmentedTabStopValue(this.options, this.value, this.disabled);
     const describedByIds: string[] = [];
+    if (this.ariaDescribedBy) describedByIds.push(this.ariaDescribedBy);
     if (this.hint) describedByIds.push(hintId);
-    if (validation.hasWarning) describedByIds.push(warningId);
+    if (validation.hasWarning && this.warning) describedByIds.push(warningId);
     if (this.error) describedByIds.push(errorId);
     const describedBy = describedByIds.length ? describedByIds.join(' ') : nothing;
 
@@ -1061,6 +1073,7 @@ export class EmrSegmentedControlElement extends EmrLitElement {
     const trackClasses = [
       'segmented-track',
       resolvedSize === 'sm' ? 'segmented-track--sm' : '',
+      resolvedSize === 'lg' ? 'segmented-track--lg' : '',
       resolvedVariant === 'outline' ? 'segmented-track--outline' : '',
       resolvedVariant === 'soft' ? 'segmented-track--soft' : '',
       resolvedShape === 'pill' ? 'segmented-track--pill' : '',
@@ -1093,8 +1106,8 @@ export class EmrSegmentedControlElement extends EmrLitElement {
       data-warning=${validation.hasWarning ? 'true' : nothing}
       data-readonly=${this.readOnly ? 'true' : nothing}
       data-disabled=${this.disabled ? 'true' : nothing}
-      aria-labelledby=${!this.ariaLabel && !this.labelHidden && this.label ? labelId : nothing}
-      aria-label=${this.ariaLabel || (this.labelHidden ? groupLabel : (!this.label ? 'Options' : nothing))}
+      aria-labelledby=${this.ariaLabelledBy || (!this.ariaLabel && !this.labelHidden && this.label ? labelId : nothing)}
+      aria-label=${this.ariaLabel || (!this.ariaLabelledBy && (this.labelHidden || !this.label) ? (this.labelHidden ? groupLabel : 'Options') : nothing)}
       aria-required=${this.required ? 'true' : nothing}
       aria-disabled=${this.disabled ? 'true' : nothing}
       aria-orientation=${resolvedOrientation}
@@ -1147,7 +1160,7 @@ export class EmrSegmentedControlElement extends EmrLitElement {
       ${this.hint
         ? html`<span id=${hintId} class=${`emr-hint${this.labelHidden ? ' emr-sr-only' : ''}`}>${this.hint}</span>`
         : nothing}
-      ${validation.hasWarning
+      ${validation.hasWarning && this.warning
         ? html`<span id=${warningId} class=${`emr-warning${this.labelHidden ? ' emr-sr-only' : ''}`} role="status">${this.warning}</span>`
         : nothing}
       ${this.error
