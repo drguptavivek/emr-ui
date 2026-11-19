@@ -83,8 +83,8 @@ function resolveAngularPreviewUrl(selector: string, colorScheme: EmrColorScheme)
     return `http://localhost:4200/?selector=${encodeURIComponent(selector)}&theme=${colorScheme}`;
   }
   const { hostname } = window.location;
-  const isLocalDev = hostname === 'localhost' || hostname === '127.0.0.1';
-  const base = isLocalDev ? 'http://localhost:4200/' : resolveSitePublicUrl('angular/index.html');
+  const isLocalDev = process.env.NODE_ENV === 'development' && (hostname === 'localhost' || hostname === '127.0.0.1');
+  const base = isLocalDev ? 'http://localhost:4200/' : resolveSitePublicUrl('angular/browser/index.html');
   return `${base}?selector=${encodeURIComponent(selector)}&theme=${colorScheme}`;
 }
 
@@ -533,13 +533,21 @@ function ComponentsDocsInner({
     initialAngularSrcRef.current = resolveAngularPreviewUrl(activeSelector, colorScheme);
   }
 
+  const syncAngularPreview = useCallback(() => {
+    const target = angularIframeRef.current?.contentWindow;
+    if (!target) return;
+    let state = currentState;
+    if (state && typeof state === 'object' && 'controller' in state) {
+      // The controller belongs to the React/Lit host. Only send its view state.
+      const { controller: _controller, ...viewState } = state;
+      state = viewState;
+    }
+    target.postMessage({ type: 'emr-preview', selector: activeSelector, theme: colorScheme, state }, '*');
+  }, [activeSelector, colorScheme, currentState]);
+
   useEffect(() => {
-    if (Platform.OS !== 'web' || !mounted) return;
-    angularIframeRef.current?.contentWindow?.postMessage(
-      { type: 'emr-preview', selector: activeSelector, theme: colorScheme, state: currentState },
-      '*',
-    );
-  }, [activeSelector, colorScheme, currentState, mounted]);
+    if (mounted) syncAngularPreview();
+  }, [mounted, syncAngularPreview]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
@@ -1592,12 +1600,7 @@ function ComponentsDocsInner({
                           ref: angularIframeRef,
                           src: initialAngularSrcRef.current,
                           title: `${activeItem.angularName} Angular preview`,
-                          onLoad: () => {
-                            angularIframeRef.current?.contentWindow?.postMessage(
-                              { type: 'emr-preview', selector: activeSelector, theme: colorScheme, state: currentState },
-                              '*',
-                            );
-                          },
+                          onLoad: syncAngularPreview,
                           style: {
                             width: '100%',
                             height: angularIframeHeight ? `${angularIframeHeight}px` : undefined,
