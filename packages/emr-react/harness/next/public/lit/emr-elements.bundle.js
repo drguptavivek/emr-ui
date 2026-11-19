@@ -6057,7 +6057,7 @@ var We=class{state;listeners=new Set;destroyed=!1;constructor(e){this.state=e}ge
     width: 100%;
     min-height: var(--emr-control-height);
     min-width: 44px;
-    padding: 0 12px;
+    padding: 10px 12px;
     border: 1px solid var(--emr-border);
     border-radius: var(--emr-radius);
     background: var(--emr-surface);
@@ -6749,6 +6749,7 @@ var We=class{state;listeners=new Set;destroyed=!1;constructor(e){this.state=e}ge
   .likert-pip {
     width: auto;
     min-width: 44px;
+    padding: 4px 10px;
     justify-content: center;
     flex-direction: column;
     gap: 2px;
@@ -7453,6 +7454,7 @@ var We=class{state;listeners=new Set;destroyed=!1;constructor(e){this.state=e}ge
     gap: 8px;
     width: 100%;
     min-height: 44px;
+    padding: 8px 12px;
     text-align: left;
   }
   .search-option-row--active {

@@ -1054,7 +1054,7 @@ const l1Styles = css`
     width: 100%;
     min-height: var(--emr-control-height);
     min-width: 44px;
-    padding: 0 12px;
+    padding: 10px 12px;
     border: 1px solid var(--emr-border);
     border-radius: var(--emr-radius);
     background: var(--emr-surface);
@@ -1746,6 +1746,7 @@ const l1Styles = css`
   .likert-pip {
     width: auto;
     min-width: 44px;
+    padding: 4px 10px;
     justify-content: center;
     flex-direction: column;
     gap: 2px;
@@ -2450,6 +2451,7 @@ const l1Styles = css`
     gap: 8px;
     width: 100%;
     min-height: 44px;
+    padding: 8px 12px;
     text-align: left;
   }
   .search-option-row--active {
