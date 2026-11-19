@@ -1,6 +1,6 @@
 # EMR — Current Handoff
 
-Updated: 19 November 2026. Code baseline: branch `main` at `a984d0c` plus committed L3 structures parity (15/15 `PASS`), full 63-component L1 visual & UX sweep (`PASS`), `emr-tabs` horizontal narrow-screen scroll chevrons, `emr-paired-input`/`emr-paired-field` `'select'` dropdowns, and Stage 2 L6 Authoring Batch 1 implementations.
+Updated: 19 November 2026. Code baseline: branch `main` at `0cbfc5b` (2 commits ahead of `origin/main`) plus `EmrAlert` React `lineHeight` polish (`packages/emr-react/src/l1-display.tsx`), full L1 sweep (`63/63 PASS`), L2 parity (`20/20 PASS`), L3 structures parity (`15/15 PASS`), 4 L4 list wrappers (`PASS`), and Stage 2 L6 Authoring Batch 1 implementations.
 
 This file describes current state, outstanding work and how to resume. Replace outdated state rather than appending session history. Historical changes belong in `CHANGELOG.md`; exact commits belong in Git. Source and executable checks take precedence if documentation disagrees.
 
@@ -25,8 +25,11 @@ Multi-framework, unreleased EMR component library and `shadcn`-style registry ac
   - Added horizontal scrollable `emr-tabs` (`44x44px` monochrome chevron scroll buttons, `data-emr-print="hide"`, `:focus-visible`/React `focusRing`, `minWidth: '100%'` track) across React, Lit, and Angular (`0px` overflow at `390x844`).
   - Added `'select'` paired dropdown side mode (`options`/`firstOptions`/`secondOptions`) on `EmrPairedInput` (L1) and `EmrPairedField` (L2) across controller, React, Lit, Angular, Active Props, and catalog docs.
   - Fixed Angular `EmrDateTimeInputComponent` Calendar & Time popovers (`Today`, `Now`, `Clear`, `Done`, `Escape`), `EmrTooltipComponent` top-edge auto-flip below, `EmrIconButtonComponent` & `EmrSearchInputComponent` monochrome SVGs, `.emr-input-affix__field` flex-shrink (`emr-quantity-input` `0px` overflow + custom SVG chevron on `.emr-quantity__unit`), `EmrPaginationComponent` wrapped page buttons, `EmrLikert` custom text `options`, `EmrVas` `precision`, and `EmrClinicalMatrix` Light/Dark parity.
-- **L6 Authoring Batch 1 (Stage 2 Complete, Stage 3 Pending)**:
-  - Implemented Stage 2 parity updates for `emr-field-generator`, `emr-terminology-search`, `emr-validation-rule-editor`, `emr-field-library-picker`, `emr-template-composer`, and `emr-template-preview` (pending Stage 3 live Playwright + Neon sign-off).
+  - **L6 Authoring Batch 1 (Stage 2 Complete, Stage 3 Pending)**:
+    - Implemented Stage 2 parity updates for `emr-field-generator`, `emr-terminology-search`, `emr-validation-rule-editor`, `emr-field-library-picker`, `emr-template-composer`, and `emr-template-preview` (pending Stage 3 live Playwright + Neon sign-off).
+  - **Post-sweep Polish (`0cbfc5b` + `l1-display.tsx`)**:
+    - Aligned Lit `emr-option-tile` vertical padding (`10px 12px`) with React and Angular (`packages/emr-elements/src/l1-primitives.ts` + rebuilt `public/lit/emr-elements.bundle.js`).
+    - Added explicit `lineHeight` (`t.textMd * 1.3` on glyph, `t.textMd * t.leadingNormal` on title and `TextOrNode` body) to React `EmrAlert` (`packages/emr-react/src/l1-display.tsx`).
 
 ## Required boundaries
 
@@ -40,15 +43,15 @@ Multi-framework, unreleased EMR component library and `shadcn`-style registry ac
 
 - **`pnpm check` (`19 Nov 2026`)**: **PASSED (exit code `0`)** — `build:controller`, `registry:build` (`210` items), `vitest run` (**`143/143` test files, `1826/1826` tests, `0` failed**), `check:node-controller`, `build:ui`, `check:ssr`, `check:react` (Web & Expo Native), `build:react`, `build:elements`, and `check:stories` all passed cleanly.
 - **`build-component-api.mjs` & `ng build emr-angular-preview`**: Generated `component-api-manifest.ts` (`209` components) and rebuilt `packages/emr-react/harness/next/public/angular`.
-- **Live previews**: `:3300` (`pnpm site` + `public/lit/emr-elements.bundle.js`) and `:4200` (`ng serve emr-angular-preview`) verified across L1 (`63/63 PASS`), L2 (`20/20`), and all L3 (`15/15`) structures.
+- **Live previews**: `:3300` (`pnpm site` + `public/lit/emr-elements.bundle.js`) and `:4200` (`ng serve emr-angular-preview`) verified across L1 (`63/63 PASS`), L2 (`20/20 PASS`), L3 (`15/15 PASS`), and 4 L4 list wrappers (`PASS`).
 
 ## Pending tasks
 
 1. **Continue 3-stage component parity & verification (`L6` authoring -> `L4` domain)**:
    - **Next Step A — L6 Authoring Batch 1 (Stage 3 + Neon Sign-Off)**: Run Stage 3 live Playwright (`:3300` & `:4200`, Light/Dark, `390px`) + WCAG/print + Neon Final Sign-Off for `emr-field-generator`, `emr-terminology-search`, `emr-validation-rule-editor`, `emr-field-library-picker`, `emr-template-composer`, `emr-template-preview` -> write `docs/audits/<selector>.md` (`PASS`).
    - **Next Step B — L6 Authoring Batch 2 (Stage 1 -> Stage 2 -> Stage 3)**: Complete `emr-logic-rule-builder`, `emr-score-builder`, and `emr-fhir-questionnaire-mapper` across `emr-controller`, `emr-ui` (`.logic.ts`, `idPrefix`, `[readOnly]`, recursive subgroup, `optionPoints`, `44px` targets, `2px` sharp alerts, `--emr-font-mono`, unclipped print), `emr-react`, `emr-elements`, parity gallery, and `docs/audits/<selector>.md` (`PASS`).
-   - **Next Step C — L4 Domain Parity**: Proceed through `entries-l4-clinical.tsx` and `entries-l4-workflows.tsx` (Stage 1 -> Stage 2 -> Stage 3 -> `docs/audits/<selector>.md`).
-2. **Run full `pnpm check` & commit working-tree changes.** Stage and commit the 38 new components, L5 clinical schema packs, anatomy asset relocation, updated domain components, `ComponentsDocsPage`, `examples/angular-preview/`, `registry/`, and docs.
+   - **Next Step C — L4 Domain Parity**: Proceed through `entries-l4-clinical.tsx` (66 entries, 4 list wrappers already `PASS`) and `entries-l4-workflows.tsx` (37 entries) via Stage 1 -> Stage 2 -> Stage 3 -> `docs/audits/<selector>.md`.
+2. **Push local commits to `origin/main` when ready** (branch is ahead of `origin/main`).
 3. **Browser, visual, Storybook, site & native verification:**
    - Run `pnpm test:visual` (Playwright + axe across light/dark themes) and add representative story IDs for the new L3/L4/L6 components.
    - Run `pnpm build:storybook` and `pnpm site:build --base-path=/emr-ui` (include `build:angular-preview` output).

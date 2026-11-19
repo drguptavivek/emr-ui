@@ -267,18 +267,18 @@ export function EmrAlert({ tone = 'info', title = '', children }: { tone?: EmrTo
         glassWebStyle,
       ]}
     >
-      {glyph ? <Text aria-hidden style={{ color: c.color, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold) }}>{glyph}</Text> : null}
+      {glyph ? <Text aria-hidden style={{ color: c.color, fontSize: t.textMd, lineHeight: t.textMd * 1.3, fontWeight: fontWeight(t.weightBold) }}>{glyph}</Text> : null}
       <View style={styles.flex}>
-        {title ? <Text style={{ color: c.color, fontSize: t.textMd, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{title}</Text> : null}
-        {children ? <View><TextOrNode color={t.textMuted} size={t.textMd} family={fontFamily(t)}>{children}</TextOrNode></View> : null}
+        {title ? <Text style={{ color: c.color, fontSize: t.textMd, lineHeight: t.textMd * t.leadingNormal, fontWeight: fontWeight(t.weightBold), fontFamily: fontFamily(t) }}>{title}</Text> : null}
+        {children ? <View><TextOrNode color={t.textMuted} size={t.textMd} lineHeight={t.textMd * t.leadingNormal} family={fontFamily(t)}>{children}</TextOrNode></View> : null}
       </View>
     </View>
   );
 }
 
 /** Plain strings get themed Text; elements pass through. */
-function TextOrNode({ children, color, size, family }: { children: ReactNode; color: string; size: number; family: string | undefined }) {
-  return typeof children === 'string' ? <Text style={{ color, fontSize: size, fontFamily: family }}>{children}</Text> : <>{children}</>;
+function TextOrNode({ children, color, size, lineHeight, family }: { children: ReactNode; color: string; size: number; lineHeight?: number; family: string | undefined }) {
+  return typeof children === 'string' ? <Text style={{ color, fontSize: size, lineHeight, fontFamily: family }}>{children}</Text> : <>{children}</>;
 }
 
 /** L1. Empty / loading / error placeholder. Error announces as alert, others as status. */
